@@ -17,6 +17,7 @@
 #include "particle_parse.h"
 #include "player_vs_environment/tf_population_manager.h"
 #include "collisionutils.h"
+#include "func_respawnroom.h"
 #include "tf_objective_resource.h"
 
 //=============================================================================
