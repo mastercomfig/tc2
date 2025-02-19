@@ -518,9 +518,14 @@ stats.txt
 voice_ban.dt
 game.ico
 steam_appid.txt
+tf2_playerstats.dmx
+downloadlists
+viewed.res
 
 .vscode/settings.json
 
 game_dist
 game_dist_debug
+
+enc_temp_folder
 # END TC2 MOD
