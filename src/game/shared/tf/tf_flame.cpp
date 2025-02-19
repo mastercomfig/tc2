@@ -528,6 +528,8 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 		flDamageScale = RemapValClamped( flTimeAlive, 0.f, flLifeMax, 1.f, tf_flame_min_damage_scale_time );
 	}
 
+	// TODO: re-evaluate this
+#if 0
 	if ( pTFTarget 
 		)
 	{
@@ -542,6 +544,7 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 
 		flDamageScale *= flIndexMod;
 	}
+#endif
 
 	// should we reduce damage based on reflection?
 	for ( int i = 0; i<pPoint->m_nHitWall; ++i )
