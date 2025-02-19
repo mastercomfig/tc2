@@ -520,4 +520,7 @@ game.ico
 steam_appid.txt
 
 .vscode/settings.json
+
+game_dist
+game_dist_debug
 # END TC2 MOD
