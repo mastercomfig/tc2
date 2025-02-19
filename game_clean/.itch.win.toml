@@ -2,4 +2,4 @@
 name = "play"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-game", "tc2", "-vulkan", "-noborder"]
+args = ["-game", "tc2", "-vulkan", "-noborder", "-particles", "1", "-precachefontchars"]
