@@ -45,7 +45,7 @@ extern ConVar cl_hud_minmode;
 #define RATING_SCORE_STR			"ratingscore"
 
 
-ConVar cl_mvm_wave_status_visible_during_wave( "cl_mvm_wave_status_visible_during_wave", "0", FCVAR_ARCHIVE, "Display full wave contents while a wave is active in MvM." );
+ConVar cl_mvm_wave_status_visible_during_wave( "cl_mvm_wave_status_visible_during_wave", "1", FCVAR_ARCHIVE, "Display full wave contents while a wave is active in MvM." );
 
 
 //-----------------------------------------------------------------------------
