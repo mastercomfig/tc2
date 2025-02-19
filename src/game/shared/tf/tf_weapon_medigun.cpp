@@ -202,7 +202,7 @@ extern ConVar tf_max_health_boost;
 #ifdef CLIENT_DLL
 ConVar hud_medicautocallers( "hud_medicautocallers", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_medicautocallersthreshold( "hud_medicautocallersthreshold", "75", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
-ConVar hud_medichealtargetmarker ( "hud_medichealtargetmarker", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar hud_medichealtargetmarker ( "hud_medichealtargetmarker", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 #endif
 
 const char *g_pszMedigunHealSounds[] =

@@ -21,7 +21,7 @@ using namespace vgui;
 #define TF_ESCORT_HILL_MATERIAL			"hud/cart_track_arrow"
 #define TF_ESCORT_HILL_ALPHA_CYCLE_TIME	750
 
-ConVar hud_escort_interp( "hud_escort_interp", "0.2" );
+ConVar hud_escort_interp( "hud_escort_interp", "0.01" );
 ConVar hud_escort_test_progress( "hud_escort_test_progress", "-1" );
 ConVar hud_escort_test_speed( "hud_escort_test_speed", "-1" );
 

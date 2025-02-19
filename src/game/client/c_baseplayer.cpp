@@ -96,7 +96,7 @@ static ConVar	spec_track		( "spec_track", "0", 0, "Tracks an entity in spec mode
 static ConVar	cl_smooth		( "cl_smooth", "1", 0, "Smooth view/eye origin after prediction errors" );
 static ConVar	cl_smoothtime	( 
 	"cl_smoothtime", 
-	"0.1", 
+	"0.01", 
 	0, 
 	"Smooth client's view after prediction error over this many seconds",
 	true, 0.01,	// min/max is 0.01/2.0

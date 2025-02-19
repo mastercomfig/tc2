@@ -76,7 +76,7 @@ void cc_scoreboard_convar_changed( IConVar *pConVar, const char *pOldString, flo
 		pScoreboard->Reset();
 	}
 }
-ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "0", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
+ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "1", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
 ConVar tf_scoreboard_alt_class_icons( "tf_scoreboard_alt_class_icons", "0", FCVAR_ARCHIVE, "Show alternate class icons in the scoreboard." );
 
 extern bool IsInCommentaryMode( void );

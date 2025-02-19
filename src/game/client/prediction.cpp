@@ -43,7 +43,7 @@ static ConVar	cl_predictionlist	( "cl_predictionlist", "0", FCVAR_CHEAT, "Show w
 
 static ConVar	cl_predictionentitydump( "cl_pdump", "-1", FCVAR_CHEAT, "Dump info about this entity to screen." );
 static ConVar	cl_predictionentitydumpbyclass( "cl_pclass", "", FCVAR_CHEAT, "Dump entity by prediction classname." );
-static ConVar	cl_pred_optimize( "cl_pred_optimize", "2", 0, "Optimize for not copying data if didn't receive a network update (1), and also for not repredicting if there were no errors (2)." );
+static ConVar	cl_pred_optimize( "cl_pred_optimize", "1", 0, "Optimize for not copying data if didn't receive a network update (1), and also for not repredicting if there were no errors (2)." );
 
 static ConVar	cl_pred_doresetlatch( "cl_pred_doresetlatch", "1", 0 );
 

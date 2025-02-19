@@ -40,6 +40,7 @@ declare -a DLLS_LIB=(
 )
 
 declare -a REP_FILES=(
+  tc2/cfg/valve.rc
   tc2/materials/logo
   tc2/resource
   tc2/gameinfo.txt
