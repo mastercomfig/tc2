@@ -12675,18 +12675,13 @@ bool CTFPlayer::CanAirDash( void ) const
 
 	CTFWeaponBase *pTFActiveWeapon = GetActiveTFWeapon();
 	int iDashCount = tf_scout_air_dash_count.GetInt();
-	CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFActiveWeapon, iDashCount, air_dash_count );
+	if ( pTFActiveWeapon && gpGlobals->curtime >= pTFActiveWeapon->GetLastReadyTime() )
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFActiveWeapon, iDashCount, air_dash_count );
+	}
 
 	if ( m_Shared.GetAirDash() >= iDashCount )
 		return false;
-
-	if ( pTFActiveWeapon )
-	{
-		// TODO(driller): Hack fix to restrict this to The Atomzier (currently the only item that uses this attribute) on what would be the third jump
-		float flTimeSinceDeploy = gpGlobals->curtime - pTFActiveWeapon->GetLastDeployTime();
-		if ( iDashCount >= 2 && m_Shared.GetAirDash() == 1 && flTimeSinceDeploy < 0.7f )
-			return false;
-	}
 
 	int iNoAirDash = 0;
 	CALL_ATTRIB_HOOK_INT( iNoAirDash, set_scout_doublejump_disabled );
