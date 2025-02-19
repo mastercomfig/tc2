@@ -32,7 +32,7 @@
 			// folder.
 			//
 			// Note that this folder is scanned only when the game is booted.
-			game+mod	mod_tf/custom/*
+			game+mod	tc2/custom/*
 			// Enable this if you want to load your TF custom content.
 			//game+mod	|appid_440|tf/custom/*
 
@@ -75,7 +75,7 @@
 			// packed up in the .bsp file so that it will be mounted as a map search pack.
 			// The map search pack is mounted at the top of the search path list,
 			// but only while you are connected that server and on that map.
-			game+download		mod_tf/download
+			game+download		tc2/download
 		}
 	}
 }

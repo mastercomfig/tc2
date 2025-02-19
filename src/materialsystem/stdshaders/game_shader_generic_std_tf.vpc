@@ -6,7 +6,7 @@
 
 $Macro SRCDIR       "..\.."
 $Macro OUTBINNAME   "game_shader_generic_std"
-$Macro GAMENAME     "mod_tf"
+$Macro GAMENAME     "tc2"
 
 $Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
 

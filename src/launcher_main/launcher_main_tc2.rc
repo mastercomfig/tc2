@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_LAUNCHER            ICON    DISCARDABLE     "res\\mod_tf.ico"
+IDI_LAUNCHER            ICON    DISCARDABLE     "res\\tc2.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

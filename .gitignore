@@ -502,3 +502,22 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# TC2 MOD
+mod_hl2mp_win64.exe
+mod_tf_win64.exe
+tc2_win64.exe
+
+game/platform/config
+
+local_loadout.txt
+server_blacklist.txt
+autoexec.cfg
+GameState.txt
+stats.txt
+voice_ban.dt
+game.ico
+steam_appid.txt
+
+.vscode/settings.json
+# END TC2 MOD

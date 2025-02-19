@@ -57,7 +57,7 @@ $Project "server"
 $Project "launcher_main"
 {
 	"launcher_main\launcher_main_mod_hl2mp.vpc" [$HL2MP]
-	"launcher_main\launcher_main_mod_tf.vpc" [$TF]
+	"launcher_main\launcher_main_tc2.vpc" [$TF]
 }
 
 $Project "mathlib"
