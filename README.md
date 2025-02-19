@@ -15,6 +15,13 @@ We're also experimenting with continuing support work for gameplay balance and o
 2. Suggest quality of life improvements (but not balance changes) through the issues page.
 3. Install TC2 and play the game to test stability, bug fixes, performance, and enjoyment.
 
+## Installation
+
+1. Install the itch.io app
+2. Download Team Comtress 2 through the app to get auto-updates.
+3. Get the Source SDK Base 2013 Multiplayer under Tools in the Steam Library.
+4. You can now play Team Comtress 2 in the Itch app.
+
 ## Legal
 
 Valve, the Valve logo, Steam, the Steam logo, Team Fortress, the Team Fortress logo, Source, the Source logo are trademarks and/or registered trademarks of Valve Corporation in the U.S. and/or other countries.
