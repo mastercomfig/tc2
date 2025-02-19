@@ -255,7 +255,7 @@ void CTFKnife::PrimaryAttack( void )
 		}
 
 		// We should very quickly disguise as our victim.
-		const float flDelay = ( bDropDisguise ) ? 1.5f : 0.2f;
+		const float flDelay = 0.2f;
 		SetContextThink( &CTFKnife::DisguiseOnKill, gpGlobals->curtime + flDelay, "DisguiseOnKill" );
 	}
 	else
