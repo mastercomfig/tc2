@@ -20067,7 +20067,7 @@ extern ConVar friendlyfire;
 bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits ) const
 {
 	bool bIsMedic = false;
-	bool bIsMeleeingTeamMate = false;
+	bool bIsTeamMate = false;
 
 	if ( !friendlyfire.GetBool() )
 	{
@@ -20092,18 +20092,7 @@ bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const 
 
 		if ( pPlayer->GetTeamNumber() == GetTeamNumber() )
 		{
-			// Josh: Lag compensate melee attacks on teammates. Helps with weapons like the Solider's whip, etc.
-			CTFWeaponBaseMelee *pWeapon = dynamic_cast< CTFWeaponBaseMelee * >( GetActiveWeapon() );
-			if ( pWeapon )
-			{
-				bIsMeleeingTeamMate = true;
-			}
-			else
-			{
-				// Josh: Don't do any lag compensation on team-mates if we aren't a medic and not using melee.
-				if ( bIsMedic == false )
-					return false;
-			}
+			bIsTeamMate = true;
 		}
 	}
 
@@ -20123,7 +20112,7 @@ bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const 
 		return true;
 
 	// Josh: Don't do cone check when melee-ing team mates, as we could be inside them.
-	if ( !bIsMeleeingTeamMate )
+	if ( !bIsTeamMate )
 	{
 		// If their origin is not within a 45 degree cone in front of us, no need to lag compensate.
 		Vector vForward;
