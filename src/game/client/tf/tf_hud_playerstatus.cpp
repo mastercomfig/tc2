@@ -38,9 +38,6 @@ using namespace vgui;
 
 ConVar cl_hud_playerclass_use_playermodel( "cl_hud_playerclass_use_playermodel", "1", FCVAR_ARCHIVE, "Use player model in player class HUD." );
 
-
-ConVar cl_hud_playerclass_playermodel_showed_confirm_dialog( "cl_hud_playerclass_playermodel_showed_confirm_dialog", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN );
-
 extern ConVar tf_max_health_boost;
 
 
@@ -401,11 +398,6 @@ void CTFHudPlayerClass::OnThink()
 	}
 }
 
-static void HudPlayerClassUsePlayerModelDialogCallback( bool bConfirmed, void *pContext )
-{
-	cl_hud_playerclass_use_playermodel.SetValue( bConfirmed );
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -420,17 +412,6 @@ void CTFHudPlayerClass::UpdateModelPanel()
 	if ( !pPlayer || !pPlayer->IsAlive() )
 	{
 		return;
-	}
-
-	if ( !cl_hud_playerclass_playermodel_showed_confirm_dialog.GetBool() )
-	{
-		// only show this message one time
-		ShowConfirmDialog(	"#GameUI_HudPlayerClassUsePlayerModelDialogTitle",
-			"#GameUI_HudPlayerClassUsePlayerModelDialogMessage",
-			"#GameUI_HudPlayerClassUsePlayerModelDialogConfirm", 
-			"#GameUI_HudPlayerClassUsePlayerModelDialogCancel",
-			&HudPlayerClassUsePlayerModelDialogCallback );
-		cl_hud_playerclass_playermodel_showed_confirm_dialog.SetValue( true );
 	}
 
 	// hide old UI
