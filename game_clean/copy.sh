@@ -10,8 +10,8 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/x64,tc2/bin/x64,tc2/materials}
-mkdir -p ${CLEAN_DEBUG_DIR}/{bin/x64,tc2/bin/x64,tc2/materials}
+mkdir -p ${CLEAN_DIR}/{bin/x64,tc2/bin/x64,tc2/materials,tc2/cfg}
+mkdir -p ${CLEAN_DEBUG_DIR}/{bin/x64,tc2/bin/x64,tc2/materials,tc2/cfg}
 
 declare -a EXES=(
   tc2_win64
