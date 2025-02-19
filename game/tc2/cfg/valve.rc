@@ -90,6 +90,6 @@ filesystem_max_stdio_read 64
 
 snd_async_fullyasync 1
 snd_async_minsize 0
-snd_mixahead .0137
+snd_mixahead .1
 snd_delay_sound_shift .000001
 snd_noextraupdate 1
