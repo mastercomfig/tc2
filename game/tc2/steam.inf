@@ -1,6 +1,6 @@
-PatchVersion=9001
-ClientVersion=9001
-ServerVersion=9001
+PatchVersion=120000
+ClientVersion=120000
+ServerVersion=120000
 ProductName=tc2
 appID=243750
 ServerAppID=244310
