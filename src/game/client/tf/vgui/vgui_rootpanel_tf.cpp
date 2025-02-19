@@ -60,6 +60,7 @@ void CheckCustomModSearchPaths()
 	if ( CommandLine()->FindParm( "-insecure" ) )
 	{
 		// allow lose files in these search paths
+		g_pFullFileSystem->AddSearchPath( "tc2", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "tf", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "hl2", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "platform", "vgui" );
