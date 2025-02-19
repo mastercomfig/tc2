@@ -426,6 +426,16 @@ void CTFWeaponBase::Activate( void )
 	GiveDefaultAmmo();
 }
 
+void CTFWeaponBase::GiveDefaultAmmo(void)
+{
+	BaseClass::GiveDefaultAmmo();
+
+	if (IsEnergyWeapon())
+	{
+		m_flEnergy = Energy_GetMaxEnergy();
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
