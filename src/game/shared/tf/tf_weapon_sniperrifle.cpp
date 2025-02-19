@@ -513,7 +513,7 @@ void CTFSniperRifle::ZoomOutIn( void )
 	}
 	else
 	{
-		m_flNextSecondaryAttack = gpGlobals->curtime + flRezoomDelay + 0.1f;
+		m_flNextSecondaryAttack = gpGlobals->curtime + flRezoomDelay;
 	}
 }
 
