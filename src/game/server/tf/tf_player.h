@@ -1472,6 +1472,10 @@ public:
 
 	int GetSkinOverride() const { return m_iPlayerSkinOverride; }
 
+	// 0 - no restrictions. 1 - restrict class-specific achievements/quests only. 2 - restrict ALL achievements/quests.
+	short GetAchievementRestrictions() const { return m_nRestrictAchievements; }
+	short GetQuestRestrictions() const { return m_nRestrictQuests; }
+
 	bool ShouldGetBonusPointsForExtinguishEvent( int userID );
 
 	void SetLastAutobalanceTime( float flTime ) { m_flLastAutobalanceTime = flTime; }
@@ -1512,6 +1516,9 @@ private:
 	CUtlMap< CUtlString, float > m_mapCustomAttributes;
 
 	CNetworkVar( int, m_iPlayerSkinOverride );
+
+	CNetworkVar( short, m_nRestrictAchievements );
+	CNetworkVar( short, m_nRestrictQuests );
 
 	CUtlMap<int, float> m_PlayersExtinguished;	// userID and most recent time they were extinguished for bonus points
 
