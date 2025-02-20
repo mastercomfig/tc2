@@ -42,6 +42,7 @@
 			mod+mod_write		|gameinfo_path|.
 			game+game_write		|gameinfo_path|.
 			default_write_path	|gameinfo_path|.
+			vgui	|gameinfo_path|.
 			gamebin				|gameinfo_path|bin
 
 			// We search VPK files before ordinary folders, because most files will be found in
