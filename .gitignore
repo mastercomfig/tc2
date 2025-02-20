@@ -512,6 +512,10 @@ game/platform/config
 
 local_loadout.txt
 server_blacklist.txt
+ServerConfig.vdf
+settings.scr
+user.scr
+*.ain
 autoexec.cfg
 GameState.txt
 stats.txt
