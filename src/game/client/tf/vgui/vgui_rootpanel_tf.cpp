@@ -17,7 +17,7 @@
 
 C_TFRootPanel *g_pRootPanel = NULL;
 
-static ConVar tf_ui_version( "tf_ui_version", "3", FCVAR_DEVELOPMENTONLY );
+static ConVar tf_ui_version( "tf_ui_version", "-1", FCVAR_DEVELOPMENTONLY );
 
 extern const char *COM_GetModDirectory();
 
