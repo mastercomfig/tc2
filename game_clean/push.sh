@@ -17,7 +17,7 @@ cp -f ${SOURCE_MANIFEST} ${TARGET_MANIFEST}
 PROJECT_STR="mastercoms/tc2"
 BRANCH_STR=stable
 CHANNEL_STR=${PLATFORM_STR}-${BRANCH_STR}
-VERSION="0.4.0"
+VERSION="0.5.0"
 
 butler push "${CLEAN_DIR}" "${PROJECT_STR}:${CHANNEL_STR}" "--userversion" "${VERSION}"
 
