@@ -2,10 +2,10 @@
 name = "play"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-game", "tc2", "-vulkan", "-noborder", "-particles", "1", "-precachefontchars"]
+args = ["-game", "tc2", "-noborder", "-particles", "1", "-precachefontchars"]
 
 [[actions]]
-name = "dx9"
+name = "vulkan"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-game", "tc2", "-noborder", "-particles", "1", "-precachefontchars"]
+args = ["-game", "tc2", "-vulkan", "-noborder", "-particles", "1", "-precachefontchars"]
