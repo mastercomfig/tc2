@@ -75,7 +75,6 @@ public:
 	virtual void	PostDataUpdate( DataUpdateType_t type );
 	virtual void	OnDataChanged(DataUpdateType_t updateType);
 	virtual void	CreateTrails( void ) { }
-	CBaseEntity		*GetLauncher( void ) { return m_hLauncher; }
 
 protected:
 
@@ -120,9 +119,6 @@ public:
 
 	void			SetHomingTarget( CBaseEntity *pHomingTarget );
 
-	virtual void	SetLauncher( CBaseEntity *pLauncher ) OVERRIDE { m_hLauncher = pLauncher; BaseClass::SetLauncher( pLauncher ); }
-	CBaseEntity		*GetLauncher( void ) { return m_hLauncher; }
-
 	virtual bool	IsDestroyable( bool bOrbAttack = false ) OVERRIDE { return ( !bOrbAttack ? ( gpGlobals->curtime > m_flDestroyableTime ) : true ); }
 
 	CBaseEntity		*GetOwnerPlayer( void ) const;
@@ -131,8 +127,6 @@ protected:
 
 	// Not networked.
 	float					m_flDamage;
-
-	CNetworkHandle( CBaseEntity, m_hLauncher );
 
 	float					m_flDestroyableTime;
 	bool					m_bCritical;

@@ -63,8 +63,10 @@ public:
 	virtual void Destroy( bool bBlinkOut = true, bool bBreakRocket = false ) {}
 	virtual void SetLauncher( CBaseEntity *pLauncher );
 	CBaseEntity *GetOriginalLauncher() const { return m_hOriginalLauncher; }
+	CBaseEntity		*GetLauncher( void ) { return m_hLauncher; }
 
 protected:
+	CNetworkHandleForDerived( CBaseEntity, m_hLauncher );
 #ifdef GAME_DLL
 	void CollideWithTeammatesThink();
 	virtual bool ShouldTouchNonWorldSolid( CBaseEntity *pOther, const trace_t *pTrace );

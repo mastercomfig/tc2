@@ -222,7 +222,8 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 
 	CTFPlayer *pTFVictim = ToTFPlayer( pOther );
 
-	CTFFlareGun *pFlareGun = dynamic_cast< CTFFlareGun* >( GetLauncher() );
+	CBaseEntity *pLauncher = GetOriginalLauncher();
+	CTFFlareGun *pFlareGun = dynamic_cast< CTFFlareGun* >( pLauncher );
 	if ( pFlareGun )
 	{
 		if ( pFlareGun->GetFlareGunType() == FLAREGUN_SCORCHSHOT )
@@ -243,7 +244,7 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 				iDamageType |= DMG_PREVENT_PHYSICS_FORCE;
 
 				// Damage the player to push them back
-				CTakeDamageInfo info( this, pAttacker, m_hLauncher, vec3_origin, vecOrigin, GetDamage(), iDamageType, m_bIsFromTaunt ? TF_DMG_CUSTOM_FLARE_PELLET : 0 );
+				CTakeDamageInfo info( this, pAttacker, pLauncher, vec3_origin, vecOrigin, GetDamage(), iDamageType, m_bIsFromTaunt ? TF_DMG_CUSTOM_FLARE_PELLET : TF_DMG_CUSTOM_BURNING_FLARE );
 				pTFVictim->TakeDamage( info );
 
 				bool bIsEnemy = pAttacker && pTFVictim->GetTeamNumber() != pAttacker->GetTeamNumber();
@@ -343,7 +344,7 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		m_bCritical = true;
 	}
 
-	CTakeDamageInfo info( this, pAttacker, m_hLauncher, vec3_origin, vecOrigin, GetDamage(), GetDamageType(), TF_DMG_CUSTOM_BURNING_FLARE );
+	CTakeDamageInfo info( this, pAttacker, pLauncher, vec3_origin, vecOrigin, GetDamage(), GetDamageType(), TF_DMG_CUSTOM_BURNING_FLARE );
 	pOther->TakeDamage( info );
 
 	// Remove the flare.
@@ -394,7 +395,7 @@ void CTFProjectile_Flare::Explode_Air( trace_t *pTrace, int bitsDamageType, bool
 	WeaponSound_t nSound = SPECIAL1;
 	if ( pAttacker )
 	{
-		CTFFlareGun *pFlareGun = dynamic_cast<CTFFlareGun*>( ToTFPlayer( pAttacker )->GetActiveWeapon() );
+		CTFFlareGun *pFlareGun = dynamic_cast<CTFFlareGun*>( GetOriginalLauncher() );
 		if ( pFlareGun )
 		{
 			CEconItemView *pItem = pFlareGun->GetAttributeContainer()->GetItem();
@@ -416,7 +417,7 @@ void CTFProjectile_Flare::Explode_Air( trace_t *pTrace, int bitsDamageType, bool
 			nSound = SPECIAL2;
 		}
 
-		CTakeDamageInfo info( this, pAttacker, m_hLauncher, vec3_origin, vecOrigin, GetDamage(), bitsDamageType | DMG_HALF_FALLOFF, TF_DMG_CUSTOM_FLARE_EXPLOSION );
+		CTakeDamageInfo info( this, pAttacker, GetOriginalLauncher(), vec3_origin, vecOrigin, GetDamage(), bitsDamageType | DMG_HALF_FALLOFF, TF_DMG_CUSTOM_FLARE_EXPLOSION );
 		CTFRadiusDamageInfo radiusinfo( &info, vecOrigin, flRadius, NULL, TF_FLARE_RADIUS_FOR_FJS );
 		TFGameRules()->RadiusDamage( radiusinfo );
 	}
@@ -452,7 +453,7 @@ void CTFProjectile_Flare::Detonate( bool bSelfOnly )
 float CTFProjectile_Flare::GetRadius( void ) 
 { 
 	float flRadius = TF_FLARE_DET_RADIUS;
-	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_hLauncher, flRadius, mult_explosion_radius );
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOriginalLauncher(), flRadius, mult_explosion_radius );
 	return flRadius; 
 }
 
@@ -465,7 +466,7 @@ void CTFProjectile_Flare::SendDeathNotice( void )
 	if ( !pAttacker )
 		return;
 
-	CTFFlareGun *pFlareGun = dynamic_cast<CTFFlareGun*>( ToTFPlayer( pAttacker )->GetActiveWeapon() );
+	CTFFlareGun *pFlareGun = dynamic_cast<CTFFlareGun*>( GetOriginalLauncher() );
 	if ( pFlareGun && pFlareGun->GetFlareGunType() == FLAREGUN_DETONATE )
 	{
 		pFlareGun->DeathNotice( this );
@@ -612,12 +613,14 @@ void CTFProjectile_Flare::Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir )
 
 	IncrementDeflected();
 	SetScorer( pTFDeflector );
+
+	m_nSkin = ( GetTeamNumber() == TF_TEAM_BLUE ) ? 1 : 0;
 }
 
 float CTFProjectile_Flare::GetProjectileSpeed( void ) const
 {
 	float flLaunchSpeed = FLARE_SPEED;
-	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_hLauncher, flLaunchSpeed, mult_projectile_speed );
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOriginalLauncher(), flLaunchSpeed, mult_projectile_speed );
 
 	return flLaunchSpeed;
 }
@@ -625,7 +628,7 @@ float CTFProjectile_Flare::GetProjectileSpeed( void ) const
 float CTFProjectile_Flare::GetHeatSeekPower( void ) const
 {
 	float flHeatSeekPower = 0.0;
-	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_hLauncher, flHeatSeekPower, mod_projectile_heat_seek_power );
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOriginalLauncher(), flHeatSeekPower, mod_projectile_heat_seek_power );
 
 	return flHeatSeekPower;
 }

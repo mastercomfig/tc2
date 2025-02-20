@@ -6158,15 +6158,18 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					flDamage += Max( 400.f, flDamage );
 				}
 			}
-			else if( pTFAttacker && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_CANNON && ( info.GetDamageType() & DMG_BLAST ) )
+			else if( pTFAttacker && pBaseGrenade && pBaseGrenade->GetType() == TF_GL_MODE_CANNONBALL && ( info.GetDamageType() & DMG_BLAST ) )
 			{
-				CTFGrenadeLauncher* pGrenadeLauncher = static_cast<CTFGrenadeLauncher*>( pWeapon );
+				CTFGrenadeLauncher* pGrenadeLauncher = static_cast<CTFGrenadeLauncher*>( pBaseGrenade->GetOriginalLauncher() );
 				if( pGrenadeLauncher->IsDoubleDonk( pVictim ) )
 				{
 					info.SetCritType( CTakeDamageInfo::CRIT_MINI );
 					eBonusEffect = kBonusEffect_DoubleDonk;
 					flDamage = Max( flDamage, info.GetMaxDamage() ); // Double donk victims score max damage
-					EconEntity_OnOwnerKillEaterEvent( pGrenadeLauncher, pTFAttacker, pVictim, kKillEaterEvent_DoubleDonks );
+					if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_CANNON )
+					{
+						EconEntity_OnOwnerKillEaterEvent( pGrenadeLauncher, pTFAttacker, pVictim, kKillEaterEvent_DoubleDonks );
+					}
 				}
 			}
 			else if ( pTFAttacker && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAME_BALL && info.GetDamageCustom() == TF_DMG_CUSTOM_DRAGONS_FURY_BONUS_BURNING )
@@ -10464,7 +10467,12 @@ CTFWeaponBase *GetKilleaterWeaponFromDamageInfo( const CTakeDamageInfo *pInfo )
 				CTFLaserPointer* pLaserPointer = dynamic_cast< CTFLaserPointer * >( pBuilder->GetEntityForLoadoutSlot( LOADOUT_POSITION_SECONDARY ) );
 				if ( pLaserPointer && pLaserPointer->HasLaserDot() )
 				{
-					pTFWeapon =  pLaserPointer;
+					pTFWeapon = pLaserPointer;
+				}
+				else
+				{
+					// Not a wrangler, credit the wrench. Technically we have to also credit the PDA, but the melee weapon is more relevant
+					pTFWeapon = dynamic_cast< CTFWeaponBase * >( pBuilder->GetEntityForLoadoutSlot( LOADOUT_POSITION_MELEE ) );
 				}
 			}
 		}
@@ -10474,24 +10482,11 @@ CTFWeaponBase *GetKilleaterWeaponFromDamageInfo( const CTakeDamageInfo *pInfo )
 	// deflection will get the killeater credit instead of the original launcher
 	if ( pInflictor )
 	{
-		CTFWeaponBaseGrenadeProj *pBaseGrenade = dynamic_cast< CTFWeaponBaseGrenadeProj* >( pInflictor );
-		if ( pBaseGrenade )
+		// GetLauncher always points to the weapon that launched, deflect or not. So this is safe.
+		CBaseProjectile *pProjectile = dynamic_cast< CBaseProjectile* >( pInflictor );
+		if ( pProjectile )
 		{
-			if ( pBaseGrenade->GetDeflected() && pBaseGrenade->GetLauncher() )
-			{
-				pTFWeapon = dynamic_cast< CTFWeaponBase* >( pBaseGrenade->GetLauncher() );
-			}
-		}
-		else
-		{
-			CTFBaseRocket *pRocket = dynamic_cast< CTFBaseRocket* >( pInflictor );
-			if ( pRocket )
-			{
-				if ( pRocket->GetDeflected() && pRocket->GetLauncher() )
-				{
-					pTFWeapon = dynamic_cast< CTFWeaponBase* >( pRocket->GetLauncher() );
-				}
-			}
+			pTFWeapon = dynamic_cast< CTFWeaponBase* >( pProjectile->GetLauncher() );
 		}
 	}
 
@@ -11465,10 +11460,17 @@ void CTFGameRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &in
 	CTFPlayer *pTFPlayerScorer = ToTFPlayer( pScorer );
 	if ( pScorer )
 	{	
-		CalcDominationAndRevenge( pTFPlayerScorer, info.GetWeapon(), pTFPlayerVictim, false, &iDeathFlags );
+		// Make sure we're getting the right weapon (for reflects, sentries, etc)...
+		CBaseEntity *pAttackerEconWeapon = GetKilleaterWeaponFromDamageInfo( &info );
+		if ( !pAttackerEconWeapon )
+		{
+			// It might not be a TF weapon, but a wearable, so fallback to the raw info in that case
+			pAttackerEconWeapon = info.GetWeapon();
+		}
+		CalcDominationAndRevenge( pTFPlayerScorer, pAttackerEconWeapon, pTFPlayerVictim, false, &iDeathFlags );
 		if ( pAssister )
 		{
-			CalcDominationAndRevenge( pAssister, info.GetWeapon(), pTFPlayerVictim, true, &iDeathFlags );
+			CalcDominationAndRevenge( pAssister, pAttackerEconWeapon, pTFPlayerVictim, true, &iDeathFlags );
 		}
 	}
 	pTFPlayerVictim->SetDeathFlags( iDeathFlags );	
@@ -12100,6 +12102,8 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 		killer_weapon_name = "tf_weapon_flaregun";
 		*iWeaponID = TF_WEAPON_FLAREGUN;
 
+		bool bIsDeflected = false;
+
 		if ( pInflictor && pInflictor->IsPlayer() == false )
 		{
 			CTFBaseRocket *pBaseRocket = dynamic_cast<CTFBaseRocket*>( pInflictor );
@@ -12109,18 +12113,22 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 				if ( pBaseRocket->GetDeflected() )
 				{
 					killer_weapon_name = "deflect_flare";
+					bIsDeflected = true;
 				}
 			}
 		}
 
-		CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase * >( info.GetWeapon() );
-		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAREGUN_REVENGE )
+		if (!bIsDeflected)
 		{
-			CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
-			if ( pItem && pItem->GetStaticData() && pItem->GetStaticData()->GetIconClassname() )
+			CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase * >( info.GetWeapon() );
+			if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAREGUN_REVENGE )
 			{
-				killer_weapon_name = pItem->GetStaticData()->GetIconClassname();
-				*iWeaponID = pWeapon->GetWeaponID();
+				CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
+				if ( pItem && pItem->GetStaticData() && pItem->GetStaticData()->GetIconClassname() )
+				{
+					killer_weapon_name = pItem->GetStaticData()->GetIconClassname();
+					*iWeaponID = pWeapon->GetWeaponID();
+				}
 			}
 		}
 	}
@@ -12136,7 +12144,7 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 			{
 				if ( pBaseRocket->GetDeflected() )
 				{
-					killer_weapon_name = "deflect_flare_detonator";
+					killer_weapon_name = "deflect_flare";
 				}
 			}
 		}
@@ -12246,6 +12254,21 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_BASEBALL )
 	{
 		killer_weapon_name = "ball";
+
+		if (pInflictor && pInflictor->IsPlayer() == false)
+		{
+			CTFWeaponBaseGrenadeProj* pBaseGrenade = dynamic_cast<CTFWeaponBaseGrenadeProj*>(pInflictor);
+
+			if (pBaseGrenade && pBaseGrenade->GetDeflected())
+			{
+				killer_weapon_name = "deflect_ball";
+			}
+		}
+	}
+	else if (info.GetDamageCustom() == TF_DMG_CUSTOM_CLEAVER ||
+				info.GetDamageCustom() == TF_DMG_CUSTOM_CLEAVER_CRIT)
+	{
+			killer_weapon_name = "guillotine";
 	}
 	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_COMBO_PUNCH )
 	{
@@ -12457,6 +12480,17 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 				else if ( *iWeaponID == TF_WEAPON_ROCKETLAUNCHER_DIRECTHIT )
 				{
 					killer_weapon_name = "rocketlauncher_directhit";
+				}
+				else if (*iWeaponID == TF_WEAPON_COMPOUND_BOW)
+				{
+					CTFProjectile_Arrow* pArrow = dynamic_cast<CTFProjectile_Arrow*>(pBaseRocket);
+					if (pArrow && pArrow->IsAlight())
+					{
+						killer_weapon_name = "huntsman_flyingburn";
+						// force death notice to use burning arrow headshot kill icon
+						if (info.GetDamageCustom() == TF_DMG_CUSTOM_HEADSHOT)
+							*iWeaponID = TF_WEAPON_NONE;
+					}
 				}
 			}
 			else
@@ -13104,7 +13138,16 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				}
 				else
 				{
-					pKillStreakTarget = info.GetWeapon();
+					// If we are a projectile, we need to get the launcher, because the damage info might have been initialized with the original launcher.
+					CBaseProjectile* pProjectile = dynamic_cast<CBaseProjectile*>(pInflictor);
+					if (pProjectile)
+					{
+						pKillStreakTarget = pProjectile->GetLauncher();
+					}
+					else
+					{
+						pKillStreakTarget = info.GetWeapon();
+					}
 				}
 
 				if ( pKillStreakTarget )
@@ -16930,7 +16973,7 @@ bool CTFGameRules::PlayerMayBlockPoint( CBasePlayer *pPlayer, int iPointIndex, c
 #endif
 
 	// Invuln players can block points
-	if ( pTFPlayer->m_Shared.IsInvulnerable() )
+	if ( pTFPlayer->m_Shared.IsInvulnerable()|| pTFPlayer->m_Shared.InCond( TF_COND_MEGAHEAL ) )
 	{
 		if ( pszReason )
 		{

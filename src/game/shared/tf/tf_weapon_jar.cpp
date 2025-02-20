@@ -439,8 +439,11 @@ void JarExplode( int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeap
 					ExtinguishPlayer( dynamic_cast<CEconEntity *>( pWeapon ), pAttacker, pPlayer, "tf_weapon_jar" );
 
 					// Return some percentage of the jar to the thrown weapon if extinguishing an ally
-					auto pLauncher = dynamic_cast< CTFWeaponBase* >( pOriginalWeapon );
-					if ( pLauncher && pAttacker != pPlayer && pLauncher->HasEffectBarRegeneration() )
+					auto pLauncher = dynamic_cast<CTFWeaponBase*>(pOriginalWeapon);
+					auto pCurrentLauncher = dynamic_cast< CTFWeaponBase* >( pWeapon );
+					// Only reward the original thrower's self or allies for extinguishing teammates. An enemy extinguishing their enemy allies should not reduce our cooldown.
+					const bool bSniperOnSameTeamAsReflector = pLauncher->GetTeamNumber() == pCurrentLauncher->GetTeamNumber();
+					if ( bSniperOnSameTeamAsReflector && pLauncher && pAttacker != pPlayer && pLauncher->HasEffectBarRegeneration() )
 					{
 						float fCooldown = 1.0f;
 						CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pLauncher, fCooldown, extinguish_reduces_cooldown );
@@ -827,9 +830,9 @@ void CTFProjectile_JarMilk::SetCustomPipebombModel()
 	// Check for Model Override
 	int iProjectile = 0;
 	CTFPlayer *pThrower = ToTFPlayer( GetThrower() );
-	if ( pThrower && pThrower->GetActiveWeapon() )
+	if ( pThrower && GetLauncher() )
 	{
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( pThrower->GetActiveWeapon(), iProjectile, override_projectile_type );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( GetLauncher(), iProjectile, override_projectile_type );
 		switch ( iProjectile )
 		{
 		case TF_PROJECTILE_BREADMONSTER_JARATE:
@@ -1008,7 +1011,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 		return;
 	}
 
-	CBaseEntity *pInflictor = GetLauncher();
+	CBaseEntity *pInflictor = GetOriginalLauncher();
 
 	float flLifeTime = gpGlobals->curtime - m_flCreationTime;
 	if ( flLifeTime >= FLIGHT_TIME_TO_REDUCE_COOLDOWN )
@@ -1022,7 +1025,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 
 	// just do the bleed effect directly since the bleed
 	// attribute comes from the inflictor, which is the cleaver.
-	pPlayer->m_Shared.MakeBleed( pOwner, (CTFCleaver *)GetLauncher(), 5.f );
+	pPlayer->m_Shared.MakeBleed( pOwner, (CTFCleaver *)pInflictor, 5.f );
 
 	// Give 'em a love tap.
 	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
@@ -1030,7 +1033,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 
 	CTakeDamageInfo info;
 	info.SetAttacker( pOwner );
-	info.SetInflictor( pInflictor ); 
+	info.SetInflictor( this ); 
 	info.SetWeapon( pInflictor );
 	info.SetDamage( GetDamage() );
 	info.SetDamageCustom( TF_DMG_CUSTOM_CLEAVER );
