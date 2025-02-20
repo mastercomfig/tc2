@@ -4617,6 +4617,23 @@ EEquipType_t CEconItemSchema::GetEquipTypeFromClassIndex( int iClass ) const
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:	Applies a game mod-specific patch to the schema.
+// Input:	pKVRawDefinition - The raw KeyValues representation of the schema
+//-----------------------------------------------------------------------------
+void ApplyGameModSchema( KeyValues *pKVRawDefinition ) {
+	CUtlBuffer bufModRawData;
+	bool bReadFileOK = g_pFullFileSystem->ReadFile( "scripts/items/items_mod.txt", "MOD", bufModRawData );
+	if ( bReadFileOK )
+	{
+		CUtlBuffer bufText( bufModRawData.Base(), bufModRawData.TellPut(), CUtlBuffer::READ_ONLY | CUtlBuffer::TEXT_BUFFER );
+		KeyValues *pKVRawModDefinition = new KeyValues( "CEconItemSchema" );
+		pKVRawModDefinition->LoadFromBuffer( NULL, bufText );
+		pKVRawDefinition->RecursiveMergeKeyValues( pKVRawModDefinition );
+		pKVRawModDefinition->deleteThis();
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:	Initializes the schema
 // Input:	pKVRawDefinition - The raw KeyValues representation of the schema
 //			pVecErrors - An optional vector that will contain error messages if 
@@ -4632,8 +4649,8 @@ bool CEconItemSchema::BInitSchema( KeyValues *pKVRawDefinition, CUtlVector<CUtlS
 
 	m_unVersion = CalculateKeyValuesVersion( pKVRawDefinition );
 
-
-
+	// this is applied after version calculation to ensure there aren't any mismatches later
+	ApplyGameModSchema( pKVRawDefinition );
 
 	// Parse the prefabs block first so the prefabs will be populated in case anything else wants
 	// to use them later.
