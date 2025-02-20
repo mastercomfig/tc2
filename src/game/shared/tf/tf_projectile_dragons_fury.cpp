@@ -34,7 +34,7 @@ ConVar tf_fireball_distance( "tf_fireball_distance", "500", FCVAR_REPLICATED | F
 ConVar tf_fireball_speed( "tf_fireball_speed", "3000", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_damage( "tf_fireball_damage", "25", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_burn_duration( "tf_fireball_burn_duration", "2", FCVAR_REPLICATED | FCVAR_CHEAT );
-ConVar tf_fireball_radius( "tf_fireball_radius", "22.5", FCVAR_REPLICATED | FCVAR_CHEAT );
+ConVar tf_fireball_radius( "tf_fireball_radius", "30", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_draw_debug_radius( "tf_fireball_draw_debug_radius", "0", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_burning_bonus( "tf_fireball_burning_bonus", "3", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_max_lifetime( "tf_fireball_max_lifetime", "0.5", FCVAR_REPLICATED | FCVAR_CHEAT );
@@ -287,6 +287,12 @@ public:
 			return;
 
 		if ( !IsEntityVisible( pTarget ) )
+			return;
+
+		// don't let radius extend range.
+		const Vector& vMySpawn = m_vecSpawnOrigin;
+		const Vector& vTargetOrigin = pTarget->GetAbsOrigin();
+		if (vTargetOrigin.DistTo(vMySpawn) > tf_fireball_distance.GetFloat())
 			return;
 
 		CTakeDamageInfo info;
