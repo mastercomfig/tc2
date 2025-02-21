@@ -1822,19 +1822,21 @@ bool CObjectSentrygun::MoveTurret( void )
 {
 	bool bMoved = false;
 
-	int iBaseTurnRate = GetBaseTurnRate();
+	float iBaseTurnRate = GetBaseTurnRate();
 	
 	if ( IsMiniBuilding() )
 	{
 		iBaseTurnRate *= 1.35f;
 	}
 
+	float dt = gpGlobals->curtime - GetLastThink(SENTRYGUN_CONTEXT);
+
 	// any x movement?
 	if ( m_vecCurAngles.x != m_vecGoalAngles.x )
 	{
 		float flDir = m_vecGoalAngles.x > m_vecCurAngles.x ? 1 : -1 ;
 
-		m_vecCurAngles.x += SENTRY_THINK_DELAY * ( iBaseTurnRate * 5 ) * flDir;
+		m_vecCurAngles.x += dt * ( iBaseTurnRate * 5 ) * flDir;
 
 		// if we started below the goal, and now we're past, peg to goal
 		if ( flDir == 1 )
@@ -1894,7 +1896,7 @@ bool CObjectSentrygun::MoveTurret( void )
 			}
 		}
 
-		m_vecCurAngles.y += SENTRY_THINK_DELAY * m_flTurnRate * flDir;
+		m_vecCurAngles.y += dt * m_flTurnRate * flDir;
 
 		// if we passed over the goal, peg right to it now
 		if (flDir == -1)
@@ -1923,7 +1925,7 @@ bool CObjectSentrygun::MoveTurret( void )
 			m_vecCurAngles.y -= 360;
 		}
 
-		if ( flDist < ( SENTRY_THINK_DELAY * 0.5 * iBaseTurnRate ) )
+		if ( flDist < ( dt * 0.5 * iBaseTurnRate ) )
 		{
 			m_vecCurAngles.y = m_vecGoalAngles.y;
 		}
@@ -2327,12 +2329,12 @@ int CObjectSentrygun::GetUpgradeMetalRequired()
 //-------------------------------------------------------------------------------------------------------------------------------
 int CObjectSentrygun::GetMaxHealthForCurrentLevel( void )
 {
-	int iHealth = BaseClass::GetMaxHealthForCurrentLevel();
+	float iHealth = BaseClass::GetMaxHealthForCurrentLevel();
 	if ( IsScaledSentry() )
 	{
-		iHealth *= 0.66f;
+		iHealth *= 2.0f / 3.0f;
 	}
-	return iHealth;
+	return (int) ceilf(iHealth);
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 void CObjectSentrygun::MakeScaledBuilding( CTFPlayer *pPlayer )
