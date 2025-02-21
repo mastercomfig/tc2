@@ -125,7 +125,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 		if ( GetOwner() && GetAmmoPerShot() > GetOwner()->GetAmmoCount( m_iPrimaryAmmoType ) )
 		{
 			WeaponSound( EMPTY );
-			m_flNextPrimaryAttack = gpGlobals->curtime + flFireDelay;
+			m_flNextPrimaryAttack += flFireDelay;
 			return;
 		}
 	}
@@ -159,8 +159,29 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	CBaseEntity* pProj = FireProjectile( pPlayer );
-	ModifyProjectile( pProj );
+	int32 fireTimes = flFireDelay > 0.0f ? (int)((gpGlobals->curtime - m_flNextPrimaryAttack) / flFireDelay) + 1 : 1;
+	const int32 iFireTimes = fireTimes;
+	if (fireTimes == 1)
+	{
+		CBaseEntity* pProj = FireProjectile(pPlayer);
+		ModifyProjectile(pProj);
+	}
+	else
+	{
+		while (fireTimes-- > 0)
+		{
+			if ((UsesClipsForAmmo1() && m_iClip1 <= 0) || (!UsesClipsForAmmo1() && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0))
+			{
+				HandleFireOnEmpty();
+				break;
+			}
+			else
+			{
+				CBaseEntity* pProj = FireProjectile(pPlayer);
+				ModifyProjectile(pProj);
+			}
+		}
+	}
 
 	if ( !UsesClipsForAmmo1() )
 	{
@@ -181,7 +202,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 	}
 
 	// Set next attack times.
-	m_flNextPrimaryAttack = gpGlobals->curtime + flFireDelay;
+	m_flNextPrimaryAttack += iFireTimes * flFireDelay;
 
 	// Don't push out secondary attack, because our secondary fire
 	// systems are all separate from primary fire (sniper zooming, demoman pipebomb detonating, etc)

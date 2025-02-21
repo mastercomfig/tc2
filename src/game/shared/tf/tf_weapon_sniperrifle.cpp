@@ -803,6 +803,8 @@ void CTFSniperRifle::Fire( CTFPlayer *pPlayer )
 	if ( m_flNextPrimaryAttack > gpGlobals->curtime )
 		return;
 
+	m_flNextPrimaryAttack = gpGlobals->curtime;
+
 	// Fire the sniper shot.
 	PrimaryAttack();
 
