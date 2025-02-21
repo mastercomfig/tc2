@@ -66,7 +66,11 @@
 #include "c_tf_gamestats.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "tf_playermodelpanel.h"
 #include "tier0/memdbgon.h"
+
+extern const char* g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS];
+extern int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS];
 
 CMOTDManager CHudMainMenuOverride::m_MOTDManager;
 
@@ -183,6 +187,8 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	m_iCharacterImageIdx = -1;
 
+	m_pCharacterModelPanel = NULL;
+	m_bRequestingInventoryRefresh = false;
 
 	m_flCheckTrainingAt = 0;
 	m_bWasInTraining = false;
@@ -302,6 +308,13 @@ void CHudMainMenuOverride::OnTick()
 	else if ( m_pNotificationsPanel->IsVisible() )
 	{
 		AdjustNotificationsPanelHeight();
+	}
+
+	if (m_bRequestingInventoryRefresh && TFInventoryManager()->GetLocalTFInventory()->RetrievedInventoryFromSteam())
+	{
+		m_bRequestingInventoryRefresh = false;
+		CloseWaitingDialog();
+		LoadCharacterImageFile();
 	}
 
 	static bool s_bRanOnce = false;
@@ -432,6 +445,10 @@ void CHudMainMenuOverride::FireGameEvent( IGameEvent *event )
 		{
 			NotifyNeedsToChooseMostHelpfulFriend();
 		}
+	}
+	else if ( FStrEq( "inventory_updated", type) )
+	{
+		LoadCharacterImageFile();
 	}
 }
 
@@ -670,106 +687,301 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 		return;
 	}
 
-	KeyValues *pCharacterFile = new KeyValues( "CharacterBackgrounds" );
-
-	if ( pCharacterFile->LoadFromFile( g_pFullFileSystem, "scripts/CharacterBackgrounds.txt" ) )
+	if (IsFreeTrialAccount())
 	{
-		CUtlVector<KeyValues *> vecUseableCharacters;
+		KeyValues* pCharacterFile = new KeyValues("CharacterBackgrounds");
 
-		const char* pszActiveWarName = NULL;
-		const WarDefinitionMap_t& mapWars = GetItemSchema()->GetWarDefinitions();
-		FOR_EACH_MAP_FAST( mapWars, i )
+		if (pCharacterFile->LoadFromFile(g_pFullFileSystem, "scripts/CharacterBackgrounds.txt"))
 		{
-			const CWarDefinition* pWarDef = mapWars[i];
-			if ( pWarDef->IsActive() )
+			CUtlVector<KeyValues*> vecUseableCharacters;
+
+			const char* pszActiveWarName = NULL;
+			const WarDefinitionMap_t& mapWars = GetItemSchema()->GetWarDefinitions();
+			FOR_EACH_MAP_FAST(mapWars, i)
 			{
-				pszActiveWarName = pWarDef->GetDefName();
-				break;
+				const CWarDefinition* pWarDef = mapWars[i];
+				if (pWarDef->IsActive())
+				{
+					pszActiveWarName = pWarDef->GetDefName();
+					break;
+				}
 			}
-		}
 
-		bool bActiveOperation = false;
+			bool bActiveOperation = false;
 
-		// Uncomment if another operation happens
-		//FOR_EACH_MAP_FAST( GetItemSchema()->GetOperationDefinitions(), iOperation )
-		//{
-		//	CEconOperationDefinition *pOperation = GetItemSchema()->GetOperationDefinitions()[iOperation];
-		//	if ( !pOperation || !pOperation->IsActive() || !pOperation->IsCampaign() )
-		//		continue;
+			// Uncomment if another operation happens
+			//FOR_EACH_MAP_FAST( GetItemSchema()->GetOperationDefinitions(), iOperation )
+			//{
+			//	CEconOperationDefinition *pOperation = GetItemSchema()->GetOperationDefinitions()[iOperation];
+			//	if ( !pOperation || !pOperation->IsActive() || !pOperation->IsCampaign() )
+			//		continue;
 
-		//	bActiveOperation = true;
-		//	break;
-		//}
+			//	bActiveOperation = true;
+			//	break;
+			//}
 
-		// Count the number of possible characters.
-		FOR_EACH_SUBKEY( pCharacterFile, pCharacter )
-		{
-			bool bIsOperationCharacter = bActiveOperation && pCharacter->GetBool( "operation", false );
-
-			EHoliday eHoliday = (EHoliday)UTIL_GetHolidayForString( pCharacter->GetString( "holiday_restriction" ) );
-
-
-			const char* pszAssociatedWar = pCharacter->GetString( "war_restriction" );
-
-			int iWeight = pCharacter->GetInt( "weight", 1 );
-
-			// If a War is active, that's all we want to show.  If not, then bias towards holidays
-			if ( pszActiveWarName != NULL )
+			// Count the number of possible characters.
+			FOR_EACH_SUBKEY(pCharacterFile, pCharacter)
 			{
-				if ( !FStrEq( pszAssociatedWar, pszActiveWarName ) )
+				bool bIsOperationCharacter = bActiveOperation && pCharacter->GetBool("operation", false);
+
+				EHoliday eHoliday = (EHoliday)UTIL_GetHolidayForString(pCharacter->GetString("holiday_restriction"));
+
+
+				const char* pszAssociatedWar = pCharacter->GetString("war_restriction");
+
+				int iWeight = pCharacter->GetInt("weight", 1);
+
+				// If a War is active, that's all we want to show.  If not, then bias towards holidays
+				if (pszActiveWarName != NULL)
+				{
+					if (!FStrEq(pszAssociatedWar, pszActiveWarName))
+					{
+						iWeight = 0;
+					}
+				}
+				else if (eHoliday != kHoliday_None)
+				{
+					iWeight = UTIL_IsHolidayActive(eHoliday) ? MAX(iWeight, 6) : 0;
+				}
+				else if (bActiveOperation && !bIsOperationCharacter)
 				{
 					iWeight = 0;
 				}
+				else
+				{
+					// special cases for summer, halloween, fullmoon, and christmas...turn off anything not covered above
+					if (UTIL_IsHolidayActive(kHoliday_Summer) || UTIL_IsHolidayActive(kHoliday_HalloweenOrFullMoon) || UTIL_IsHolidayActive(kHoliday_Christmas))
+					{
+						iWeight = 0;
+					}
+				}
+
+				for (int i = 0; i < iWeight; i++)
+				{
+					vecUseableCharacters.AddToTail(pCharacter);
+				}
 			}
-			else if ( eHoliday != kHoliday_None )
+
+			// Pick a character at random.
+			if (vecUseableCharacters.Count() > 0)
 			{
-				iWeight = UTIL_IsHolidayActive( eHoliday ) ? MAX( iWeight, 6 ) : 0;
+				m_iCharacterImageIdx = rand() % vecUseableCharacters.Count();
 			}
-			else if ( bActiveOperation && !bIsOperationCharacter )
+
+			// Make sure we found a character we can use.
+			if (vecUseableCharacters.IsValidIndex(m_iCharacterImageIdx))
 			{
-				iWeight = 0;
+				KeyValues* pCharacter = vecUseableCharacters[m_iCharacterImageIdx];
+
+				if (IsFreeTrialAccount() && GetQuestMapPanel()->IsVisible())
+				{
+					const char* text = pCharacter->GetString("store_text");
+					if (text)
+					{
+						StartHighlightAnimation(MMHA_STORE)->SetDialogVariable("highlighttext", g_pVGuiLocalize->Find(text));
+					}
+				}
+
+				const char* image_name = pCharacter->GetString("image");
+				m_pCharacterImagePanel->SetImage(image_name);
+			}
+		}
+
+		pCharacterFile->deleteThis();
+		return;
+	}
+
+	bool bWasNull = m_pCharacterModelPanel == NULL;
+
+	m_pCharacterModelPanel = dynamic_cast<CTFPlayerModelPanel*>(FindChildByName("TFCharacterModel"));
+	if (m_pCharacterModelPanel)
+	{
+		if (m_pCharacterImagePanel)
+		{
+			m_pCharacterImagePanel->SetVisible(false);
+			m_pCharacterImagePanel->SetEnabled(false);
+		}
+
+		m_pCharacterModelPanel->ClearCarriedItems();
+		int iClass = RandomInt(TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS - 1);
+		int iSlot = g_iLegacyClassSelectWeaponSlots[iClass];
+		int iSlotOrig = iSlot;
+
+		bool bCanUseFancyClassSelectAnimation = true;
+		const char* pszVCD = "class_select";
+
+		bool bIsRobot = RandomInt(1, 100) <= 1;
+
+		if (!bIsRobot)
+		{
+			if (TFInventoryManager()->GetLocalTFInventory()->RetrievedInventoryFromSteam())
+			{
+				static CSchemaAttributeDefHandle pAttrDef_PlayerRobot("appear as mvm robot");
+
+				static CSchemaAttributeDefHandle pAttrDef_DisableFancyLoadoutAnim("disable fancy class select anim");
+
+
+				static CSchemaAttributeDefHandle pAttrDef_ClassSelectOverrideVCD("class select override vcd");
+				CAttribute_String attrClassSelectOverrideVCD;
+
+				for (int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++)
+				{
+					CEconItemView* pItemData = TFInventoryManager()->GetItemInLoadoutForClass(iClass, i);
+
+					if (pItemData && pItemData->IsValid())
+					{
+						m_pCharacterModelPanel->AddCarriedItem(pItemData);
+
+						// Certain items have different shapes and would interfere with our class select animations.
+						bCanUseFancyClassSelectAnimation = bCanUseFancyClassSelectAnimation
+							&& !pItemData->FindAttribute(pAttrDef_DisableFancyLoadoutAnim);
+
+						// Some items want to override the class select VCD
+						if (pItemData->FindAttribute(pAttrDef_ClassSelectOverrideVCD, &attrClassSelectOverrideVCD))
+						{
+							const char* pszClassSelectOverrideVCD = attrClassSelectOverrideVCD.value().c_str();
+							if (pszClassSelectOverrideVCD && *pszClassSelectOverrideVCD)
+							{
+								pszVCD = pszClassSelectOverrideVCD;
+							}
+							else
+							{
+								pszVCD = NULL;
+							}
+						}
+
+						if (i <= LOADOUT_POSITION_PDA2 && pItemData->GetStaticData()->IsAWearable())
+						{
+							iSlot = i + 1;
+						}
+
+						if (FindAttribute(pItemData, pAttrDef_PlayerRobot))
+						{
+							bIsRobot = true;
+							break;
+						}
+					}
+
+					if (iSlot >= LOADOUT_POSITION_PDA2)
+					{
+						iSlot = iSlotOrig;
+						iSlotOrig = -1;
+					}
+				}
 			}
 			else
 			{
-				// special cases for summer, halloween, fullmoon, and christmas...turn off anything not covered above
-				if ( UTIL_IsHolidayActive( kHoliday_Summer ) || UTIL_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) || UTIL_IsHolidayActive( kHoliday_Christmas ) )
-				{
-					iWeight = 0;
-				}
-			}
-
-			for ( int i = 0; i < iWeight; i++ )
-			{
-				vecUseableCharacters.AddToTail( pCharacter );
+				m_bRequestingInventoryRefresh = true;
+				return;
 			}
 		}
 
-		// Pick a character at random.
-		if ( vecUseableCharacters.Count() > 0 )
+		if (bWasNull || !m_pCharacterImagePanel->IsVisible())
 		{
-			m_iCharacterImageIdx = rand() % vecUseableCharacters.Count();
+			m_pCharacterModelPanel->SetVisible(true);
+			m_pCharacterModelPanel->SetEnabled(true);
 		}
 
-		// Make sure we found a character we can use.
-		if ( vecUseableCharacters.IsValidIndex( m_iCharacterImageIdx ) )
-		{
-			KeyValues *pCharacter = vecUseableCharacters[m_iCharacterImageIdx];
+		m_pCharacterModelPanel->SetToPlayerClass(iClass, false, bIsRobot ? g_szBotModels[iClass] : NULL);
+		m_pCharacterModelPanel->SetTeam(bIsRobot || RandomInt(0, 1) ? TF_TEAM_BLUE : TF_TEAM_RED);
 
-			if ( IsFreeTrialAccount( ) && GetQuestMapPanel()->IsVisible() )
+		bool bPlayBaseVCD = !bIsRobot && bCanUseFancyClassSelectAnimation && pszVCD && iSlot == iSlotOrig;
+
+		char pszDynamicVCD[128];
+
+		if (bPlayBaseVCD)
+		{
+			m_pCharacterModelPanel->PlayVCD(pszVCD, g_pszLegacyClassSelectVCDWeapons[iClass], false);
+		}
+		else
+		{
+			int iMin = 1;
+			int iMax = 1;
+
+			bool bPad = false;
+			bool bHasAdditional = false;
+			char* pszAdditional = "";
+			switch (iClass)
 			{
-				const char* text = pCharacter->GetString( "store_text" );
-				if ( text )
+			case TF_CLASS_SCOUT:
+				pszAdditional = "_vocal";
+				bPad = true;
+				bHasAdditional = true;
+				iMax = 3;
+				break;
+			case TF_CLASS_SOLDIER:
+				pszAdditional = "_v";
+				bHasAdditional = true;
+				iMax = 3;
+				break;
+			case TF_CLASS_PYRO:
+				pszAdditional = "_v";
+				bHasAdditional = true;
+				iMax = 3;
+				break;
+			case TF_CLASS_DEMOMAN:
+				break;
+			case TF_CLASS_HEAVYWEAPONS:
+				pszAdditional = "_v";
+				bHasAdditional = true;
+				iMin = 2;
+				iMax = 3;
+				break;
+			case TF_CLASS_ENGINEER:
+				if (bIsRobot)
 				{
-					StartHighlightAnimation( MMHA_STORE )->SetDialogVariable( "highlighttext", g_pVGuiLocalize->Find( text ) );
+					pszAdditional = "_vocal";
+					bPad = true;
+					iMax = 4;
 				}
+				break;
+			case TF_CLASS_MEDIC:
+				if (bIsRobot)
+				{
+					pszAdditional = "_vocal";
+					bPad = true;
+					iMax = 5;
+				}
+				break;
+			case TF_CLASS_SNIPER:
+				pszAdditional = "_v";
+				bHasAdditional = true;
+				iMax = 5;
+				break;
+			case TF_CLASS_SPY:
+				pszAdditional = "_v";
+				bHasAdditional = true;
+				if (bIsRobot)
+				{
+					iMax = 5;
+				}
+				else
+				{
+					iMax = 2;
+				}
+				break;
 			}
 
-			const char* image_name = pCharacter->GetString( "image" );
-			m_pCharacterImagePanel->SetImage( image_name );
+			int iRandomIndex = RandomInt(iMin, iMax);
+
+			char pszSuffix[128];
+			if (bHasAdditional)
+			{
+				V_snprintf(pszSuffix, sizeof(pszSuffix), bPad ? "%s%02d" : "%s%d", pszAdditional, iRandomIndex);
+			}
+			else
+			{
+				V_snprintf(pszSuffix, sizeof(pszSuffix), "");
+			}
+
+			V_snprintf(pszDynamicVCD, sizeof(pszDynamicVCD), "%s%02d%s", "taunt", bIsRobot ? 1 : iSlot + 1, pszSuffix);
+			m_pCharacterModelPanel->PlayVCD(pszDynamicVCD, NULL, false);
+			m_pCharacterModelPanel->m_bDisableSpeakEvent = true;
 		}
+
+		m_pCharacterModelPanel->HoldItemInSlot(iSlot);
 	}
-
-	pCharacterFile->deleteThis();
 }
 
 //-----------------------------------------------------------------------------
@@ -995,12 +1207,21 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		{
 			m_pCharacterImagePanel->SetVisible( false );
 		}
+		if (m_pCharacterModelPanel && m_pCharacterModelPanel->IsVisible())
+		{
+			m_pCharacterModelPanel->SetVisible(false);
+		}
 	}
 	else if ( !bInGame && !bInReplay )
 	{
 		if ( !m_pCharacterImagePanel->IsVisible() )
 		{
 			m_pCharacterImagePanel->SetVisible( m_bBackgroundUsesCharacterImages );
+		}
+		if (m_pCharacterModelPanel && !m_pCharacterModelPanel->IsVisible())
+		{
+			LoadCharacterImageFile();
+			m_pCharacterModelPanel->SetVisible(m_bBackgroundUsesCharacterImages);
 		}
 	}
 
