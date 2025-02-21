@@ -127,6 +127,34 @@ void CTFJar::PrimaryAttack( void )
 	BaseClass::PrimaryAttack();
 }
 
+void CTFJar::SecondaryAttack(void)
+{
+	#ifdef MCOMS_BALANCE_PACK
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return;
+
+	int iJarCount = pPlayer->GetAmmoCount(m_iPrimaryAmmoType);
+	if (iJarCount == 0)
+		return;
+
+	if ((pPlayer->GetWaterLevel() == WL_Eyes) && !CanThrowUnderWater())
+		return;
+
+	if (GetWeaponProjectileType() == TF_PROJECTILE_JAR)
+	{
+		StartEffectBarRegen();
+#if GAME_DLL
+		pPlayer->SpeakConceptIfAllowed(MP_CONCEPT_JARATE_HIT);
+#endif
+		pPlayer->m_Shared.AddCond(TF_COND_ENERGY_BUFF, 8.0f);
+		RemoveProjectileAmmo(pPlayer);
+	}
+	#endif
+
+	BaseClass::SecondaryAttack();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------

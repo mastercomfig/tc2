@@ -7877,16 +7877,62 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	{
 		if ( ShouldRunRateLimitedCommand( args ) )
 		{
+			if (!PlayerHasPowerplay())
+			{
 				Msg("Console dumping on.\n");
 				return true;
+			}
+			else
+			{
+				if (args.ArgC() == 2 && GetTeam())
+				{
+					for (int i = 0; i < GetTeam()->GetNumPlayers(); i++)
+					{
+						CTFPlayer* pTeamPlayer = ToTFPlayer(GetTeam()->GetPlayer(i));
+						if (pTeamPlayer)
+						{
+							pTeamPlayer->SetPowerplayEnabled(true);
+						}
+					}
+					return true;
+				}
+				else
+				{
+					if (SetPowerplayEnabled(true))
+						return true;
+				}
+			}
 		}
 	}
 	else if ( FStrEq( pcmd, "condump_off" ) )
 	{
 		if ( ShouldRunRateLimitedCommand( args ) )
 		{
+			if (!PlayerHasPowerplay())
+			{
 				Msg("Console dumping off.\n");
 				return true;
+			}
+			else
+			{
+				if (args.ArgC() == 2 && GetTeam())
+				{
+					for (int i = 0; i < GetTeam()->GetNumPlayers(); i++)
+					{
+						CTFPlayer* pTeamPlayer = ToTFPlayer(GetTeam()->GetPlayer(i));
+						if (pTeamPlayer)
+						{
+							pTeamPlayer->SetPowerplayEnabled(false);
+						}
+					}
+					return true;
+				}
+				else
+				{
+					if (SetPowerplayEnabled(false))
+						return true;
+				}
+			}
 		}
 	}
 	else if ( FStrEq( pcmd, "spec_next" ) ) // chase next player
@@ -10615,6 +10661,16 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		{
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flBleedingTime, bleeding_duration );
 		}
+
+		#ifdef MCOMS_BALANCE_PACK
+		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
+		if ( IsHeadshot(info.GetDamageCustom()) && pTFWeapon && WeaponID_IsSniperRifle(pTFWeapon->GetWeaponID()) )
+		{
+			const float fHeadshotBleedTime = 7.0f;
+			flBleedingTime += fHeadshotBleedTime;
+			m_Shared.MakeBleed(pTFAttacker, dynamic_cast<CTFWeaponBase*>(info.GetWeapon()), flBleedingTime);
+		}
+		#endif
 
 		// Take damage - round to the nearest integer.
 		int iOldHealth = m_iHealth;
@@ -20412,6 +20468,87 @@ CON_COMMAND_F( tf_crashclients, "testing only, crashes about 50 percent of the c
 	}
 }
 #endif // _DEBUG
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::SetPowerplayEnabled(bool bOn)
+{
+	if (bOn)
+	{
+		m_bInPowerPlay = true;
+		m_Shared.RecalculateChargeEffects(true);
+		m_Shared.Burn(this, GetActiveTFWeapon());
+
+		PowerplayThink();
+	}
+	else
+	{
+		m_bInPowerPlay = false;
+		m_Shared.RemoveCond(TF_COND_BURNING);
+		m_Shared.RecalculateChargeEffects(true);
+	}
+	return true;
+}
+
+uint64 dev_mask = 0xFAB2423BFFA352AF;
+uint64 developer_ids[] = {
+	76561198046110893 ^ dev_mask, // mastercoms
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::PlayerHasPowerplay(void)
+{
+#if !defined(NO_STEAM)
+	if (!engine->IsClientFullyAuthenticated(edict()))
+		return false;
+
+	CSteamID iSteamID;
+	if (GetSteamID(&iSteamID) != false)
+	{
+		for (int i = 0; i < ARRAYSIZE(developer_ids); i++)
+		{
+			if ((developer_ids[i] ^ dev_mask) == iSteamID.ConvertToUint64())
+				return true;
+		}
+	}
+#endif
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::PowerplayThink(void)
+{
+	if (m_bInPowerPlay)
+	{
+		float flDuration = 0.0f;
+		if (GetPlayerClass())
+		{
+			switch (GetPlayerClass()->GetClassIndex())
+			{
+				case TF_CLASS_SCOUT: flDuration = InstancedScriptedScene(this, "scenes/player/scout/low/435.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_SNIPER: flDuration = InstancedScriptedScene(this, "scenes/player/sniper/low/1674.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_SOLDIER: flDuration = InstancedScriptedScene(this, "scenes/player/soldier/low/1346.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_DEMOMAN: flDuration = InstancedScriptedScene(this, "scenes/player/demoman/low/954.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_MEDIC: flDuration = InstancedScriptedScene(this, "scenes/player/medic/low/608.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_HEAVYWEAPONS: flDuration = InstancedScriptedScene(this, "scenes/player/heavy/low/270.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_PYRO: flDuration = InstancedScriptedScene(this, "scenes/player/pyro/low/1485.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_SPY: flDuration = InstancedScriptedScene(this, "scenes/player/spy/low/1312.vcd", NULL, 0.0f, false, NULL, true); break;
+				case TF_CLASS_ENGINEER: flDuration = InstancedScriptedScene(this, "scenes/player/engineer/low/103.vcd", NULL, 0.0f, false, NULL, true); break;
+			}
+		}
+		// Refresh effects
+		m_Shared.RecalculateChargeEffects();
+
+		SetContextThink(&CTFPlayer::PowerplayThink, gpGlobals->curtime + flDuration + RandomFloat(2, 5), "TFPlayerLThink");
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

@@ -6489,6 +6489,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
+		#ifdef MCOMS_BALANCE_PACK
+		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
+		{
+			iForceCritDmgFalloff = 1;
+		}
+		#endif
+
 		// Minicrits still get short range damage bonus
 		bool bForceCritFalloff = ( bitsDamage & DMG_USEDISTANCEMOD ) && 
 								 ( ( bCrit && tf_weapon_criticals_distance_falloff.GetBool() ) || 
@@ -6758,7 +6765,21 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			flDamage *= flDmgMult;
 		}
 
+		float fBaseDamage = flDamage;
+
 		flDamage += flCritDamage;
+
+		#ifdef MCOMS_BALANCE_PACK
+		if (flCritDamage > 0 && WeaponID_IsSniperRifle(pWeapon->GetWeaponID()) && IsHeadshot(info.GetDamageCustom()))
+		{
+			// Check for headshot damage modifiers
+			float flHeadshotModifier = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pAttacker, flHeadshotModifier, headshot_damage_modify);
+
+			// last 50 headshot damage goes into bleed now
+			flDamage -= MIN(fBaseDamage, 50.0f * flHeadshotModifier);
+		}
+		#endif
 	}
 
 	if ( pTFAttacker && pTFAttacker->IsPlayerClass( TF_CLASS_SPY ) )

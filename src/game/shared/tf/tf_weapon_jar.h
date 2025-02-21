@@ -50,6 +50,7 @@ public:
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_JAR; }
 	virtual float		GetProjectileSpeed( void );
 	virtual void		PrimaryAttack( void );
+	virtual void		SecondaryAttack(void);
 
 	float				GetProgress( void ) { return GetEffectBarProgress(); }
 

@@ -2734,7 +2734,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			RemoveCond( TF_COND_TAUNTING );
 		}
 	}
-	if ( InCond( TF_COND_BURNING ) )
+	if ( InCond( TF_COND_BURNING ) && !m_pOuter->m_bInPowerPlay )
 	{
 		if ( TFGameRules() && TFGameRules()->IsTruceActive() && m_hBurnAttacker && m_hBurnAttacker->IsTruceValidForEnt() )
 		{
@@ -8727,7 +8727,7 @@ void CTFPlayerShared::RecalculateChargeEffects( bool bInstantRemove )
 
 	for ( int i = 0; i < ARRAYSIZE( aCharges ); i++ )
 	{
-		aCharges[ i ].bActive = false;
+		aCharges[ i ].bActive = m_pOuter->m_bInPowerPlay;
 		aCharges[i].pProvider = NULL;
 	}
 
@@ -8831,6 +8831,11 @@ void CTFPlayerShared::TestAndExpireChargeEffect( medigun_charge_types iCharge )
 			}
 		}
 
+		if ( m_pOuter->m_bInPowerPlay )
+		{
+			bRemoveEffect = false;
+		}
+
 		if ( bRemoveEffect )
 		{
 			m_flChargeEffectOffTime[iCharge] = 0;
@@ -8919,7 +8924,7 @@ void CTFPlayerShared::SetChargeEffect( medigun_charge_types iCharge, bool bState
 	flNonBotMaxDuration += 1.0f;
 
 	// Avoid infinite duration, because... the internet.
-	float flMaxDuration = ( pProvider && pProvider->IsBot() ) ? PERMANENT_CONDITION : flNonBotMaxDuration;
+	float flMaxDuration = ( pProvider && pProvider->IsBot() || m_pOuter->m_bInPowerPlay ) ? PERMANENT_CONDITION : flNonBotMaxDuration;
 
 	if ( bState )
 	{

@@ -1230,6 +1230,11 @@ private:
 	int					m_nPrevRoundTeamNum;
 
 public:
+	bool				SetPowerplayEnabled( bool bOn );
+	bool				PlayerHasPowerplay( void );
+	void				PowerplayThink( void );
+	CNetworkVar( bool, m_bInPowerPlay );
+
 	bool				IsGoingFeignDeath( void ) { return m_bGoingFeignDeath; }
 
 	void					SetDeployingBombState( BombDeployingState_t nDeployingBombState ) { m_nDeployingBombState = nDeployingBombState; }
