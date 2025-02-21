@@ -390,6 +390,7 @@ public:
 	// Wrappers for CBoneAccessor.
 	const matrix3x4_t&				GetBone( int iBone ) const;
 	matrix3x4_t&					GetBoneForWrite( int iBone );
+	bool IsBoneAccessorInitialized() const;
 
 	// Used for debugging. Will produce asserts if someone tries to setup bones or
 	// attachments before it's allowed.
@@ -729,6 +730,11 @@ inline const matrix3x4_t& C_BaseAnimating::GetBone( int iBone ) const
 inline matrix3x4_t& C_BaseAnimating::GetBoneForWrite( int iBone )
 {
 	return m_BoneAccessor.GetBoneForWrite( iBone );
+}
+
+inline bool C_BaseAnimating::IsBoneAccessorInitialized() const
+{
+	return m_BoneAccessor.IsInitialized();
 }
 
 

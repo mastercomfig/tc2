@@ -42,6 +42,11 @@ public:
 
 	matrix3x4_t			*GetBoneArrayForWrite( ) const;
 
+	bool IsInitialized() const
+	{
+		return !!m_pAnimating;
+	}
+
 private:
 
 #if defined( CLIENT_DLL ) && defined( _DEBUG )
