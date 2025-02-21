@@ -1022,7 +1022,7 @@ void CTFPlayerInventory::SaveLocalLoadout( bool bReset, bool bDefaultToGC )
 				itemid_t uItemId = m_PresetItems[iPreset][iClass][iSlot];
 				//itemid_t uItemId = m_LoadoutItems[iClass][iSlot];
 				if (bReset) {
-					uItemId = ( bDefaultToGC && iPreset == 0 ) ? m_RealTFLoadoutItems[iClass][iSlot] : 0;
+					uItemId = bDefaultToGC ? m_RealTFLoadoutItems[iClass][iSlot] : 0;
 				}
 
 				pClassKV->SetUint64(szSlot, uItemId);
@@ -1587,7 +1587,7 @@ bool CTFPlayerInventory::ClearLoadoutSlot( int iClass, int iSlot )
 
 	// TODO: Prediction
 	// It's been moved to the backpack, so clear out loadout entry
-	//m_LoadoutItems[iClass][iSlot] = LOADOUT_SLOT_USE_BASE_ITEM;
+	m_LoadoutItems[iClass][iSlot] = LOADOUT_SLOT_USE_BASE_ITEM;
 	return true;
 }
 
