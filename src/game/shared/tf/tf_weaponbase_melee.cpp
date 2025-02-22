@@ -828,7 +828,7 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 
 		// Get owner forward view vector
 		Vector vecOwnerForward;
-		AngleVectors(pPlayer->GetAbsAngles(), &vecOwnerForward);
+		AngleVectors(pPlayer->EyeAngles(), &vecOwnerForward);
 		vecOwnerForward.z = 0.0f;
 		vecOwnerForward.NormalizeInPlace();
 
