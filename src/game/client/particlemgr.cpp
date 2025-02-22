@@ -1272,6 +1272,7 @@ void CParticleMgr::AddEffect( CNewParticleEffect *pEffect )
 
 #if !defined( PARTICLEPROTOTYPE_APP )
 	ClientLeafSystem()->CreateRenderableHandle( pEffect );
+	ClientLeafSystem()->EnableBloatedBounds(pEffect->RenderHandle(), true);
 #endif
 	if ( pEffect->IsValid() && pEffect->m_pDef->IsViewModelEffect() )
 	{
@@ -1298,6 +1299,7 @@ bool CParticleMgr::AddEffect( CParticleEffectBinding *pEffect, IParticleEffect *
 	// Add it to the leaf system.
 #if !defined( PARTICLEPROTOTYPE_APP )
 	ClientLeafSystem()->CreateRenderableHandle( pEffect );
+	ClientLeafSystem()->EnableBloatedBounds(pEffect->RenderHandle(), true);
 #endif
 
 	pEffect->m_ListIndex = m_Effects.AddToTail( pEffect );
@@ -1582,6 +1584,8 @@ static void ProcessPSystem( ParticleSimListEntry_t& pSimListEntry )
 	{
 		pNewEffect->SetRemoveFlag();
 	}
+
+	pNewEffect->DetectChanges();
 }
 
 
@@ -1895,12 +1899,16 @@ void CParticleMgr::UpdateNewEffects( float flTimeDelta )
 		}
 	}
 
+	// UNDONE: detect changes is now thread safe
+#if 0
+
 	// now, run non-reentrant part for updating changes
 	for( int i=0; i<nCount; i++)
 	{
 		// this one can call into random entity code which may not be thread-safe
 		particlesToSimulate[i].m_pNewParticleEffect->DetectChanges();
 	}
+#endif
 
 	EndSimulateParticles();
 

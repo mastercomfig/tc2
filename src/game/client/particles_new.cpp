@@ -363,8 +363,8 @@ bool CNewParticleEffect::RecalculateBoundingBox()
 
 void CNewParticleEffect::GetRenderBounds( Vector& mins, Vector& maxs )
 {
-	VectorSubtract( m_MinBounds, GetRenderOrigin(), mins );
-	VectorSubtract( m_MaxBounds, GetRenderOrigin(), maxs );
+	VectorSubtract(m_LastMin, GetRenderOrigin(), mins);
+	VectorSubtract(m_LastMax, GetRenderOrigin(), maxs);
 }
 
 void CNewParticleEffect::DetectChanges()
@@ -394,8 +394,15 @@ void CNewParticleEffect::DetectChanges()
 		 m_MaxBounds.z < (m_LastMax.z - flExtraBuffer)
 		 )
 	{
-		// call leafsystem to updated this guy
-		ClientLeafSystem()->RenderableChanged( m_hRenderHandle );
+		if (m_MinBounds != m_LastMin || m_MaxBounds != m_LastMax)
+		{
+			// call leafsystem to update this guy
+			ClientLeafSystem()->RenderableChanged(m_hRenderHandle);
+
+			// remember last parameters
+			m_LastMin = m_MinBounds;
+			m_LastMax = m_MaxBounds;
+		}
 
 		// remember last parameters
 		// Add some padding in here so we don't reinsert it into the leaf system if it just changes a tiny amount.
