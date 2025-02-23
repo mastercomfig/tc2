@@ -1179,6 +1179,10 @@ void CTFClassMenu::SetVisible( bool state )
 
 	if ( state )
 	{
+		if (m_pTFPlayerModelPanel)
+		{
+			m_pTFPlayerModelPanel->SetVisible( true );
+		}
 		engine->ServerCmd( "menuopen" );			// to the server
 		engine->ClientCmd( "_cl_classmenuopen 1" );	// for other panels
 		CBroadcastRecipientFilter filter;
@@ -1198,6 +1202,11 @@ void CTFClassMenu::SetVisible( bool state )
 	{
 		engine->ServerCmd( "menuclosed" );	
 		engine->ClientCmd( "_cl_classmenuopen 0" );
+
+		if (m_pTFPlayerModelPanel)
+		{
+			m_pTFPlayerModelPanel->SetVisible( false );
+		}
 		
 		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 		{
