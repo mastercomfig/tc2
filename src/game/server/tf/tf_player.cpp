@@ -12553,6 +12553,11 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 		// reset fov to default
 		SetFOV( this, 0 );
+		// reset roll
+		QAngle angles = pl.v_angle;
+		angles.z = 0;
+		SetLocalAngles( angles );
+		SnapEyeAngles( angles );
 	}
 	else if ( info.GetAttacker() && info.GetAttacker()->IsBaseObject() )
 	{
