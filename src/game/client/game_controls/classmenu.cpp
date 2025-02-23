@@ -45,7 +45,7 @@ using namespace vgui;
 #define HUD_CLASSAUTOKILL_FLAGS		( FCVAR_CLIENTDLL | FCVAR_ARCHIVE )
 #endif // !TF_CLIENT_DLL
 
-ConVar hud_classautokill( "hud_classautokill", "1", HUD_CLASSAUTOKILL_FLAGS, "Automatically kill player after choosing a new playerclass." );
+ConVar hud_classautokill( "hud_classautokill", "0", HUD_CLASSAUTOKILL_FLAGS, "Automatically kill player after choosing a new playerclass." );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
