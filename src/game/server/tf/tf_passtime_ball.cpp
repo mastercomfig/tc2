@@ -1200,7 +1200,9 @@ void CPasstimeBall::BlockDamage( CTFPlayer *pPlayer, const Vector& vecBallVel )
 	if ( flSpeed >= flDamageSpeed )
 	{
 		CTakeDamageInfo di;
-		di.SetAttacker( GetThrower() );
+		CBaseEntity *pAttacker = GetThrower();
+		if ( !pAttacker ) pAttacker = GetCarrier();
+		di.SetAttacker( pAttacker ? pAttacker : this );
 		di.SetDamage( 1 );
 		di.SetDamageType( DMG_CLUB );
 		di.SetInflictor( this );
