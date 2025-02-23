@@ -1,6 +1,6 @@
 "GameInfo"
 {
-	game					"Frog Fortress 2"
+	game					"Team Comtress 2"
 	type 					multiplayer_only
 	nomodels				1
 	nohimodel 				1
@@ -32,17 +32,17 @@
 			// folder.
 			//
 			// Note that this folder is scanned only when the game is booted.
-			game+mod+custom_mod	mod_tf/custom/*
+			game+mod+custom_mod	tc2/custom/*
 			// Enable this if you want to load your TF custom content.
 			//game+mod	|appid_440|tf/custom/*
 
 			// Now search loose files.  We'll set the directory containing the gameinfo.txt file
 			// as the first "mod" search path (after any user customizations).  This is also the one
 			// that's used when writing to the "mod" path.
-			mod+mod_write		|all_source_engine_paths|mod_tf
-			game+game_write		|all_source_engine_paths|mod_tf
-			default_write_path	|all_source_engine_paths|mod_tf
-			gamebin				|all_source_engine_paths|mod_tf/bin
+			mod+mod_write		|all_source_engine_paths|tc2
+			game+game_write		|all_source_engine_paths|tc2
+			default_write_path	|all_source_engine_paths|tc2
+			gamebin				|all_source_engine_paths|tc2/bin
 
 			// We search VPK files before ordinary folders, because most files will be found in
 			// VPK and we can avoid making thousands of file system calls to attempt to open files
@@ -76,7 +76,7 @@
 			// packed up in the .bsp file so that it will be mounted as a map search pack.
 			// The map search pack is mounted at the top of the search path list,
 			// but only while you are connected that server and on that map.
-			game+download		mod_tf/download
+			game+download		tc2/download
 		}
 	}
 	ToolsEnvironment
