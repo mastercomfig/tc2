@@ -15571,6 +15571,7 @@ void CTFGameRules::PlayHelltowerAnnouncerVO( int iRedLine, int iBlueLine )
 	}	
 	
 	CSoundParameters params;
+	// This could have a 2 sec cooldown, but the lines are pretty unique and triggered on certain events so it's not necessary really.
 	float flSoundDuration = 0;
 
 	if ( gpGlobals->curtime > flRedAnnouncerTalkingUntil || bForceVO )
