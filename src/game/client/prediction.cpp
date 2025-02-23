@@ -1793,8 +1793,11 @@ void CPrediction::_Update( bool received_new_world_update, bool validframe,
 	// This allows us to sample the world when it may not be ready to be sampled
 	Assert( C_BaseEntity::IsAbsQueriesValid() );
 	
+	// UNDONE: Where is this ever used?
+#if 0
 	// FIXME: What about hierarchy here?!?
 	SetIdealPitch( localPlayer, localPlayer->GetLocalOrigin(), localPlayer->GetLocalAngles(), localPlayer->m_vecViewOffset );
+#endif
 #endif
 }
 
