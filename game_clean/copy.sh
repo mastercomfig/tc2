@@ -45,6 +45,7 @@ declare -a REP_FILES=(
   tc2/cfg/vscript_convar_allowlist.txt
   tc2/cfg/motd_default.txt
   tc2/cfg/motd_text_default.txt
+  tc2/texture_preload_list.txt
   tc2/materials/logo
   tc2/resource
   tc2/gameinfo.txt
