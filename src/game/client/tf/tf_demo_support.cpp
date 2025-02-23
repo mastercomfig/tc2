@@ -19,7 +19,7 @@ static CTFDemoSupport g_DemoSupport;
 
 extern ConVar mp_tournament;
 
-ConVar ds_enable( "ds_enable", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - enable automatic .dem file recording and features. 0 - Manual, 1 - Auto-record competitive matches, 2 - Auto-record all matches, 3 - Auto-record tournament (mp_tournament) matches", true, 0, true, 3 ); 
+ConVar ds_enable( "ds_enable", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - enable automatic .dem file recording and features. 0 - Manual, 1 - Auto-record matchmaking matches, 2 - Auto-record all matches, 3 - Auto-record tournament (mp_tournament) matches, 4 - Auto-record competitive matches", true, 0, true, 3 ); 
 ConVar ds_dir( "ds_dir", "demos", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - will put all files into this folder under the gamedir. 24 characters max." );
 ConVar ds_prefix( "ds_prefix", "", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - will prefix files with this string. 24 characters max." );
 ConVar ds_min_streak( "ds_min_streak", "4", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - minimum kill streak count before being recorded.", true, 2, false, 0 );
@@ -29,6 +29,7 @@ ConVar ds_sound( "ds_sound", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARC
 ConVar ds_notify( "ds_notify", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - text output when recording start/stop/bookmark events : 0 - console, 1 - console and chat, 2 - console and HUD.", true, 0, true, 2 ); 
 ConVar ds_screens( "ds_screens", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - take screenshot of the scoreboard for non-competitive matches or the match summary stats for competitive matches. For competitive matches, it will not capture the screenshot if you disconnect from the server before the medal awards have completed.", true, 0, true, 1 );
 ConVar ds_autodelete( "ds_autodelete", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - automatically delete .dem files with no associated bookmark or kill streak events.", true, 0, true, 1 ); 
+ConVar ds_rounds_only( "ds_rounds_only", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - only record during the rounds of a match, no pre or post-game.", true, 0, true, 1 );
 
 CON_COMMAND_F( ds_mark, "Demo support - bookmark (with optional single-word description) the current tick count for the demo being recorded.", FCVAR_CLIENTDLL | FCVAR_DONTRECORD )
 {
@@ -99,6 +100,8 @@ bool CTFDemoSupport::Init()
 	ListenForGameEvent( "client_disconnect" );
 	ListenForGameEvent( "ds_screenshot" );
 	ListenForGameEvent( "ds_stop" );
+	ListenForGameEvent( "teamplay_game_over" );
+	ListenForGameEvent( "tf_game_over" );
 	return true;
 }
 
@@ -139,12 +142,32 @@ void CTFDemoSupport::Update( float frametime )
 		{
 			if ( ds_enable.GetInt() == 1 )
 			{
+				// IsCompetitiveMode got updated to include Casual. So ds_enable 1 just means "if we're in a matchmaking match"
 				if ( TFGameRules() && !TFGameRules()->IsCompetitiveMode() )
 					return;
 			}
 			else if ( ds_enable.GetInt() == 3 )
 			{
 				if ( !mp_tournament.GetBool() )
+					return;
+			}
+			else if ( ds_enable.GetInt() == 4 )
+			{
+				if ( !TFGameRules() )
+					return;
+				// If we have mp_tournament enabled, but we're not in MvM or in casual, then we're most likely in a community competitive match.
+				const bool bIsCommunityCompetitive = mp_tournament.GetBool() && !TFGameRules()->IsMannVsMachineMode() && !TFGameRules()->IsMatchTypeCasual();
+				// If it's not competitive matchmaking AND it's not a community competitive match, then we don't auto record.
+				if ( !TFGameRules()->IsMatchTypeCompetitive() && !bIsCommunityCompetitive )
+					return;
+			}
+
+			if (ds_rounds_only.GetBool())
+			{
+				if ( !TFGameRules() )
+					return;
+
+				if ( TFGameRules()->State_Get() != GR_STATE_PREROUND || TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
 					return;
 			}
 
@@ -405,6 +428,11 @@ void CTFDemoSupport::FireGameEvent( IGameEvent * event )
 			float flDelay = event->GetFloat( "delay" );
 			m_flScreenshotTime = gpGlobals->curtime + flDelay;
 		}
+	}
+	else if ( ds_rounds_only.GetBool() && ( FStrEq( pszEvent, "teamplay_game_over" ) || FStrEq( pszEvent, "tf_game_over" ) ) )
+	{
+		// Last branch so we can check ds_rounds_only without messing up else logic.
+		StopRecording();
 	}
 }
 
