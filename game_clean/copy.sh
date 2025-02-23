@@ -42,6 +42,7 @@ declare -a DLLS_LIB=(
 declare -a REP_FILES=(
   tc2/cfg/valve.rc
   tc2/cfg/default.cfg
+  tc2/cfg/user_default.scr
   tc2/cfg/vscript_convar_allowlist.txt
   tc2/cfg/motd_default.txt
   tc2/cfg/motd_text_default.txt

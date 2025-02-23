@@ -759,9 +759,10 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_DemoSupport_ToolTip"
 		{ LIST
 			"#TF_DemoSupport_Manual" "0"
-			"#TF_DemoSupport_Comp" "1"
+			"#TF_DemoSupport_Matchmaking" "1"
 			"#TF_DemoSupport_All" "2"
 			"#TF_DemoSupport_Tournament" "3"
+			"#TF_DemoSupport_Comp" "4"
 		}
 		{ "0" }
 	}
