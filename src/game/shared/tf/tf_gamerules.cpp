@@ -6807,12 +6807,14 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			flDamage *= flDmgMult;
 		}
 
+		#ifdef MCOMS_BALANCE_PACK
 		float fBaseDamage = flDamage;
+		#endif
 
 		flDamage += flCritDamage;
 
 		#ifdef MCOMS_BALANCE_PACK
-		if (flCritDamage > 0 && WeaponID_IsSniperRifle(pWeapon->GetWeaponID()) && IsHeadshot(info.GetDamageCustom()))
+		if (flCritDamage > 0 && pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID()) && IsHeadshot(info.GetDamageCustom()))
 		{
 			// Check for headshot damage modifiers
 			float flHeadshotModifier = 1.0f;
