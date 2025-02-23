@@ -868,6 +868,9 @@ private:
 	int m_nExperienceLevelProgress;
 	int m_nPrevExperienceLevel;
 
+	// First person taunting -- use world model during taunting
+	bool m_bHasFirstPersonWorldModel;
+
 	// Matchmaking
 	// is this player bound to the match on penalty of abandon. Sync'd via local-player-only DT
 	bool m_bMatchSafeToLeave;

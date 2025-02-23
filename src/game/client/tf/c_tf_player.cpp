@@ -3901,6 +3901,8 @@ C_TFPlayer::C_TFPlayer() :
 	m_nExperienceLevelProgress = 0;
 	m_nPrevExperienceLevel = 0;
 
+	m_bHasFirstPersonWorldModel = false;
+
 	m_bMatchSafeToLeave = true;
 
 	for( int i=0; i<kBonusEffect_Count; ++i )
