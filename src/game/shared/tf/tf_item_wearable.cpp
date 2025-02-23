@@ -302,7 +302,24 @@ int	CTFWearable::InternalDrawModel( int flags )
 		modelrender->ForcedMaterialOverride( *pOwner->GetInvulnMaterialRef() );
 	}
 
+	CMatRenderContextPtr pRenderContext( materials );
+
+	if ( IsViewModelWearable() )
+	{
+		CTFWeaponBase *pWeapon = assert_cast< CTFWeaponBase* >( GetWeaponAssociatedWith() );
+
+		if ( pWeapon )
+		{
+			if ( pWeapon->IsViewModelFlipped() )
+			{
+				pRenderContext->CullMode( MATERIAL_CULLMODE_CW );
+			}
+		}
+	}
+
 	int ret = BaseClass::InternalDrawModel( flags );
+
+	pRenderContext->CullMode( MATERIAL_CULLMODE_CCW );
 
 	if ( bUseInvulnMaterial && (flags & STUDIO_RENDER) )
 	{
