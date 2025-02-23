@@ -111,7 +111,7 @@ void EndGroupingSounds() {}
 // 10, Square
 Vector g_vecFixedWpnSpreadPellets[] = 
 {
-	Vector( 0,0,0 ),	// First pellet goes down the middle
+	Vector( 0,0,0 ),	// First and last pellet goes down the middle to reward fine aim
 	Vector( 1,0,0 ),	
 	Vector( -1,0,0 ),	
 	Vector( 0,-1,0 ),	
@@ -120,7 +120,6 @@ Vector g_vecFixedWpnSpreadPellets[] =
 	Vector( 0.85,0.85,0 ),	
 	Vector( -0.85,-0.85,0 ),	
 	Vector( -0.85,0.85,0 ),	
-	Vector( 0,0,0 ),	// last pellet goes down the middle as well to reward fine aim
 };
 
 // 15, Rectangle - slight noise applied below (+/- 0.07)
