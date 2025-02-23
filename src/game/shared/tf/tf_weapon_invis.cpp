@@ -277,7 +277,7 @@ void CTFWeaponInvis::SetFeignDeathState( bool bEnabled )
 			pOwner->HolsterOffHandWeapon();
 			if ( pOwner->GetActiveWeapon() )
 			{
-				pOwner->GetActiveWeapon()->m_flNextPrimaryAttack = gpGlobals->curtime + 0.1f;
+				pOwner->GetActiveWeapon()->m_flNextPrimaryAttack = MAX( pOwner->GetActiveWeapon()->m_flNextPrimaryAttack, gpGlobals->curtime + 0.1f );
 			}
 		}
 	}
