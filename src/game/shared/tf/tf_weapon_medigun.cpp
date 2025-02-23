@@ -1253,7 +1253,7 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 			if ( pTFPlayer && weapon_medigun_charge_rate.GetFloat() )
 			{
 #ifdef GAME_DLL
-				int iBoostMax = floor( pTFPlayer->m_Shared.GetMaxBuffedHealth() * 0.95);
+				float fBoostMax = pTFPlayer->m_Shared.GetMaxBuffedHealth() * 0.95;
 				float flChargeModifier = 1.f;
 
 				bool bTargetOverhealBlocked = false;
@@ -1267,6 +1267,15 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 						bTargetOverhealBlocked = true;
 					}
 				}
+
+				// If we aren't already blocking overheal, take into account patient overheal factors for determining boost pct
+				if (!bTargetOverhealBlocked)
+				{
+					// MIN here to keep the max boost at max health for buffing, but we can go lower if there's a penalty.
+					fBoostMax *= MIN( GetOverHealBonus( pTFPlayer ), 1.f );
+				}
+
+				int iBoostMax = floor( fBoostMax );
 
 				// Reduced charge for healing fully healed guys
 				if ( ( bTargetOverhealBlocked || ( pNewTarget->GetHealth() >= iBoostMax ) ) && ( TFGameRules() && !(TFGameRules()->InSetup() && TFGameRules()->GetActiveRoundTimer() ) ) )
