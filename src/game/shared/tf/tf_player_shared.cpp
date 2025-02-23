@@ -3971,13 +3971,16 @@ void CTFPlayerShared::OnAddTaunting( void )
 	m_pOuter->PlayWearableAnimsForPlaybackEvent( WAP_START_TAUNTING );
 #else
 	FireClientTauntParticleEffects();
-	static ConVarRef cl_first_person_uses_world_model("cl_first_person_uses_world_model");
-	m_pOuter->m_bHasFirstPersonWorldModel = cl_first_person_uses_world_model.GetBool();
-	if ( !m_pOuter->m_bHasFirstPersonWorldModel )
+	if (m_pOuter->IsLocalPlayer())
 	{
-		cl_first_person_uses_world_model.SetValue(true);
+		static ConVarRef cl_first_person_uses_world_model("cl_first_person_uses_world_model");
+		m_pOuter->m_bHasFirstPersonWorldModel = cl_first_person_uses_world_model.GetBool();
+		if (!m_pOuter->m_bHasFirstPersonWorldModel)
+		{
+			cl_first_person_uses_world_model.SetValue(true);
+		}
+		m_pOuter->FlushAllPlayerVisibilityState();
 	}
-	m_pOuter->FlushAllPlayerVisibilityState();
 #endif
 }
 
@@ -4056,12 +4059,15 @@ void CTFPlayerShared::OnRemoveTaunting( void )
 
 	m_flTauntParticleRefireTime = 0.0f;
 
-	if (!m_pOuter->m_bHasFirstPersonWorldModel)
+	if (m_pOuter->IsLocalPlayer())
 	{
-		static ConVarRef cl_first_person_uses_world_model("cl_first_person_uses_world_model");
-		cl_first_person_uses_world_model.SetValue(false);
+		if (!m_pOuter->m_bHasFirstPersonWorldModel)
+		{
+			static ConVarRef cl_first_person_uses_world_model("cl_first_person_uses_world_model");
+			cl_first_person_uses_world_model.SetValue(false);
+		}
+		m_pOuter->FlushAllPlayerVisibilityState();
 	}
-	m_pOuter->FlushAllPlayerVisibilityState();
 #endif
 
 	m_pOuter->m_PlayerAnimState->ResetGestureSlot( GESTURE_SLOT_VCD );
