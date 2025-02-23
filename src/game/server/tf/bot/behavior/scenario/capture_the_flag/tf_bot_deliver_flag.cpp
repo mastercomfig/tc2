@@ -19,6 +19,7 @@
 
 #include "bot/behavior/nav_entities/tf_bot_nav_ent_move_to.h"
 #include "bot/behavior/nav_entities/tf_bot_nav_ent_wait.h"
+#include "bot/behavior/nav_entities/tf_bot_nav_ent_destroy_entity.h"
 
 #include "particle_parse.h"
 
@@ -413,6 +414,10 @@ EventDesiredResult< CTFBot > CTFBotPushToCapturePoint::OnNavAreaChanged( CTFBot 
 				else if ( prereq->IsTask( CFuncNavPrerequisite::TASK_MOVE_TO_ENTITY ) )
 				{
 					return TrySuspendFor( new CTFBotNavEntMoveTo( prereq ), RESULT_IMPORTANT, "Prerequisite commands me to move to an entity" );
+				}
+				else if ( prereq->IsTask( CFuncNavPrerequisite::TASK_DESTROY_ENTITY ) )
+				{
+					return TrySuspendFor( new CTFBotNavEntDestroyEntity( prereq ), RESULT_IMPORTANT, "Prerequisite commands me to destroy" );
 				}
 			}
 		}
