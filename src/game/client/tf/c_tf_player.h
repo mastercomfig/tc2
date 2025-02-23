@@ -1064,6 +1064,7 @@ public:
 	int GetDamageCustom() { return m_iDamageCustom; }
 
 	virtual bool GetAttachment( int iAttachment, matrix3x4_t &attachmentToWorld );
+	virtual bool GetAttachmentDeferred( int iAttachment, matrix3x4_t &attachmentToWorld );
 
 	int GetClass() { return m_iClass; }
 

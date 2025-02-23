@@ -1330,6 +1330,20 @@ bool C_TFRagdoll::GetAttachment( int iAttachment, matrix3x4_t &attachmentToWorld
 	}
 }
 
+bool C_TFRagdoll::GetAttachmentDeferred( int iAttachment, matrix3x4_t &attachmentToWorld )
+{
+	int iHeadAttachment = LookupAttachment( "head" );
+	if ( IsDecapitation() && (iAttachment == iHeadAttachment) )
+	{
+		MatrixCopy( m_mHeadAttachment, attachmentToWorld );
+		return true;
+	}
+	else
+	{
+		return BaseClass::GetAttachmentDeferred( iAttachment, attachmentToWorld );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  :  - 
