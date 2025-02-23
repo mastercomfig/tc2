@@ -1,0 +1,35 @@
+name: Build - Linux
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup ccache
+        id: setup-ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ${{ runner.os }}-ccache
+      - name: Build dist
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+        run: |
+          mkdir -p $CCACHE_DIR
+          ./src/buildallprojects
+          ./game_clean/copy.sh
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: game
+          path: |
+            game_dist
+      - name: Archive debug info
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-debug-info
+          path: |
+            game_dist_debug
