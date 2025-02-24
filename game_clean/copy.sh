@@ -17,6 +17,27 @@ declare -a DLLS=(
   tc2/bin/$PLAT_DIR/{client,server}
 )
 
+declare -a FILES_REP=(
+  tc2/cfg/valve.rc
+  tc2/cfg/default.cfg
+  tc2/cfg/config_default.cfg
+  tc2/cfg/user_default.scr
+  tc2/cfg/vscript_convar_allowlist.txt
+  tc2/cfg/motd_default.txt
+  tc2/cfg/motd_text_default.txt
+  tc2/scripts/newbindings.txt
+  tc2/texture_preload_list.txt
+  tc2/materials/logo
+  tc2/resource
+  tc2/gameinfo.txt
+  tc2/steam.inf
+)
+
+declare -a FILES=(
+  ../thirdpartylegalnotices.txt
+  ../LICENSE
+)
+
 if [ $PLATFORM = "win" ]; then
   declare -a EXES=(
     tc2_win64
@@ -50,28 +71,11 @@ elif [ $PLATFORM = "linux" ]; then
   declare -a DLLS_LIB=(
     bin/$PLAT_DIR/libsteam_api
   )
+
+  FILES+=(
+    tc2.sh
+  )
 fi
-
-declare -a FILES_REP=(
-  tc2/cfg/valve.rc
-  tc2/cfg/default.cfg
-  tc2/cfg/config_default.cfg
-  tc2/cfg/user_default.scr
-  tc2/cfg/vscript_convar_allowlist.txt
-  tc2/cfg/motd_default.txt
-  tc2/cfg/motd_text_default.txt
-  tc2/scripts/newbindings.txt
-  tc2/texture_preload_list.txt
-  tc2/materials/logo
-  tc2/resource
-  tc2/gameinfo.txt
-  tc2/steam.inf
-)
-
-declare -a FILES=(
-  ../thirdpartylegalnotices.txt
-  ../LICENSE
-)
 
 for F in "${EXES[@]}"; do
   cp -f ${DEV_DIR}/${F}${EXE_EXT} ${CLEAN_DIR}/${F}${EXE_EXT}
