@@ -32,7 +32,7 @@ declare -a EXES=(
 declare -a DLLS=(
   bin/$PLAT_DIR/vrad_dll
   bin/$PLAT_DIR/vvis_dll
-  tc2/$PLAT_DIR/{client,server}
+  tc2/bin/$PLAT_DIR/{client,server}
 )
 
 declare -a DLLS_LIB=(
