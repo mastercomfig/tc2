@@ -40,6 +40,9 @@ BEGIN_DATADESC( CTFRevolver )
 END_DATADESC()
 #endif
 
+#ifdef CLIENT_DLL
+static ConVar tf_revolver_dynamic_crosshair("tf_revolver_dynamic_crosshair", "1", FCVAR_ARCHIVE, "Use a dynamic crosshair to show accuracy on the revolver.");
+#endif
 
 //=============================================================================
 //
@@ -210,7 +213,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 	if ( !pTFPlayer )
 		return;
 
-	if ( CanHeadshot() )
+	if ( CanHeadshot() && tf_revolver_dynamic_crosshair.GetBool() )
 	{
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
