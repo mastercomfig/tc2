@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Run script within the directory
 BIN_DIR=$(dirname "$(readlink -fn "$0")")
@@ -10,36 +10,36 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/x64,tc2/bin/x64,tc2/materials,tc2/cfg}
-mkdir -p ${CLEAN_DEBUG_DIR}/{bin/x64,tc2/bin/x64,tc2/materials,tc2/cfg}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tc2/materials,tc2/cfg,tc2/scripts}
+mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR}
 
 declare -a EXES=(
   tc2_win64
-  bin/x64/captioncompiler
-  bin/x64/glview
-  bin/x64/height2normal
-  bin/x64/motionmapper
-  bin/x64/qc_eyes
-  bin/x64/tgadiff
-  bin/x64/vbsp
-  bin/x64/vice
-  bin/x64/vrad
-  bin/x64/vtf2tga
-  bin/x64/vtfdiff
-  bin/x64/vvis
+  bin/$PLAT_DIR/captioncompiler
+  bin/$PLAT_DIR/glview
+  bin/$PLAT_DIR/height2normal
+  bin/$PLAT_DIR/motionmapper
+  bin/$PLAT_DIR/qc_eyes
+  bin/$PLAT_DIR/tgadiff
+  bin/$PLAT_DIR/vbsp
+  bin/$PLAT_DIR/vice
+  bin/$PLAT_DIR/vrad
+  bin/$PLAT_DIR/vtf2tga
+  bin/$PLAT_DIR/vtfdiff
+  bin/$PLAT_DIR/vvis
 )
 
 declare -a DLLS=(
-  bin/x64/vrad_dll
-  bin/x64/vvis_dll
-  tc2/bin/x64/{client,server}
+  bin/$PLAT_DIR/vrad_dll
+  bin/$PLAT_DIR/vvis_dll
+  tc2/$PLAT_DIR/{client,server}
 )
 
 declare -a DLLS_LIB=(
-  bin/x64/steam_api64
+  bin/$PLAT_DIR/steam_api64
 )
 
-declare -a REP_FILES=(
+declare -a FILES_REP=(
   tc2/cfg/valve.rc
   tc2/cfg/default.cfg
   tc2/cfg/user_default.scr
@@ -59,19 +59,20 @@ declare -a FILES=(
 )
 
 for F in "${EXES[@]}"; do
-  cp -f ${DEV_DIR}/${F}.exe ${CLEAN_DIR}/${F}.exe
+  cp -f ${DEV_DIR}/${F}${EXE_EXT} ${CLEAN_DIR}/${F}${EXE_EXT}
 done
 
 for F in "${DLLS[@]}"; do
-  cp -f ${DEV_DIR}/${F}.dll ${CLEAN_DIR}/${F}.dll
+  DLL=${F}${DLL_EXT}
+  cp -f ${DEV_DIR}/${DLL} ${CLEAN_DIR}/${DLL}
   cp -f ${DEV_DIR}/${F,,}.pdb ${CLEAN_DEBUG_DIR}/${F,,}.pdb
 done
 
 for F in "${DLLS_LIB[@]}"; do
-  cp -f ${DEV_DIR}/${F}.dll ${CLEAN_DIR}/${F}.dll
+  cp -f ${DEV_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}${DLL_EXT}
 done
 
-for F in "${REP_FILES[@]}"; do
+for F in "${FILES_REP[@]}"; do
   cp -rf ${DEV_DIR}/${F} ${CLEAN_DIR}/${F}
 done
 

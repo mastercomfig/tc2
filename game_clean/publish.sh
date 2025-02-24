@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Run script within the directory
 BIN_DIR=$(dirname "$(readlink -fn "$0")")
