@@ -12111,7 +12111,11 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	}
 #endif
 
-	if ( !bCanAttackWhileCloaked &&( m_Shared.GetStealthNoAttackExpireTime() > gpGlobals->curtime && !m_Shared.InCond( TF_COND_STEALTHED_USER_BUFF ) ) || m_Shared.InCond( TF_COND_STEALTHED ) )
+	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
+	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF) || m_Shared.InCond(TF_COND_STEALTHED);
+	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? (m_Shared.GetStealthNoAttackExpireTime() <= gpGlobals->curtime && bIsCloaked) : !bIsCloaked;
+
+	if ( !bCanAttackWhileCloaked && !bCanAttackForCloak )
 	{
 		if ( !( iCanAttackFlags & TF_CAN_ATTACK_FLAG_GRAPPLINGHOOK ) )
 		{

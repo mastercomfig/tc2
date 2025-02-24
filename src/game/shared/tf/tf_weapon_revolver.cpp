@@ -73,7 +73,19 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 		}
 	}
 
-	if ( pPlayer->m_Shared.IsFeignDeathReady() )
+	bool bCanAttackWhileCloaked = false;
+	// MCOMS_BALANCE_PACK
+#if 1
+	// L'Etranger can always attack
+	int iAddCloakOnHit = 0;
+	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
+	if (iAddCloakOnHit > 0)
+	{
+		bCanAttackWhileCloaked = true;
+	}
+#endif
+
+	if ( !bCanAttackWhileCloaked && pPlayer->m_Shared.IsFeignDeathReady() )
 		return false; // Can't reload if our feign death arm is up.
 
 	return BaseClass::DefaultReload( iClipSize1, iClipSize2, iActivity );
