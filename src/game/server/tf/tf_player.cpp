@@ -16111,7 +16111,7 @@ void CTFPlayer::RemoveInvisibility( void )
 #endif
 	if (bCanAttackWhileCloaked)
 	{
-		m_Shared.AddCond(TF_COND_STEALTHED_BLINK);
+		m_Shared.OnSpyTouchedByEnemy();
 		return;
 	}
 
