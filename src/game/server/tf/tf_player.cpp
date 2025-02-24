@@ -16098,22 +16098,16 @@ void CTFPlayer::RemoveInvisibility( void )
 		return;
 
 
-	bool bCanAttackWhileCloaked = false;
-	// MCOMS_BALANCE_PACK
-#if 1
-	// L'Etranger can always attack
+#ifdef MCOMS_BALANCE_PACK
+	// L'Etranger can attack while invis but flash a little
 	int iAddCloakOnHit = 0;
 	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-	if (iAddCloakOnHit > 0)
-	{
-		bCanAttackWhileCloaked = true;
-	}
-#endif
-	if (bCanAttackWhileCloaked)
+	if (iAddCloakOnHit != 0)
 	{
 		m_Shared.OnSpyTouchedByEnemy();
 		return;
 	}
+#endif
 
 	// remove quickly
 	CTFPlayer *pProvider = ToTFPlayer( m_Shared.GetConditionProvider( TF_COND_STEALTHED_USER_BUFF ) );

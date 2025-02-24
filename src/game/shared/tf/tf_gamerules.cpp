@@ -6532,14 +6532,14 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
-		#ifdef MCOMS_BALANCE_PACK
+#ifdef MCOMS_BALANCE_PACK
+		// SMG headshots falloff
 		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
 		{
 			iForceCritDmgFalloff = 1;
 		}
-		#endif
 
-#if 1
+		// All revolver headshots falloff
 		if (pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER)
 		{
 			iForceCritDmgFalloff = 1;

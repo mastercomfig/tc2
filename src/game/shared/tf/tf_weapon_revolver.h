@@ -46,29 +46,21 @@ public:
 
 	virtual bool	DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 
-	// MCOMS_BALANCE_PACK
-#if 1
+#ifdef MCOMS_BALANCE_PACK
 	bool			CanHeadshot(void) const
 	{
 		bool bCanAttackWhileCloaked = false;
-		// MCOMS_BALANCE_PACK
-#if 1
-	// L'Etranger can always attack
+		// L'Etranger can't headshot
 		int iAddCloakOnHit = 0;
 		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-		if (iAddCloakOnHit > 0)
-		{
-			bCanAttackWhileCloaked = true;
-		}
-#endif
-		if (bCanAttackWhileCloaked)
-		{
+		if (iAddCloakOnHit != 0)
 			return false;
-		}
+		// Diamondback can't headshot
 		int iSapperCrits = 0;
 		CALL_ATTRIB_HOOK_INT(iSapperCrits, sapper_kills_collect_crits);
 		if (iSapperCrits != 0)
 			return false;
+		// All Revolvers can headshot
 		return true;
 	};
 #else

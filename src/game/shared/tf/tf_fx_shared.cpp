@@ -346,6 +346,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				bool bAccuracyBonus = false;
 				float flTimeSinceLastShot = ( gpGlobals->curtime - pWpn->m_flLastFireTime );
 				const float flMinAccuracyCooldown = 0.25f;
+				const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;
 
 				if ( nBulletsPerShot > 1 && flTimeSinceLastShot > flMinAccuracyCooldown )
 				{
@@ -353,8 +354,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				}
 				else if ( nBulletsPerShot == 1 )
 				{
-					// MCOMS_BALANCE_PACK
-#if 1
+#ifdef MCOMS_BALANCE_PACK
 					if ( pWpn->GetWeaponID() == TF_WEAPON_REVOLVER )
 					{
 						// Ambassador is always accurate.
@@ -368,10 +368,13 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 					if ( !bAccuracyBonus )
 #endif
 					{
+#ifdef MCOMS_BALANCE_PACK
 						// Give players control over accuracy vs. speed on their revolvers / pistols
-						const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;
 						const float flShotTimeCooldown = 1.0f / 0.6f;
 						const float flAccuracyCooldown = Clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
+#else
+						const float flAccuracyCooldown = flMaxAccuracyCooldown;
+#endif
 						if (flTimeSinceLastShot > flAccuracyCooldown)
 						{
 							bAccuracyBonus = true;
