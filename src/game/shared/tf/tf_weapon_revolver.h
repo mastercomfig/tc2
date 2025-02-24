@@ -48,7 +48,29 @@ public:
 
 	// MCOMS_BALANCE_PACK
 #if 1
-	bool			CanHeadshot(void) const { return true; };
+	bool			CanHeadshot(void) const
+	{
+		bool bCanAttackWhileCloaked = false;
+		// MCOMS_BALANCE_PACK
+#if 1
+	// L'Etranger can always attack
+		int iAddCloakOnHit = 0;
+		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
+		if (iAddCloakOnHit > 0)
+		{
+			bCanAttackWhileCloaked = true;
+		}
+#endif
+		if (bCanAttackWhileCloaked)
+		{
+			return false;
+		}
+		int iSapperCrits = 0;
+		CALL_ATTRIB_HOOK_INT(iSapperCrits, sapper_kills_collect_crits);
+		if (iSapperCrits != 0)
+			return false;
+		return true;
+	};
 #else
 	bool			CanHeadshot(void) const { int iMode = 0; CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode); return (iMode == 1); };
 #endif

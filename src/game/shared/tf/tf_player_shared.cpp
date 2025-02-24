@@ -12113,7 +12113,12 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 
 	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
 	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF);
-	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= gpGlobals->curtime;
+	float flCurTime = gpGlobals->curtime;
+	if (GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_KNIFE)
+	{
+		flCurTime += 0.5f;
+	}
+	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= flCurTime;
 	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? (bCanAttackStealthTime) : bCanAttackStealthTime && !bIsCloaked;
 
 	if ( !bCanAttackWhileCloaked && (!bCanAttackForCloak || m_Shared.InCond(TF_COND_STEALTHED)))
