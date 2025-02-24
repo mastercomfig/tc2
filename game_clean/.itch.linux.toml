@@ -1,0 +1,5 @@
+[[actions]]
+name = "play"
+path = "tc2.sh"
+platform = "linux"
+args = ["-noborder", "-particles", "1", "-precachefontchars"]

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -7,6 +7,10 @@ pushd "$(dirname -- "$script")" > /dev/null
 
 source sdk_container
 run_in_sniper "$@"
+
+export CCACHE_SLOPPINESS="pch_defines,time_macros"
+export VPC_ENABLE_CCACHE="1"
+ccache -z
 
 if [ $# -eq 0 ]; then
     export VPC_NINJA_BUILD_MODE="release"     
@@ -34,5 +38,6 @@ if [[ ! -e "$solution_out.ninja" ]]; then
 fi
 
 ninja -f "$solution_out.ninja" -j$(nproc)
+ccache -s
 
 popd
