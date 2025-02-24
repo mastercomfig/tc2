@@ -139,21 +139,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 #ifndef CLIENT_DLL
 	if ( pPlayer->m_Shared.IsStealthed() && ShouldRemoveInvisibilityOnPrimaryAttack() )
 	{
-		bool bCanAttackWhileCloaked = false;
-		// MCOMS_BALANCE_PACK
-#if 1
-	// L'Etranger can always attack
-		int iAddCloakOnHit = 0;
-		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-		if (iAddCloakOnHit > 0)
-		{
-			bCanAttackWhileCloaked = true;
-		}
-#endif
-		if (!bCanAttackWhileCloaked)
-		{
-			pPlayer->RemoveInvisibility();
-		}
+		pPlayer->RemoveInvisibility();
 	}
 	
 	// Minigun has custom handling
