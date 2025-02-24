@@ -6745,6 +6745,11 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 		}
 		return true;
 	}
+	else if ( stricmp(cmd, "demostop") == 0 )
+	{
+		// fake command server operator can use to detect demo recording stops
+		return true;
+	}
 
 	return false;
 }

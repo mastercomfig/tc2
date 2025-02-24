@@ -138,7 +138,7 @@ public:
 	bool	IsPanelVisible( const char* panel ) { return m_pViewport->IsPanelVisible( panel ); }
 
 	virtual void			OnDemoRecordStart( char const* pDemoBaseName ) OVERRIDE {}
-	virtual void			OnDemoRecordStop() OVERRIDE {}
+	virtual void			OnDemoRecordStop() OVERRIDE;
 
 protected:
 	CBaseViewport			*m_pViewport;

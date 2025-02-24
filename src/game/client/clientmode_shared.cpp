@@ -1556,6 +1556,12 @@ void ClientModeShared::DisplayReplayReminder()
 #endif
 }
 
+void ClientModeShared::OnDemoRecordStop()
+{
+	// tell the server we stopped recording a demo
+	engine->ServerCmd( "demostop" );
+}
+
 
 //-----------------------------------------------------------------------------
 // In-game VGUI context 
