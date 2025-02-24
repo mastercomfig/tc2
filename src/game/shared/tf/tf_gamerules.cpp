@@ -6539,6 +6539,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 		#endif
 
+#if 1
+		if (pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER)
+		{
+			iForceCritDmgFalloff = 1;
+		}
+#endif
+
 		// Minicrits still get short range damage bonus
 		bool bForceCritFalloff = ( bitsDamage & DMG_USEDISTANCEMOD ) && 
 								 ( ( bCrit && tf_weapon_criticals_distance_falloff.GetBool() ) || 
