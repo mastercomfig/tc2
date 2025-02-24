@@ -1974,6 +1974,9 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 		break;
 	}
 
+	// Round up damage like players
+	flDamage = Ceil2Int( flDamage );
+
 	// Don't look, Tom Bui!
 	static struct
 	{
@@ -2010,7 +2013,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 
 	if ( flDamage )
 	{
-		m_iLifetimeDamage += floor( Min( flDamage, m_flHealth ) );
+		m_iLifetimeDamage += Floor2Int( MIN( flDamage, m_flHealth ) );
 		if ( m_iLifetimeDamage > tf_obj_damage_tank_achievement_amount.GetInt() && GetBuilder() )
 		{
 			GetBuilder()->AwardAchievement( ACHIEVEMENT_TF_ENGINEER_TANK_DAMAGE );
