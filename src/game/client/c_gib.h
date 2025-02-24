@@ -16,45 +16,48 @@
 
 class C_Gib : public C_BaseAnimating
 {
-	typedef C_BaseAnimating BaseClass;
+    typedef C_BaseAnimating BaseClass;
 public:
+    ~C_Gib() override;
 
-	~C_Gib( void );
+    static C_Gib* CreateClientsideGib(const char* pszModelName,
+        const Vector& vecOrigin,
+        const Vector& vecForceDir,
+        AngularImpulse vecAngularImp,
+        float flLifetime = DEFAULT_GIB_LIFETIME);
 
-	static C_Gib	*CreateClientsideGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
-	
-	bool	InitializeGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
-	void	ClientThink( void );
-	void	StartTouch( C_BaseEntity *pOther );
+    bool InitializeGib(const char* pszModelName,
+        const Vector& vecOrigin,
+        const Vector& vecForceDir,
+        AngularImpulse vecAngularImp,
+        float flLifetime = DEFAULT_GIB_LIFETIME);
 
-	virtual	void HitSurface( C_BaseEntity *pOther );
+    void ClientThink(void) override;
+    void StartTouch(C_BaseEntity* pOther) override;
+
+    virtual void HitSurface(C_BaseEntity* pOther);
 
 protected:
-
-	float	m_flTouchDelta;		// Amount of time that must pass before another touch function can be called
+    float m_flTouchDelta; // Time that must pass before another touch call can be processed
 };
 
 #ifdef HL2_CLIENT_DLL
 class CAntlionGibManager : public CAutoGameSystemPerFrame
 {
 public:
-	CAntlionGibManager( char const *name ) : CAutoGameSystemPerFrame( name )
-	{
-	}
+    CAntlionGibManager(char const* name) : CAutoGameSystemPerFrame(name) {}
 
-	// Methods of IGameSystem
-	virtual void Update( float frametime );
-	virtual void LevelInitPreEntity( void );
+    // Methods of IGameSystem
+    void Update(float frametime) override;
+    void LevelInitPreEntity(void) override;
 
-	void	AddGib( C_BaseEntity *pEntity ); 
-	void	RemoveGib( C_BaseEntity *pEntity );
+    void AddGib(C_BaseEntity* pEntity);
+    void RemoveGib(C_BaseEntity* pEntity);
 
 private:
-	typedef CHandle<C_BaseEntity> CGibHandle;
-	CUtlLinkedList< CGibHandle > m_LRU; 
-	
+    typedef CHandle<C_BaseEntity> CGibHandle;
+    CUtlLinkedList<CGibHandle> m_LRU;
 };
-
 
 extern CAntlionGibManager s_AntlionGibManager;
 

@@ -1,8 +1,8 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose: Client-side gib implementation
 //
-//=============================================================================//
+//=============================================================================
 
 #include "cbase.h"
 #include "vcollide_parse.h"
@@ -11,123 +11,136 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//NOTENOTE: This is not yet coupled with the server-side implementation of CGib
-//			This is only a client-side version of gibs at the moment
+// NOTENOTE: This is not yet coupled with the server-side implementation of CGib
+//           This is only a client-side version of gibs at the moment
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Destructor - cleans up the physics object.
 //-----------------------------------------------------------------------------
-C_Gib::~C_Gib( void )
+C_Gib::~C_Gib(void)
 {
-	VPhysicsDestroyObject();
+    VPhysicsDestroyObject();
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pszModelName - 
-//			vecOrigin - 
-//			vecForceDir - 
-//			vecAngularImp - 
-// Output : Returns true on success, false on failure.
+// Purpose: Factory function to create a client-side gib.
 //-----------------------------------------------------------------------------
-C_Gib *C_Gib::CreateClientsideGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime )
+C_Gib* C_Gib::CreateClientsideGib(const char* pszModelName,
+    const Vector& vecOrigin,
+    const Vector& vecForceDir,
+    AngularImpulse vecAngularImp,
+    float flLifetime)
 {
-	C_Gib *pGib = new C_Gib;
+    C_Gib* pGib = new C_Gib();
+    if (!pGib)
+        return nullptr;
 
-	if ( pGib == NULL )
-		return NULL;
+    if (!pGib->InitializeGib(pszModelName, vecOrigin, vecForceDir, vecAngularImp, flLifetime))
+    {
+        pGib->Release();
+        return nullptr;
+    }
 
-	if ( pGib->InitializeGib( pszModelName, vecOrigin, vecForceDir, vecAngularImp, flLifetime ) == false )
-		return NULL;
-
-	return pGib;
+    return pGib;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pszModelName - 
-//			vecOrigin - 
-//			vecForceDir - 
-//			vecAngularImp - 
-// Output : Returns true on success, false on failure.
+// Purpose: Initializes the gib as a client entity and sets up physics.
 //-----------------------------------------------------------------------------
-bool C_Gib::InitializeGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime )
+bool C_Gib::InitializeGib(const char* pszModelName,
+    const Vector& vecOrigin,
+    const Vector& vecForceDir,
+    AngularImpulse vecAngularImp,
+    float flLifetime)
 {
-	if ( InitializeAsClientEntity( pszModelName, RENDER_GROUP_OPAQUE_ENTITY ) == false )
-	{
-		Release();
-		return false;
-	}
+    // Initialize as a client entity; if this fails, clean up.
+    if (!InitializeAsClientEntity(pszModelName, RENDER_GROUP_OPAQUE_ENTITY))
+    {
+        Release();
+        return false;
+    }
 
-	SetAbsOrigin( vecOrigin );
-	SetCollisionGroup( COLLISION_GROUP_DEBRIS );
+    SetAbsOrigin(vecOrigin);
+    SetCollisionGroup(COLLISION_GROUP_DEBRIS);
 
-	solid_t tmpSolid;
-	PhysModelParseSolid( tmpSolid, this, GetModelIndex() );
-	
-	m_pPhysicsObject = VPhysicsInitNormal( SOLID_VPHYSICS, 0, false, &tmpSolid );
-	
-	if ( m_pPhysicsObject )
-	{
-		float flForce = m_pPhysicsObject->GetMass();
-		vecForceDir *= flForce;	
+    // Parse the physics model.
+    solid_t tmpSolid;
+    PhysModelParseSolid(tmpSolid, this, GetModelIndex());
 
-		m_pPhysicsObject->ApplyForceOffset( vecForceDir, GetAbsOrigin() );
-		m_pPhysicsObject->SetCallbackFlags( m_pPhysicsObject->GetCallbackFlags() | CALLBACK_GLOBAL_TOUCH | CALLBACK_GLOBAL_TOUCH_STATIC );
-	}
-	else
-	{
-		// failed to create a physics object
-		Release();
-		return false;
-	}
+    // Create and initialize the physics object.
+    m_pPhysicsObject = VPhysicsInitNormal(SOLID_VPHYSICS, 0, false, &tmpSolid);
+    if (m_pPhysicsObject)
+    {
+        // Scale the force direction by the mass of the physics object.
+        float flForce = m_pPhysicsObject->GetMass();
+        Vector scaledForce = vecForceDir * flForce;
 
-	SetNextClientThink( gpGlobals->curtime + flLifetime );
+        // Cache the absolute origin.
+        const Vector absOrigin = GetAbsOrigin();
+        m_pPhysicsObject->ApplyForceOffset(scaledForce, absOrigin);
 
-	return true;
+        // Enable global touch callbacks.
+        m_pPhysicsObject->SetCallbackFlags(m_pPhysicsObject->GetCallbackFlags() |
+            CALLBACK_GLOBAL_TOUCH | CALLBACK_GLOBAL_TOUCH_STATIC);
+    }
+    else
+    {
+        // Failed to create a physics object; clean up.
+        Release();
+        return false;
+    }
+
+    // Schedule the gib for removal after its lifetime expires.
+    SetNextClientThink(gpGlobals->curtime + flLifetime);
+
+    return true;
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Handles client-side thinking for fading out the gib.
 //-----------------------------------------------------------------------------
-void C_Gib::ClientThink( void )
+void C_Gib::ClientThink(void)
 {
-	SetRenderMode( kRenderTransAlpha );
-	m_nRenderFX		= kRenderFxFadeFast;
+    SetRenderMode(kRenderTransAlpha);
+    m_nRenderFX = kRenderFxFadeFast;
 
-	if ( m_clrRender->a == 0 )
-	{
+    // If the gib is fully faded out, remove it.
+    if (m_clrRender->a == 0)
+    {
 #ifdef HL2_CLIENT_DLL
-		s_AntlionGibManager.RemoveGib( this );
+        s_AntlionGibManager.RemoveGib(this);
 #endif
-		Release();
-		return;
-	}
+        Release();
+        return;
+    }
 
-	SetNextClientThink( gpGlobals->curtime + 1.0f );
+    // Cache current time to avoid multiple global accesses.
+    const float curTime = gpGlobals->curtime;
+    SetNextClientThink(curTime + 1.0f);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pOther - 
+// Purpose: Processes a collision with another entity, with a delay to prevent rapid repeats.
 //-----------------------------------------------------------------------------
-void C_Gib::StartTouch( C_BaseEntity *pOther )
+void C_Gib::StartTouch(C_BaseEntity* pOther)
 {
-	// Limit the amount of times we can bounce
-	if ( m_flTouchDelta < gpGlobals->curtime )
-	{
-		HitSurface( pOther );
-		m_flTouchDelta = gpGlobals->curtime + 0.1f;
-	}
+    // Cache current time.
+    const float curTime = gpGlobals->curtime;
+    constexpr float TOUCH_DELAY = 0.1f;
+    if (m_flTouchDelta < curTime)
+    {
+        HitSurface(pOther);
+        m_flTouchDelta = curTime + TOUCH_DELAY;
+    }
 
-	BaseClass::StartTouch( pOther );
+    BaseClass::StartTouch(pOther);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pOther - 
+// Purpose: Handles effects when the gib hits a surface.
+//          (Child classes can implement splatter effects or similar.)
 //-----------------------------------------------------------------------------
-void C_Gib::HitSurface( C_BaseEntity *pOther )
+void C_Gib::HitSurface(C_BaseEntity* pOther)
 {
-	//TODO: Implement splatter or effects in child versions
+    // TODO: Implement splatter or other effects in derived classes.
 }
