@@ -59,10 +59,6 @@
 	{
 		"ideal_key"				"F2"
 	}
-	"show_matchmaking"
-	{
-		"ideal_key"				"F3"
-	}
 	"say_party"
 	{
 		"ideal_key"				"p"
