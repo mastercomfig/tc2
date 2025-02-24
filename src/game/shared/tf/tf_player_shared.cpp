@@ -110,7 +110,7 @@ ConVar tf_halloween_kart_boost_duration( "tf_halloween_kart_boost_duration", "1.
 
 ConVar tf_scout_air_dash_count( "tf_scout_air_dash_count", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
-ConVar tf_spy_invis_time( "tf_spy_invis_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
+ConVar tf_spy_invis_time( "tf_spy_invis_time", "0.7", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 ConVar tf_spy_invis_unstealth_time( "tf_spy_invis_unstealth_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 
 ConVar tf_spy_max_cloaked_speed( "tf_spy_max_cloaked_speed", "999", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );	// no cap
@@ -163,7 +163,7 @@ ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", FCVAR_NONE, "1 - A
 ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Use particle tracers instead of old style ones." );
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
-ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
+ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", "1.4", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
 ConVar tf_tournament_hide_domination_icons( "tf_tournament_hide_domination_icons", "0", FCVAR_REPLICATED, "Tournament mode server convar that forces clients to not display the domination icons above players dominating them." );
 ConVar tf_damage_disablespread( "tf_damage_disablespread", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles the random damage spread applied to all player damage." );
 
@@ -12099,7 +12099,19 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		return true;
 	}
 
-	if ( ( m_Shared.GetStealthNoAttackExpireTime() > gpGlobals->curtime && !m_Shared.InCond( TF_COND_STEALTHED_USER_BUFF ) ) || m_Shared.InCond( TF_COND_STEALTHED ) )
+	bool bCanAttackWhileCloaked = false;
+	// MCOMS_BALANCE_PACK
+#if 1
+	// L'Etranger can always attack
+	int iAddCloakOnHit = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveWeapon(), iAddCloakOnHit, add_cloak_on_hit);
+	if (iAddCloakOnHit > 0)
+	{
+		bCanAttackWhileCloaked = true;
+	}
+#endif
+
+	if ( !bCanAttackWhileCloaked &&( m_Shared.GetStealthNoAttackExpireTime() > gpGlobals->curtime && !m_Shared.InCond( TF_COND_STEALTHED_USER_BUFF ) ) || m_Shared.InCond( TF_COND_STEALTHED ) )
 	{
 		if ( !( iCanAttackFlags & TF_CAN_ATTACK_FLAG_GRAPPLINGHOOK ) )
 		{
@@ -12110,7 +12122,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		}
 	}
 
-	if ( m_Shared.IsFeignDeathReady() )
+	if ( !bCanAttackWhileCloaked && m_Shared.IsFeignDeathReady() )
 	{
 #ifdef CLIENT_DLL
 		HintMessage( HINT_CANNOT_ATTACK_WHILE_FEIGN_ARMED, true, true );

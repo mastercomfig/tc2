@@ -46,7 +46,12 @@ public:
 
 	virtual bool	DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 
-	bool			CanHeadshot( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode ); return (iMode == 1); };
+	// MCOMS_BALANCE_PACK
+#if 1
+	bool			CanHeadshot(void) const { return true; };
+#else
+	bool			CanHeadshot(void) const { int iMode = 0; CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode); return (iMode == 1); };
+#endif
 
 	bool			SapperKillsCollectCrits( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, sapper_kills_collect_crits ); return (iMode == 1); };
 
