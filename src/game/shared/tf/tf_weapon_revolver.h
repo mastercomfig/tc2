@@ -40,6 +40,7 @@ public:
 	virtual int		GetDamageType( void ) const;
 
 	virtual bool	CanFireCriticalShot( bool bIsHeadshot, CBaseEntity *pTarget = NULL ) OVERRIDE;
+	bool ShouldRemoveInvisibilityOnPrimaryAttack() const override;
 
 	virtual void	PrimaryAttack( void );
 	virtual	float	GetWeaponSpread( void );

@@ -163,7 +163,7 @@ ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", FCVAR_NONE, "1 - A
 ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Use particle tracers instead of old style ones." );
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
-ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", "1.4", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
+ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", "0.4", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
 ConVar tf_tournament_hide_domination_icons( "tf_tournament_hide_domination_icons", "0", FCVAR_REPLICATED, "Tournament mode server convar that forces clients to not display the domination icons above players dominating them." );
 ConVar tf_damage_disablespread( "tf_damage_disablespread", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles the random damage spread applied to all player damage." );
 
@@ -12112,10 +12112,11 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 #endif
 
 	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
-	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF) || m_Shared.InCond(TF_COND_STEALTHED);
-	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? (m_Shared.GetStealthNoAttackExpireTime() <= gpGlobals->curtime && bIsCloaked) : !bIsCloaked;
+	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF);
+	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= gpGlobals->curtime;
+	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? (bCanAttackStealthTime) : bCanAttackStealthTime && !bIsCloaked;
 
-	if ( !bCanAttackWhileCloaked && !bCanAttackForCloak )
+	if ( !bCanAttackWhileCloaked && (!bCanAttackForCloak || m_Shared.InCond(TF_COND_STEALTHED)))
 	{
 		if ( !( iCanAttackFlags & TF_CAN_ATTACK_FLAG_GRAPPLINGHOOK ) )
 		{
