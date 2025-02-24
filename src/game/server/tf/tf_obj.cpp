@@ -1604,7 +1604,7 @@ void CBaseObject::SetHealth( float flHealth )
 	bool changed = m_flHealth != flHealth;
 
 	m_flHealth = flHealth;
-	m_iHealth = ceil(m_flHealth);
+	m_iHealth = Ceil2Int(m_flHealth);
 
 
 	/*
@@ -2950,7 +2950,7 @@ int CBaseObject::Command_Repair( CTFPlayer *pActivator, float flAmount, float fl
 	
 	float flRepairAmountMax = flAmount * flRepairMod;
 	int iRepairAmount = Min( RoundFloatToInt( flRepairAmountMax ), GetMaxHealth() - RoundFloatToInt( GetHealth() ) );
-	int iRepairCost = ceil( (float)( iRepairAmount ) / flRepairToMetalRatio );
+	int iRepairCost = Ceil2Int( (float)( iRepairAmount ) / flRepairToMetalRatio );
 	if ( iRepairCost > pActivator->GetBuildResources() )
 	{
 		// What can we afford?

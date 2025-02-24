@@ -690,7 +690,7 @@ int CObjectTeleporter::Command_Repair( CTFPlayer *pActivator, float flAmount, fl
 		{
 			float flRepairAmountMax = flAmount * flRepairMod;
 			int iRepairAmount = Min( flRepairAmountMax, pMatch->GetMaxHealth() - pMatch->GetHealth() );
-			int iRepairCost = ceil( (float)iRepairAmount / flRepairToMetalRatio );
+			int iRepairCost = Ceil2Int( (float)iRepairAmount / flRepairToMetalRatio );
 			if ( iRepairCost > pActivator->GetBuildResources() )
 			{
 				// What can we afford?
