@@ -1,0 +1,37 @@
+[
+  {
+    "name": "public",
+    "description": "",
+    "protected": false,
+    "build_id": 17413218,
+    "time_updated": 1739912603
+  },
+  {
+    "name": "previous",
+    "description": "The previous release",
+    "protected": false,
+    "build_id": 4259091,
+    "time_updated": 1625518868
+  },
+  {
+    "name": "previous_upcoming",
+    "description": "The obsolete \"upcoming\" prerelease build",
+    "protected": false,
+    "build_id": 397636,
+    "time_updated": 1463012265
+  },
+  {
+    "name": "prerelease",
+    "description": "",
+    "protected": false,
+    "build_id": 17413218,
+    "time_updated": 1739912611
+  },
+  {
+    "name": "previous2021",
+    "description": "Previous Build",
+    "protected": false,
+    "build_id": 6982830,
+    "time_updated": 1739910079
+  }
+]
