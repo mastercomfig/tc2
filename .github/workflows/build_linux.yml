@@ -22,15 +22,19 @@ jobs:
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip -d ~/.local/bin/ butler.zip
           chmod +x ~/.local/bin/butler
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       - name: Build dist
+        id: build-dist
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache
         run: |
           mkdir -p $CCACHE_DIR
           ./src/buildallprojects
-          ./game_clean/publish.sh
+          ./game_clean/copy.sh
+      - name: Push to Itch
+        id: itch
+        run: ./game_clean/push.sh
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
