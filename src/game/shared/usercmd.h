@@ -171,7 +171,8 @@ public:
 #if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
 	CUtlVector< CEntityGroundContact > entitygroundcontact;
 #endif
-
+	// Attack lerp time
+	double lerp_time;
 };
 
 void ReadUsercmd( bf_read *buf, CUserCmd *move, CUserCmd *from );

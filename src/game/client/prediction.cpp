@@ -830,8 +830,14 @@ void CPrediction::RunPostThink( C_BasePlayer *player )
 #if !defined( NO_ENTITY_PREDICTION )
 	VPROF( "CPrediction::RunPostThink" );
 
+	// Mark that we're in post-think
+	player->SetInPostThink(true);
+
 	// Run post-think
 	player->PostThink();
+
+	// Clear post-think flag
+	player->SetInPostThink(false);
 #endif
 }
 

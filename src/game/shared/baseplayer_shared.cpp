@@ -329,9 +329,14 @@ const QAngle &CBasePlayer::LocalEyeAngles()
 //-----------------------------------------------------------------------------
 // Actual Eye position + angles
 //-----------------------------------------------------------------------------
-Vector CBasePlayer::EyePosition( )
+Vector CBasePlayer::EyePosition()
 {
-	if ( GetVehicle() != NULL )
+	if (IsInPostThink() && HasAttackInterpolationData())
+	{
+		return GetInterpolatedEyePosition();
+	}
+
+	if (GetVehicle() != NULL)
 	{
 		// Return the cached result
 		CacheVehicleView();
@@ -340,11 +345,11 @@ Vector CBasePlayer::EyePosition( )
 	else
 	{
 #ifdef CLIENT_DLL
-		if ( IsObserver() )
+		if (IsObserver())
 		{
-			if ( GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI )
+			if (GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI)
 			{
-				if ( IsLocalPlayer() )
+				if (IsLocalPlayer())
 				{
 					return MainViewOrigin();
 				}
@@ -2096,3 +2101,51 @@ bool fogparams_t::operator !=( const fogparams_t& other ) const
 	return false;
 }
 
+void CBasePlayer::SetAttackInterpolationData(const QAngle& viewAngles, float interpolationAmount)
+{
+	m_angAttackViewAngles = viewAngles;
+	m_flAttackInterpolationAmount = interpolationAmount;
+	m_bHasAttackInterpolationData = true;
+
+	// Calculate lerp time, clamped between 0 and 1
+	m_flAttackLerpTime = clamp(interpolationAmount, 0.0f, 1.0f);
+}
+
+void CBasePlayer::GetAttackInterpolationData(QAngle& viewAngles, float& lerpTime)
+{
+	viewAngles = m_angAttackViewAngles;
+	lerpTime = m_flAttackLerpTime;
+}
+
+bool CBasePlayer::HasAttackInterpolationData() const
+{
+	return m_bHasAttackInterpolationData;
+}
+
+void CBasePlayer::ClearAttackInterpolationData()
+{
+	m_bHasAttackInterpolationData = false;
+}
+
+void CBasePlayer::SetInPostThink(bool inPostThink)
+{
+	m_bInPostThink = inPostThink;
+}
+
+bool CBasePlayer::IsInPostThink() const
+{
+	return m_bInPostThink;
+}
+
+Vector CBasePlayer::GetInterpolatedEyePosition()
+{
+	if (!IsInPostThink() || !HasAttackInterpolationData())
+		return EyePosition();
+
+	// Interpolate between last tick's position and current position
+	Vector lastPos = GetPreviouslyPredictedOrigin() + GetViewOffset();
+	SetInPostThink(false); // so we don't overflow here
+	Vector currentPos = EyePosition();
+	SetInPostThink(true);
+	return lastPos + (currentPos - lastPos) * m_flAttackLerpTime;
+}

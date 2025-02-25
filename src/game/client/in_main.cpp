@@ -1061,6 +1061,31 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 	cmd->buttons = GetButtonBits( 0 );
 #endif
 
+	// Check if this is an attack frame
+	bool bIsAttackFrame = false;
+	
+	C_BaseCombatWeapon* pWeapon = NULL;
+	C_BasePlayer* pPlayer = CBasePlayer::GetLocalPlayer();
+	if (pPlayer)
+		pWeapon = pPlayer->GetActiveWeapon();
+
+	if (pWeapon) {
+		// Check primary attack
+		if ((cmd->buttons & IN_ATTACK) && pWeapon->m_flNextPrimaryAttack <= (gpGlobals->curtime + (gpGlobals->interpolation_amount * gpGlobals->interval_per_tick))) {
+			bIsAttackFrame = true;
+		}
+		// Check secondary attack
+		else if ((cmd->buttons & IN_ATTACK2) && pWeapon->m_flNextSecondaryAttack <= (gpGlobals->curtime + (gpGlobals->interpolation_amount * gpGlobals->interval_per_tick))) {
+			bIsAttackFrame = true;
+		}
+	}
+
+	if (bIsAttackFrame && !pPlayer->HasAttackInterpolationData()) {
+		// Store attack data
+		pPlayer->SetAttackInterpolationData(viewangles, gpGlobals->interpolation_amount);
+	}
+
+
 	// Use new view angles if alive, otherwise user last angles we stored off.
 	if ( g_iAlive )
 	{
@@ -1161,6 +1186,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 			ResetMouse();
 		}
 	}
+
 	// Retreive view angles from engine ( could have been set in IN_AdjustAngles above )
 	engine->GetViewAngles( viewangles );
 
@@ -1270,6 +1296,42 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	m_flLastForwardMove = cmd->forwardmove;
 
 	cmd->random_seed = MD5_PseudoRandom( sequence_number ) & 0x7fffffff;
+
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	bool bUseAttackData = pPlayer && pPlayer->HasAttackInterpolationData();
+
+	// If we have attack data, use it
+	if (bUseAttackData) {
+		QAngle attackAngles;
+		float lerpTime;
+
+		pPlayer->GetAttackInterpolationData(attackAngles, lerpTime);
+
+		// Store original angles before applying stored attack angles
+		QAngle currentAngles = viewangles;
+
+		// Apply attack data to command
+		cmd->viewangles = attackAngles;
+		cmd->lerp_time = lerpTime;
+
+		// Fix movement commands for new viewangles
+		float deltaYaw = DEG2RAD(viewangles[YAW] - currentAngles[YAW]);
+		float s = sin(deltaYaw);
+		float c = cos(deltaYaw);
+
+		// Store original movement values
+		float forwardmove = cmd->forwardmove;
+		float sidemove = cmd->sidemove;
+
+		// Adjust movement values based on angle change
+		cmd->forwardmove = (c * forwardmove) - (s * sidemove);
+		cmd->sidemove = (s * forwardmove) + (c * sidemove);
+
+		pPlayer->ClearAttackInterpolationData();
+	}
+	else {
+		cmd->lerp_time = 1.0f;
+	}
 
 	HLTVCamera()->CreateMove( cmd );
 #if defined( REPLAY_ENABLED )

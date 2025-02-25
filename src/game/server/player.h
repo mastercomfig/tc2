@@ -844,7 +844,13 @@ public:
 	// How long since this player last interacted with something the game considers an objective/target/goal
 	float				GetTimeSinceLastObjective( void ) const { return ( m_flLastObjectiveTime == -1.f ) ? 999.f : gpGlobals->curtime - m_flLastObjectiveTime; }
 	void				SetLastObjectiveTime( float flTime ) { m_flLastObjectiveTime = flTime; }
-
+	void				SetAttackInterpolationData(const QAngle& viewAngles, float interpolationAmount);
+	void				GetAttackInterpolationData(QAngle& viewAngles, float& lerpTime);
+	bool				HasAttackInterpolationData() const;
+	void				ClearAttackInterpolationData();
+	void				SetInPostThink(bool inPostThink);
+	bool				IsInPostThink() const;
+	Vector					GetInterpolatedEyePosition();
 	// Used by gamemovement to check if the entity is stuck.
 	int m_StuckLast;
 	
@@ -1262,6 +1268,12 @@ private:
 
 	// used to prevent achievement announcement spam
 	CUtlVector< float >		m_flAchievementTimes;
+	QAngle m_angAttackViewAngles;     // Stored view angles during attack
+	float m_flAttackInterpolationAmount; // Interpolation amount when attack was issued
+	bool m_bHasAttackInterpolationData;  // Whether we have valid data
+	int m_nAttackButtons;             // Buttons pressed during attack
+	float m_flAttackLerpTime;         // Calculated lerp time for the attack
+	bool m_bInPostThink;              // Flag for post-think state
 
 public:
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false ) const;	// returns the solid mask for the given player, so bots can have a more-restrictive set
