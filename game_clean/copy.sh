@@ -44,6 +44,11 @@ declare -a FILES=(
   ../steam-lan/steamclient.so
   ../steam-lan/steamclient64.so
   ../steam-lan/libsteam_api.so
+  ../steam-lan/steamclient_loader.exe
+  ../steam-lan/steamclient.dll
+  ../steam-lan/steamclient64.dll
+  ../steam-lan/GameOverlayRenderer64.dll
+  ../steam-lan/ColdClientLoader.ini
 )
 
 if [ $PLATFORM = "win" ]; then
