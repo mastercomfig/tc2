@@ -22,6 +22,8 @@ jobs:
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip -d ~/.local/bin/ butler.zip
           chmod +x ~/.local/bin/butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       - name: Build dist
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache
