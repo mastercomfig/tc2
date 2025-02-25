@@ -468,7 +468,7 @@ void CHudMenuEngyBuild::SendBuildMessage( int iSlot )
 		iBuildDisposableSents = pLocalPlayer->CanBuild( iBuilding, iMode );
 	}
 
-	if (pLocalPlayer->m_Shared.IsCarryingObject())
+	if (pLocalPlayer->m_Shared.IsCarryingObject() && pLocalPlayer->m_Shared.GetCarriedObject())
 	{
 		if (pLocalPlayer->m_Shared.GetCarriedObject()->GetType() != iBuilding || pLocalPlayer->m_Shared.GetCarriedObject()->GetObjectMode() != iMode)
 		{
@@ -566,9 +566,30 @@ void CHudMenuEngyBuild::OnTick( void )
 
 		int iCost = pLocalPlayer->m_Shared.CalculateObjectCost( pLocalPlayer, iRemappedObjectID );
 		bool bAvailable = CanBuild( i + 1 );
+		int iCanPlayerBuild = pLocalPlayer->CanBuild(iRemappedObjectID, iMode);
+
+		bool bObjectIsCarried = false;
+
+		if (pLocalPlayer->m_Shared.IsCarryingObject() && pLocalPlayer->m_Shared.GetCarriedObject())
+		{
+			if (pLocalPlayer->m_Shared.GetCarriedObject()->GetType() != iRemappedObjectID || pLocalPlayer->m_Shared.GetCarriedObject()->GetObjectMode() != iMode)
+			{
+				// Make everything but our carried object unavailable.
+				bAvailable = false;
+			}
+			else
+			{
+				bObjectIsCarried = true;
+				if (iCanPlayerBuild == CB_NEED_RESOURCES || iCanPlayerBuild == CB_LIMIT_REACHED)
+				{
+					// Since we're going to place the same building, we can ignore these.
+					iCanPlayerBuild = CB_CAN_BUILD;
+				}
+			}
+		}
 
 		// If the building is already built, and we don't have an ability to build more than one (sentry)
-		if ( pObj != NULL && !pObj->IsPlacing() && !( pLocalPlayer->CanBuild( iRemappedObjectID, iMode ) == CB_CAN_BUILD ) )
+		if ( pObj != NULL && !pObj->IsPlacing() && !bObjectIsCarried && !( iCanPlayerBuild == CB_CAN_BUILD ) )
 		{
 			m_pAlreadyBuiltObjects[i]->SetVisible( true );
 		}
@@ -578,7 +599,7 @@ void CHudMenuEngyBuild::OnTick( void )
 			m_pUnavailableObjects[i]->SetVisible( true );
 		}
 		// See if we can afford it
-		else if ( iAccount < iCost )
+		else if (pObj->IsPlacing() || bObjectIsCarried || iAccount < iCost )
 		{
 			m_pCantAffordObjects[i]->SetVisible( true );
 		}

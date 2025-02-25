@@ -525,10 +525,11 @@ bool CObjectDispenser::DispenseAmmo( CTFPlayer *pPlayer )
 
 	int nNoPrimaryAmmoFromDispensersWhileActive = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer->GetActiveWeapon(), nNoPrimaryAmmoFromDispensersWhileActive, no_primary_ammo_from_dispensers );
-	// MCOMS_BALANCE_PACK
+#ifdef MCOMS_BALANCE_PACK
 	// moving away from this stat:
 	// all items can receive ammo now, we'll balance the items for this
 	nNoPrimaryAmmoFromDispensersWhileActive = 0;
+#endif
 
 	float flAmmoRate = g_flDispenserAmmoRates[GetUpgradeLevel()];
 
@@ -548,10 +549,11 @@ bool CObjectDispenser::DispenseAmmo( CTFPlayer *pPlayer )
 	// metal
 	int iNoMetalFromDispenserWhileActive = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer->GetActiveWeapon(), iNoMetalFromDispenserWhileActive, no_metal_from_dispensers_while_active );
-	// MCOMS_BALANCE_PACK
+#ifdef MCOMS_BALANCE_PACK
 	// moving away from this stat:
 	// all items can receive metal now, we'll balance the items for this
 	iNoMetalFromDispenserWhileActive = 0;
+#endif
 	if ( iNoMetalFromDispenserWhileActive == 0 )
 	{
 		iTotalPickedUp += DispenseMetal( pPlayer );

@@ -306,12 +306,14 @@ void CObjectSentrygun::SentryThink( void )
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
 
+#ifdef MCOMS_BALANCE_PACK
 	// shield after disabling
 	const float flTimeTillFade = m_flShieldFadeTime - gpGlobals->curtime;
 	if ( m_nShieldLevel == 0 && flTimeTillFade > 0.001f && !m_bPlayerControlled && !IsCarried() )
 	{
 		m_nShieldLevel.Set( SHIELD_NORMAL );
 	}
+#endif
 	if ( m_nShieldLevel > 0 && (gpGlobals->curtime > m_flShieldFadeTime) )
 	{
 		m_nShieldLevel.Set( SHIELD_NONE );
@@ -885,9 +887,12 @@ bool CObjectSentrygun::FindTarget()
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
 			m_bPlayerControlled = true;
+#ifdef MCOMS_BALANCE_PACK
 			// no shield
-			//m_nShieldLevel.Set( SHIELD_NORMAL );
 			m_nShieldLevel.Set(SHIELD_NONE);
+#else
+			m_nShieldLevel.Set( SHIELD_NORMAL );
+#endif
 			m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
 
 			// If not target dummy, use laserdot, otherwise targetdummy overrides
@@ -1320,7 +1325,7 @@ void CObjectSentrygun::Attack()
 		// This is different for each type because of how the boost worked before the firing speed fix.
 		if ( m_bPlayerControlled )
 		{
-#if 1
+#ifdef MCOMS_BALANCE_PACK
 			vecFireRateBoosts.push_back(0.5f);
 #else
 			if (IsMiniBuilding())
@@ -1435,15 +1440,21 @@ bool CObjectSentrygun::FireRocket()
 			pProjectile->SetDamage( iDamage );
 		}
 
+		float flRocketTime = 3;
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-			m_flNextRocketAttack = gpGlobals->curtime + 1.5;
+#ifdef MCOMS_BALANCE_PACK
+			float flPlayerRocketTime = flRocketTime / 2.0f;
+#else
+			float flPlayerRocketTime = 2.25f;
+#endif
+			m_flNextRocketAttack = gpGlobals->curtime + flPlayerRocketTime;
 		}
 		else
 		{
 			AddGesture( ACT_RANGE_ATTACK2 );
-			m_flNextRocketAttack = gpGlobals->curtime + 3;
+			m_flNextRocketAttack = gpGlobals->curtime + flRocketTime;
 		}
 
 		if ( !tf_sentrygun_ammocheat.GetBool() && !HasSpawnFlags( SF_SENTRY_INFINITE_AMMO ) )
