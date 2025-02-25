@@ -3622,8 +3622,6 @@ void CBaseObject::MakeCarriedObject( CTFPlayer *pCarrier )
 {
 	if ( pCarrier )
 	{
-		// MCOMS_BALANCE_PACK
-
 		// Make the object inactive.
 		m_bCarried = true;
 		m_bCarryDeploy = false;
