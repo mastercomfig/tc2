@@ -399,7 +399,7 @@ void CHudEurekaEffectTeleportMenu::OnTick( void )
 					    && !pObj->IsBuilding()
 					    && !pObj->IsPlacing()
 					    && !pObj->IsUpgrading()
-					    && !pObj->IsCarried();
+					    && (!pObj->IsCarried() || pObj->ShouldBeActiveWhileCarried());
 
 	m_pAvilableTargets[ EUREKA_TELEPORT_TELEPORTER_EXIT ]->SetVisible( bTeleAvailable );
 	m_pUnavailableTargets[ EUREKA_TELEPORT_TELEPORTER_EXIT ]->SetVisible( !bTeleAvailable );

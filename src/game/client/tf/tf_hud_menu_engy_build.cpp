@@ -468,8 +468,17 @@ void CHudMenuEngyBuild::SendBuildMessage( int iSlot )
 		iBuildDisposableSents = pLocalPlayer->CanBuild( iBuilding, iMode );
 	}
 
+	if (pLocalPlayer->m_Shared.IsCarryingObject())
+	{
+		if (pLocalPlayer->m_Shared.GetCarriedObject()->GetType() != iBuilding || pLocalPlayer->m_Shared.GetCarriedObject()->GetObjectMode() != iMode)
+		{
+			pLocalPlayer->EmitSound("Player.DenyWeaponSelection");
+			return;
+		}
+	}
+
 	// If we don't already have a sentry (NULL), or we're allowed to build multiple, and we can afford it
-	if ( ( pObj == NULL || iBuildDisposableSents == CB_CAN_BUILD ) && pLocalPlayer->GetAmmoCount( TF_AMMO_METAL ) >= iCost )
+	if ( ( pObj == NULL || iBuildDisposableSents == CB_CAN_BUILD ) && pLocalPlayer->GetAmmoCount( TF_AMMO_METAL ) >= iCost || pObj != NULL && pObj->IsCarried() )
 	{
 		char szCmd[128];
 		Q_snprintf( szCmd, sizeof(szCmd), "build %d %d", iBuilding, iMode );

@@ -308,7 +308,7 @@ void CTFHudSpectatorExtras::OnTick()
 				}
 				else
 				{
-					switch ( pObject->GetUpgradeLevel() )
+					switch ( MIN(pObject->GetUpgradeLevel(), 3) )
 					{
 					case 1:
 						m_vecEntitiesToDraw[nVecIndex].m_nOffset = 50;
