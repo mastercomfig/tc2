@@ -36,14 +36,14 @@ declare -a FILES_REP=(
 declare -a FILES=(
   ../thirdpartylegalnotices.txt
   ../LICENSE
-	../steam-lan/steam_settings
-	../steam-lan/ldr_appid.txt
-	../steam-lan/ldr_exe.txt
-	../steam-lan/ldr_steam_rt.txt
-	../steam-lan/steamclient_loader.sh
-	../steam-lan/steamclient.so
-	../steam-lan/steamclient64.so
-	../steam-lan/libsteam_api.so
+  ../steam-lan/steam_settings
+  ../steam-lan/ldr_appid.txt
+  ../steam-lan/ldr_exe.txt
+  ../steam-lan/ldr_steam_rt.txt
+  ../steam-lan/steamclient_loader.sh
+  ../steam-lan/steamclient.so
+  ../steam-lan/steamclient64.so
+  ../steam-lan/libsteam_api.so
 )
 
 if [ $PLATFORM = "win" ]; then
@@ -78,7 +78,6 @@ elif [ $PLATFORM = "linux" ]; then
 
   declare -a DLLS_LIB=(
     bin/$PLAT_DIR/libsteam_api
-		bin/$PLAT_DIR/steamclient
   )
 
   FILES+=(
