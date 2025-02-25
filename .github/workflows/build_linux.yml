@@ -17,7 +17,7 @@ jobs:
       - name: Setup Butler
         id: setup-butler
         run: |
-          apt-get install unzip
+          sudo apt-get install unzip
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip -d ~/.local/bin/ butler.zip
           chmod +x ~/.local/bin/butler
