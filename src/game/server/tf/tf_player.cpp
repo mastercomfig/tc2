@@ -7628,7 +7628,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 				return true;
 
 			// can't issue a build command while carrying an object
-			if ( m_Shared.IsCarryingObject() )
+			if ( m_Shared.IsCarryingObject() && !m_Shared.GetCarriedObject()->ShouldBeActiveWhileCarried() )
 				return true;
 
 			if ( IsTaunting() )

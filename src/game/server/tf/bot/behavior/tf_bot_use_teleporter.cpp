@@ -47,7 +47,7 @@ bool CTFBotUseTeleporter::IsTeleporterAvailable( void ) const
 		if ( m_teleporter->GetState() == TELEPORTER_STATE_SENDING ||
 			 m_teleporter->GetState() == TELEPORTER_STATE_RECHARGING )
 		{
-			if ( m_teleporter->GetUpgradeLevel() == 3 )
+			if ( m_teleporter->GetUpgradeLevel() >= 3 )
 			{
 				// we'll wait for level 3 teleporters - they're really fast
 				return true;
