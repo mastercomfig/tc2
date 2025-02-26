@@ -13,8 +13,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
-          key: ${{ runner.os }}-ccache-${{ github.ref }}
-          restoreKey: ${{ runner.os }}-ccache-
+          key: ${{ runner.os }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
       - name: Setup Butler
         id: setup-butler
         run: |
@@ -27,6 +28,7 @@ jobs:
         id: build-dist
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache
+          CCACHE_COMPRESSLEVEL: 6
         run: |
           mkdir -p $CCACHE_DIR
           ./src/buildallprojects
