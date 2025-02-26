@@ -634,6 +634,9 @@ private:
 	bool m_bHasAttackInterpolationData;  // Whether we have valid data
 	float m_flAttackLerpTime;         // Calculated lerp time for the attack
 	bool m_bInPostThink;              // Flag for post-think state
+	int m_nLastTickCount;               // The tick count from the last time we processed
+	Vector m_vecLastTickEyePosition;    // Eye position from the last tick
+	Vector m_vecCurrentTickEyePosition; // Current eye position for this tick
 
 	struct StepSoundCache_t
 	{

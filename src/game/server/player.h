@@ -1274,6 +1274,9 @@ private:
 	int m_nAttackButtons;             // Buttons pressed during attack
 	float m_flAttackLerpTime;         // Calculated lerp time for the attack
 	bool m_bInPostThink;              // Flag for post-think state
+	int m_nLastTickCount;               // The tick count from the last time we processed
+	Vector m_vecLastTickEyePosition;    // Eye position from the last tick
+	Vector m_vecCurrentTickEyePosition; // Current eye position for this tick
 
 public:
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false ) const;	// returns the solid mask for the given player, so bots can have a more-restrictive set

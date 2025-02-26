@@ -345,7 +345,6 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 void CLagCompensationManager::StartLagCompensation(CBasePlayer* player, CUserCmd* cmd)
 {
 	Assert(!m_isCurrentlyDoingCompensation);
-
 	//DONT LAG COMP AGAIN THIS FRAME IF THERES ALREADY ONE IN PROGRESS
 	//IF YOU'RE HITTING THIS THEN IT MEANS THERES A CODE BUG
 	if (m_pCurrentPlayer)
@@ -354,13 +353,10 @@ void CLagCompensationManager::StartLagCompensation(CBasePlayer* player, CUserCmd
 		Warning("Trying to start a new lag compensation session while one is already active!\n");
 		return;
 	}
-
 	// Assume no players need to be restored
 	m_RestorePlayer.ClearAll();
 	m_bNeedToRestore = false;
-
 	m_pCurrentPlayer = player;
-
 	if (!player->m_bLagCompensation        // Player not wanting lag compensation
 		|| (gpGlobals->maxClients <= 1)    // no lag compensation in single player
 		|| !sv_unlag.GetBool()             // disabled by server admin
@@ -368,36 +364,26 @@ void CLagCompensationManager::StartLagCompensation(CBasePlayer* player, CUserCmd
 		|| player->IsObserver()            // not for spectators
 		)
 		return;
-
 	// NOTE: Put this here so that it won't show up in single player mode.
 	VPROF_BUDGET("StartLagCompensation", VPROF_BUDGETGROUP_OTHER_NETWORKING);
 	Q_memset(m_RestoreData, 0, sizeof(m_RestoreData));
 	Q_memset(m_ChangeData, 0, sizeof(m_ChangeData));
-
 	m_isCurrentlyDoingCompensation = true;
-
 	// Get true latency
-
 	// correct is the amount of time we have to correct game time
 	float correct = 0.0f;
-
 	INetChannelInfo* nci = engine->GetPlayerNetInfo(player->entindex());
-
 	if (nci)
 	{
 		// add network latency
 		correct += nci->GetLatency(FLOW_OUTGOING);
 	}
 
-	// calc number of view interpolation ticks - 1
-	int lerpTicks = TIME_TO_TICKS(player->m_fLerpTime);
-
-	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
-	correct += TICKS_TO_TIME(lerpTicks);
+	// add view interpolation latency directly using player's lerp time
+	correct += player->m_fLerpTime;
 
 	// check bounds [0,sv_maxunlag]
 	correct = clamp(correct, 0.0f, sv_maxunlag.GetFloat());
-
 	// adjust attack timing if we have valid interpolation data
 	float extraTime = 0.0f;
 	if (cmd->lerp_time > 0.0f && cmd->lerp_time <= 1.0f)
@@ -405,43 +391,34 @@ void CLagCompensationManager::StartLagCompensation(CBasePlayer* player, CUserCmd
 		// Add fraction of a tick based on lerp_time
 		extraTime = cmd->lerp_time * TICK_INTERVAL;
 	}
-
 	// correct tick send by player 
-	int targettick = cmd->tick_count - lerpTicks;
-
+	int targettick = cmd->tick_count - TIME_TO_TICKS(player->m_fLerpTime);
 	// calc difference between tick send by player and our latency based tick
 	float deltaTime = correct - TICKS_TO_TIME(gpGlobals->tickcount - targettick);
-
 	if (fabs(deltaTime) > 0.2f)
 	{
 		// difference between cmd time and latency is too big > 200ms, use time correction based on latency
 		targettick = gpGlobals->tickcount - TIME_TO_TICKS(correct);
 	}
-
 	// Add the interpolation amount
 	float targettime = TICKS_TO_TIME(targettick) + extraTime;
-
 	// Iterate all active players
 	const CBitVec<MAX_EDICTS>* pEntityTransmitBits = engine->GetEntityTransmitBitsForClient(player->entindex() - 1);
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
-
 		if (!pPlayer)
 		{
 			continue;
 		}
-
 		// Don't lag compensate yourself you loser...
 		if (player == pPlayer)
 		{
 			continue;
 		}
-
 		// Custom checks for if things should lag compensate (based on things like what team the player is on).
 		if (!player->WantsLagCompensationOnEntity(pPlayer, cmd, pEntityTransmitBits))
 			continue;
-
 		// Move other player back in time
 		BacktrackPlayer(pPlayer, targettime);
 	}

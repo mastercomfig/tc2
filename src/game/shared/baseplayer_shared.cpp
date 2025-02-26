@@ -2142,10 +2142,32 @@ Vector CBasePlayer::GetInterpolatedEyePosition()
 	if (!IsInPostThink() || !HasAttackInterpolationData())
 		return EyePosition();
 
-	// Interpolate between last tick's position and current position
-	Vector lastPos = GetPreviouslyPredictedOrigin() + GetViewOffset();
-	SetInPostThink(false); // so we don't overflow here
-	Vector currentPos = EyePosition();
+	int currentTickCount = gpGlobals->tickcount;
+	SetInPostThink(false);
+	Vector currentEyePosition = EyePosition();
 	SetInPostThink(true);
-	return lastPos + (currentPos - lastPos) * m_flAttackLerpTime;
+
+	// First call or tick count dropped
+	if (m_nLastTickCount <= 0 || currentTickCount < m_nLastTickCount)
+	{
+		// Initialize both positions
+		m_nLastTickCount = currentTickCount;
+		m_vecLastTickEyePosition = currentEyePosition;
+		m_vecCurrentTickEyePosition = currentEyePosition;
+		return currentEyePosition;
+	}
+
+	// If this is a new tick
+	if (currentTickCount > m_nLastTickCount)
+	{
+		// Update the last tick's position
+		m_vecLastTickEyePosition = m_vecCurrentTickEyePosition;
+		m_nLastTickCount = currentTickCount;
+	}
+
+	// Update the current eye position
+	m_vecCurrentTickEyePosition = currentEyePosition;
+
+	// Interpolate between the last tick's position and the current position
+	return m_vecLastTickEyePosition + (m_vecCurrentTickEyePosition - m_vecLastTickEyePosition) * m_flAttackLerpTime;
 }
