@@ -630,9 +630,9 @@ protected:
 
 private:
 	QAngle m_angAttackViewAngles;     // Stored view angles during attack
-	float m_flAttackInterpolationAmount; // Interpolation amount when attack was issued
-	bool m_bHasAttackInterpolationData;  // Whether we have valid data
-	float m_flAttackLerpTime;         // Calculated lerp time for the attack
+	float m_flAttackInterpolationAmount = 1.0f; // Interpolation amount when attack was issued
+	bool m_bHasAttackInterpolationData = false;  // Whether we have valid data
+	float m_flAttackLerpTime = 1.0f;         // Calculated lerp time for the attack
 	bool m_bInPostThink;              // Flag for post-think state
 	int m_nLastTickCount;               // The tick count from the last time we processed
 	Vector m_vecLastTickEyePosition;    // Eye position from the last tick

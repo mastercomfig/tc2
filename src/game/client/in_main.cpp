@@ -1332,7 +1332,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	else {
 		cmd->lerp_time = 1.0f;
 	}
-
+	//Msg("CreateMove lerp_time was: %f\n", cmd->lerp_time);
 	HLTVCamera()->CreateMove( cmd );
 #if defined( REPLAY_ENABLED )
 	ReplayCamera()->CreateMove( cmd );

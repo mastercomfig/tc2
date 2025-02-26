@@ -2136,7 +2136,6 @@ bool CBasePlayer::IsInPostThink() const
 {
 	return m_bInPostThink;
 }
-
 Vector CBasePlayer::GetInterpolatedEyePosition()
 {
 	if (!IsInPostThink() || !HasAttackInterpolationData())
@@ -2169,5 +2168,34 @@ Vector CBasePlayer::GetInterpolatedEyePosition()
 	m_vecCurrentTickEyePosition = currentEyePosition;
 
 	// Interpolate between the last tick's position and the current position
-	return m_vecLastTickEyePosition + (m_vecCurrentTickEyePosition - m_vecLastTickEyePosition) * m_flAttackLerpTime;
+	Vector interpolatedPosition = m_vecLastTickEyePosition + (m_vecCurrentTickEyePosition - m_vecLastTickEyePosition) * m_flAttackLerpTime;
+
+	// Calculate the distance between interpolated position and regular eye position
+	float distance = (interpolatedPosition - currentEyePosition).Length();
+
+	// Log the distance using Msg()
+	//Msg("Interpolated eye position distance from regular eye position: %.3f units, m_flAttackLerpTime: %f\n", distance, m_flAttackLerpTime);
+
+	return interpolatedPosition;
 }
+/*
+Vector CBasePlayer::GetInterpolatedEyePosition()
+{
+	if (!IsInPostThink() || !HasAttackInterpolationData())
+		return EyePosition();
+
+	int currentTickCount = gpGlobals->tickcount;
+	SetInPostThink(false);
+	Vector currentEyePosition = EyePosition();
+	SetInPostThink(true);
+
+	Vector interpolatedPosition = (GetPreviouslyPredictedOrigin() + GetViewOffset()) + (currentEyePosition - (GetPreviouslyPredictedOrigin() + GetViewOffset())) * m_flAttackLerpTime;
+
+	// Calculate the distance between interpolated position and regular eye position
+	float distance = (interpolatedPosition - currentEyePosition).Length();
+
+	// Log the distance using Msg()
+	Msg("Interpolated eye position distance from regular eye position: %.3f units, m_flAttackLerpTime: %f\n", distance, m_flAttackLerpTime);
+
+	return interpolatedPosition;
+}*/

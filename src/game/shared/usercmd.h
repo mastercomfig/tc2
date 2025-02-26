@@ -56,7 +56,7 @@ public:
 #endif
 		mousedx = 0;
 		mousedy = 0;
-
+		lerp_time = 1.0f;
 		hasbeenpredicted = false;
 #if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
 		entitygroundcontact.RemoveAll();
@@ -84,7 +84,7 @@ public:
 #endif
 		mousedx				= src.mousedx;
 		mousedy				= src.mousedy;
-
+		lerp_time = src.lerp_time;
 		hasbeenpredicted	= src.hasbeenpredicted;
 
 #if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )

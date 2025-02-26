@@ -452,6 +452,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
 	moveHelper->ProcessImpacts();
 	VPROF_SCOPE_END();
+	//Msg("CPlayerMove::RunCommand lerp_time was: %f\n", ucmd->lerp_time);
 	player->SetAttackInterpolationData(ucmd->viewangles, ucmd->lerp_time);
 	RunPostThink( player );
 
