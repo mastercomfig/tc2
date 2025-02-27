@@ -347,7 +347,10 @@ bool CBaseObject::ShouldBeActive( void )
 		return false;
 
 	// Placing and/or constructing objects shouldn't be active
-	if ( IsPlacing() || IsBuilding() || IsCarried() )
+	if ( IsPlacing() || IsBuilding() )
+		return false;
+
+	if (IsCarried() && !ShouldBeActiveWhileCarried())
 		return false;
 
 	return true;

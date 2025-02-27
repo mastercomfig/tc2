@@ -17,6 +17,6 @@ PROJECT_STR="mastercoms/tc2"
 BRANCH_STR=stable
 CHANNEL_STR=${PLATFORM}-${BRANCH_STR}
 
-butler push "${CLEAN_DIR}" "${PROJECT_STR}:${CHANNEL_STR}" "--userversion" "${VERSION}"
+#butler push "${CLEAN_DIR}" "${PROJECT_STR}:${CHANNEL_STR}" "--userversion" "${VERSION}"
 
 rm -f ${TARGET_MANIFEST}

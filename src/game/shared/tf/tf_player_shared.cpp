@@ -728,7 +728,7 @@ bool CTFPlayer::IsAllowedToTaunt( void )
 	}
 
 	// can't taunt while carrying an object
-	if ( m_Shared.IsCarryingObject() )
+	if ( m_Shared.IsCarryingObject() && !m_Shared.GetCarriedObject()->ShouldBeActiveWhileCarried() )
 		return false;
 
 	// Can't taunt if hooked into a player
@@ -12554,14 +12554,17 @@ bool CTFPlayer::TryToPickupBuilding()
 
 		pPickupObject->MakeCarriedObject( this );
 
-		CTFWeaponBuilder *pBuilder = dynamic_cast<CTFWeaponBuilder*>(Weapon_OwnsThisID( TF_WEAPON_BUILDER ));
-		if ( pBuilder )
+		if (!pPickupObject->ShouldBeActiveWhileCarried())
 		{
-			if ( GetActiveTFWeapon() == pBuilder )
-				SetActiveWeapon( NULL );
+			CTFWeaponBuilder* pBuilder = dynamic_cast<CTFWeaponBuilder*>(Weapon_OwnsThisID(TF_WEAPON_BUILDER));
+			if (pBuilder)
+			{
+				if (GetActiveTFWeapon() == pBuilder)
+					SetActiveWeapon(NULL);
 
-			Weapon_Switch( pBuilder );
-			pBuilder->m_flNextSecondaryAttack = gpGlobals->curtime + 0.5f;
+				Weapon_Switch(pBuilder);
+				pBuilder->m_flNextSecondaryAttack = gpGlobals->curtime + 0.5f;
+			}
 		}
 
 		SpeakConceptIfAllowed( MP_CONCEPT_PICKUP_BUILDING, pPickupObject->GetResponseRulesModifier() );
@@ -12705,7 +12708,7 @@ bool CTFPlayer::Weapon_CanSwitchTo( CBaseCombatWeapon *pWeapon )
 				return false;
 		}
 
-		if ( m_Shared.IsCarryingObject() && (GetPlayerClass()->GetClassIndex() == TF_CLASS_ENGINEER) )
+		if ( m_Shared.IsCarryingObject() && (GetPlayerClass()->GetClassIndex() == TF_CLASS_ENGINEER) && !m_Shared.GetCarriedObject()->ShouldBeActiveWhileCarried() )
 		{
 			CTFWeaponBase *pTFWeapon = dynamic_cast<CTFWeaponBase*>( pWeapon );
 			if ( pTFWeapon && (pTFWeapon->GetWeaponID() != TF_WEAPON_BUILDER) )

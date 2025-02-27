@@ -49,6 +49,9 @@ int g_iTeleporterRechargeTimes[4] =
 IMPLEMENT_SERVERCLASS_ST( CObjectTeleporter, DT_ObjectTeleporter )
 	SendPropInt( SENDINFO(m_iState), 5 ),
 	SendPropTime( SENDINFO(m_flRechargeTime) ),
+	SendPropInt(SENDINFO(m_iTeleportCooldownUsers), 5),
+	SendPropTime(SENDINFO(m_flTeleportCooldownTime)),
+	SendPropTime(SENDINFO(m_flRechargeTime)),
 	SendPropTime( SENDINFO(m_flCurrentRechargeDuration) ),
 	SendPropInt( SENDINFO(m_iTimesUsed), 10, SPROP_UNSIGNED ),
 	SendPropFloat( SENDINFO(m_flYawToExit), 8, 0, 0.0, 360.0f ),
@@ -61,12 +64,14 @@ BEGIN_DATADESC( CObjectTeleporter )
 	DEFINE_KEYFIELD( m_iszMatchingMapPlacedTeleporter,	FIELD_STRING, "matchingTeleporter" ),
 	// other
 	DEFINE_THINKFUNC( TeleporterThink ),
+	DEFINE_THINKFUNC( TeleporterUpgradeThink ),
 	DEFINE_ENTITYFUNC( TeleporterTouch ),
 END_DATADESC()
 
 PRECACHE_REGISTER( obj_teleporter );
 
 #define TELEPORTER_THINK_CONTEXT				"TeleporterContext"
+#define TELEPORTER_UPGRADE_THINK_CONTEXT				"TeleporterUpgradeContext"
 
 #define BUILD_TELEPORTER_DAMAGE					25		// how much damage an exploding teleporter can do
 
@@ -225,6 +230,8 @@ CObjectTeleporter::CObjectTeleporter()
 
 	m_flCurrentRechargeDuration = 0.0f;
 	m_flRechargeTime = 0.0f;
+	m_iTeleportCooldownUsers = 0;
+	m_flTeleportCooldownTime = 0.0f;
 
 	ListenForGameEvent( "player_spawn" );
 	ListenForGameEvent( "player_team" );
@@ -426,6 +433,7 @@ void CObjectTeleporter::OnGoActive( void )
 	SetActivity( ACT_OBJ_IDLE );
 
 	SetContextThink( &CObjectTeleporter::TeleporterThink, gpGlobals->curtime + 0.1, TELEPORTER_THINK_CONTEXT );
+	SetContextThink(&CObjectTeleporter::TeleporterUpgradeThink, gpGlobals->curtime + 5.0, TELEPORTER_UPGRADE_THINK_CONTEXT );
 	SetTouch( &CObjectTeleporter::TeleporterTouch );
 
 	SetState( TELEPORTER_STATE_IDLE );
@@ -1038,6 +1046,31 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 	}			
 }
 
+void CObjectTeleporter::TeleporterUpgradeThink()
+{
+	if (IsCarried())
+		return;
+
+	if (m_iUpgradeLevel < 10)
+	{
+		static ConVarRef tf_obj_upgrade_per_hit("tf_obj_upgrade_per_hit");
+		int iAmountToAdd = tf_obj_upgrade_per_hit.GetInt() * 2;
+
+		if (iAmountToAdd > (m_iUpgradeMetalRequired - m_iUpgradeMetal))
+			iAmountToAdd = (m_iUpgradeMetalRequired - m_iUpgradeMetal);
+
+		m_iUpgradeMetal += iAmountToAdd;
+
+		if (m_iUpgradeMetal >= m_iUpgradeMetalRequired)
+		{
+			StartUpgrading();
+			m_iUpgradeMetal = 0;
+		}
+	}
+
+	SetContextThink(&CObjectTeleporter::TeleporterUpgradeThink, gpGlobals->curtime + 5.0f, TELEPORTER_UPGRADE_THINK_CONTEXT);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -1106,12 +1139,31 @@ void CObjectTeleporter::TeleporterThink( void )
 		{
 			pMatch->TeleporterReceive( m_hTeleportingPlayer, 1.0 );
 
+			int iUpgradeLevel = GetUpgradeLevel();
+			int iBaseUpgradeLevel = MIN(iUpgradeLevel, OBJ_MAX_UPGRADE_LEVEL);
 			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[GetUpgradeLevel()];
+			if (iUpgradeLevel > iBaseUpgradeLevel)
+			{
+				m_flCurrentRechargeDuration *= pow(0.9f, iUpgradeLevel - iBaseUpgradeLevel);
+			}
+
+			float flTeleportCooldownPenalty = 0.0f;
+			if (m_flTeleportCooldownTime <= gpGlobals->curtime)
+			{
+				m_iTeleportCooldownUsers = 0;
+			}
+			m_iTeleportCooldownUsers++;
+			// 0.5 second penalty on recharge for multiple teleports
+			flTeleportCooldownPenalty = m_iTeleportCooldownUsers * 0.5f;
+			// half a respawn wave
+			m_flTeleportCooldownTime = gpGlobals->curtime + 5.0f;
 
 			if ( !m_bWasMapPlaced )
 			{
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBuilder(), m_flCurrentRechargeDuration, mult_teleporter_recharge_rate );
 			}
+
+			m_flCurrentRechargeDuration += flTeleportCooldownPenalty;
 
 			m_flRechargeTime = gpGlobals->curtime + ( BUILD_TELEPORTER_FADEOUT_TIME + BUILD_TELEPORTER_FADEIN_TIME + m_flCurrentRechargeDuration );
 		
@@ -1165,7 +1217,13 @@ void CObjectTeleporter::TeleporterThink( void )
 
 			SetState( TELEPORTER_STATE_RECHARGING );
 
-			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[GetUpgradeLevel()];
+			int iUpgradeLevel = GetUpgradeLevel();
+			int iBaseUpgradeLevel = MIN(iUpgradeLevel, OBJ_MAX_UPGRADE_LEVEL);
+			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[iBaseUpgradeLevel];
+			if (iUpgradeLevel > iBaseUpgradeLevel)
+			{
+				m_flCurrentRechargeDuration *= pow(0.9f, iUpgradeLevel - iBaseUpgradeLevel);
+			}
 			m_flMyNextThink = gpGlobals->curtime + m_flCurrentRechargeDuration;
 		}
 		break;

@@ -90,7 +90,7 @@ public:
 	bool ShouldProjectileIgnore( CBaseEntity *pOther );
 	void ExplodeAndRemove( void );
 	void ZapPlayer( const CTakeDamageInfo &info, trace_t *pTrace, CTFPlayer *pTFPlayer );
-	void CheckForPlayers( int nNumToZap );
+	void CheckForPlayers( int nNumToZap, bool bCanHitSelf );
 	void CheckForProjectiles( void );
 	void OrbThink( void );
 #else

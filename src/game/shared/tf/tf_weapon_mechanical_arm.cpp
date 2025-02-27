@@ -46,8 +46,8 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_mechanical_arm );
 const float tf_mecharm_orb_size = 100.f;
 const float tf_mecharm_orb_speed = 700.f;
 const int tf_mecharm_orb_cost = 65;
-const int tf_mecharm_orb_zap_targets = 2;
-const int tf_mecharm_orb_zap_damage = 15;
+const int tf_mecharm_orb_zap_targets = 4;
+const int tf_mecharm_orb_zap_damage = 20;
 const float tf_mecharm_orb_lifetime = 1.2f;
 
 
@@ -684,7 +684,7 @@ void CTFProjectile_MechanicalArmOrb::ExplodeAndRemove( void )
 	EmitSound( filter, entindex(), "Halloween.spell_lightning_impact" );
 
 	// Go out with a bang
-	CheckForPlayers( 16 );
+	CheckForPlayers( 16, true );
 
 #ifdef CLIENT_DLL
 	if ( m_pTrailParticle )
@@ -727,7 +727,7 @@ void CTFProjectile_MechanicalArmOrb::ZapPlayer( const CTakeDamageInfo &info, tra
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap )
+void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap, bool bCanHitSelf )
 {
 	CTFPlayer *pTFOwner = ToTFPlayer( GetOwnerEntity() );
 	if ( !pTFOwner )
@@ -792,8 +792,11 @@ void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap )
 	// We zapped someone.  Play a sound
 	if ( nHits > 0 )
 	{
-		EmitSound( "TFPlayer.MedicChargedDeath" );
-
+		EmitSound("TFPlayer.MedicChargedDeath");
+	}
+	// MCOMS_BALANCE_PATCH
+	if ( bCanHitSelf )
+	{
 		// If the owner is close, zap them too -- to punish shoot-the-floor patterns
 		if ( ( pTFOwner->GetAbsOrigin() - GetAbsOrigin() ).LengthSqr() < Square( 80.f ) )
 		{
@@ -861,7 +864,9 @@ void CTFProjectile_MechanicalArmOrb::CheckForProjectiles( void )
 			}
 			else
 			{
-				pProjectile->Destroy( true, false );
+				// MCOMS PATCH PACK
+				//pProjectile->Destroy( true, false );
+				pProjectile->SetDamage(pProjectile->GetDamage() * 0.65f);
 			}
 
 			if ( pTFOwner )
@@ -885,7 +890,7 @@ void CTFProjectile_MechanicalArmOrb::OrbThink( void )
 {
 	if ( gpGlobals->curtime >= m_flOrbNextAttackTime )
 	{
-		CheckForPlayers( tf_mecharm_orb_zap_targets );
+		CheckForPlayers( tf_mecharm_orb_zap_targets, false );
 	}
 
 	CheckForProjectiles();
