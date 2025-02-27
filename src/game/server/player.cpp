@@ -457,6 +457,7 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_FIELD( m_flForwardMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flSideMove, FIELD_FLOAT ),
 	DEFINE_FIELD( m_vecPreviouslyPredictedOrigin, FIELD_POSITION_VECTOR ), 
+	DEFINE_FIELD(m_vecPreviouslyPreviouslyPredictedEyePosition, FIELD_POSITION_VECTOR),
 
 	DEFINE_FIELD( m_nNumCrateHudHints, FIELD_INTEGER ),
 
@@ -8159,6 +8160,7 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropFloat		( SENDINFO_VECTORELEM(m_vecVelocity, 2), 32, SPROP_NOSCALE|SPROP_CHANGES_OFTEN ),
 
 		SendPropVector		( SENDINFO( m_vecBaseVelocity ), 32, SPROP_NOSCALE ),
+		SendPropVector(SENDINFO(m_vecPreviouslyPreviouslyPredictedEyePosition), 32, SPROP_NOSCALE | SPROP_CHANGES_OFTEN),
 
 		SendPropEHandle		( SENDINFO( m_hConstraintEntity)),
 		SendPropVector		( SENDINFO( m_vecConstraintCenter), 0, SPROP_NOSCALE ),

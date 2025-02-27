@@ -618,7 +618,7 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 	{
 		move->m_bGameCodeMovedPlayer = true;
 	}
-	
+	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetAbsOrigin() + player->GetViewOffset());
 	move->m_nPlayerHandle = player->GetClientHandle();
 	move->m_vecVelocity		= player->GetAbsVelocity();
 	move->SetAbsOrigin( player->GetNetworkOrigin() );
@@ -708,6 +708,7 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	player->SetAbsVelocity( move->m_vecVelocity );
 
 	player->m_vecNetworkOrigin = move->GetAbsOrigin();
+	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetPreviouslyPreviouslyPredictedEyePosition());
 	player->SetPreviouslyPredictedOrigin( move->GetAbsOrigin() );
 	
 	player->m_Local.m_nOldButtons = move->m_nButtons;

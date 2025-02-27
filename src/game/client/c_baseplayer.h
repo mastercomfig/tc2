@@ -334,7 +334,10 @@ public:
 	float					GetDeathTime( void ) { return m_flDeathTime; }
 
 	void		SetPreviouslyPredictedOrigin( const Vector &vecAbsOrigin );
+	void		SetPreviouslyPreviouslyPredictedEyePosition(const Vector& vecAbsOrigin);
+
 	const Vector &GetPreviouslyPredictedOrigin() const;
+	const Vector& GetPreviouslyPreviouslyPredictedEyePosition() const;
 
 	// CS wants to allow small FOVs for zoomed-in AWPs.
 	virtual float GetMinFOV() const;
@@ -606,7 +609,8 @@ protected:
 	float m_flPredictionErrorTime;
 	
 	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
-
+	Vector m_vecPreviouslyPreviouslyPredictedEyePosition; // Used for attack interpolation
+	
 	char m_szLastPlaceName[MAX_PLACE_NAME_LENGTH];	// received from the server
 
 	// Texture names and surface data, used by CGameMovement
@@ -634,9 +638,6 @@ private:
 	bool m_bHasAttackInterpolationData = false;  // Whether we have valid data
 	float m_flAttackLerpTime = 1.0f;         // Calculated lerp time for the attack
 	bool m_bInPostThink;              // Flag for post-think state
-	int m_nLastTickCount;               // The tick count from the last time we processed
-	Vector m_vecLastTickEyePosition;    // Eye position from the last tick
-	Vector m_vecCurrentTickEyePosition; // Current eye position for this tick
 
 	struct StepSoundCache_t
 	{

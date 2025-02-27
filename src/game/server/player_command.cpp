@@ -141,7 +141,7 @@ void CPlayerMove::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *p
 	{
 		move->m_bGameCodeMovedPlayer = true;
 	}
-
+	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetAbsOrigin() + player->GetViewOffset());
 	// Prepare the usercmd fields
 	move->m_nImpulseCommand		= ucmd->impulse;	
 	move->m_vecViewAngles		= ucmd->viewangles;
