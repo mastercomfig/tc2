@@ -2148,9 +2148,10 @@ bool CBasePlayer::IsInPostThink() const
 }
 Vector CBasePlayer::GetInterpolatedEyePosition()
 {
+	bool wasInPostThink = IsInPostThink();
 	SetInPostThink(false);
 	Vector currentEyePosition = EyePosition();
-	SetInPostThink(true);
+	SetInPostThink(wasInPostThink);
 	
 	if (!IsInPostThink() || !HasAttackInterpolationData()) {
 		return currentEyePosition;
