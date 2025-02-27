@@ -588,8 +588,10 @@ void CHudMenuEngyBuild::OnTick( void )
 			}
 		}
 
+		const bool bHasObj = pObj != NULL;
+
 		// If the building is already built, and we don't have an ability to build more than one (sentry)
-		if ( pObj != NULL && !pObj->IsPlacing() && !bObjectIsCarried && !( iCanPlayerBuild == CB_CAN_BUILD ) )
+		if ( bHasObj && !pObj->IsPlacing() && !bObjectIsCarried && !( iCanPlayerBuild == CB_CAN_BUILD ) )
 		{
 			m_pAlreadyBuiltObjects[i]->SetVisible( true );
 		}
@@ -599,7 +601,7 @@ void CHudMenuEngyBuild::OnTick( void )
 			m_pUnavailableObjects[i]->SetVisible( true );
 		}
 		// See if we can afford it
-		else if (pObj->IsPlacing() || bObjectIsCarried || iAccount < iCost )
+		else if ( bHasObj && pObj->IsPlacing() || bObjectIsCarried || iAccount < iCost )
 		{
 			m_pCantAffordObjects[i]->SetVisible( true );
 		}
