@@ -78,7 +78,6 @@ elif [ $PLATFORM = "linux" ]; then
 
   declare -a DLLS_LIB=(
     bin/$PLAT_DIR/libsteam_api
-		bin/$PLAT_DIR/steamclient
   )
 
   FILES+=(
