@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=TC2
+Exec=steamclient_loader.sh
+Icon=tc2
+Type=Application
+Categories=Utility;
