@@ -336,7 +336,7 @@ Vector CBasePlayer::EyePosition()
 		return GetInterpolatedEyePosition();
 	}
 
-	if (GetVehicle() != NULL)
+	if ( GetVehicle() != NULL )
 	{
 		// Return the cached result
 		CacheVehicleView();
@@ -345,11 +345,11 @@ Vector CBasePlayer::EyePosition()
 	else
 	{
 #ifdef CLIENT_DLL
-		if (IsObserver())
+		if ( IsObserver() )
 		{
-			if (GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI)
+			if ( GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_POI )
 			{
-				if (IsLocalPlayer())
+				if ( IsLocalPlayer() )
 				{
 					return MainViewOrigin();
 				}
