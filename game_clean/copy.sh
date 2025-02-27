@@ -37,7 +37,6 @@ declare -a FILES=(
   ../thirdpartylegalnotices.txt
   ../LICENSE
 	../steam-lan/steam_settings
-	../steam-lan/tc2.AppDir
 	../steam-lan/ldr_appid.txt
 	../steam-lan/ldr_exe.txt
 	../steam-lan/ldr_steam_rt.txt
