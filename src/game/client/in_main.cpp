@@ -1315,7 +1315,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 		cmd->lerp_time = lerpTime;
 
 		// Fix movement commands for new viewangles
-		float deltaYaw = DEG2RAD(cmd->viewangles[YAW] - currentAngles[YAW]);
+		float deltaYaw = DEG2RAD(currentAngles[YAW] - cmd->viewangles[YAW]);
 		float s = sin(deltaYaw);
 		float c = cos(deltaYaw);
 
