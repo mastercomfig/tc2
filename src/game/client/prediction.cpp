@@ -708,7 +708,6 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	player->SetAbsVelocity( move->m_vecVelocity );
 
 	player->m_vecNetworkOrigin = move->GetAbsOrigin();
-	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetPreviouslyPreviouslyPredictedEyePosition());
 	player->SetPreviouslyPredictedOrigin( move->GetAbsOrigin() );
 	
 	player->m_Local.m_nOldButtons = move->m_nButtons;
