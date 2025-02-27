@@ -2148,12 +2148,13 @@ bool CBasePlayer::IsInPostThink() const
 }
 Vector CBasePlayer::GetInterpolatedEyePosition()
 {
-	if (!IsInPostThink() || !HasAttackInterpolationData())
-		return EyePosition();
-
 	SetInPostThink(false);
 	Vector currentEyePosition = EyePosition();
 	SetInPostThink(true);
+	
+	if (!IsInPostThink() || !HasAttackInterpolationData()) {
+		return currentEyePosition;
+	}
 
 	// Interpolate between the last tick's position and the current position
 	Vector interpolatedPosition = GetPreviouslyPreviouslyPredictedEyePosition() + (currentEyePosition - GetPreviouslyPreviouslyPredictedEyePosition()) * m_flAttackLerpTime;
