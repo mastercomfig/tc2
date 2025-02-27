@@ -28,8 +28,6 @@ using namespace vgui;
 IMPLEMENT_CLIENTCLASS_DT(C_ObjectTeleporter, DT_ObjectTeleporter, CObjectTeleporter)
 	RecvPropInt( RECVINFO(m_iState) ),
 	RecvPropTime( RECVINFO(m_flRechargeTime) ),
-	RecvPropInt(RECVINFO(m_iTeleportCooldownUsers)),
-	RecvPropTime(RECVINFO(m_flTeleportCooldownTime)),
 	RecvPropTime( RECVINFO(m_flCurrentRechargeDuration) ),
 	RecvPropInt( RECVINFO(m_iTimesUsed) ),
 	RecvPropFloat( RECVINFO(m_flYawToExit) ),
@@ -101,7 +99,7 @@ void C_ObjectTeleporter::StartChargedEffects()
 	char szEffect[128];
 
 	Q_snprintf( szEffect, sizeof(szEffect), "teleporter_%s_charged_level%d", 
-		( GetTeamNumber() == TF_TEAM_RED ) ? "red" : "blue", MIN(GetUpgradeLevel(), 3) );
+		( GetTeamNumber() == TF_TEAM_RED ) ? "red" : "blue", GetUpgradeLevel() );
 
 	Assert( m_hChargedEffect.m_pObject == NULL );
 	m_hChargedEffect = ParticleProp()->Create( szEffect, PATTACH_ABSORIGIN );
@@ -112,11 +110,10 @@ void C_ObjectTeleporter::StartActiveEffects()
 	StopActiveEffects();
 	char szEffect[128];
 
-	int iBaseUpgradeLevel = MIN(GetUpgradeLevel(), 3);
 	Q_snprintf( szEffect, sizeof(szEffect), "teleporter_%s_%s_level%d", 
 		( GetTeamNumber() == TF_TEAM_RED ) ? "red" : "blue",
 		GetObjectMode() == MODE_TELEPORTER_ENTRANCE ? "entrance" : "exit",
-		iBaseUpgradeLevel );
+		GetUpgradeLevel() );
 
 	Assert( m_hDirectionEffect.m_pObject == NULL );
 	m_hDirectionEffect = ParticleProp()->Create( szEffect, PATTACH_ABSORIGIN );
@@ -139,7 +136,7 @@ void C_ObjectTeleporter::StartActiveEffects()
 		m_pSpinSound = NULL;
 	}
 	char szSound[128];
-	Q_snprintf( szSound, sizeof(szSound), "Building_Teleporter.SpinLevel%d", iBaseUpgradeLevel);
+	Q_snprintf( szSound, sizeof(szSound), "Building_Teleporter.SpinLevel%d", GetUpgradeLevel());
 
 	CLocalPlayerFilter filter;
 	m_pSpinSound = controller.SoundCreate( filter, entindex(), szSound );

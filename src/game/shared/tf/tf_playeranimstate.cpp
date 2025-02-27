@@ -245,7 +245,7 @@ Activity CTFPlayerAnimState::ActivityOverride( Activity baseAct, bool *pRequired
 			iActivityCount = ARRAYSIZE( s_acttableLoserState );
 			pTable = s_acttableLoserState;
 		}
-		else if ( pPlayer->m_Shared.IsCarryingObject() && !pPlayer->m_Shared.GetCarriedObject()->ShouldBeActiveWhileCarried() )
+		else if ( pPlayer->m_Shared.IsCarryingObject() )
 		{
 			iActivityCount = ARRAYSIZE( s_acttableBuildingDeployed );
 			pTable = s_acttableBuildingDeployed;

@@ -204,7 +204,7 @@ void CBuildingStatusItem::PerformLayout( void )
 			m_pBuildingPanel->SetVisible( false );
 			m_pRunningPanel->SetVisible( true );
 
-			int iUpgradeLevel = MIN(pObj->GetUpgradeLevel(), 3);
+			int iUpgradeLevel = pObj->GetUpgradeLevel();
 
 			Assert( iUpgradeLevel >= 1 && iUpgradeLevel <= 3 );
 
@@ -1032,7 +1032,7 @@ void CBuildingStatusItem_TeleporterEntrance::PerformLayout( void )
 	// How many times has this teleporter been used?
 	m_pFullyChargedPanel->SetDialogVariable( "timesused", pTeleporter->GetTimesUsed() );		
 
-	int iUpgradeLevel = MIN(pTeleporter->GetUpgradeLevel(), 3);
+	int iUpgradeLevel = pTeleporter->GetUpgradeLevel();
 
 	Assert( iUpgradeLevel >= 1 && iUpgradeLevel <= 3 );
 
@@ -1071,7 +1071,7 @@ void CBuildingStatusItem_TeleporterExit::PerformLayout( void )
 		return;
 	}
 
-	int iUpgradeLevel = MIN(pTeleporter->GetUpgradeLevel(), 3);
+	int iUpgradeLevel = pTeleporter->GetUpgradeLevel();
 
 	Assert( iUpgradeLevel >= 1 && iUpgradeLevel <= 3 );
 

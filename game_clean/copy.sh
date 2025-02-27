@@ -36,7 +36,6 @@ declare -a FILES_REP=(
 declare -a FILES=(
   ../thirdpartylegalnotices.txt
   ../LICENSE
-<<<<<<< HEAD
 	../steam-lan/steam_settings
 	../steam-lan/tc2.AppDir
 	../steam-lan/ldr_appid.txt
@@ -46,21 +45,6 @@ declare -a FILES=(
 	../steam-lan/steamclient.so
 	../steam-lan/steamclient64.so
 	../steam-lan/libsteam_api.so
-=======
-  ../steam-lan/steam_settings
-  ../steam-lan/ldr_appid.txt
-  ../steam-lan/ldr_exe.txt
-  ../steam-lan/ldr_steam_rt.txt
-  ../steam-lan/steamclient_loader.sh
-  ../steam-lan/steamclient.so
-  ../steam-lan/steamclient64.so
-  ../steam-lan/libsteam_api.so
-  ../steam-lan/steamclient_loader.exe
-  ../steam-lan/steamclient.dll
-  ../steam-lan/steamclient64.dll
-  ../steam-lan/GameOverlayRenderer64.dll
-  ../steam-lan/ColdClientLoader.ini
->>>>>>> 63b1edd4fe5ef3f7ffaddacc8d8817624ac15854
 )
 
 if [ $PLATFORM = "win" ]; then
@@ -95,6 +79,7 @@ elif [ $PLATFORM = "linux" ]; then
 
   declare -a DLLS_LIB=(
     bin/$PLAT_DIR/libsteam_api
+		bin/$PLAT_DIR/steamclient
   )
 
   FILES+=(

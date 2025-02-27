@@ -306,12 +306,6 @@ void CObjectSentrygun::SentryThink( void )
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
 
-	// shield after disabling
-	const float flTimeTillFade = m_flShieldFadeTime - gpGlobals->curtime;
-	if ( m_nShieldLevel == 0 && flTimeTillFade > 0.001f && !m_bPlayerControlled && !IsCarried() )
-	{
-		m_nShieldLevel.Set( SHIELD_NORMAL );
-	}
 	if ( m_nShieldLevel > 0 && (gpGlobals->curtime > m_flShieldFadeTime) )
 	{
 		m_nShieldLevel.Set( SHIELD_NONE );
@@ -885,9 +879,7 @@ bool CObjectSentrygun::FindTarget()
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
 			m_bPlayerControlled = true;
-			// no shield
-			//m_nShieldLevel.Set( SHIELD_NORMAL );
-			m_nShieldLevel.Set(SHIELD_NONE);
+			m_nShieldLevel.Set( SHIELD_NORMAL );
 			m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
 
 			// If not target dummy, use laserdot, otherwise targetdummy overrides
@@ -1320,9 +1312,6 @@ void CObjectSentrygun::Attack()
 		// This is different for each type because of how the boost worked before the firing speed fix.
 		if ( m_bPlayerControlled )
 		{
-#if 1
-			vecFireRateBoosts.push_back(0.5f);
-#else
 			if (IsMiniBuilding())
 			{
 				vecFireRateBoosts.push_back(0.5f);
@@ -1335,7 +1324,6 @@ void CObjectSentrygun::Attack()
 			{
 				vecFireRateBoosts.push_back(2.0f / 3.0f);
 			}
-#endif
 		}
 
 		// Crit canteen 2x boost
@@ -1438,7 +1426,7 @@ bool CObjectSentrygun::FireRocket()
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-			m_flNextRocketAttack = gpGlobals->curtime + 1.5;
+			m_flNextRocketAttack = gpGlobals->curtime + 2.25;
 		}
 		else
 		{

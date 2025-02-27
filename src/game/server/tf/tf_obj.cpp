@@ -174,7 +174,7 @@ IMPLEMENT_SERVERCLASS_ST(CBaseObject, DT_BaseObject)
 	SendPropVector( SENDINFO( m_vecBuildMins ), -1, SPROP_COORD ),
 	SendPropInt( SENDINFO( m_iDesiredBuildRotations ), 2, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO( m_bServerOverridePlacement ) ),
-	SendPropInt( SENDINFO(m_iUpgradeLevel), 5 ),
+	SendPropInt( SENDINFO(m_iUpgradeLevel), 3 ),
 	SendPropInt( SENDINFO(m_iUpgradeMetal), 10 ),
 	SendPropInt( SENDINFO(m_iUpgradeMetalRequired), 10 ),
 	SendPropInt( SENDINFO(m_iHighestUpgradeLevel), 3 ),
@@ -2859,10 +2859,6 @@ bool CBaseObject::CheckUpgradeOnHit( CTFPlayer *pPlayer )
 	{
 		int iPlayerMetal = pPlayer->GetAmmoCount( TF_AMMO_METAL );
 		int nMaxToAdd = GetUpgradeAmountPerHit();
-		if (nMaxToAdd < 1)
-		{
-			return false;
-		}
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, nMaxToAdd, upgrade_rate_mod );
 		int iAmountToAdd = Min( nMaxToAdd, iPlayerMetal );
 
@@ -3035,11 +3031,8 @@ void CBaseObject::StartUpgrading( void )
 	if ( !m_bCarryDeploy && !IsUsingReverseBuild() )
 	{
 		int iMaxHealth = GetMaxHealthForCurrentLevel();
-		if (GetMaxHealth() != iMaxHealth)
-		{
-			SetMaxHealth(iMaxHealth);
-			SetHealth(iMaxHealth);
-		}
+		SetMaxHealth( iMaxHealth );
+		SetHealth( iMaxHealth );
 	}
 
 	const char *pUpgradeSound = GetObjectInfo( ObjectType() )->m_pUpgradeSound;
@@ -3622,8 +3615,6 @@ void CBaseObject::MakeCarriedObject( CTFPlayer *pCarrier )
 {
 	if ( pCarrier )
 	{
-		// MCOMS_BALANCE_PACK
-
 		// Make the object inactive.
 		m_bCarried = true;
 		m_bCarryDeploy = false;
@@ -3828,7 +3819,7 @@ int CBaseObject::GetMaxHealthForCurrentLevel( void )
 	
 	if ( !IsMiniBuilding() && ( GetUpgradeLevel() > 1 ) )
 	{
-		float flMultiplier = pow( UPGRADE_LEVEL_HEALTH_MULTIPLIER, MIN(GetUpgradeLevel(), OBJ_MAX_UPGRADE_LEVEL) - 1 );
+		float flMultiplier = pow( UPGRADE_LEVEL_HEALTH_MULTIPLIER, GetUpgradeLevel() - 1 );
 		iMaxHealth = (int)( iMaxHealth * flMultiplier );
 	}
 

@@ -177,12 +177,7 @@ public:
 	// Build points
 	CUtlVector<BuildPoint_t>	m_BuildPoints;
 
-	bool				ShouldBeActiveWhileCarried() const
-	{
-		// Dispenser active while carried
-		return m_iObjectType == OBJ_DISPENSER;
-	}
-	bool				IsDisabled( void ) { return m_bDisabled || m_bCarried && !ShouldBeActiveWhileCarried(); }
+	bool				IsDisabled( void ) { return m_bDisabled || m_bCarried; }
 
 	// Shared placement
 	bool 				VerifyCorner( const Vector &vBottomCenter, float xOffset, float yOffset );

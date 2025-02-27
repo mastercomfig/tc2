@@ -68,8 +68,6 @@ private:
 	int m_iState;
 	int m_iOldState;
 	float m_flRechargeTime;
-	int m_iTeleportCooldownUsers;
-	float m_flTeleportCooldownTime;
 	float m_flCurrentRechargeDuration;
 	int m_iTimesUsed;
 	float m_flYawToExit;

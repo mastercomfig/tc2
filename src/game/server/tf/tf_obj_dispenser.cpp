@@ -525,10 +525,6 @@ bool CObjectDispenser::DispenseAmmo( CTFPlayer *pPlayer )
 
 	int nNoPrimaryAmmoFromDispensersWhileActive = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer->GetActiveWeapon(), nNoPrimaryAmmoFromDispensersWhileActive, no_primary_ammo_from_dispensers );
-	// MCOMS_BALANCE_PACK
-	// moving away from this stat:
-	// all items can receive ammo now, we'll balance the items for this
-	nNoPrimaryAmmoFromDispensersWhileActive = 0;
 
 	float flAmmoRate = g_flDispenserAmmoRates[GetUpgradeLevel()];
 
@@ -548,10 +544,6 @@ bool CObjectDispenser::DispenseAmmo( CTFPlayer *pPlayer )
 	// metal
 	int iNoMetalFromDispenserWhileActive = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer->GetActiveWeapon(), iNoMetalFromDispenserWhileActive, no_metal_from_dispensers_while_active );
-	// MCOMS_BALANCE_PACK
-	// moving away from this stat:
-	// all items can receive metal now, we'll balance the items for this
-	iNoMetalFromDispenserWhileActive = 0;
 	if ( iNoMetalFromDispenserWhileActive == 0 )
 	{
 		iTotalPickedUp += DispenseMetal( pPlayer );
@@ -601,7 +593,7 @@ int CObjectDispenser::DispenseMetal( CTFPlayer *pPlayer )
 //-----------------------------------------------------------------------------
 void CObjectDispenser::RefillThink( void )
 {
-	if ( IsCarried() && !ShouldBeActiveWhileCarried() )
+	if ( IsCarried() )
 		return;
 
 	SetContextThink( &CObjectDispenser::RefillThink, gpGlobals->curtime + 6, REFILL_CONTEXT );
@@ -633,7 +625,7 @@ void CObjectDispenser::RefillThink( void )
 //-----------------------------------------------------------------------------
 void CObjectDispenser::DispenseThink( void )
 {
-	if ( IsCarried() && !ShouldBeActiveWhileCarried() )
+	if ( IsCarried() )
 		return;
 
 	if ( IsDisabled() )
@@ -651,7 +643,6 @@ void CObjectDispenser::DispenseThink( void )
 		float flRadius = GetDispenserRadius();
 		if ( ( flRadius != m_flPrevRadius ) && m_hTouchTrigger.Get() )
 		{
-			m_hTouchTrigger->SetParent(this);
 			m_hTouchTrigger->SetAbsOrigin( WorldSpaceCenter() );
 			UTIL_SetSize( m_hTouchTrigger.Get(), Vector( -flRadius, -flRadius, -flRadius ), Vector( flRadius, flRadius, flRadius ) );
 			m_flPrevRadius = flRadius;
@@ -854,7 +845,7 @@ float CObjectDispenser::GetHealRate() const
 //-----------------------------------------------------------------------------
 void CObjectDispenser::StartHealing( CBaseEntity *pOther )
 {
-	if ( IsCarried() && !ShouldBeActiveWhileCarried() )
+	if ( IsCarried() )
 		return;
 
 	AddHealingTarget( pOther );
@@ -1034,19 +1025,16 @@ int CObjectDispenser::DrawDebugTextOverlays(void)
 //-----------------------------------------------------------------------------
 void CObjectDispenser::MakeCarriedObject( CTFPlayer *pCarrier )
 {
-	if (!ShouldBeActiveWhileCarried())
+	if ( m_hTouchTrigger.Get() )
 	{
-		if (m_hTouchTrigger.Get())
-		{
-			UTIL_Remove(m_hTouchTrigger);
-		}
-
-		ResetHealingTargets();
-
-		m_hTouchingEntities.Purge();
-
-		StopSound("Building_Dispenser.Idle");
+		UTIL_Remove( m_hTouchTrigger );
 	}
+
+	ResetHealingTargets();
+
+	m_hTouchingEntities.Purge();
+
+	StopSound( "Building_Dispenser.Idle" );
 
 	BaseClass::MakeCarriedObject( pCarrier );
 }
