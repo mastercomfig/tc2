@@ -1,3 +1,16 @@
+# About this fork
+## EN
+I have created this fork to run TC2 in limited OSes, like on school or work. It uses GBE Emulator to rrmove requirement on SteamClient and internet. Steam Networking works on LAN connection.
+
+I have tested on RedOS (Russian shitty OS), Windows and it works. I don't have time to write a guide, so if you are interested write to my Telegram https://artemevkhv.t.me — I'll answer on English.
+
+## RU
+Я создал этот форк для запуска TC2 в ограниченных операционных системах, например, в школе или на работе. Он использует эмулятор GBE для удаления требований к SteamClient и Интернету. Сеть Steam работает по локальной сети.
+
+Я протестировал на RedOS (русский Linux) и Windows - TC2 работает. У меня нет времени писать руководство, поэтому, если вам интересно, напишите мне в Telegram https://artemevkhv.t.me — Я отвечу на русском.
+
+---
+
 <img src="./team-comtress-2.png" align="center">
 
 [![ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-FF5E5B.svg?logo=ko-fi&style=flat-square)](https://docs.comfig.app/latest/support_me/)
