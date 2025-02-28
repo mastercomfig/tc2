@@ -554,6 +554,8 @@ criterion "TimeFiringMinigunReallyLong" "minigunfiretime" ">15.0" required
 criterion "ConceptFireMinigunTalk" "Concept" "TLK_MINIGUN_FIREWEAPON" "required"
 Criterion "NotDefendOnThePointSpeech" "worldDefendOnThePointSpeech" "!=1" "required" weight 0
 
+criterion "SpecialTauntWeaponDeployed" "SpecialTauntWeaponDeployed" "!=1" "required" weight 100
+
 criterion "IsAprilFoolsTaunt" "IsAprilFoolsTaunt" "1" "required" weight 100
 criterion "IsHalloweenTaunt" "IsHalloweenTaunt" "1" "required" weight 100
 criterion "IsRobotCostume" "IsRobotCostume" "1" "required" weight 100
