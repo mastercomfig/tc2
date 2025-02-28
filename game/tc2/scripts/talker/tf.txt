@@ -256,7 +256,7 @@
 	}
 	rule HeavyTauntFrankenHeavy
 	{
-		criteria ConceptPlayerTaunt IsHeavy IsFrankenHeavy
+		criteria ConceptPlayerTaunt IsHeavy IsFrankenHeavy SpecialTauntWeaponDeployed
 		response HeavyTauntFrankenHeavy
 	}
 			
@@ -756,7 +756,7 @@
 	}
 	rule SoldierTauntRobot
 	{
-		criteria ConceptPlayerTaunt IsSoldier IsRobotCostume
+		criteria ConceptPlayerTaunt IsSoldier IsRobotCostume SpecialTauntWeaponDeployed
 		response SoldierTauntRobot
 	}
 	rule SoldierTauntEqualizer
@@ -1408,7 +1408,7 @@
 	}
 	rule DemomanTauntWolfHowl
 	{
-		criteria ConceptPlayerTaunt IsDemoman IsDemowolf
+		criteria ConceptPlayerTaunt IsDemoman IsDemowolf SpecialTauntWeaponDeployed
 		response DemomanTauntWolfHowl
 	}
 
