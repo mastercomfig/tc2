@@ -19664,8 +19664,14 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 	}
 
 	// Only allow these rules if in the holiday
-	if ( TFGameRules()->IsHolidayActive( kHoliday_HalloweenOrFullMoon ) && iSpecialTaunt == 0 )
+	if ( TFGameRules()->IsHolidayActive( kHoliday_HalloweenOrFullMoon ) )
 	{
+		// This fixes some weapons with "special_taunt" attribute overriding voicelines from itemsets or cosmetics.
+		// The criterion needs to be added to the ruleset of the special taunts (for now only the robot soldier, frankenheavy and demowolf)
+		if ( iSpecialTaunt == 1 )
+		{
+			criteriaSet.AppendCriteria( "SpecialTauntWeaponDeployed", "1" );	
+		}
 		// Halloween costume sets
 		if ( IsRobotCostumeEquipped() )
 		{
