@@ -647,6 +647,9 @@ bool CTFProjectile_MechanicalArmOrb::ShouldProjectileIgnore( CBaseEntity *pOther
 	if ( pOther->IsFuncLOD() )
 		return true;
 
+	if ( pOther->GetFlags() & FL_WORLDBRUSH )
+		return true;
+
 	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 	if ( pTrace->surface.flags & CONTENTS_LADDER )
 		return true;

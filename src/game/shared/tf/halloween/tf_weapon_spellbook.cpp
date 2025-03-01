@@ -1581,7 +1581,7 @@ public:
 	virtual void RocketTouch( CBaseEntity *pOther ) OVERRIDE
 	{
 		Assert( pOther );
-		if ( !pOther || !pOther->IsSolid() || pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) || pOther->IsFuncLOD() || pOther->GetFlags() & FL_WORLDBRUSH )
+		if ( !pOther || !pOther->IsSolid() || pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) || pOther->IsFuncLOD() )
 			return;
 
 		if ( pOther->GetParent() == GetOwnerEntity() )
@@ -2812,7 +2812,7 @@ public:
 	virtual void RocketTouch( CBaseEntity *pOther ) OVERRIDE
 	{
 		Assert( pOther );
-		if ( !pOther || !pOther->IsSolid() || pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) || pOther->IsFuncLOD() || pOther->GetFlags() & FL_WORLDBRUSH )
+		if ( !pOther || !pOther->IsSolid() || pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) || pOther->IsFuncLOD() )
 			return;
 
 		const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
