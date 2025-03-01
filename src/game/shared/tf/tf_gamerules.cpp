@@ -5679,7 +5679,8 @@ void CTFGameRules::RadiusDamage( CTFRadiusDamageInfo &info )
 //-----------------------------------------------------------------------------
 void CTFRadiusDamageInfo::CalculateFalloff( void )
 {
-	if ( dmgInfo->GetDamageType() & DMG_RADIUS_MAX )
+	// hack to ignore caber explosion, otherwise the charge minicrit explosion would actually do less damage
+	if (dmgInfo->GetDamageCustom() != TF_DMG_CUSTOM_STICKBOMB_EXPLOSION && dmgInfo->GetDamageType() & DMG_RADIUS_MAX)
 		flFalloff = 0.f;
 	else if ( dmgInfo->GetDamageType() & DMG_HALF_FALLOFF )
 		flFalloff = 0.5f;

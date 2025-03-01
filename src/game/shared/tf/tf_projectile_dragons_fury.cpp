@@ -181,6 +181,7 @@ public:
 			 pOther->IsSolidFlagSet( FSOLID_NOT_SOLID ) ||
 			 ( pOther->GetCollisionGroup() == TFCOLLISION_GROUP_RESPAWNROOMS ) ||
 			 pOther->IsFuncLOD() ||
+			pOther->GetFlags() & FL_WORLDBRUSH || // hack for func_brushes
 			 pOther->IsBaseProjectile() )
 		{
 			return;

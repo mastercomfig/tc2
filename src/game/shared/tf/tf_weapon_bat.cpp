@@ -29,7 +29,8 @@
 #endif
 
 const float DEFAULT_ORNAMENT_EXPLODE_RADIUS = 50.0f;
-const float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 0.9f;
+const float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 1.8f; // this for some reason explodes twice in vanilla if it hits a player, so compensate damage here
+//const float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 0.9f;
 
 //=============================================================================
 //
@@ -659,6 +660,8 @@ const char *CTFStunBall::GetBallViewModelName( void ) const
 //-----------------------------------------------------------------------------
 void CTFStunBall::Spawn( void )
 {
+	SetDetonateTimerLength(FLT_MAX); // makes the ball never fizzle out mid-air
+
 	BaseClass::Spawn();
 
 	SetModel( GetBallModelName() );
@@ -952,7 +955,8 @@ bool CTFStunBall::ShouldBallTouch( CBaseEntity *pOther )
 	if ( !pOther ||
 		 !pOther->IsSolid() ||
 		 pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) ||
-		 pOther->GetCollisionGroup() == TFCOLLISION_GROUP_RESPAWNROOMS )
+		 pOther->GetCollisionGroup() == TFCOLLISION_GROUP_RESPAWNROOMS ||
+		pOther->GetFlags() & FL_WORLDBRUSH )
 	{
 		pOwner->SpeakConceptIfAllowed( MP_CONCEPT_BALL_MISSED );
 		return false;
@@ -1001,6 +1005,14 @@ void CTFStunBall::IncrementDeflected(void)
 		m_flBallTrailLife = 1.0f;
 	}
 	CreateBallTrail();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFStunBall::DetonateThink(void)
+{
+	// nothing here, so the ball never fizzles out
 }
 
 // -- SERVER ONLY
@@ -1069,6 +1081,28 @@ void CTFStunBall::CreateTrailParticles( void )
 		{
 			pEffectCrit = ParticleProp()->Create( "stunballtrail_red_crit", PATTACH_ABSORIGIN_FOLLOW );
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Removes particles as projectile now simply fades out instead of instnatly deleting itself 
+//-----------------------------------------------------------------------------
+void CTFStunBall::OnDataChanged(DataUpdateType_t updateType)
+{
+	BaseClass::OnDataChanged(updateType);
+
+	// Remove normal effect if we're inactive
+	if (GetMoveType() == MOVETYPE_NONE && pEffectTrail)
+	{
+		ParticleProp()->StopEmission(pEffectTrail);
+		pEffectTrail = NULL;
+	}
+
+	// Remove crit effect if we're inactive
+	if (GetMoveType() == MOVETYPE_NONE && pEffectCrit)
+	{
+		ParticleProp()->StopEmission(pEffectCrit);
+		pEffectCrit = NULL;
 	}
 }
 #endif
@@ -1236,10 +1270,27 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	pPlayer->DispatchTraceAttack( info, dir, pNewTrace );
 	ApplyMultiDamage();
 
-	// the ball shatters
-	UTIL_Remove( this );
+	// the ball shatters, but the entity is kept for a few seonds for a little bit while the trail finishes.
+	FadeOut( 1.5 );
 
 	m_bTouched = true;
+}
+
+void CTFBall_Ornament::FadeOut(int iTime)
+{
+	SetMoveType(MOVETYPE_NONE);
+	SetAbsVelocity(vec3_origin);
+	AddSolidFlags(FSOLID_NOT_SOLID);
+	AddEffects(EF_NODRAW);
+
+
+	// Start remove timer.
+	SetContextThink(&CTFBall_Ornament::RemoveThink, gpGlobals->curtime + iTime, "ORNAMENT_REMOVE_THINK");
+}
+
+void CTFBall_Ornament::RemoveThink(void)
+{
+	UTIL_Remove(this);
 }
 
 //-----------------------------------------------------------------------------
@@ -1248,6 +1299,9 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 void CTFBall_Ornament::PipebombTouch( CBaseEntity *pOther )
 {
 	if ( !ShouldBallTouch( pOther ) )
+		return;
+
+	if ( (GetMoveType() == MOVETYPE_NONE))
 		return;
 
 	trace_t pTrace;
@@ -1259,8 +1313,17 @@ void CTFBall_Ornament::PipebombTouch( CBaseEntity *pOther )
 	if ( pOther == GetThrower() )
 		return;
 
+	// Don't collide with teammates if we're still in the grace period.
+	if (pOther->IsPlayer() && InSameTeam(pOther) && !CanCollideWithTeammates())
+		return;
+
 	// Explode (does radius damage, triggers particles and sound effects).
-	Explode( &pTrace, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE );
+	int iDmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE;
+	if ( IsCritical() )
+	{
+		iDmgType |= DMG_CRITICAL;
+	}
+	Explode( &pTrace, iDmgType);
 
 	if ( !InSameTeam( pOther ) && pOther->m_takedamage != DAMAGE_NO )
 	{
@@ -1301,7 +1364,12 @@ void CTFBall_Ornament::VPhysicsCollisionThink( void )
 	Vector vecSpot = GetAbsOrigin() - velDir * 16;
 	UTIL_TraceLine( vecSpot, vecSpot + velDir * 32, MASK_SOLID, this, COLLISION_GROUP_NONE, &pTrace );
 
-	Explode( &pTrace, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE );
+	int iDmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE;
+	if ( IsCritical() )
+	{
+		iDmgType |= DMG_CRITICAL;
+	}
+	Explode( &pTrace, iDmgType );
 }
 
 //-----------------------------------------------------------------------------
@@ -1309,6 +1377,12 @@ void CTFBall_Ornament::VPhysicsCollisionThink( void )
 //-----------------------------------------------------------------------------
 void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 {
+	// ornament is already expiring, don't explode again
+	// this seems to lower damage if the ball directly hits a player, as the bauble would actually explode twice before this fix
+	// this behavior seemed unintentional, but it ultimately ends up with the weapon dealing 4-13 less damage. too bad!
+	if (GetMoveType() == MOVETYPE_NONE)
+		return;
+
 	// Create smashed glass particles when we explode
 	if ( GetTeamNumber() == TF_TEAM_RED )
 	{
@@ -1342,8 +1416,8 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	CTFRadiusDamageInfo radiusinfo( &info, vecOrigin, DEFAULT_ORNAMENT_EXPLODE_RADIUS, nullptr, 0.0f, 0.0f );
 	TFGameRules()->RadiusDamage( radiusinfo );
 
-	UTIL_Remove( this );
+	if ( GetMoveType() != MOVETYPE_NONE )
+		FadeOut( 1.5 );
 }
-
 #endif
 

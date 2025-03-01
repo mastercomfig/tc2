@@ -299,7 +299,7 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 	}
 
 	// If we've already got an impact time, don't impact again.
-	if ( m_flImpactTime > 0.0 )
+	if ( m_flImpactTime > 0.0  || (GetMoveType() == MOVETYPE_NONE) )
 		return;
 
 	// Save this entity as enemy, they will take 100% damage.
@@ -373,8 +373,24 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		EmitSound( filter, pOther->entindex(), "TFPlayer.FlareImpact" );
 
 		SendDeathNotice();
-		UTIL_Remove( this );
+		FadeOut( 1.5 ); // fade out instead of removing immediately for the manmelter flare trail.
 	}
+}
+
+void CTFProjectile_Flare::FadeOut(int iTime)
+{
+	SetMoveType(MOVETYPE_NONE);
+	SetAbsVelocity(vec3_origin);
+	AddSolidFlags(FSOLID_NOT_SOLID);
+	AddEffects(EF_NODRAW);
+
+	// Start remove timer.
+	SetContextThink(&CTFProjectile_Flare::RemoveThink, gpGlobals->curtime + iTime, "FLARE_REMOVE_THINK");
+}
+
+void CTFProjectile_Flare::RemoveThink(void)
+{
+	UTIL_Remove( this );
 }
 
 //-----------------------------------------------------------------------------
@@ -428,7 +444,7 @@ void CTFProjectile_Flare::Explode_Air( trace_t *pTrace, int bitsDamageType, bool
 	CSoundEnt::InsertSound ( SOUND_COMBAT, vecOrigin, 1024, 3.0 );
 
 	SendDeathNotice();
-	UTIL_Remove( this );
+	FadeOut( 1.5 ); // fade out instead of removing immediately for the manmelter flare trail.
 }
 
 //-----------------------------------------------------------------------------
@@ -489,7 +505,7 @@ void CTFProjectile_Flare::ImpactThink( void )
 		}
 
 		SendDeathNotice();
-		UTIL_Remove( this );
+		FadeOut( 3.0 ); // fade out instead of removing immediately for the manmelter flare trail.
 		SetContextThink( NULL, 0, FLARE_THINK_CONTEXT );
 	}
 	else

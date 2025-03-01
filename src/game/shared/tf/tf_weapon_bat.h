@@ -150,6 +150,7 @@ public:
 
 	virtual bool		IsAllowedToExplode( void ) OVERRIDE { return false; }
 	virtual void		Explode( trace_t *pTrace, int bitsDamageType );
+	virtual void		DetonateThink() OVERRIDE;
 	virtual void		ApplyBallImpactEffectOnVictim( CBaseEntity *pOther );
 	virtual void		PipebombTouch( CBaseEntity *pOther );
 	virtual void		VPhysicsCollision( int index, gamevcollisionevent_t *pEvent );
@@ -178,6 +179,7 @@ private:
 #else
 	virtual const char *GetTrailParticleName( void );
 	virtual void	CreateTrailParticles( void );
+	virtual void		OnDataChanged(DataUpdateType_t updateType);
 
 #endif
 
@@ -235,6 +237,11 @@ public:
 	void				VPhysicsCollisionThink( void );
 
 	virtual void		ApplyBallImpactEffectOnVictim( CBaseEntity *pOther );
+
+	void			FadeOut(int iTime);
+	void			RemoveThink();
+
+	virtual bool	IsDeflectable() OVERRIDE { return (GetMoveType() != MOVETYPE_NONE); }
 
 protected:
 		Vector		m_vCollisionVelocity;

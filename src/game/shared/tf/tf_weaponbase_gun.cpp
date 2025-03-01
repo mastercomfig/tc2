@@ -636,6 +636,7 @@ CBaseEntity *CTFWeaponBaseGun::FireNail( CTFPlayer *pPlayer, int iSpecificNail )
 	// Add some spread
 	float flSpread = 1.5;
 	flSpread += GetProjectileSpread();
+	CALL_ATTRIB_HOOK_FLOAT(flSpread, mult_spread_scale); // accuracy multiplier support for server mods
 
 	CTFBaseProjectile *pProjectile = NULL;
 	switch( iSpecificNail )

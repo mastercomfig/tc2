@@ -55,6 +55,13 @@ CTFBaseProjectile *CTFProjectile_Syringe::Create(
 	CBaseEntity *pScorer /*= NULL*/, 
 	bool bCritical /*= false */
 ) {
+	float flVelocity = SYRINGE_VELOCITY;
+	if (pLauncher) // customizable syringe spread and range for server mods.
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pLauncher, flVelocity, mult_projectile_speed);
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pLauncher, flVelocity, mult_projectile_range);
+	}
+
 	return CTFBaseProjectile::Create( "tf_projectile_syringe", vecOrigin, vecAngles, pOwner, SYRINGE_VELOCITY, g_sModelIndexSyringe, SYRINGE_DISPATCH_EFFECT, pScorer, bCritical );
 }
 
