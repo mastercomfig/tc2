@@ -69,7 +69,7 @@ void DisableFloatingHealthCallback( IConVar *var, const char *oldString, float o
 		pTargetID->InvalidateLayout();
 	}
 }
-ConVar tf_hud_target_id_disable_floating_health( "tf_hud_target_id_disable_floating_health", "0", FCVAR_ARCHIVE, "Set to disable floating health bar", DisableFloatingHealthCallback );
+ConVar tf_hud_target_id_disable_floating_health( "tf_hud_target_id_disable_floating_health", "0", FCVAR_ARCHIVE, "Set to disable floating health bar.  1 = everyone, 2 = normal players only.", DisableFloatingHealthCallback );
 ConVar tf_hud_target_id_alpha( "tf_hud_target_id_alpha", "100", FCVAR_ARCHIVE, "Alpha value of target id background, default 100" );
 ConVar tf_hud_target_id_offset( "tf_hud_target_id_offset", "0", FCVAR_ARCHIVE, "RES file Y offset for target id" );
 ConVar tf_hud_target_id_show_avatars( "tf_hud_target_id_show_avatars", "2", FCVAR_ARCHIVE, "Display Steam avatars on TargetID when using floating health icons.  1 = everyone, 2 = friends only." );
@@ -82,7 +82,7 @@ bool ShouldHealthBarBeVisible( CBaseEntity *pTarget, CTFPlayer *pLocalPlayer )
 
 	// now second in priority to force floating health bars on for giant robots in MvM, robot destruction NPCs, and any custom game logic that forces the mini boss flag on players
 	// regardless of setting due to entities that return this check as true typically not having a visible target ID to fall back to when tf_hud_target_id_disable_floating_health is 1.
-	if ( pTarget->IsHealthBarVisible() )
+	if ( pTarget->IsHealthBarVisible() && tf_hud_target_id_disable_floating_health.GetInt() != 1 )
 		return true;
 
 	if ( tf_hud_target_id_disable_floating_health.GetBool() )
@@ -478,7 +478,7 @@ bool CTargetID::IsValidIDTarget( int nEntIndex, float flOldTargetRetainFOV, floa
 				//Recreate the floating health icon if there isn't one, we're not a spectator, and 
 				// we're not a spy or this was a robot from Robot Destruction-Mode
 				// force render floating health icon if it's a player miniboss or RD robot.
-				if ( !m_pFloatingHealthIcon && !bSpectator && ( !bSpy || bHealthBarVisible ) && ( !DrawHealthIcon() || pEnt->IsHealthBarVisible() ) )
+				if ( !m_pFloatingHealthIcon && !bSpectator && ( !bSpy || bHealthBarVisible ) && ( !DrawHealthIcon() || pEnt->IsHealthBarVisible() && tf_hud_target_id_disable_floating_health.GetInt() != 1 ) )
 				{
 					m_pFloatingHealthIcon = CFloatingHealthIcon::AddFloatingHealthIcon( pEnt );
 				}
