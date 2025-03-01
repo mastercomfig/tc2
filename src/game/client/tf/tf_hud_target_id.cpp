@@ -72,7 +72,7 @@ void DisableFloatingHealthCallback( IConVar *var, const char *oldString, float o
 ConVar tf_hud_target_id_disable_floating_health( "tf_hud_target_id_disable_floating_health", "0", FCVAR_ARCHIVE, "Set to disable floating health bar", DisableFloatingHealthCallback );
 ConVar tf_hud_target_id_alpha( "tf_hud_target_id_alpha", "100", FCVAR_ARCHIVE, "Alpha value of target id background, default 100" );
 ConVar tf_hud_target_id_offset( "tf_hud_target_id_offset", "0", FCVAR_ARCHIVE, "RES file Y offset for target id" );
-ConVar tf_hud_target_id_show_avatars( "tf_hud_target_id_show_avatars", "1", FCVAR_ARCHIVE, "Display Steam avatars on TargetID when using floating health icons.  1 = everyone, 2 = friends only." );
+ConVar tf_hud_target_id_show_avatars( "tf_hud_target_id_show_avatars", "2", FCVAR_ARCHIVE, "Display Steam avatars on TargetID when using floating health icons.  1 = everyone, 2 = friends only." );
 
 
 bool ShouldHealthBarBeVisible( CBaseEntity *pTarget, CTFPlayer *pLocalPlayer )
@@ -90,7 +90,7 @@ bool ShouldHealthBarBeVisible( CBaseEntity *pTarget, CTFPlayer *pLocalPlayer )
 	
 	if ( !pTarget->IsPlayer() )
 		return false;
-
+	
 	int iHideEnemyHealth = 0;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pLocalPlayer, iHideEnemyHealth, hide_enemy_health );
 	if ( ( iHideEnemyHealth > 0 ) && !pLocalPlayer->InSameTeam( pTarget ) )
@@ -477,7 +477,7 @@ bool CTargetID::IsValidIDTarget( int nEntIndex, float flOldTargetRetainFOV, floa
 
 				//Recreate the floating health icon if there isn't one, we're not a spectator, and 
 				// we're not a spy or this was a robot from Robot Destruction-Mode
-				if ( !m_pFloatingHealthIcon && !bSpectator && ( !bSpy || bHealthBarVisible ) && !DrawHealthIcon() )
+				if ( !m_pFloatingHealthIcon && !bSpectator && ( !bSpy || bHealthBarVisible ) && ( !DrawHealthIcon() || pEnt->IsHealthBarVisible() ) )
 				{
 					m_pFloatingHealthIcon = CFloatingHealthIcon::AddFloatingHealthIcon( pEnt );
 				}
@@ -798,19 +798,19 @@ void CTargetID::UpdateID( void )
 
 			bool bInSameTeam = pLocalTFPlayer->InSameDisguisedTeam( pEnt );
 			bool bSpy = pLocalTFPlayer->IsPlayerClass( TF_CLASS_SPY );
-			bool bMedic = pLocalTFPlayer->IsPlayerClass( TF_CLASS_MEDIC );
-			bool bHeavy = pLocalTFPlayer->IsPlayerClass( TF_CLASS_HEAVYWEAPONS );
+			int iSeeEnemyHealth = 0;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pLocalTFPlayer, iSeeEnemyHealth, see_enemy_health )
 
 			// See if the player wants to fill in the data string
 			bool bIsAmmoData = false;
 			bool bIsKillStreakData = false;
 			pPlayer->GetTargetIDDataString( bDisguisedTarget, sDataString, sizeof(sDataString), bIsAmmoData, bIsKillStreakData );
-			if ( pLocalTFPlayer->GetTeamNumber() == TEAM_SPECTATOR || bInSameTeam || bSpy || bDisguisedEnemy || bMedic || bHeavy )
+			if ( pLocalTFPlayer->GetTeamNumber() == TEAM_SPECTATOR || bInSameTeam )
 			{
 				printFormatString = "#TF_playerid_sameteam";
 				bShowHealth = true;
 			}
-			else if ( pLocalTFPlayer->m_Shared.GetState() == TF_STATE_DYING )
+			else if ( bSpy || iSeeEnemyHealth || pLocalTFPlayer->m_Shared.GetState() == TF_STATE_DYING )
 			{
 				// We're looking at an enemy who killed us.
 				printFormatString = "#TF_playerid_diffteam";
