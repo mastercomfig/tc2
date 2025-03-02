@@ -6533,6 +6533,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
+		// Move this higher to fix the lack of minicrit rampup damage upon being crit boosted.
+		int iDemoteCritToMinicrit = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iDemoteCritToMinicrit, crits_become_minicrits );
+
 #ifdef MCOMS_BALANCE_PACK
 		// SMG headshots falloff
 		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
@@ -6552,7 +6556,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 								 ( ( bCrit && tf_weapon_criticals_distance_falloff.GetBool() ) || 
 								 ( info.GetCritType() == CTakeDamageInfo::CRIT_MINI && tf_weapon_minicrits_distance_falloff.GetBool() ) || 
 								 ( iForceCritDmgFalloff ) );
-		bool bDoShortRangeDistanceIncrease = !bCrit || info.GetCritType() == CTakeDamageInfo::CRIT_MINI ;
+		bool bDoShortRangeDistanceIncrease = !bCrit || iDemoteCritToMinicrit != 0 || info.GetCritType() == CTakeDamageInfo::CRIT_MINI ;
 		bool bDoLongRangeDistanceDecrease = !bIgnoreLongRangeDmgEffects && ( bForceCritFalloff || ( !bCrit && info.GetCritType() != CTakeDamageInfo::CRIT_MINI  ) );
 
 		// If we're doing any distance modification, we need to do that first
@@ -6782,8 +6786,6 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 		else if ( bCrit )
 		{
-			int iDemoteCritToMinicrit = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iDemoteCritToMinicrit, crits_become_minicrits );
 			if ( iDemoteCritToMinicrit != 0 )
 			{
 				bitsDamage &= ~DMG_CRITICAL; // this is to shutup the assert in lambdaDoMinicrit
