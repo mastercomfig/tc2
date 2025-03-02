@@ -660,8 +660,6 @@ const char *CTFStunBall::GetBallViewModelName( void ) const
 //-----------------------------------------------------------------------------
 void CTFStunBall::Spawn( void )
 {
-	SetDetonateTimerLength(FLT_MAX); // makes the ball never fizzle out mid-air
-
 	BaseClass::Spawn();
 
 	SetModel( GetBallModelName() );
