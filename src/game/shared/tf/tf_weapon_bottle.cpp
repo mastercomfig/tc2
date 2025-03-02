@@ -225,6 +225,11 @@ void CTFStickBomb::Smack( void )
 	{
 		m_iDetonated = 1;
 		m_bBroken = true;
+		CTFPlayer* pOwner = GetTFPlayerOwner();
+		if (pOwner)
+		{
+			pOwner->m_Shared.SetItemChargeMeter(LOADOUT_POSITION_MELEE, 0.f);
+		}
 		SwitchBodyGroups();
 
 #ifdef GAME_DLL
@@ -347,3 +352,12 @@ void RecvProxy_Detonated( const CRecvProxyData *pData, void *pStruct, void *pOut
 }
 
 #endif
+
+void CTFStickBomb::OnResourceMeterFilled()
+{
+	CTFPlayer* pOwner = GetTFPlayerOwner();
+	if (!pOwner)
+		return;
+
+	WeaponRegenerate();
+}
