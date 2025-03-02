@@ -65,10 +65,7 @@ public:
 	void	SetCritical( bool bCritical ) { m_bCritical = bCritical; }
 	virtual int		GetDamageType();
 
-	void			FadeOut(int iTime);
-	void			RemoveThink();
-
-	virtual bool	IsDeflectable() OVERRIDE { return (GetMoveType() != MOVETYPE_NONE); }
+	virtual bool	IsDeflectable() { return true; }
 	virtual void	Deflected( CBaseEntity *pDeflectedBy, Vector &vecDir );
 	virtual bool	IsDestroyable( bool bOrbAttack = false ) OVERRIDE { return ( !bOrbAttack ? false : true ); }
 
