@@ -70,6 +70,8 @@ public:
 	virtual float GetChargeBeginTime( void );
 	virtual float GetChargeMaxTime( void );
 
+	virtual bool	CanInspect() const OVERRIDE;
+
 	void LaunchGrenade( void );
 
 	void AddDonkVictim( const CBaseEntity* pVictim );
