@@ -2572,6 +2572,18 @@ void CTFWeaponBase::HandleInspect()
 	// first time pressing inspecting key
 	if ( !m_bInspecting && pPlayer->IsInspecting() )
 	{
+		// Don't inspect while reloading or zooming. TF_COND_ZOOMED for the Classic
+		if ( IsReloading() || pPlayer->m_Shared.InCond( TF_COND_AIMING ) || pPlayer->m_Shared.InCond( TF_COND_ZOOMED ) )
+		{
+			return;
+		}
+		
+		// Don't inspect if the player has just fired
+        	if ( gpGlobals->curtime < m_flNextPrimaryAttack )
+		{
+            		return;
+		}
+		
 		m_nInspectStage = INSPECT_INVALID;
 		m_flInspectAnimEndTime = -1.f;
 		if ( SendWeaponAnim( GetInspectActivity( INSPECT_START ) ) )
