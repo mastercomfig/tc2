@@ -55,6 +55,8 @@ public:
 	virtual void	OnResourceMeterFilled() OVERRIDE;
 	virtual float	GetMeterMultiplier() const OVERRIDE;
 
+	virtual bool	CanInspect() const OVERRIDE;
+
 #ifdef GAME_DLL
 	virtual float GetInitialAfterburnDuration() const OVERRIDE { return 0.f; }
 	void RefundAmmo( int nAmmo );
