@@ -8,12 +8,6 @@ Criterion "ScoutIsStillonFire" "ScoutOnFire" "1" "required" weight 0
 Criterion "ScoutNotKillSpeech" "ScoutKillSpeech" "!=1" "required" weight 0
 Criterion "ScoutNotKillSpeechMelee" "ScoutKillSpeechMelee" "!=1" "required" weight 0
 Criterion "ScoutNotKillSpeechMeleeFat" "ScoutKillSpeechMeleeFat" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
-Criterion "ScoutNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
 Criterion "ScoutNotSaidHealThanks" "ScoutSaidHealThanks" "!=1" "required"
 Criterion "IsHelpCapScout" "ScoutHelpCap" "1" "required" weight 0
 Criterion "NotSaidScoutHitBallSpeech" "ScoutHitBallSpeech" "!=1" "required"
@@ -260,6 +254,16 @@ Rule PlayerTeleporterThanksScout
 //--------------------------------------------------------------------------------------------------------------
 // Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------
+Criterion "ScoutNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
+Criterion "ScoutNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseScout
 {
 	scene "scenes/Player/Scout/low/2513.vcd" 
@@ -294,14 +298,16 @@ Rule CartMovingBackwardsOffenseScout
 	Response CartMovingBackwardsOffenseScout
 }
 
+// forward //
+
 Response CartMovingForwardDefenseScout
 {
 	scene "scenes/Player/Scout/low/2525.vcd" 
 	scene "scenes/Player/Scout/low/2526.vcd" 
 	scene "scenes/Player/Scout/low/2527.vcd" 
-	scene "scenes/Player/Scout/low/2528.vcd" 
-	scene "scenes/Player/Scout/low/2529.vcd" 
-	scene "scenes/Player/Scout/low/2530.vcd" 
+		//scene "scenes/Player/Scout/low/2528.vcd" 
+		//scene "scenes/Player/Scout/low/2529.vcd" 
+		//scene "scenes/Player/Scout/low/2530.vcd" 
 }
 Rule CartMovingForwardDefenseScout
 {
@@ -312,18 +318,21 @@ Rule CartMovingForwardDefenseScout
 
 Response CartMovingForwardOffenseScout
 {
-	scene "scenes/Player/Scout/low/2532.vcd" 
-	scene "scenes/Player/Scout/low/2533.vcd" 
+		//scene "scenes/Player/Scout/low/2532.vcd" 
+		//scene "scenes/Player/Scout/low/2533.vcd" 
 	scene "scenes/Player/Scout/low/2534.vcd" 
-	scene "scenes/Player/Scout/low/2535.vcd" 
+		//scene "scenes/Player/Scout/low/2535.vcd" 
 	scene "scenes/Player/Scout/low/2537.vcd" 
-	scene "scenes/Player/Scout/low/2536.vcd" 
+		//scene "scenes/Player/Scout/low/2536.vcd" 
 	scene "scenes/Player/Scout/low/2538.vcd" 
-	scene "scenes/Player/Scout/low/2540.vcd" 
+		//scene "scenes/Player/Scout/low/2540.vcd"
 	scene "scenes/Player/Scout/low/2541.vcd" 
-	scene "scenes/Player/Scout/low/2539.vcd" 
+		//scene "scenes/Player/Scout/low/2539.vcd"
 	scene "scenes/Player/Scout/low/2542.vcd" 
-	scene "scenes/Player/Scout/low/2543.vcd" 
+		//scene "scenes/Player/Scout/low/2543.vcd" 
+	scene "scenes/Player/Scout/low/2528.vcd" //new
+	scene "scenes/Player/Scout/low/2529.vcd" //new
+	scene "scenes/Player/Scout/low/2530.vcd" //new
 }
 Rule CartMovingForwardOffenseScout
 {
@@ -331,6 +340,34 @@ Rule CartMovingForwardOffenseScout
 	ApplyContext "SaidCartMovingForwardO:1:20"
 	Response CartMovingForwardOffenseScout
 }
+
+// player is pushing //
+
+Response CartPushingScout
+{
+	scene "scenes/Player/Scout/low/2532.vcd" 
+	scene "scenes/Player/Scout/low/2533.vcd" 
+		//scene "scenes/Player/Scout/low/2534.vcd" 
+	scene "scenes/Player/Scout/low/2535.vcd" 
+		//scene "scenes/Player/Scout/low/2537.vcd" 
+	scene "scenes/Player/Scout/low/2536.vcd" 
+		//scene "scenes/Player/Scout/low/2538.vcd" 
+		////scene "scenes/Player/Scout/low/2540.vcd" //doesn't work
+	speak "Scout.CartStayCloseOffense02" //fix
+		//scene "scenes/Player/Scout/low/2541.vcd" 
+		////scene "scenes/Player/Scout/low/2539.vcd" //doesnt' work
+	speak "Scout.CartStayCloseOffense04" // fix
+		//scene "scenes/Player/Scout/low/2542.vcd" 
+	scene "scenes/Player/Scout/low/2543.vcd" 
+}
+Rule CartPushingScout
+{
+	criteria ConceptCartPushing IsOnOffense IsScout ScoutNotSaidCartPushing IsNotDisguised 75PercentChance
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingScout
+}
+
+// stopped //
 
 Response CartMovingStoppedDefenseScout
 {
@@ -349,7 +386,8 @@ Response CartMovingStoppedOffenseScout
 {
 	scene "scenes/Player/Scout/low/2548.vcd" 
 	scene "scenes/Player/Scout/low/2549.vcd" 
-	scene "scenes/Player/Scout/low/2550.vcd" 
+		////scene "scenes/Player/Scout/low/2550.vcd" //doesn't work
+	speak "Scout.CartStoppedOffense03" //fix
 }
 Rule CartMovingStoppedOffenseScout
 {
@@ -357,7 +395,6 @@ Rule CartMovingStoppedOffenseScout
 	ApplyContext "SaidCartMovingStoppedO:1:20"
 	Response CartMovingStoppedOffenseScout
 }
-
 
 //--------------------------------------------------------------------------------------------------------------
 // Auto Speech Combat

@@ -6,16 +6,10 @@ Criterion "SniperIsNotStillonFire" "SniperOnFire" "!=1" "required" weight 0
 Criterion "SniperIsStillonFire" "SniperOnFire" "1" "required" weight 0
 Criterion "SniperNotKillSpeech" "SniperKillSpeech" "!=1" "required" weight 0
 Criterion "SniperNotKillSpeechMelee" "SniperKillSpeechMelee" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
 Criterion "SniperNotSaidHealThanks" "SniperSaidHealThanks" "!=1" "required"
 Criterion "IsHelpCapSniper" "SniperHelpCap" "1" "required" weight 0
 // Custom stuff
 Criterion "SniperNotInvulnerableSpeech" "SniperInvulnerableSpeech" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
-Criterion "SniperNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
 Criterion "SniperNotAwardSpeech" "SniperAwardSpeech" "!=1" "required" weight 0
 Criterion "SniperNotAssistSpeech" "SniperAssistSpeech" "!=1" "required" weight 0
 Criterion "SniperNotHoldStill" "SniperHoldStill" "!=1" "required" weight 0
@@ -368,6 +362,16 @@ Rule PlayerTeleporterThanksSniper
 //--------------------------------------------------------------------------------------------------------------
 // Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------
+Criterion "SniperNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "SniperNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseSniper
 {
 	scene "scenes/Player/Sniper/low/2334.vcd" 
@@ -441,6 +445,8 @@ Rule CartMovingBackwardsOffenseScopedSniper
 	Response CartMovingBackwardsOffenseScopedSniper
 }
 
+// forward //
+
 // Defense forward
 Response CartMovingForwardDefenseSniper
 {
@@ -478,16 +484,16 @@ Rule CartMovingForwardDefenseSniper
 
 Response CartMovingForwardOffenseSniper
 {
-	scene "scenes/Player/Sniper/low/2307.vcd"  
-	scene "scenes/Player/Sniper/low/2308.vcd"  
-	scene "scenes/Player/Sniper/low/2309.vcd"  
-	scene "scenes/Player/Sniper/low/2402.vcd"  
-	scene "scenes/Player/Sniper/low/2403.vcd"  
-	scene "scenes/Player/Sniper/low/2404.vcd"   
-	scene "scenes/Player/Sniper/low/2406.vcd"  
-	scene "scenes/Player/Sniper/low/2407.vcd"  
-	scene "scenes/Player/Sniper/low/2408.vcd"  
-	scene "scenes/Player/Sniper/low/2409.vcd"  
+	// scene "scenes/Player/Sniper/low/2307.vcd"  
+	// scene "scenes/Player/Sniper/low/2308.vcd"  
+	// scene "scenes/Player/Sniper/low/2309.vcd"  
+	// scene "scenes/Player/Sniper/low/2402.vcd"  
+	// scene "scenes/Player/Sniper/low/2403.vcd"  
+	// scene "scenes/Player/Sniper/low/2404.vcd"   
+	// scene "scenes/Player/Sniper/low/2406.vcd"  
+	// scene "scenes/Player/Sniper/low/2407.vcd"  
+	// scene "scenes/Player/Sniper/low/2408.vcd"  
+	// scene "scenes/Player/Sniper/low/2409.vcd"  
 	scene "scenes/Player/Sniper/low/2301.vcd"  
 	scene "scenes/Player/Sniper/low/2302.vcd"  
 	scene "scenes/Player/Sniper/low/2303.vcd"  
@@ -505,16 +511,16 @@ Rule CartMovingForwardOffenseSniper
 
 Response CartMovingForwardOffenseScopedSniper
 {
-	scene "scenes/Player/Sniper/low/2506.vcd"  
-	scene "scenes/Player/Sniper/low/2507.vcd"  
-	scene "scenes/Player/Sniper/low/2508.vcd"  
-	scene "scenes/Player/Sniper/low/2525.vcd"  
-	scene "scenes/Player/Sniper/low/2526.vcd"  
-	scene "scenes/Player/Sniper/low/2527.vcd"  
-	scene "scenes/Player/Sniper/low/2529.vcd"  
-	scene "scenes/Player/Sniper/low/2530.vcd"  
-	scene "scenes/Player/Sniper/low/2531.vcd"  
-	scene "scenes/Player/Sniper/low/2532.vcd"  
+	// scene "scenes/Player/Sniper/low/2506.vcd"  
+	// scene "scenes/Player/Sniper/low/2507.vcd"  
+	// scene "scenes/Player/Sniper/low/2508.vcd"  
+	// scene "scenes/Player/Sniper/low/2525.vcd"  
+	// scene "scenes/Player/Sniper/low/2526.vcd"  
+	// scene "scenes/Player/Sniper/low/2527.vcd"  
+	// scene "scenes/Player/Sniper/low/2529.vcd"  
+	// scene "scenes/Player/Sniper/low/2530.vcd"  
+	// scene "scenes/Player/Sniper/low/2531.vcd"  
+	// scene "scenes/Player/Sniper/low/2532.vcd"  
 	scene "scenes/Player/Sniper/low/2500.vcd"  
 	scene "scenes/Player/Sniper/low/2501.vcd"  
 	scene "scenes/Player/Sniper/low/2502.vcd"  
@@ -529,6 +535,65 @@ Rule CartMovingForwardOffenseScopedSniper
 	ApplyContext "SaidCartMovingForwardO:1:20"
 	Response CartMovingForwardOffenseScopedSniper
 }
+
+// player is pushing //
+
+Response CartPushingSniper
+{
+	scene "scenes/Player/Sniper/low/2307.vcd"  
+	scene "scenes/Player/Sniper/low/2308.vcd"  
+	scene "scenes/Player/Sniper/low/2309.vcd"  
+	scene "scenes/Player/Sniper/low/2402.vcd"  
+	scene "scenes/Player/Sniper/low/2403.vcd"  
+	scene "scenes/Player/Sniper/low/2404.vcd"   
+	scene "scenes/Player/Sniper/low/2406.vcd"  
+	scene "scenes/Player/Sniper/low/2407.vcd"  
+	scene "scenes/Player/Sniper/low/2408.vcd"  
+	scene "scenes/Player/Sniper/low/2409.vcd"  
+	// scene "scenes/Player/Sniper/low/2301.vcd"  
+	// scene "scenes/Player/Sniper/low/2302.vcd"  
+	// scene "scenes/Player/Sniper/low/2303.vcd"  
+	// scene "scenes/Player/Sniper/low/2416.vcd"  
+	// scene "scenes/Player/Sniper/low/2424.vcd"  
+	// scene "scenes/Player/Sniper/low/2425.vcd"  
+	// scene "scenes/Player/Sniper/low/2454.vcd"  
+}
+Rule CartPushingSniper
+{
+	criteria ConceptCartPushing IsOnOffense IsSniper Unzoomed SniperNotSaidCartPushing IsNotDisguised 75PercentChance
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingSniper
+}
+
+Response CartPushingScopedSniper
+{
+	scene "scenes/Player/Sniper/low/2506.vcd"  
+	scene "scenes/Player/Sniper/low/2507.vcd"  
+	scene "scenes/Player/Sniper/low/2508.vcd"  
+	scene "scenes/Player/Sniper/low/2525.vcd"  
+	scene "scenes/Player/Sniper/low/2526.vcd"  
+	scene "scenes/Player/Sniper/low/2527.vcd"  
+	scene "scenes/Player/Sniper/low/2529.vcd"  
+	scene "scenes/Player/Sniper/low/2530.vcd"  
+	scene "scenes/Player/Sniper/low/2531.vcd"  
+	scene "scenes/Player/Sniper/low/2532.vcd"  
+	// scene "scenes/Player/Sniper/low/2500.vcd"  
+	// scene "scenes/Player/Sniper/low/2501.vcd"  
+	// scene "scenes/Player/Sniper/low/2502.vcd"  
+	// scene "scenes/Player/Sniper/low/2535.vcd"  
+	// scene "scenes/Player/Sniper/low/2536.vcd"  
+	// scene "scenes/Player/Sniper/low/2537.vcd"  
+	// scene "scenes/Player/Sniper/low/2546.vcd"  
+}
+Rule CartPushingScopedSniper
+{
+	criteria ConceptCartPushing IsOnOffense IsSniper DeployedContext SniperNotSaidCartPushing IsNotDisguised 75PercentChance
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingScopedSniper
+}
+
+// stopped //
+
 // Cart stopped Defense
 
 Response CartMovingStoppedDefenseSniper

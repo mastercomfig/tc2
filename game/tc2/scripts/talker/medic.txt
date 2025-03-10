@@ -1324,8 +1324,13 @@ Criterion "MedicNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "requi
 Criterion "MedicNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
 Criterion "MedicNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
 Criterion "MedicNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "MedicNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseMedic                                                     
 {
+	
 }
 Rule CartMovingBackwardsDefenseMedic                                                     
 {
@@ -1333,6 +1338,7 @@ Rule CartMovingBackwardsDefenseMedic
 	ApplyContext "SaidCartMovingBackwardD:1:20"
 	Response CartMovingBackwardsDefenseMedic                                                     
 }
+
 Response CartMovingBackwardsOffenseMedic                                                     
 {
 	scene "scenes/Player/Medic/low/6763.vcd"
@@ -1344,6 +1350,9 @@ Rule CartMovingBackwardsOffenseMedic
 	ApplyContext "SaidCartMovingBackwardO:1:20"
 	Response CartMovingBackwardsOffenseMedic                                                     
 }
+
+// forward //
+
 Response CartMovingForwardDefenseMedic                                                       
 {
 	scene "scenes/Player/Medic/low/6767.vcd"
@@ -1355,16 +1364,17 @@ Rule CartMovingForwardDefenseMedic
 	ApplyContext "SaidCartMovingForwardD:1:20"
 	Response CartMovingForwardDefenseMedic                                                       
 }
+
 Response CartMovingForwardOffenseMedic                                                       
 {
-	scene "scenes/Player/Medic/low/6752.vcd"
-	scene "scenes/Player/Medic/low/6753.vcd"
-	scene "scenes/Player/Medic/low/6754.vcd"
-	scene "scenes/Player/Medic/low/6755.vcd"
-	scene "scenes/Player/Medic/low/6756.vcd"
-	scene "scenes/Player/Medic/low/6758.vcd"
-	scene "scenes/Player/Medic/low/6760.vcd"
-	scene "scenes/Player/Medic/low/6761.vcd"
+	// scene "scenes/Player/Medic/low/6752.vcd"
+	// scene "scenes/Player/Medic/low/6753.vcd"
+	// scene "scenes/Player/Medic/low/6754.vcd"
+	// scene "scenes/Player/Medic/low/6755.vcd"
+	// scene "scenes/Player/Medic/low/6756.vcd"
+	// scene "scenes/Player/Medic/low/6758.vcd"
+	// scene "scenes/Player/Medic/low/6760.vcd"
+	// scene "scenes/Player/Medic/low/6761.vcd"
 	scene "scenes/Player/Medic/low/6770.vcd"
 	scene "scenes/Player/Medic/low/6774.vcd"
 	scene "scenes/Player/Medic/low/6775.vcd"
@@ -1375,6 +1385,32 @@ Rule CartMovingForwardOffenseMedic
 	ApplyContext "SaidCartMovingForwardO:1:20"
 	Response CartMovingForwardOffenseMedic                                                       
 }
+
+// player is pushing //
+
+Response CartPushingMedic                                                       
+{
+	scene "scenes/Player/Medic/low/6752.vcd"
+	scene "scenes/Player/Medic/low/6753.vcd"
+	scene "scenes/Player/Medic/low/6754.vcd"
+	scene "scenes/Player/Medic/low/6755.vcd"
+	scene "scenes/Player/Medic/low/6756.vcd"
+	scene "scenes/Player/Medic/low/6758.vcd"
+	scene "scenes/Player/Medic/low/6760.vcd"
+	scene "scenes/Player/Medic/low/6761.vcd"
+	// scene "scenes/Player/Medic/low/6770.vcd"
+	// scene "scenes/Player/Medic/low/6774.vcd"
+	// scene "scenes/Player/Medic/low/6775.vcd"
+}
+Rule CartPushingMedic                                                       
+{
+	criteria ConceptCartPushing IsOnOffense IsMedic MedicNotSaidCartPushing IsNotDisguised 75PercentChance                                                                                                                                                            
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingMedic                                                       
+}
+
+// stopped //
+
 Response CartMovingStoppedDefenseMedic                                                       
 {
 	scene "scenes/Player/Medic/low/6786.vcd"
@@ -1385,6 +1421,7 @@ Rule CartMovingStoppedDefenseMedic
 	ApplyContext "SaidCartMovingStoppedD:1:20"
 	Response CartMovingStoppedDefenseMedic                                                       
 }
+
 Response CartMovingStoppedOffenseMedic                                                       
 {
 	scene "scenes/Player/Medic/low/6776.vcd"
@@ -1398,6 +1435,7 @@ Rule CartMovingStoppedOffenseMedic
 	ApplyContext "SaidCartMovingStoppedO:1:20"
 	Response CartMovingStoppedOffenseMedic                                                       
 }
+
 //--------------------------------------------------------------------------------------------------------------
 // END OF Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------

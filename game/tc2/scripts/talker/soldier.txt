@@ -1599,6 +1599,10 @@ Criterion "SoldierNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "req
 Criterion "SoldierNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
 Criterion "SoldierNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
 Criterion "SoldierNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "SoldierNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseSoldier                                                     
 {
 	scene "scenes/Player/Soldier/low/7371.vcd"
@@ -1610,6 +1614,7 @@ Rule CartMovingBackwardsDefenseSoldier
 	ApplyContext "SaidCartMovingBackwardD:1:20"
 	Response CartMovingBackwardsDefenseSoldier                                                     
 }
+
 Response CartMovingBackwardsOffenseSoldier                                                     
 {
 	scene "scenes/Player/Soldier/low/7363.vcd"
@@ -1621,6 +1626,9 @@ Rule CartMovingBackwardsOffenseSoldier
 	ApplyContext "SaidCartMovingBackwardO:1:20"
 	Response CartMovingBackwardsOffenseSoldier                                                     
 }
+
+// forward //
+
 Response CartMovingForwardDefenseSoldier                                                       
 {
 	scene "scenes/Player/Soldier/low/7368.vcd"
@@ -1633,7 +1641,41 @@ Rule CartMovingForwardDefenseSoldier
 	ApplyContext "SaidCartMovingForwardD:1:20"
 	Response CartMovingForwardDefenseSoldier                                                       
 }
+
 Response CartMovingForwardOffenseSoldier                                                       
+{
+		//scene "scenes/Player/Soldier/low/7345.vcd"
+		//scene "scenes/Player/Soldier/low/7346.vcd"
+		//scene "scenes/Player/Soldier/low/7347.vcd"
+		//scene "scenes/Player/Soldier/low/7350.vcd"
+		//scene "scenes/Player/Soldier/low/7351.vcd"
+		//scene "scenes/Player/Soldier/low/7352.vcd"
+		//scene "scenes/Player/Soldier/low/7353.vcd"
+		//scene "scenes/Player/Soldier/low/7356.vcd"
+		//scene "scenes/Player/Soldier/low/7355.vcd"
+		//scene "scenes/Player/Soldier/low/7359.vcd"
+		//scene "scenes/Player/Soldier/low/7362.vcd"
+		//scene "scenes/Player/Soldier/low/7357.vcd"
+		//scene "scenes/Player/Soldier/low/7349.vcd"
+		//scene "scenes/Player/Soldier/low/7348.vcd"
+		//scene "scenes/Player/Soldier/low/7354.vcd"
+	scene "scenes/Player/Soldier/low/7377.vcd"
+	scene "scenes/Player/Soldier/low/7378.vcd"
+	scene "scenes/Player/Soldier/low/7379.vcd"
+	scene "scenes/Player/Soldier/low/7382.vcd"
+	scene "scenes/Player/Soldier/low/7383.vcd"
+	scene "scenes/Player/Soldier/low/7385.vcd"
+}
+Rule CartMovingForwardOffenseSoldier                                                       
+{
+	criteria ConceptCartMovingForward IsOnOffense IsSoldier SoldierNotSaidCartMovingForwardO IsNotDisguised 75PercentChance                                                                                                                                                            
+	ApplyContext "SaidCartMovingForwardO:1:20"
+	Response CartMovingForwardOffenseSoldier                                                       
+}
+
+// player is pushing //
+
+Response CartPushingSoldier                                                       
 {
 	scene "scenes/Player/Soldier/low/7345.vcd"
 	scene "scenes/Player/Soldier/low/7346.vcd"
@@ -1650,19 +1692,22 @@ Response CartMovingForwardOffenseSoldier
 	scene "scenes/Player/Soldier/low/7349.vcd"
 	scene "scenes/Player/Soldier/low/7348.vcd"
 	scene "scenes/Player/Soldier/low/7354.vcd"
-	scene "scenes/Player/Soldier/low/7377.vcd"
-	scene "scenes/Player/Soldier/low/7378.vcd"
-	scene "scenes/Player/Soldier/low/7379.vcd"
-	scene "scenes/Player/Soldier/low/7382.vcd"
-	scene "scenes/Player/Soldier/low/7383.vcd"
-	scene "scenes/Player/Soldier/low/7385.vcd"
+		//scene "scenes/Player/Soldier/low/7377.vcd"
+		//scene "scenes/Player/Soldier/low/7378.vcd"
+		//scene "scenes/Player/Soldier/low/7379.vcd"
+		//scene "scenes/Player/Soldier/low/7382.vcd"
+		//scene "scenes/Player/Soldier/low/7383.vcd"
+		//scene "scenes/Player/Soldier/low/7385.vcd"
 }
-Rule CartMovingForwardOffenseSoldier                                                       
+Rule CartPushingSoldier                                                       
 {
-	criteria ConceptCartMovingForward IsOnOffense IsSoldier SoldierNotSaidCartMovingForwardO IsNotDisguised 75PercentChance                                                                                                                                                            
-	ApplyContext "SaidCartMovingForwardO:1:20"
-	Response CartMovingForwardOffenseSoldier                                                       
+	criteria ConceptCartPushing IsOnOffense IsSoldier SoldierNotSaidCartPushing IsNotDisguised 75PercentChance                                                                                                                                                            
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingSoldier                                                       
 }
+
+// stopped //
+
 Response CartMovingStoppedDefenseSoldier                                                       
 {
 	scene "scenes/Player/Soldier/low/7396.vcd"
@@ -1675,6 +1720,7 @@ Rule CartMovingStoppedDefenseSoldier
 	ApplyContext "SaidCartMovingStoppedD:1:20"
 	Response CartMovingStoppedDefenseSoldier                                                       
 }
+
 Response CartMovingStoppedOffenseSoldier                                                       
 {
 	scene "scenes/Player/Soldier/low/7389.vcd"
@@ -1687,6 +1733,7 @@ Rule CartMovingStoppedOffenseSoldier
 	ApplyContext "SaidCartMovingStoppedO:1:20"
 	Response CartMovingStoppedOffenseSoldier                                                       
 }
+
 //--------------------------------------------------------------------------------------------------------------
 // END OF Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------

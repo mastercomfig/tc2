@@ -219,6 +219,9 @@ criterion "ConceptCartMovingForward" "Concept" "TLK_CART_MOVING_FORWARD" require
 criterion "ConceptCartMovingStopped" "Concept" "TLK_CART_STOP" required          
 criterion "ConceptCartMovingBackward" "Concept" "TLK_CART_MOVING_BACKWARD" required          
 
+//tc2 new criterion
+criterion "ConceptCartPushing" "Concept" "TLK_CART_PUSHING" required
+
 criterion "ConceptAteFood" "Concept" "TLK_ATE_FOOD" required          
 
 //scout pack

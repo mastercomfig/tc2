@@ -8,12 +8,6 @@ Criterion "HeavyIsStillonFire" "HeavyOnFire" "1" "required" weight 0
 Criterion "HeavyNotInvulnerableSpeech" "HeavyInvulnerableSpeech" "!=1" "required" weight 0
 Criterion "HeavyNotKillSpeech" "HeavyKillSpeech" "!=1" "required" weight 0
 Criterion "HeavyNotKillSpeechMelee" "HeavyKillSpeechMelee" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
-Criterion "HeavyNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
 Criterion "HeavyNotSaidHealThanks" "HeavySaidHealThanks" "!=1" "required"
 Criterion "IsHelpCapHeavy" "HeavyHelpCap" "1" "required" weight 0
 // Custom stuff
@@ -253,6 +247,16 @@ Rule PlayerTeleporterThanksHeavy
 //--------------------------------------------------------------------------------------------------------------
 // Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------
+Criterion "HeavyNotSaidCartMovingBackwardD" "SaidCartMovingBackwardD" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartMovingBackwardO" "SaidCartMovingBackwardO" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "HeavyNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseHeavy
 {
 	scene "scenes/Player/Heavy/low/1990.vcd" 
@@ -280,6 +284,8 @@ Response CartMovingBackwardsOffenseHeavy
 	scene "scenes/Player/Heavy/low/2072.vcd" 
 	scene "scenes/Player/Heavy/low/2206.vcd" 
 	scene "scenes/Player/Heavy/low/2207.vcd" 
+	scene "scenes/Player/Heavy/low/2073.vcd" //new
+	scene "scenes/Player/Heavy/low/2270.vcd" //new
 }
 Rule CartMovingBackwardsOffenseHeavy
 {
@@ -288,14 +294,16 @@ Rule CartMovingBackwardsOffenseHeavy
 	Response CartMovingBackwardsOffenseHeavy
 }
 
+// forward //
+
 Response CartMovingForwardDefenseHeavy
 {
 	scene "scenes/Player/Heavy/low/1984.vcd" 
 	scene "scenes/Player/Heavy/low/1985.vcd" 
 	scene "scenes/Player/Heavy/low/2269.vcd" 
 	scene "scenes/Player/Heavy/low/1986.vcd" 
-	scene "scenes/Player/Heavy/low/2073.vcd" 
-	scene "scenes/Player/Heavy/low/2270.vcd" 
+	// scene "scenes/Player/Heavy/low/2073.vcd" 
+	// scene "scenes/Player/Heavy/low/2270.vcd" 
 	scene "scenes/Player/Heavy/low/2263.vcd" 
 }
 Rule CartMovingForwardDefenseHeavy
@@ -306,6 +314,45 @@ Rule CartMovingForwardDefenseHeavy
 }
 
 Response CartMovingForwardOffenseHeavy
+{
+	// scene "scenes/Player/Heavy/low/1963.vcd" 
+	// scene "scenes/Player/Heavy/low/1964.vcd" 
+	// scene "scenes/Player/Heavy/low/1965.vcd" 
+	// scene "scenes/Player/Heavy/low/2179.vcd" 
+	// scene "scenes/Player/Heavy/low/2180.vcd" 
+	// scene "scenes/Player/Heavy/low/2181.vcd" 
+	// scene "scenes/Player/Heavy/low/2182.vcd" 
+	// scene "scenes/Player/Heavy/low/2183.vcd" 
+	// scene "scenes/Player/Heavy/low/2184.vcd" 
+	// scene "scenes/Player/Heavy/low/2271.vcd" 
+	// scene "scenes/Player/Heavy/low/2185.vcd" 
+	// scene "scenes/Player/Heavy/low/2186.vcd" 
+	// scene "scenes/Player/Heavy/low/2187.vcd" 
+	// scene "scenes/Player/Heavy/low/2188.vcd" 
+	// scene "scenes/Player/Heavy/low/2189.vcd" 
+	// scene "scenes/Player/Heavy/low/2190.vcd" 
+	// scene "scenes/Player/Heavy/low/2203.vcd" 
+	// scene "scenes/Player/Heavy/low/1957.vcd" 
+	scene "scenes/Player/Heavy/low/1958.vcd" 
+	scene "scenes/Player/Heavy/low/1959.vcd" 
+	scene "scenes/Player/Heavy/low/2202.vcd" 
+	// scene "scenes/Player/Heavy/low/2201.vcd" 
+	// scene "scenes/Player/Heavy/low/2193.vcd" 
+	// scene "scenes/Player/Heavy/low/2066.vcd" 
+	// scene "scenes/Player/Heavy/low/2261.vcd" 
+	// scene "scenes/Player/Heavy/low/2260.vcd" 
+	// scene "scenes/Player/Heavy/low/2262.vcd" 
+}
+Rule CartMovingForwardOffenseHeavy
+{
+	criteria ConceptCartMovingForward IsOnOffense IsHeavy HeavyNotSaidCartMovingForwardO IsNotDisguised 75PercentChance
+	ApplyContext "SaidCartMovingForwardO:1:20"
+	Response CartMovingForwardOffenseHeavy
+}
+
+// player is pushing //
+
+Response CartPushingHeavy
 {
 	scene "scenes/Player/Heavy/low/1963.vcd" 
 	scene "scenes/Player/Heavy/low/1964.vcd" 
@@ -325,9 +372,9 @@ Response CartMovingForwardOffenseHeavy
 	scene "scenes/Player/Heavy/low/2190.vcd" 
 	scene "scenes/Player/Heavy/low/2203.vcd" 
 	scene "scenes/Player/Heavy/low/1957.vcd" 
-	scene "scenes/Player/Heavy/low/1958.vcd" 
-	scene "scenes/Player/Heavy/low/1959.vcd" 
-	scene "scenes/Player/Heavy/low/2202.vcd" 
+	// scene "scenes/Player/Heavy/low/1958.vcd" 
+	// scene "scenes/Player/Heavy/low/1959.vcd" 
+	// scene "scenes/Player/Heavy/low/2202.vcd" 
 	scene "scenes/Player/Heavy/low/2201.vcd" 
 	scene "scenes/Player/Heavy/low/2193.vcd" 
 	scene "scenes/Player/Heavy/low/2066.vcd" 
@@ -335,12 +382,14 @@ Response CartMovingForwardOffenseHeavy
 	scene "scenes/Player/Heavy/low/2260.vcd" 
 	scene "scenes/Player/Heavy/low/2262.vcd" 
 }
-Rule CartMovingForwardOffenseHeavy
+Rule CartPushingHeavy
 {
-	criteria ConceptCartMovingForward IsOnOffense IsHeavy HeavyNotSaidCartMovingForwardO IsNotDisguised 75PercentChance
-	ApplyContext "SaidCartMovingForwardO:1:20"
-	Response CartMovingForwardOffenseHeavy
+	criteria ConceptCartPushing IsOnOffense IsHeavy HeavyNotSaidCartPushing IsNotDisguised 75PercentChance
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingHeavy
 }
+
+// stopped //
 
 Response CartMovingStoppedDefenseHeavy
 {
@@ -369,7 +418,6 @@ Rule CartMovingStoppedOffenseHeavy
 	ApplyContext "SaidCartMovingStoppedO:1:20"
 	Response CartMovingStoppedOffenseHeavy
 }
-
 
 //--------------------------------------------------------------------------------------------------------------
 // Auto Speech Combat

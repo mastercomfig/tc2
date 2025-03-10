@@ -1117,6 +1117,10 @@ Criterion "SpyNotSaidCartMovingForwardD" "SaidCartMovingForwardD" "!=1" "require
 Criterion "SpyNotSaidCartMovingForwardO" "SaidCartMovingForwardO" "!=1" "required" weight 0
 Criterion "SpyNotSaidCartMovingStoppedD" "SaidCartMovingStoppedD" "!=1" "required" weight 0
 Criterion "SpyNotSaidCartMovingStoppedO" "SaidCartMovingStoppedO" "!=1" "required" weight 0
+Criterion "SpyNotSaidCartPushing" "SaidCartPushing" "!=1" "required" weight 0
+
+// backward //
+
 Response CartMovingBackwardsDefenseSpy                                                     
 {
 	scene "scenes/Player/Spy/low/7588.vcd"
@@ -1128,6 +1132,7 @@ Rule CartMovingBackwardsDefenseSpy
 	ApplyContext "SaidCartMovingBackwardD:1:20"
 	Response CartMovingBackwardsDefenseSpy                                                     
 }
+
 Response CartMovingBackwardsOffenseSpy                                                     
 {
 	scene "scenes/Player/Spy/low/7582.vcd"
@@ -1139,6 +1144,9 @@ Rule CartMovingBackwardsOffenseSpy
 	ApplyContext "SaidCartMovingBackwardO:1:20"
 	Response CartMovingBackwardsOffenseSpy                                                     
 }
+
+// forward //
+
 Response CartMovingForwardDefenseSpy                                                       
 {
 	scene "scenes/Player/Spy/low/7584.vcd"
@@ -1152,16 +1160,17 @@ Rule CartMovingForwardDefenseSpy
 	ApplyContext "SaidCartMovingForwardD:1:20"
 	Response CartMovingForwardDefenseSpy                                                       
 }
+
 Response CartMovingForwardOffenseSpy                                                       
 {
-	scene "scenes/Player/Spy/low/8553.vcd"
-	scene "scenes/Player/Spy/low/7573.vcd"
-	scene "scenes/Player/Spy/low/7574.vcd"
-	scene "scenes/Player/Spy/low/7575.vcd"
-	scene "scenes/Player/Spy/low/7576.vcd"
-	scene "scenes/Player/Spy/low/7577.vcd"
-	scene "scenes/Player/Spy/low/7578.vcd"
-	scene "scenes/Player/Spy/low/7581.vcd"
+	// scene "scenes/Player/Spy/low/8553.vcd"
+	// scene "scenes/Player/Spy/low/7573.vcd"
+	// scene "scenes/Player/Spy/low/7574.vcd"
+	// scene "scenes/Player/Spy/low/7575.vcd"
+	// scene "scenes/Player/Spy/low/7576.vcd"
+	// scene "scenes/Player/Spy/low/7577.vcd"
+	// scene "scenes/Player/Spy/low/7578.vcd"
+	// scene "scenes/Player/Spy/low/7581.vcd"
 	scene "scenes/Player/Spy/low/7591.vcd"
 	scene "scenes/Player/Spy/low/7592.vcd"
 	scene "scenes/Player/Spy/low/7593.vcd"
@@ -1173,6 +1182,33 @@ Rule CartMovingForwardOffenseSpy
 	ApplyContext "SaidCartMovingForwardO:1:20"
 	Response CartMovingForwardOffenseSpy                                                       
 }
+
+// player is pushing //
+
+Response CartPushingSpy                                                       
+{
+	scene "scenes/Player/Spy/low/8553.vcd"
+	scene "scenes/Player/Spy/low/7573.vcd"
+	scene "scenes/Player/Spy/low/7574.vcd"
+	scene "scenes/Player/Spy/low/7575.vcd"
+	scene "scenes/Player/Spy/low/7576.vcd"
+	scene "scenes/Player/Spy/low/7577.vcd"
+	scene "scenes/Player/Spy/low/7578.vcd"
+	scene "scenes/Player/Spy/low/7581.vcd"
+	// scene "scenes/Player/Spy/low/7591.vcd"
+	// scene "scenes/Player/Spy/low/7592.vcd"
+	// scene "scenes/Player/Spy/low/7593.vcd"
+	// scene "scenes/Player/Spy/low/7595.vcd"
+}
+Rule CartPushingSpy                                                       
+{
+	criteria ConceptCartPushing IsOnOffense IsSpy SpyNotSaidCartPushing IsNotDisguised IsNotCloaked 75PercentChance                                                                                                                                                            
+	ApplyContext "SaidCartPushing:1:20"
+	Response CartPushingSpy                                                       
+}
+
+// stopped //
+
 Response CartMovingStoppedDefenseSpy                                                       
 {
 	scene "scenes/Player/Spy/low/7600.vcd"
@@ -1186,6 +1222,7 @@ Rule CartMovingStoppedDefenseSpy
 	ApplyContext "SaidCartMovingStoppedD:1:20"
 	Response CartMovingStoppedDefenseSpy                                                       
 }
+
 Response CartMovingStoppedOffenseSpy                                                       
 {
 	scene "scenes/Player/Spy/low/7596.vcd"
@@ -1198,6 +1235,7 @@ Rule CartMovingStoppedOffenseSpy
 	ApplyContext "SaidCartMovingStoppedO:1:20"
 	Response CartMovingStoppedOffenseSpy                                                       
 }
+
 //--------------------------------------------------------------------------------------------------------------
 // END OF Auto Speech Cart
 //--------------------------------------------------------------------------------------------------------------
