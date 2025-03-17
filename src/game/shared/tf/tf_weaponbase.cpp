@@ -2068,8 +2068,10 @@ bool CTFWeaponBase::ReloadSingly( void )
 	case TF_RELOAD_FINISH:
 	default:
 		{
+			// we create a variable that tracks from curtime to the time + the duration of the finish reload activity
 			if ( SendWeaponAnim( ACT_RELOAD_FINISH ) )
 			{
+				m_flTimeFinishReloadSingly = gpGlobals->curtime + SequenceDuration();
 				// We're done, allow primary attack as soon as we like unless we're an energy weapon.
 //				if ( IsEnergyWeapon() )
 //				{
@@ -2577,11 +2579,17 @@ void CTFWeaponBase::HandleInspect()
 		{
 			return;
 		}
-		
+
 		// Don't inspect if the player has just fired
-        	if ( gpGlobals->curtime < m_flNextPrimaryAttack )
+		if ( gpGlobals->curtime < m_flNextPrimaryAttack )
 		{
-            		return;
+			return;
+		}
+		
+		// Don't inspect if the weapon isn't idle after reloading the last bullet
+		if ( gpGlobals->curtime < m_flTimeFinishReloadSingly )
+		{
+			return;
 		}
 		
 		m_nInspectStage = INSPECT_INVALID;
