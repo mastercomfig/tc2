@@ -1459,6 +1459,7 @@ bool CObjectSentrygun::FireRocket()
 #else
 			float flPlayerRocketTime = 2.25f;
 #endif
+			AddGesture( ACT_RANGE_ATTACK2, flPlayerRocketTime, true );
 			m_flNextRocketAttack = gpGlobals->curtime + flPlayerRocketTime;
 		}
 		else
