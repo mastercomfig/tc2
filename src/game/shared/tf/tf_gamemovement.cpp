@@ -1190,7 +1190,7 @@ void CTFGameMovement::ToggleParachute()
 		}
 		else
 		{
-			bool bOnGround = ( player->GetGroundEntity() != NULL );
+			bool bOnGround = ( m_pTFPlayer->GetFlags() & FL_ONGROUND );
 			int iParachuteDisabled = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pTFPlayer, iParachuteDisabled, parachute_disabled );
 			if ( !bOnGround && !iParachuteDisabled && ( tf_parachute_deploy_toggle_allowed.GetBool() || !m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_DEPLOYED ) ) )
@@ -2691,7 +2691,6 @@ void CTFGameMovement::FullWalkMove()
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_ACTIVE ) && mv->m_vecVelocity[2] < 0 )
 		{
 			mv->m_vecVelocity[2] = Max( mv->m_vecVelocity[2], m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat() );
-			
 			float flDrag = tf_parachute_maxspeed_xy.GetFloat();
 			// Instead of clamping, we'll dampen
 			float flSpeedX = abs( mv->m_vecVelocity[0] );
