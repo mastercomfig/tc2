@@ -389,18 +389,20 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 		correct+= nci->GetLatency( FLOW_OUTGOING );
 	}
 
-	// calc number of view interpolation ticks - 1
-	int lerpTicks = TIME_TO_TICKS( player->m_fLerpTime );
+	// add view interpolation latency directly using player's lerp time
+	correct += player->m_fLerpTime;
 
-	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
-	correct += TICKS_TO_TIME( lerpTicks );
-	
-	// check bouns [0,sv_maxunlag]
-	correct = clamp( correct, 0.0f, sv_maxunlag.GetFloat() );
-
+	// check bounds [0,sv_maxunlag]
+	correct = clamp(correct, 0.0f, sv_maxunlag.GetFloat());
+	// adjust attack timing if we have valid interpolation data
+	float extraTime = 0.0f;
+	if (cmd->lerp_time > 0.0f && cmd->lerp_time <= 1.0f)
+	{
+		// Add fraction of a tick based on lerp_time
+		extraTime = cmd->lerp_time * TICK_INTERVAL;
+	}
 	// correct tick send by player 
-	int targettick = cmd->tick_count - lerpTicks;
-
+	int targettick = cmd->tick_count - TIME_TO_TICKS(player->m_fLerpTime);
 	// calc difference between tick send by player and our latency based tick
 	float deltaTime =  correct - TICKS_TO_TIME(gpGlobals->tickcount - targettick);
 
@@ -410,7 +412,8 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 		// DevMsg("StartLagCompensation: delta too big (%.3f)\n", deltaTime );
 		targettick = gpGlobals->tickcount - TIME_TO_TICKS( correct );
 	}
-	
+	// Add the interpolation amount
+	float targettime = TICKS_TO_TIME(targettick) + extraTime;
 	// Iterate all active players
 	const CBitVec<MAX_EDICTS> *pEntityTransmitBits = engine->GetEntityTransmitBitsForClient( player->entindex() - 1 );
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -433,7 +436,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 			continue;
 
 		// Move other player back in time
-		BacktrackPlayer( pPlayer, TICKS_TO_TIME( targettick ) );
+		BacktrackPlayer(pPlayer, targettime);
 	}
 }
 

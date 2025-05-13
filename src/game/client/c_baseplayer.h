@@ -334,7 +334,10 @@ public:
 	float					GetDeathTime( void ) { return m_flDeathTime; }
 
 	void		SetPreviouslyPredictedOrigin( const Vector &vecAbsOrigin );
+	void		SetPreviouslyPreviouslyPredictedEyePosition(const Vector& vecAbsOrigin);
+
 	const Vector &GetPreviouslyPredictedOrigin() const;
+	const Vector& GetPreviouslyPreviouslyPredictedEyePosition() const;
 
 	// CS wants to allow small FOVs for zoomed-in AWPs.
 	virtual float GetMinFOV() const;
@@ -399,7 +402,13 @@ public:
 	void					SetFiredWeapon( bool bFlag ) { m_bFiredWeapon = bFlag; }
 
 	virtual bool			CanUseFirstPersonCommand( void ){ return true; }
-	
+	void					SetAttackInterpolationData(const QAngle& viewAngles, float interpolationAmount);
+	void					GetAttackInterpolationData(QAngle& viewAngles, float& lerpTime);
+	bool					HasAttackInterpolationData() const;
+	void					ClearAttackInterpolationData();
+	void					SetInPostThink(bool inPostThink);
+	bool					IsInPostThink() const;
+	Vector					GetInterpolatedEyePosition();
 protected:
 	fogparams_t				m_CurrentFog;
 	EHANDLE					m_hOldFogController;
@@ -600,7 +609,8 @@ protected:
 	float m_flPredictionErrorTime;
 	
 	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
-
+	Vector m_vecPreviouslyPreviouslyPredictedEyePosition; // Used for attack interpolation
+	
 	char m_szLastPlaceName[MAX_PLACE_NAME_LENGTH];	// received from the server
 
 	// Texture names and surface data, used by CGameMovement
@@ -623,6 +633,11 @@ protected:
 #endif
 
 private:
+	QAngle m_angAttackViewAngles;     // Stored view angles during attack
+	float m_flAttackInterpolationAmount = 1.0f; // Interpolation amount when attack was issued
+	bool m_bHasAttackInterpolationData = false;  // Whether we have valid data
+	float m_flAttackLerpTime = 1.0f;         // Calculated lerp time for the attack
+	bool m_bInPostThink;              // Flag for post-think state
 
 	struct StepSoundCache_t
 	{

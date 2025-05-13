@@ -244,6 +244,7 @@ END_RECV_TABLE()
  		RecvPropFloat		( RECVINFO(m_vecVelocity[2]), 0, RecvProxy_LocalVelocityZ ),
 
 		RecvPropVector		( RECVINFO( m_vecBaseVelocity ) ),
+		RecvPropVector(RECVINFO(m_vecPreviouslyPreviouslyPredictedEyePosition)),
 
 		RecvPropEHandle		( RECVINFO( m_hConstraintEntity)),
 		RecvPropVector		( RECVINFO( m_vecConstraintCenter) ),
@@ -399,6 +400,7 @@ BEGIN_PREDICTION_DATA( C_BasePlayer )
 	// DEFINE_FIELD( m_pEnvironmentLight, dlight_t* ),
 	// DEFINE_FIELD( m_pBrightLight, dlight_t* ),
 	DEFINE_PRED_FIELD( m_hLastWeapon, FIELD_EHANDLE, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD(m_vecPreviouslyPreviouslyPredictedEyePosition, FIELD_POSITION_VECTOR, FTYPEDESC_INSENDTABLE),
 
 	DEFINE_PRED_FIELD( m_nTickBase, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 

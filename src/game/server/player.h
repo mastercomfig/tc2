@@ -844,7 +844,13 @@ public:
 	// How long since this player last interacted with something the game considers an objective/target/goal
 	float				GetTimeSinceLastObjective( void ) const { return ( m_flLastObjectiveTime == -1.f ) ? 999.f : gpGlobals->curtime - m_flLastObjectiveTime; }
 	void				SetLastObjectiveTime( float flTime ) { m_flLastObjectiveTime = flTime; }
-
+	void				SetAttackInterpolationData(const QAngle& viewAngles, float interpolationAmount);
+	void				GetAttackInterpolationData(QAngle& viewAngles, float& lerpTime);
+	bool				HasAttackInterpolationData() const;
+	void				ClearAttackInterpolationData();
+	void				SetInPostThink(bool inPostThink);
+	bool				IsInPostThink() const;
+	Vector					GetInterpolatedEyePosition();
 	// Used by gamemovement to check if the entity is stuck.
 	int m_StuckLast;
 	
@@ -908,7 +914,10 @@ public:
 	void		ClearZoomOwner( void );
 
 	void		SetPreviouslyPredictedOrigin( const Vector &vecAbsOrigin );
+	void		SetPreviouslyPreviouslyPredictedEyePosition(const Vector& vecAbsOrigin);
 	const Vector &GetPreviouslyPredictedOrigin() const;
+	const Vector& GetPreviouslyPreviouslyPredictedEyePosition() const;
+
 	float		GetFOVTime( void ){ return m_flFOVTime; }
 
 	void		AdjustDrownDmg( int nAmount );
@@ -1191,7 +1200,9 @@ protected:
 	int		m_nVehicleViewSavedFrame;	// Used to mark which frame was the last one the view was calculated for
 
 	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
+	CNetworkVar( Vector, m_vecPreviouslyPreviouslyPredictedEyePosition); // Used for attack interpolation
 	int		m_nBodyPitchPoseParam;
+
 
 	CNetworkString( m_szLastPlaceName, MAX_PLACE_NAME_LENGTH );
 
@@ -1262,6 +1273,11 @@ private:
 
 	// used to prevent achievement announcement spam
 	CUtlVector< float >		m_flAchievementTimes;
+	QAngle m_angAttackViewAngles;     // Stored view angles during attack
+	float m_flAttackInterpolationAmount = 1.0f; // Interpolation amount when attack was issued
+	bool m_bHasAttackInterpolationData = false;  // Whether we have valid data
+	float m_flAttackLerpTime = 1.0f;         // Calculated lerp time for the attack
+	bool m_bInPostThink;              // Flag for post-think state
 
 public:
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false ) const;	// returns the solid mask for the given player, so bots can have a more-restrictive set

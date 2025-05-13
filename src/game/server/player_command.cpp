@@ -141,7 +141,7 @@ void CPlayerMove::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *p
 	{
 		move->m_bGameCodeMovedPlayer = true;
 	}
-
+	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetAbsOrigin() + player->GetViewOffset());
 	// Prepare the usercmd fields
 	move->m_nImpulseCommand		= ucmd->impulse;	
 	move->m_vecViewAngles		= ucmd->viewangles;
@@ -300,8 +300,14 @@ void CPlayerMove::RunPostThink( CBasePlayer *player )
 {
 	VPROF( "CPlayerMove::RunPostThink" );
 
+	// Mark that we're in post-think
+	player->SetInPostThink(true);
 	// Run post-think
 	player->PostThink();
+
+	// Clear post-think flag
+	player->SetInPostThink(false);
+	player->ClearAttackInterpolationData();
 }
 
 void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
@@ -446,7 +452,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
 	moveHelper->ProcessImpacts();
 	VPROF_SCOPE_END();
-
+	//Msg("CPlayerMove::RunCommand lerp_time was: %f\n", ucmd->lerp_time);
+	player->SetAttackInterpolationData(ucmd->viewangles, ucmd->lerp_time);
 	RunPostThink( player );
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );

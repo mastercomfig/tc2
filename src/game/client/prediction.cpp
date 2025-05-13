@@ -618,7 +618,7 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 	{
 		move->m_bGameCodeMovedPlayer = true;
 	}
-	
+	player->SetPreviouslyPreviouslyPredictedEyePosition(player->GetAbsOrigin() + player->GetViewOffset());
 	move->m_nPlayerHandle = player->GetClientHandle();
 	move->m_vecVelocity		= player->GetAbsVelocity();
 	move->SetAbsOrigin( player->GetNetworkOrigin() );
@@ -830,8 +830,14 @@ void CPrediction::RunPostThink( C_BasePlayer *player )
 #if !defined( NO_ENTITY_PREDICTION )
 	VPROF( "CPrediction::RunPostThink" );
 
+	// Mark that we're in post-think
+	player->SetInPostThink(true);
+
 	// Run post-think
 	player->PostThink();
+
+	// Clear post-think flag
+	player->SetInPostThink(false);
 #endif
 }
 

@@ -329,8 +329,13 @@ const QAngle &CBasePlayer::LocalEyeAngles()
 //-----------------------------------------------------------------------------
 // Actual Eye position + angles
 //-----------------------------------------------------------------------------
-Vector CBasePlayer::EyePosition( )
+Vector CBasePlayer::EyePosition()
 {
+	if (IsInPostThink() && HasAttackInterpolationData())
+	{
+		return GetInterpolatedEyePosition();
+	}
+
 	if ( GetVehicle() != NULL )
 	{
 		// Return the cached result
@@ -2068,9 +2073,19 @@ void CBasePlayer::SetPreviouslyPredictedOrigin( const Vector &vecAbsOrigin )
 	m_vecPreviouslyPredictedOrigin = vecAbsOrigin;
 }
 
+void CBasePlayer::SetPreviouslyPreviouslyPredictedEyePosition(const Vector& vecAbsOrigin)
+{
+	m_vecPreviouslyPreviouslyPredictedEyePosition = vecAbsOrigin;
+}
+
 const Vector &CBasePlayer::GetPreviouslyPredictedOrigin() const
 {
 	return m_vecPreviouslyPredictedOrigin;
+}
+
+const Vector& CBasePlayer::GetPreviouslyPreviouslyPredictedEyePosition() const
+{
+	return m_vecPreviouslyPreviouslyPredictedEyePosition;
 }
 
 bool fogparams_t::operator !=( const fogparams_t& other ) const
@@ -2096,3 +2111,60 @@ bool fogparams_t::operator !=( const fogparams_t& other ) const
 	return false;
 }
 
+void CBasePlayer::SetAttackInterpolationData(const QAngle& viewAngles, float interpolationAmount)
+{
+	m_angAttackViewAngles = viewAngles;
+	m_flAttackInterpolationAmount = interpolationAmount;
+	m_bHasAttackInterpolationData = true;
+
+	// Calculate lerp time, clamped between 0 and 1
+	m_flAttackLerpTime = clamp(interpolationAmount, 0.0f, 1.0f);
+}
+
+void CBasePlayer::GetAttackInterpolationData(QAngle& viewAngles, float& lerpTime)
+{
+	viewAngles = m_angAttackViewAngles;
+	lerpTime = m_flAttackLerpTime;
+}
+
+bool CBasePlayer::HasAttackInterpolationData() const
+{
+	return m_bHasAttackInterpolationData;
+}
+
+void CBasePlayer::ClearAttackInterpolationData()
+{
+	m_bHasAttackInterpolationData = false;
+}
+
+void CBasePlayer::SetInPostThink(bool inPostThink)
+{
+	m_bInPostThink = inPostThink;
+}
+
+bool CBasePlayer::IsInPostThink() const
+{
+	return m_bInPostThink;
+}
+Vector CBasePlayer::GetInterpolatedEyePosition()
+{
+	bool wasInPostThink = IsInPostThink();
+	SetInPostThink(false);
+	Vector currentEyePosition = EyePosition();
+	SetInPostThink(wasInPostThink);
+	
+	if (!IsInPostThink() || !HasAttackInterpolationData()) {
+		return currentEyePosition;
+	}
+
+	// Interpolate between the last tick's position and the current position
+	Vector interpolatedPosition = GetPreviouslyPreviouslyPredictedEyePosition() + (currentEyePosition - GetPreviouslyPreviouslyPredictedEyePosition()) * m_flAttackLerpTime;
+
+	// Calculate the distance between interpolated position and regular eye position
+	float distance = (interpolatedPosition - currentEyePosition).Length();
+
+	// Log the distance using Msg()
+	//ConDMsg("Interpolated eye position distance from regular eye position: %.3f units, m_flAttackLerpTime: %f\n", distance, m_flAttackLerpTime);
+
+	return interpolatedPosition;
+}
