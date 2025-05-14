@@ -1425,7 +1425,7 @@ int CTFGameMovement::CheckStuck( void )
 						m_pTFPlayer->GetTeam()->GetName(),
 						m_pTFPlayer->GetAbsOrigin().x, m_pTFPlayer->GetAbsOrigin().y, m_pTFPlayer->GetAbsOrigin().z );
 
-					m_pTFPlayer->CommitSuicide(false, true);
+					m_pTFPlayer->CommitSuicide( false, true );
 				}
 				else
 				{
