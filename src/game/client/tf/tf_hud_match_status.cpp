@@ -42,11 +42,14 @@ bool IsTakingAFreezecamScreenshot();
 //-----------------------------------------------------------------------------
 bool ShouldUseMatchHUD()
 {
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+#ifdef TF2_OG
+	return false;
+#else
+	if (TFGameRules() && TFGameRules()->IsMannVsMachineMode())
 		return false;
 
 	return tf_use_match_hud.GetBool();
-
+#endif
 }
 
 const int g_nMaxSupportedRounds = 5;

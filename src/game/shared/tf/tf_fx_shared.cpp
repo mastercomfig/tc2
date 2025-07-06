@@ -19,7 +19,12 @@
 #include "tf_passtime_logic.h"
 #endif
 
-ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
+#ifdef TF2_OG
+#define DEFAULT_FIXED_WEAPONSPREADS "0"
+#else
+#define DEFAULT_FIXED_WEAPONSPREADS "1"
+#endif
+ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", DEFAULT_FIXED_WEAPONSPREADS, FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
 
 // Client specific.
 #ifdef CLIENT_DLL
