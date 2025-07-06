@@ -12395,6 +12395,9 @@ bool CTFPlayer::EndClassSpecialSkill( void )
 //-----------------------------------------------------------------------------
 bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 {
+#ifdef TF2_OG
+	return false;
+#else
 	if ( !pPickupObject )
 		return false;
 
@@ -12481,6 +12484,7 @@ bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 	}
 
 	return true;
+#endif
 }
 
 //-----------------------------------------------------------------------------

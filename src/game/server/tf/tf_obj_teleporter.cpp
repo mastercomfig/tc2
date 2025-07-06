@@ -1515,6 +1515,7 @@ void CObjectTeleporter::InputDisable( inputdata_t &inputdata )
 
 void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 {
+#ifndef TF2_OG
 	if( !pTeleportingPlayer )
 		return;
 
@@ -1573,6 +1574,7 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 
 		mdlcache->Release( h ); // counterbalance addref from within FindMDL
 	}
+#endif
 }
 
 void CObjectTeleporter::FireGameEvent( IGameEvent *event )

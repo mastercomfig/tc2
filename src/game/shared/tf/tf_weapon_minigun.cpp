@@ -997,6 +997,7 @@ float CTFMinigun::GetProjectileDamage( void )
 {
 	float flDamage = BaseClass::GetProjectileDamage();
 
+#ifndef TF2_OG
 	// How long have we been spun up - sans the min period required to fire
 	float flPreFireWindUp = GetWindUpDuration() - TF_MINIGUN_SPINUP_TIME;
 	float flSpinTime = Max( flPreFireWindUp, GetFiringDuration() );
@@ -1009,6 +1010,7 @@ float CTFMinigun::GetProjectileDamage( void )
 		flDamage *= flMod;
 		//DevMsg( "DmgMod: %.2f\n", flMod );
 	}
+#endif
 	
 	return flDamage;
 }
@@ -1020,6 +1022,7 @@ float CTFMinigun::GetWeaponSpread( void )
 {
 	float flSpread = BaseClass::GetWeaponSpread();
 
+#ifndef TF2_OG
 	// How long have we been spun up - sans the min period required to fire
 	float flPreFireWindUp = GetWindUpDuration() - TF_MINIGUN_SPINUP_TIME;
 	float flSpinTime = Max( flPreFireWindUp, GetFiringDuration() );
@@ -1033,6 +1036,7 @@ float CTFMinigun::GetWeaponSpread( void )
 
 		flSpread *= flMod;
 	}
+#endif
 	
 	return flSpread;
 }

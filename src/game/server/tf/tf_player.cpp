@@ -10279,7 +10279,12 @@ void CTFPlayer::CommitSuicide( bool bExplode /* = false */, bool bForce /*= fals
 // Input  : &info - 
 // Output : int
 //-----------------------------------------------------------------------------
-ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", "0", FCVAR_NONE, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
+#ifdef TF2_OG
+#define DEFAULT_PREROUND_PUSH "1"
+#else
+#define DEFAULT_PREROUND_PUSH "0"
+#endif
+ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", DEFAULT_PREROUND_PUSH, FCVAR_NONE, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
 void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir )
 {
 	// check if player can be moved
@@ -12480,12 +12485,14 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	
 	SetGibbedOnLastDeath( bGib );
 
+#ifndef TF2_OG
 	bool bIsMvMRobot = TFGameRules()->IsMannVsMachineMode() && IsBot();
 	if ( bGib && !bIsMvMRobot && IsPlayerClass( TF_CLASS_SCOUT ) && RandomInt( 1, 100 ) <= SCOUT_ADD_BIRD_ON_GIB_CHANCE )
 	{
 		Vector vecPos = WorldSpaceCenter();
 		SpawnClientsideFlyingBird( vecPos );
 	}
+#endif
 
 	// show killer in death cam mode
 	// chopped down version of SetObserverTarget without the team check

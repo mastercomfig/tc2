@@ -46,7 +46,12 @@ ConVar	tf_avoidteammates_pushaway( "tf_avoidteammates_pushaway", "1", FCVAR_REPL
 ConVar  tf_solidobjects( "tf_solidobjects", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar	tf_clamp_back_speed( "tf_clamp_back_speed", "0.9", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar  tf_clamp_back_speed_min( "tf_clamp_back_speed_min", "100", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
-ConVar  tf_clamp_airducks( "tf_clamp_airducks", "1", FCVAR_REPLICATED );
+#ifdef TF2_OG
+#define DEFAULT_CLAMP_AIRDUCKS "0"
+#else
+#define DEFAULT_CLAMP_AIRDUCKS "1"
+#endif
+ConVar  tf_clamp_airducks( "tf_clamp_airducks", DEFAULT_CLAMP_AIRDUCKS, FCVAR_REPLICATED );
 ConVar  tf_resolve_stuck_players( "tf_resolve_stuck_players", "1", FCVAR_REPLICATED );
 ConVar  tf_scout_hype_mod( "tf_scout_hype_mod", "55", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar	tf_max_charge_speed( "tf_max_charge_speed", "750", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_CHEAT  | FCVAR_DEVELOPMENTONLY );

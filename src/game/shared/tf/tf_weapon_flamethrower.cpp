@@ -70,6 +70,13 @@ const float	tf_flamethrower_damage_per_tick = 13.f;
 ConVar  tf_flamethrower_burstammo("tf_flamethrower_burstammo", "20", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "How much ammo does the air burst use per shot." );
 ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Time to live of flame damage entities." );
 
+#ifdef TF2_OG
+#define DEFAULT_FLAMETHROWER_AIRBLAST "0"
+#else
+#define DEFAULT_FLAMETHROWER_AIRBLAST "1"
+#endif
+ConVar tf_flamethrower_airblast("tf_flamethrower_airblast", DEFAULT_FLAMETHROWER_AIRBLAST, FCVAR_REPLICATED);
+
 
 // If we're shipping this it needs to be better hooked with flame manager -- right now we just spawn 5 managers for
 // prototyping
@@ -1151,6 +1158,9 @@ void CTFFlameThrower::UseRage( void )
 //-----------------------------------------------------------------------------
 void CTFFlameThrower::SecondaryAttack()
 {
+	if (!tf_flamethrower_airblast.GetBool())
+		return;
+
 	CTFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;

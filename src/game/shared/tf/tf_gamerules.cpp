@@ -823,7 +823,12 @@ ConVar tf_medieval( "tf_medieval", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable
 ConVar tf_medieval_autorp( "tf_medieval_autorp", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable Medieval Mode auto-roleplaying.\n", true, 0, true, 1 );
 
 ConVar tf_sticky_radius_ramp_time( "tf_sticky_radius_ramp_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT | FCVAR_REPLICATED, "Amount of time to get full radius after arming" );
-ConVar tf_sticky_airdet_radius( "tf_sticky_airdet_radius", "0.85", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT | FCVAR_REPLICATED, "Radius Scale if detonated in the air" );
+#ifdef TF2_OG
+#define DEFAULT_STICKY_AIRDET_RADIUS "1.0"
+#else
+#define DEFAULT_STICKY_AIRDET_RADIUS "0.85"
+#endif
+ConVar tf_sticky_airdet_radius( "tf_sticky_airdet_radius", DEFAULT_STICKY_AIRDET_RADIUS, FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT | FCVAR_REPLICATED, "Radius Scale if detonated in the air" );
 
 
 #ifndef GAME_DLL
@@ -7495,14 +7500,23 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			}
 		}
 
+		const bool bOnlyDamagedSelf = info.GetDamagedOtherPlayers() == 0;
+#ifdef TF2_OG
+		const bool bShouldApplyJumpDmgReduction = true;
+#else
+		const bool bShouldApplyJumpDmgReduction = bOnlyDamagedSelf;
+#endif
 		if ( pAttacker == pVictimBaseEntity &&
 			 (info.GetDamageType() & DMG_BLAST || info.GetDamageCustom() == TF_DMG_CUSTOM_FLARE_EXPLOSION) &&
-			 info.GetDamagedOtherPlayers() == 0 && (info.GetDamageCustom() != TF_DMG_CUSTOM_TAUNTATK_GRENADE) )
+			bShouldApplyJumpDmgReduction && (info.GetDamageCustom() != TF_DMG_CUSTOM_TAUNTATK_GRENADE) )
 		{
 			// If we attacked ourselves, hurt no other players, and it is a blast,
 			// check the attribute that reduces rocket jump damage.
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetAttacker(), flRealDamage, rocket_jump_dmg_reduction );
-			outParams.bSelfBlastDmg = true;
+			if (bOnlyDamagedSelf)
+			{
+				outParams.bSelfBlastDmg = true;
+			}
 		}
 
 		if ( pAttacker == pVictimBaseEntity )
