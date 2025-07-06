@@ -25,7 +25,7 @@ else
     fi
 fi
 
-if [ -z $VPC_NINJA_EXTRA_SUFFIX ]; then
+if [ -z "${VPC_NINJA_EXTRA_SUFFIX}" ]; then
     VPC_NINJA_EXTRA_SUFFIX=""
 fi
 
