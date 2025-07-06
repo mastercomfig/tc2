@@ -25,6 +25,10 @@ else
     fi
 fi
 
+if [ -z $VPC_NINJA_EXTRA_SUFFIX ]; then
+    VPC_NINJA_EXTRA_SUFFIX=""
+fi
+
 solution_out="_vpc_/ninja/sdk_everything_${VPC_NINJA_EXTRA_SUFFIX}$VPC_NINJA_BUILD_MODE"
 
 if [[ ! -e "$solution_out.ninja" ]]; then
