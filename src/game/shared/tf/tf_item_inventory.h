@@ -193,9 +193,16 @@ public:
 	virtual bool		LoadPreset(equipped_class_t unClass, equipped_preset_t unPreset);
 #endif
 
+	// Returns regions which are default "equipped" aka blocked from ever being equipped
+	equip_region_mask_t GetDefaultEquippedRegionMask()
+	{
+		return m_iDefaultRegionMask;
+	}
+
 	// Returns the item data for the base item in the loadout slot for a given class
 	CEconItemView		*GetBaseItemForClass( int iClass, int iSlot );
 	void				GenerateBaseItems( void );
+	void GenerateDefaultEquippedRegionMask(void);
 
 	// Gets the specified inventory for the steam ID
 	CTFPlayerInventory	*GetInventoryForPlayer( const CSteamID &playerID );
@@ -220,6 +227,7 @@ private:
 	// Base items, returned for slots that the player doesn't have anything in
 	CEconItemView				*m_pDefaultItem;
 	CUtlVector<CEconItemView*>	m_pBaseLoadoutItems;
+	equip_region_mask_t m_iDefaultRegionMask = 0;
 
 #ifdef CLIENT_DLL
 	// On the client, we have a single inventory for the local player. Stored here, instead of in the

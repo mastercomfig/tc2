@@ -2,10 +2,22 @@
 name = "play"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-game", "tc2", "-noborder", "-particles", "1", "-precachefontchars"]
+args = ["-game", "tc2", "-noborder", "-particles", "1"]
 
 [[actions]]
 name = "vulkan"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-game", "tc2", "-vulkan", "-noborder", "-particles", "1", "-precachefontchars"]
+args = ["-game", "tc2", "-vulkan", "-noborder", "-particles", "1"]
+
+[[actions]]
+name = "tf2_og"
+path = "tc2_win64.exe"
+platform = "windows"
+args = ["-game", "tf2_og", "-noborder", "-particles", "1"]
+
+[[actions]]
+name = "tf2_og_vulkan"
+path = "tc2_win64.exe"
+platform = "windows"
+args = ["-game", "tf2_og", "-vulkan", "-noborder", "-particles", "1"]

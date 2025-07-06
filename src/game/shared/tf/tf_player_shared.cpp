@@ -10954,6 +10954,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 
 	if ( playerclass == TF_CLASS_MEDIC )
 	{
+#ifndef TF2_OG
 		if ( pWeapon )
 		{
 			CWeaponMedigun *pMedigun = dynamic_cast< CWeaponMedigun* >( pWeapon );
@@ -10971,6 +10972,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 				}
 			}
 		}
+#endif
 
 		// Special bone saw
 		int iTakeHeads = 0;

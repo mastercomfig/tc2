@@ -6,7 +6,8 @@
 
 $Macro SRCDIR		"..\.."
 $Macro GAMENAME 	"tf" [!$SOURCESDK]
-$Macro GAMENAME 	"tc2" [$SOURCESDK]
+$Macro GAMENAME 	"tc2" [$SOURCESDK && !$TF2_OG]
+$Macro GAMENAME 	"tf2_og" [$SOURCESDK && $TF2_OG]
 
 $Include "$SRCDIR\game\server\server_base.vpc"
 $Include "$SRCDIR\game\server\server_econ_base.vpc"
@@ -21,6 +22,7 @@ $Configuration
 		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\tf;.\tf\vgui;$SRCDIR\statemachine;$SRCDIR\game\shared\Multiplayer;$SRCDIR\game\shared\tf"
 		$PreprocessorDefinitions		"$BASE;TF_DLL;ENABLE_GC_MATCHMAKING;GLOWS_ENABLE;USE_DYNAMIC_ASSET_LOADING;NEXT_BOT"
 		$PreprocessorDefinitions		"$BASE;DISABLE_GC_CONNECTION;DISABLE_IN_SOURCESDK;INVENTORY_VIA_WEBAPI" [$SOURCESDK]		
+		$PreprocessorDefinitions		"$BASE;TF2_OG" [$TF2_OG]
 	}
 }
 

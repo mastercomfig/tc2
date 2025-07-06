@@ -226,6 +226,7 @@ void CTFInventoryManager::PostInit( void )
 {
 	BaseClass::PostInit();
 	GenerateBaseItems();
+	GenerateDefaultEquippedRegionMask();
 }
 
 //-----------------------------------------------------------------------------
@@ -250,6 +251,52 @@ void CTFInventoryManager::GenerateBaseItems( void )
 		pItem->Init( mapItems[it]->GetDefinitionIndex(), AE_USE_SCRIPT_VALUE, AE_USE_SCRIPT_VALUE, false );
 		m_pBaseLoadoutItems.AddToTail( pItem );
 	}
+}
+
+void CTFInventoryManager::GenerateDefaultEquippedRegionMask(void)
+{
+	m_iDefaultRegionMask = 0;
+#ifdef TF2_OG
+	CUtlVector<const char*> vecRegionNames;
+	vecRegionNames.AddToTail("pants");
+	vecRegionNames.AddToTail("shirt");
+	vecRegionNames.AddToTail("arms");
+	vecRegionNames.AddToTail("back");
+	vecRegionNames.AddToTail("feet");
+	vecRegionNames.AddToTail("left_shoulder");
+	vecRegionNames.AddToTail("disconnected_floating_item");
+	vecRegionNames.AddToTail("zombie_body");
+	vecRegionNames.AddToTail("sleeves");
+	vecRegionNames.AddToTail("right_shoulder");
+	//vecRegionNames.AddToTail("scout_bandages");
+	//vecRegionNames.AddToTail("scout_backpack");
+	vecRegionNames.AddToTail("soldier_coat");
+	vecRegionNames.AddToTail("sniper_legs");
+	vecRegionNames.AddToTail("pyro_head_replacement");
+	vecRegionNames.AddToTail("scout_pants");
+	vecRegionNames.AddToTail("spy_coat");
+	for (auto& sRegionName : vecRegionNames)
+	{
+		m_iDefaultRegionMask |= GetItemSchema()->GetEquipRegionMaskByName(sRegionName);
+	}
+#endif
+}
+
+bool CheckExtraEquipRules(int iClass, int iSlot, CEconItemView* pItem)
+{
+#ifdef TF2_OG
+	if (!IsWearableSlot(iSlot))
+	{
+		return false;
+	}
+
+	if (TFInventoryManager()->GetDefaultEquippedRegionMask() & pItem->GetItemDefinition()->GetEquipRegionMask())
+	{
+		return false;
+	}
+#endif
+
+	return true;
 }
 
 #ifdef CLIENT_DLL
@@ -277,6 +324,11 @@ bool CTFInventoryManager::EquipItemInLoadout( int iClass, int iSlot, itemid_t iI
 	}
 
 	if ( !pItem->GetStaticData()->CanBeUsedByClass( iClass ) )
+	{
+		return false;
+	}
+
+	if (!CheckExtraEquipRules(iClass, iSlot, pItem))
 	{
 		return false;
 	}
@@ -958,15 +1010,30 @@ void CTFPlayerInventory::LoadLocalLoadout()
 				const int iSlot = V_atoi(pLoadoutEntry->GetName());
 				const itemid_t uItemId = pLoadoutEntry->GetUint64();
 
-				m_PresetItems[iPreset][iClass][iSlot] = uItemId;
+				CEconItemView* pItem = GetInventoryItemByItemID(uItemId);
 
-				if (iPreset == m_ActivePreset[iClass]) {
-					m_LoadoutItems[iClass][iSlot] = uItemId;
+				if (pItem)
+				{
+					if (CheckExtraEquipRules(iClass, iSlot, pItem))
+					{
+						m_PresetItems[iPreset][iClass][iSlot] = uItemId;
 
-					CEconItemView *pItem = GetInventoryItemByItemID(uItemId);
-					if (pItem) {
-						pItem->GetSOCData()->Equip(iClass, iSlot);
+						if (iPreset == m_ActivePreset[iClass]) {
+							m_LoadoutItems[iClass][iSlot] = uItemId;
+
+							if (pItem) {
+								pItem->GetSOCData()->Equip(iClass, iSlot);
+							}
+						}
 					}
+					else
+					{
+						ClearLoadoutSlot(iClass, iSlot);
+					}
+				}
+				else
+				{
+					ClearLoadoutSlot(iClass, iSlot);
 				}
 			}
 		}
@@ -1022,7 +1089,12 @@ void CTFPlayerInventory::SaveLocalLoadout( bool bReset, bool bDefaultToGC )
 				itemid_t uItemId = m_PresetItems[iPreset][iClass][iSlot];
 				//itemid_t uItemId = m_LoadoutItems[iClass][iSlot];
 				if (bReset) {
+#if TF2_OG
+					// TODO: can we do better by checking the item first?
+					uItemId = bDefaultToGC ? 0 : 0;
+#else
 					uItemId = bDefaultToGC ? m_RealTFLoadoutItems[iClass][iSlot] : 0;
+#endif
 				}
 
 				pClassKV->SetUint64(szSlot, uItemId);
@@ -1824,7 +1896,7 @@ void CTFPlayerInventory::VerifyLoadoutItemsAreValid( int iClass )
 	// If later we want the order in which slots claim their equip regions to change, we'll want to change
 	// the iteration order here and also change GenerateEquipRegionMaskUpToSlot(), which is used for
 	// filling out the UI.
-	equip_region_mask_t unCumulativeRegionMask = 0;
+	equip_region_mask_t unCumulativeRegionMask = TFInventoryManager()->GetDefaultEquippedRegionMask();
 	for ( int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++ )
 	{
 		CEconItemView *pEquippedItemView = GetItemInLoadout( iClass, i );

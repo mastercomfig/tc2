@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script=$(readlink -f -- "$0")
+pushd "$(dirname -- "$script")" > /dev/null
+
+VPC_EXTRA_ARGS="/define:TF2_OG" VPC_NINJA_EXTRA_SUFFIX="tf2_og_" ./buildallprojects
+
+popd

@@ -1316,7 +1316,7 @@ void CL_OpenTFAdvancedOptionsDialog( const CCommand &args )
 }
 
 // the console commands
-static ConCommand opentf2options( "opentf2options", &CL_OpenTFAdvancedOptionsDialog, "Displays the TC2 Advanced Options dialog." );
+static ConCommand opentf2options( "opentf2options", &CL_OpenTFAdvancedOptionsDialog, "Displays the Advanced Options dialog." );
 
 //-----------------------------------------------------------------------------
 // Purpose: A scroll bar that can have specified width

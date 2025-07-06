@@ -1,0 +1,1 @@
+.\tc2_win64.exe -game tf2_og -vulkan -noborder -particles 1

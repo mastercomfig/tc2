@@ -10,27 +10,51 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tc2/materials,tc2/cfg,tc2/scripts}
-mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/materials,tf2_og/materials,tc2/cfg,tf2_og/cfg,tc2/scripts,tf2_og/scripts}
+mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR}
 
 declare -a DLLS=(
   tc2/bin/$PLAT_DIR/{client,server}
+  tf2_og/bin/$PLAT_DIR/{client,server}
 )
 
 declare -a FILES_REP=(
+  #
   tc2/cfg/valve.rc
+  tf2_og/cfg/valve.rc
+  #
   tc2/cfg/default.cfg
+  tf2_og/cfg/default.cfg
+  #
   tc2/cfg/config_default.cfg
+  tf2_og/cfg/config_default.cfg
+  #
   tc2/cfg/user_default.scr
+  tf2_og/cfg/user_default.scr
+  #
   tc2/cfg/vscript_convar_allowlist.txt
+  tf2_og/cfg/vscript_convar_allowlist.txt
+  #
   tc2/cfg/motd_default.txt
+  #
   tc2/cfg/motd_text_default.txt
+  #
   tc2/scripts/newbindings.txt
+  tf2_og/scripts/newbindings.txt
+  #
   tc2/texture_preload_list.txt
+  tf2_og/texture_preload_list.txt
+  #
   tc2/materials/logo
+  #
   tc2/resource
+  tf2_og/resource
+  #
   tc2/gameinfo.txt
+  tf2_og/gameinfo.txt
+  #
   tc2/steam.inf
+  tf2_og/steam.inf
 )
 
 declare -a FILES=(
@@ -63,6 +87,13 @@ if [ $PLATFORM = "win" ]; then
   declare -a DLLS_LIB=(
     bin/$PLAT_DIR/steam_api64
   )
+
+  FILES+=(
+    tc2.bat
+    tc2_vulkan.bat
+    tf2_og.bat
+    tf2_og_vulkan.bat
+  )
 elif [ $PLATFORM = "linux" ]; then
   declare -a EXES=(
     tc2_linux64
@@ -74,6 +105,7 @@ elif [ $PLATFORM = "linux" ]; then
 
   FILES+=(
     tc2.sh
+    tf2_og.sh
   )
 fi
 

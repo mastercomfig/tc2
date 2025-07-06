@@ -6,7 +6,8 @@
 
 $Macro SRCDIR		"..\.."
 $Macro GAMENAME 	"tf" [!$SOURCESDK]
-$Macro GAMENAME 	"tc2" [$SOURCESDK]
+$Macro GAMENAME 	"tc2" [$SOURCESDK && !$TF2_OG]
+$Macro GAMENAME 	"tf2_og" [$SOURCESDK && $TF2_OG]
 
 // This code currently only builds on Windows (itemtest_lib and dependencies)
 $Conditional WORKSHOP_IMPORT_ENABLE	1 [$WINDOWS && !$SOURCESDK]
@@ -28,6 +29,7 @@ $Configuration
 		$PreprocessorDefinitions		"$BASE;WORKSHOP_IMPORT_ENABLED" [$WORKSHOP_IMPORT_ENABLE]
 		$PreprocessorDefinitions		"$BASE;SIXENSE" [!$SOURCESDK]
 		$PreprocessorDefinitions		"$BASE;DISABLE_GC_CONNECTION;DISABLE_IN_SOURCESDK;INVENTORY_VIA_WEBAPI" [$SOURCESDK]
+		$PreprocessorDefinitions		"$BASE;TF2_OG" [$TF2_OG]
 	}
 }
 

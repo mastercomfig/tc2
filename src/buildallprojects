@@ -25,10 +25,10 @@ else
     fi
 fi
 
-solution_out="_vpc_/ninja/sdk_everything_$VPC_NINJA_BUILD_MODE"
+solution_out="_vpc_/ninja/sdk_everything_${VPC_NINJA_EXTRA_SUFFIX}$VPC_NINJA_BUILD_MODE"
 
 if [[ ! -e "$solution_out.ninja" ]]; then
-    devtools/bin/vpc /tf /linux64 /ninja /define:SOURCESDK +everything /mksln "$solution_out"
+    devtools/bin/vpc /tf /linux64 /ninja /define:SOURCESDK ${VPC_EXTRA_ARGS} +everything /mksln "$solution_out"
 
     # Generate compile commands.
     ninja -f "$solution_out.ninja" -t compdb > compile_commands.json

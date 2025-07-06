@@ -456,6 +456,12 @@ public:
 			*ppShortGameName = "TC2";
 			*ppFullGameName = "Team Comtress 2";
 		}
+		// Team Comtress 2?
+		if ( FStrEq( pGameDir, "tf2_og" ) )
+		{
+			*ppShortGameName = "TF2";
+			*ppFullGameName = "Team Fortress 2";
+		}
 		// Team Fortress 2?
 		if ( FStrEq( pGameDir, "tf" ) )
 		{

@@ -528,10 +528,9 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 		flDamageScale = RemapValClamped( flTimeAlive, 0.f, flLifeMax, 1.f, tf_flame_min_damage_scale_time );
 	}
 
-	// TODO: re-evaluate this
-#if 0
-	if ( pTFTarget 
-		)
+	// TODO(mcoms): re-evaluate this
+#if !defined ( MCOMS_BALANCE_PACK ) && !defined( TF2_OG )
+	if ( pTFTarget )
 	{
 		float flIndexMod = 1.f;
 		auto iEntIndex = m_mapEntitiesBurnt.Find( pTFTarget );

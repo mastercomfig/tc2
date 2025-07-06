@@ -518,6 +518,8 @@ mod_hl2mp_linux64
 mod_tf_win64.exe
 tc2_win64.exe
 tc2_linux64
+tf2_og_win64.exe
+tf2_og_linux64
 
 game/platform/config
 
@@ -543,4 +545,9 @@ game_dist
 game_dist_debug
 
 enc_temp_folder
+
+/build/
+
+!/game/bin/x64/steam_api64.dll
+!/game/bin/linux64/libsteam_api.so
 # END TC2 MOD
