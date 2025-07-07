@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 
-# Launch the game under the steam runtime
-/home/$USER/.steam/bin32/steam-runtime/run.sh ./tc2_linux64 -game tf2_og "$@"
+script=$(readlink -f -- "$0")
+pushd "$(dirname -- "$script")" > /dev/null
+
+./tc2.sh -game tf2_og
+
+popd
