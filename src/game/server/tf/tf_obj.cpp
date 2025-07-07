@@ -2200,7 +2200,11 @@ float CBaseObject::GetConstructionMultiplier( void )
 			// STAGING_ENGY
 			// each Player adds a fixed amount of speed boost
 			// Carry deploy hits add more
+#ifdef TF2_OG
+			flMultiplier *= (m_ConstructorList[iThis].flValue);
+#else
 			flMultiplier += ( m_ConstructorList[iThis].flValue );
+#endif
 		}
 	}
 
@@ -2255,7 +2259,14 @@ void CBaseObject::CreateObjectGibs( void )
 
 	// grant some percentage of the cost to build if number of metal to drop is not specified
 	const float flMetalCostPercentage = 0.5f;
-	const int nTotalMetal = pObjectInfo->m_iMetalToDropInGibs == 0 ? pObjectInfo->m_Cost * flMetalCostPercentage : pObjectInfo->m_iMetalToDropInGibs;
+	int iCost = pObjectInfo->m_Cost;
+#ifdef TF2_OG
+	if (GetType() == OBJ_TELEPORTER)
+	{
+		iCost = 125;
+	}
+#endif
+	const int nTotalMetal = pObjectInfo->m_iMetalToDropInGibs == 0 ? iCost * flMetalCostPercentage : pObjectInfo->m_iMetalToDropInGibs;
 
 	
 	int nMetalPerGib = nTotalMetal / m_aGibs.Count();
@@ -2951,7 +2962,11 @@ int CBaseObject::Command_Repair( CTFPlayer *pActivator, float flAmount, float fl
 {
 	if ( !CanBeRepaired() )
 		return false;
-	
+
+#ifdef TF2_OG
+	flRepairToMetalRatio = 5.f;
+#endif
+
 	float flRepairAmountMax = flAmount * flRepairMod;
 	int iRepairAmount = Min( RoundFloatToInt( flRepairAmountMax ), GetMaxHealth() - RoundFloatToInt( GetHealth() ) );
 	int iRepairCost = Ceil2Int( (float)( iRepairAmount ) / flRepairToMetalRatio );

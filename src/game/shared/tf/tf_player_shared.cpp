@@ -6669,9 +6669,11 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon, float 
 		AddCond( TF_COND_BURNING, -1.f, pAttacker );
 		m_flFlameBurnTime = gpGlobals->curtime + TF_BURNING_FREQUENCY;
 		m_flAfterburnDuration = pWeapon ? pWeapon->GetInitialAfterburnDuration() : 0.f;
-		
+
+#ifndef TF2_OG
 		// Reduces direct healing effectiveness
 		AddCond( TF_COND_HEALING_DEBUFF, m_flAfterburnDuration, pAttacker );
+#endif
 
 		// let the attacker know he burned me
 		if ( pAttacker && !bVictimIsImmunePyro )
@@ -6748,7 +6750,12 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon, float 
 	}
 	else if ( flBurningTime > 0 )
 	{
+		
+#ifdef TF2_OG
+		flFlameLife = 10.0f;
+#else
 		flFlameLife = flBurningTime;
+#endif
 	}
 	
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flFlameLife, mult_wpn_burntime );
@@ -8243,12 +8250,14 @@ void CTFPlayerShared::Disguise( int nTeam, int nClass, CTFPlayer* pDesiredTarget
 	float flTimeToDisguise = TF_TIME_TO_DISGUISE;
 	//CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pOuter, iTimeToDisguise, disguise_speed_penalty ); // Unused Attr
 
+#ifndef TF2_OG
 	// STAGING_SPY
 	// Quick disguise if you already disguised
 	if ( InCond( TF_COND_DISGUISED ) )
 	{
 		flTimeToDisguise = TF_TIME_TO_QUICK_DISGUISE;
 	}
+#endif
 
 	if ( pDesiredTarget )
 	{
@@ -14154,6 +14163,7 @@ void CTFPlayerShared::UpdateCloakMeter( void )
 		// Update Debuffs
 		// Decrease duration if cloaked
 #ifdef GAME_DLL
+#ifndef TF2_OG
 		// staging_spy
 		float flReduction = gpGlobals->frametime * 0.75f;
 		for ( int i = 0; g_aDebuffConditions[i] != TF_COND_LAST; i++ )
@@ -14180,6 +14190,7 @@ void CTFPlayerShared::UpdateCloakMeter( void )
 				}
 			}
 		}
+#endif
 #endif
 	} 
 	else

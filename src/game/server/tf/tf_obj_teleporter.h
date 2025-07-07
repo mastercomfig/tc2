@@ -109,6 +109,8 @@ public:
 
 	virtual int		GetBaseHealth( void ) { return TELEPORTER_MAX_HEALTH; }
 
+	virtual int		GetMaxUpgradeLevel(void) OVERRIDE;
+
 	virtual int		GetUpgradeMetalRequired();
 
 	void SetTeleportWhere( const CUtlStringList& teleportWhereName )

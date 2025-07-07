@@ -312,6 +312,15 @@ void CObjectTeleporter::SetObjectMode( int iVal )
 	BaseClass::SetObjectMode( iVal );
 }
 
+int CObjectTeleporter::GetMaxUpgradeLevel()
+{
+#ifdef TF2_OG
+	return 1;
+#else
+	return BaseClass::GetMaxUpgradeLevel();
+#endif
+}
+
 //-----------------------------------------------------------------------------
 int CObjectTeleporter::GetUpgradeMetalRequired()
 {

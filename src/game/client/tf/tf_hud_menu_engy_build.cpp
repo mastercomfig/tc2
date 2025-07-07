@@ -260,7 +260,21 @@ void CHudMenuEngyBuild::ApplySchemeSettings( IScheme *pScheme )
 	{
 		int iBuilding, iMode;
 		GetBuildingIDAndModeFromSlot( i+1, iBuilding, iMode, m_Buildings );
-		int iCost = ( pLocalPlayer ) ? pLocalPlayer->m_Shared.CalculateObjectCost( pLocalPlayer, iBuilding ) : GetObjectInfo( iBuilding )->m_Cost;
+		int iCost;
+		if ( pLocalPlayer )
+		{
+			iCost = pLocalPlayer->m_Shared.CalculateObjectCost(pLocalPlayer, iBuilding);
+		}
+		else
+		{
+			iCost = GetObjectInfo(iBuilding)->m_Cost;
+#ifdef TF2_OG
+			if (iBuilding == OBJ_TELEPORTER)
+			{
+				iCost = 125;
+			}
+#endif
+		}
 
 		m_pAvailableObjects[i]->SetDialogVariable( "metal", iCost );
 		m_pAlreadyBuiltObjects[i]->SetDialogVariable( "metal", iCost );

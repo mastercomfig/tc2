@@ -38,7 +38,11 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 #define TF_WEAPON_SNIPERRIFLE_RELOAD_TIME		1.5f
 #define TF_WEAPON_SNIPERRIFLE_ZOOM_TIME			0.3f
 
+#ifdef TF2_OG
+#define TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME	0.07f
+#else
 #define TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME	0.2f
+#endif
 
 #define SNIPER_DOT_SPRITE_RED		"effects/sniperdot_red.vmt"
 #define SNIPER_DOT_SPRITE_BLUE		"effects/sniperdot_blue.vmt"
@@ -824,7 +828,12 @@ void CTFSniperRifle::Fire( CTFPlayer *pPlayer )
 				}
 				SetRezoom( true, flUnzoomDelay );	// zoom out in 0.5 seconds, then rezoom
 #ifdef GAME_DLL
-				SetContextThink( &CTFSniperRifleClassic::EnableJump, gpGlobals->curtime + flUnzoomDelay, "RenableJump" );
+#ifdef TF2_OG
+				float flJumpDelay = 0.07f;
+#else
+				float flJumpDelay = flUnzoomDelay;
+#endif
+				SetContextThink( &CTFSniperRifleClassic::EnableJump, gpGlobals->curtime + flJumpDelay, "RenableJump" );
 #endif
 			}
 		}

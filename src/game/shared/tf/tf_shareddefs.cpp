@@ -1565,6 +1565,13 @@ int InternalCalculateObjectCost( int iObjectType )
 
 	int iCost = GetObjectInfo( iObjectType )->m_Cost;
 
+#ifdef TF2_OG
+	if ( iObjectType == OBJ_TELEPORTER )
+	{
+		return 125;
+	}
+#endif
+
 	return iCost;
 }
 

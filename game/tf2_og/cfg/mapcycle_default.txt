@@ -1,0 +1,35 @@
+// Default mapcycle file for Team Fortress.
+//
+// DO NOT MODIFY THIS FILE!
+// Instead, copy it to mapcycle.txt and modify that file.  If no custom mapcycle.txt file is found,
+// this file will be used as the default.
+//
+// Also, note that the "mapcyclefile" convar can be used to specify a particular mapcycle file.
+
+cp_gravelpit
+cp_dustbowl
+cp_granary
+cp_well
+ctf_2fort
+tc_hydro
+ctf_well
+cp_badlands
+pl_goldrush
+pl_badwater
+plr_pipeline
+koth_sawmill
+koth_nucleus
+koth_viaduct
+ctf_sawmill
+ctf_doublecross
+cp_gorge
+pl_upward
+plr_hightower
+pl_thundermountain
+cp_mountainlab
+cp_5gorge
+koth_badlands
+pl_barnblitz
+cp_foundry
+cp_powerhouse
+cp_mercenarypark

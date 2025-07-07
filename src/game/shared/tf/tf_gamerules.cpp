@@ -7475,11 +7475,13 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					}
 				}
 			}
+#ifndef TF2_OG
 			// Standard Stealth gives small damage reduction
 			else if ( pVictim->m_Shared.InCond( TF_COND_STEALTHED ) )
 			{
 				flRealDamage *= tf_stealth_damage_reduction.GetFloat();
 			}
+#endif
 		}
 
 		if ( sv_cheats && !sv_cheats->GetBool() )

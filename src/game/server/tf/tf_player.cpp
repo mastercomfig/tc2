@@ -1803,9 +1803,10 @@ void CTFPlayer::RegenThink( void )
 	{
 		// Heal faster if we haven't been in combat for a while.
 		float flTimeSinceDamage = gpGlobals->curtime - GetLastDamageReceivedTime();
-		float flScale = RemapValClamped( flTimeSinceDamage, 5.0f, 10.0f, 1.0f, 2.0f );
+		float flScale = RemapValClamped( flTimeSinceDamage, 5.0f, 10.0f, 1.0f, TF_REGEN_BOOST );
 		float flRegenAmt = TF_REGEN_AMOUNT;
 
+#ifndef TF2_OG
 		// If you are healing a hurt patient, increase your base regen
 		CTFPlayer *pPatient = ToTFPlayer( MedicGetHealTarget() );
 		if ( pPatient && pPatient->GetHealth() < pPatient->GetMaxHealth() )
@@ -1813,6 +1814,7 @@ void CTFPlayer::RegenThink( void )
 			// Double regen amount
 			flRegenAmt += TF_REGEN_AMOUNT;
 		}
+#endif
 
 		flRegenAmt *= flScale;
 
@@ -13166,14 +13168,20 @@ void CTFPlayer::DropAmmoPack( const CTakeDamageInfo &info, bool bEmpty, bool bDi
 	CEconItemView *pItem = pDropWeaponProps->GetAttributeContainer()->GetItem();
 	bool bIsSuicide = info.GetAttacker() ? info.GetAttacker()->GetTeamNumber() == GetTeamNumber() : false;
 
+#ifndef TF2_OG
 	CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( this, vecPackOrigin, vecPackAngles, pszWorldModel, pItem );
 	if ( pDroppedWeapon )
 	{
 		pDroppedWeapon->InitDroppedWeapon( this, pDropWeaponProps, false, bIsSuicide );
 	}
+#endif
 
 	// Create the ammo pack.
+#ifdef TF2_OG
+	CTFAmmoPack* pAmmoPack = CTFAmmoPack::Create(vecPackOrigin, vecPackAngles, this, pszWorldModel);
+#else
 	CTFAmmoPack *pAmmoPack = CTFAmmoPack::Create( vecPackOrigin, vecPackAngles, this, "models/items/ammopack_medium.mdl" );
+#endif
 	Assert( pAmmoPack );
 	if ( pAmmoPack )
 	{

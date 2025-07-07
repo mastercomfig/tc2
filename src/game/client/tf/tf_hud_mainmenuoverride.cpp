@@ -982,6 +982,109 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 
 		m_pCharacterModelPanel->HoldItemInSlot(iSlot);
 	}
+	else
+	{
+		KeyValues* pCharacterFile = new KeyValues("CharacterBackgrounds");
+
+		if (pCharacterFile->LoadFromFile(g_pFullFileSystem, "scripts/CharacterBackgrounds.txt"))
+		{
+			CUtlVector<KeyValues*> vecUseableCharacters;
+
+			const char* pszActiveWarName = NULL;
+			const WarDefinitionMap_t& mapWars = GetItemSchema()->GetWarDefinitions();
+			FOR_EACH_MAP_FAST(mapWars, i)
+			{
+				const CWarDefinition* pWarDef = mapWars[i];
+				if (pWarDef->IsActive())
+				{
+					pszActiveWarName = pWarDef->GetDefName();
+					break;
+				}
+			}
+
+			bool bActiveOperation = false;
+
+			// Uncomment if another operation happens
+			//FOR_EACH_MAP_FAST( GetItemSchema()->GetOperationDefinitions(), iOperation )
+			//{
+			//	CEconOperationDefinition *pOperation = GetItemSchema()->GetOperationDefinitions()[iOperation];
+			//	if ( !pOperation || !pOperation->IsActive() || !pOperation->IsCampaign() )
+			//		continue;
+
+			//	bActiveOperation = true;
+			//	break;
+			//}
+
+			// Count the number of possible characters.
+			FOR_EACH_SUBKEY(pCharacterFile, pCharacter)
+			{
+				bool bIsOperationCharacter = bActiveOperation && pCharacter->GetBool("operation", false);
+
+				EHoliday eHoliday = (EHoliday)UTIL_GetHolidayForString(pCharacter->GetString("holiday_restriction"));
+
+
+				const char* pszAssociatedWar = pCharacter->GetString("war_restriction");
+
+				int iWeight = pCharacter->GetInt("weight", 1);
+
+				// If a War is active, that's all we want to show.  If not, then bias towards holidays
+				if (pszActiveWarName != NULL)
+				{
+					if (!FStrEq(pszAssociatedWar, pszActiveWarName))
+					{
+						iWeight = 0;
+					}
+				}
+				else if (eHoliday != kHoliday_None)
+				{
+					iWeight = UTIL_IsHolidayActive(eHoliday) ? MAX(iWeight, 6) : 0;
+				}
+				else if (bActiveOperation && !bIsOperationCharacter)
+				{
+					iWeight = 0;
+				}
+				else
+				{
+					// special cases for summer, halloween, fullmoon, and christmas...turn off anything not covered above
+					if (UTIL_IsHolidayActive(kHoliday_Summer) || UTIL_IsHolidayActive(kHoliday_HalloweenOrFullMoon) || UTIL_IsHolidayActive(kHoliday_Christmas))
+					{
+						iWeight = 0;
+					}
+				}
+
+				for (int i = 0; i < iWeight; i++)
+				{
+					vecUseableCharacters.AddToTail(pCharacter);
+				}
+			}
+
+			// Pick a character at random.
+			if (vecUseableCharacters.Count() > 0)
+			{
+				m_iCharacterImageIdx = rand() % vecUseableCharacters.Count();
+			}
+
+			// Make sure we found a character we can use.
+			if (vecUseableCharacters.IsValidIndex(m_iCharacterImageIdx))
+			{
+				KeyValues* pCharacter = vecUseableCharacters[m_iCharacterImageIdx];
+
+				if (IsFreeTrialAccount() && GetQuestMapPanel()->IsVisible())
+				{
+					const char* text = pCharacter->GetString("store_text");
+					if (text)
+					{
+						StartHighlightAnimation(MMHA_STORE)->SetDialogVariable("highlighttext", g_pVGuiLocalize->Find(text));
+					}
+				}
+
+				const char* image_name = pCharacter->GetString("image");
+				m_pCharacterImagePanel->SetImage(image_name);
+			}
+		}
+
+		pCharacterFile->deleteThis();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2328,6 +2431,7 @@ void CHudMainMenuOverride::OnKeyCodePressed( KeyCode code )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::CheckTrainingStatus( void )
 {
+#ifndef TF2_OG
 	bool bNeedsTraining = tf_training_has_prompted_for_training.GetInt() <= 0;
 	bool bNeedsPractice = tf_training_has_prompted_for_offline_practice.GetInt() <= 0;
 	bool bShowForum = tf_training_has_prompted_for_forums.GetInt() <= 0;
@@ -2403,6 +2507,7 @@ void CHudMainMenuOverride::CheckTrainingStatus( void )
 		tf_training_has_prompted_for_options.SetValue( 1 );
 		StartHighlightAnimation( MMHA_OPTIONS );
 	}
+#endif
 }
 
 void CHudMainMenuOverride::UpdateRankPanelType()

@@ -765,7 +765,9 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 						}
 					}
 
+#ifndef TF2_OG
 					pVictim->m_Shared.AddCond( TF_COND_HEALING_DEBUFF, 2.f, pAttacker );
+#endif
 				}
 			}
 		}

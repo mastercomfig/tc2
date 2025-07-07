@@ -2059,6 +2059,7 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 		newInfo.SetDamage( flDamage );
 	}
 
+#ifndef TF2_OG
 	// Check to see if we are being sapped.
 	if ( !iAttackIgnoresResists && HasSapper() )
 	{
@@ -2072,6 +2073,7 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 			newInfo.SetDamage( flDamage );
 		}
 	}
+#endif
 
 	int iDamageTaken = BaseClass::OnTakeDamage( newInfo );
 

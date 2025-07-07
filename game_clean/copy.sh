@@ -39,6 +39,8 @@ declare -a FILES_REP=(
   #
   tc2/cfg/motd_text_default.txt
   #
+  tf2_og/cfg/mapcycle_default.txt
+  #
   tc2/scripts/newbindings.txt
   tf2_og/scripts/newbindings.txt
   #

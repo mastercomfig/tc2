@@ -384,8 +384,11 @@ bool CObjectDispenser::ShouldBeMiniBuilding( CTFPlayer* pPlayer )
 //-----------------------------------------------------------------------------
 int CObjectDispenser::GetMaxUpgradeLevel()
 {
-
+#ifdef TF2_OG
+	return 1;
+#else
 	return BaseClass::GetMaxUpgradeLevel();
+#endif
 }
 
 //-----------------------------------------------------------------------------
