@@ -273,11 +273,12 @@ void CTFInventoryManager::GenerateDefaultEquippedRegionMask(void)
 	vecRegionNames.AddToTail("soldier_coat");
 	vecRegionNames.AddToTail("sniper_legs");
 	vecRegionNames.AddToTail("pyro_head_replacement");
-	vecRegionNames.AddToTail("scout_pants");
+	//vecRegionNames.AddToTail("scout_pants");
 	vecRegionNames.AddToTail("spy_coat");
 	for (auto& sRegionName : vecRegionNames)
 	{
-		m_iDefaultRegionMask |= GetItemSchema()->GetEquipRegionMaskByName(sRegionName);
+		// TODO mask or bit mask? seems looser to only restrict by exact region
+		m_iDefaultRegionMask |= GetItemSchema()->GetEquipRegionBitMaskByName(sRegionName);
 	}
 #endif
 }
@@ -1012,6 +1013,7 @@ void CTFPlayerInventory::LoadLocalLoadout()
 
 				CEconItemView* pItem = GetInventoryItemByItemID(uItemId);
 
+				bool bPassed = iPreset != m_ActivePreset[iClass];
 				if (pItem)
 				{
 					if (CheckExtraEquipRules(iClass, iSlot, pItem))
@@ -1025,15 +1027,14 @@ void CTFPlayerInventory::LoadLocalLoadout()
 								pItem->GetSOCData()->Equip(iClass, iSlot);
 							}
 						}
-					}
-					else
-					{
-						ClearLoadoutSlot(iClass, iSlot);
+						bPassed = true;
 					}
 				}
-				else
+
+				if (!bPassed)
 				{
-					ClearLoadoutSlot(iClass, iSlot);
+					EquipLocal(INVALID_ITEM_ID, iClass, iSlot);
+					m_LoadoutItems[iClass][iSlot] = LOADOUT_SLOT_USE_BASE_ITEM;
 				}
 			}
 		}
@@ -1090,8 +1091,19 @@ void CTFPlayerInventory::SaveLocalLoadout( bool bReset, bool bDefaultToGC )
 				//itemid_t uItemId = m_LoadoutItems[iClass][iSlot];
 				if (bReset) {
 #if TF2_OG
-					// TODO: can we do better by checking the item first?
-					uItemId = bDefaultToGC ? 0 : 0;
+					if (bDefaultToGC)
+					{
+						uItemId = m_RealTFLoadoutItems[iClass][iSlot];
+						CEconItemView* pItem = GetInventoryItemByItemID(uItemId);
+						if (!pItem || !CheckExtraEquipRules(iClass, iSlot, pItem))
+						{
+							uItemId = 0;
+						}
+					}
+					else
+					{
+						uItemId = 0;
+					}
 #else
 					uItemId = bDefaultToGC ? m_RealTFLoadoutItems[iClass][iSlot] : 0;
 #endif
@@ -1905,7 +1917,7 @@ void CTFPlayerInventory::VerifyLoadoutItemsAreValid( int iClass )
 
 		// Does this item use the same regions as some item that we already have equipped?
 		equip_region_mask_t unItemEquipMask = pEquippedItemView->GetItemDefinition()->GetEquipRegionMask();
-		if ( unItemEquipMask & unCumulativeRegionMask )
+		if ( unCumulativeRegionMask & unItemEquipMask )
 		{
 			// Unequip this item. This will wind up calling into ::ItemHasBeenUpdated() once the
 			// unequip makes it to the GC and back.
