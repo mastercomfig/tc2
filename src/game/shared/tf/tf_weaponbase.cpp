@@ -4502,10 +4502,15 @@ ShadowType_t CTFWeaponBase::ShadowCastType( void )
 // -----------------------------------------------------------------------------
 bool CTFWeaponBase::CanAttack()
 {
-	CTFPlayer *pPlayer = GetTFPlayerOwner();
+	return CanAttack(GetCanAttackFlags());
+}
 
-	if ( pPlayer )
-		return pPlayer->CanAttack( GetCanAttackFlags() );
+bool CTFWeaponBase::CanAttack(int iFlags)
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+
+	if (pPlayer)
+		return pPlayer->CanAttack(iFlags);
 
 	return false;
 }

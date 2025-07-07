@@ -216,7 +216,7 @@ ConVar tf_spectate_pyrovision( "tf_spectate_pyrovision", "0", FCVAR_ARCHIVE, "Wh
 ConVar tf_replay_pyrovision( "tf_replay_pyrovision", "0", FCVAR_ARCHIVE, "When on, replays will be seen with Pyrovision active", VisionMode_ChangeCallback );
 
 ConVar tf_taunt_first_person( "tf_taunt_first_person", "0", FCVAR_ARCHIVE, "1 = taunts remain first-person" );
-ConVar tf_taunt_first_person_always( "tf_taunt_first_person_always", "1", FCVAR_REPLICATED, "1 = taunts are forced to remain first-person" );
+ConVar tf_taunt_first_person_always( "tf_taunt_first_person_always", "0", FCVAR_REPLICATED, "1 = taunts are forced to remain first-person" );
 
 ConVar tf_romevision_opt_in( "tf_romevision_opt_in", "0", FCVAR_ARCHIVE, "Enable Romevision in Mann vs. Machine mode when available." );
 ConVar tf_romevision_skip_prompt( "tf_romevision_skip_prompt", "0", FCVAR_ARCHIVE, "If nonzero, skip the prompt about sharing Romevision." );

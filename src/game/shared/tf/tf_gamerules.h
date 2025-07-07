@@ -876,7 +876,14 @@ bool IsCreepWaveMode( void ) const;
 
 	bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex );
 
-	virtual const char *GetGameDescription( void ){ return "Team Comtress"; }
+	virtual const char *GetGameDescription( void )
+	{
+#ifdef TF2_OG
+		return "Team Fortress";
+#else
+		return "Team Comtress";
+#endif
+	}
 
 	virtual void Status( void (*print) (PRINTF_FORMAT_STRING const char *fmt, ...) );
 

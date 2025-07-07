@@ -2949,7 +2949,7 @@ bool CBaseObject::CanBeUpgraded( CTFPlayer *pPlayer )
 		return false;
 
 	// max upgraded
-	if ( m_iUpgradeLevel >= OBJ_MAX_UPGRADE_LEVEL )
+	if ( m_iUpgradeLevel >= GetMaxUpgradeLevel() )
 		return false;
 
 	return true;
@@ -3687,7 +3687,7 @@ void CBaseObject::DoQuickBuild( bool bForceMax /* = false */ )
 		FinishedBuilding();
 	}
 
-	int iTargetLevel = ( ( ( TFGameRules() && TFGameRules()->IsQuickBuildTime() ) || bForceMax ) ? OBJ_MAX_UPGRADE_LEVEL : GetUpgradeLevel() );
+	int iTargetLevel = ( ( ( TFGameRules() && TFGameRules()->IsQuickBuildTime() ) || bForceMax ) ? GetMaxUpgradeLevel() : GetUpgradeLevel() );
 
 	if ( CanBeUpgraded( GetOwner() ) )
 	{
@@ -3793,10 +3793,12 @@ int	CBaseObject::GetUpgradeAmountPerHit( void )
 {
 	int nAmount = tf_obj_upgrade_per_hit.GetInt();
 
+#ifndef TF2_OG
 	if ( TFGameRules()->InSetup() || TFGameRules()->IsPowerupMode() )
 	{
 		nAmount *= 2;
 	}
+#endif
 
 	return nAmount;
 }
@@ -3841,7 +3843,7 @@ int CBaseObject::GetMaxHealthForCurrentLevel( void )
 	
 	if ( !IsMiniBuilding() && ( GetUpgradeLevel() > 1 ) )
 	{
-		float flMultiplier = pow( UPGRADE_LEVEL_HEALTH_MULTIPLIER, MIN(GetUpgradeLevel(), OBJ_MAX_UPGRADE_LEVEL) - 1 );
+		float flMultiplier = pow( UPGRADE_LEVEL_HEALTH_MULTIPLIER, MIN(GetUpgradeLevel(), GetMaxUpgradeLevel()) - 1 );
 		iMaxHealth = (int)( iMaxHealth * flMultiplier );
 	}
 

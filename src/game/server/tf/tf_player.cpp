@@ -199,7 +199,7 @@ ConVar tf_damage_multiplier_blue( "tf_damage_multiplier_blue", "1.0", FCVAR_CHEA
 ConVar tf_damage_multiplier_red( "tf_damage_multiplier_red", "1.0", FCVAR_CHEAT, "All incoming damage to a red player is multiplied by this value" );
 
 
-ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "0.1", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one", true, 0.1f, false, 0.f );
+ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one", true, 0.1f, false, 0.f );
 
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute +use while playing." );
 
@@ -20156,6 +20156,7 @@ void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
 
 	float flTimeSinceAllowedVoice = gpGlobals->curtime - m_flNextVoiceCommandTime;
 
+#ifdef TF2_OG
 	// if its longer than 5 seconds, reset the counter
 	if ( flTimeSinceAllowedVoice > 5.0f )
 	{
@@ -20166,6 +20167,7 @@ void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
 	{
 		m_iVoiceSpamCounter++;
 	}
+#endif
 
 	m_flNextVoiceCommandTime = gpGlobals->curtime + MIN( GetSceneDuration( pszScenePlayed ), tf_max_voice_speak_delay.GetFloat() );
 

@@ -12229,7 +12229,12 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		return false;
 	}
 
-	if ( IsTaunting() )
+#ifdef TF2_OG
+	const bool bCanAttackWhileTaunting = iCanAttackFlags & TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY;
+#else
+	const bool bCanAttackWhileTaunting = false;
+#endif
+	if ( IsTaunting() && !bCanAttackWhileTaunting )
 		return false;
 
 	if ( m_Shared.InCond( TF_COND_PHASE ) == true )

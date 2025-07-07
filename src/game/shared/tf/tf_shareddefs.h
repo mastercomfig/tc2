@@ -670,6 +670,12 @@ extern const char *g_pszItemClassImagesBlue[];
 #define TF_BURNING_DMG				4
 #endif
 
+#ifdef TF2_OG
+#define TF_AFTERBURN_BASE_DURATION 10.0f
+#else
+#define TF_AFTERBURN_BASE_DURATION 7.5f
+#endif
+
 // Bleeding
 #define TF_BLEEDING_FREQUENCY		0.5f
 #define TF_BLEEDING_DMG				4
@@ -2635,6 +2641,7 @@ extern helltower_vo_t g_pszHelltowerAnnouncerLines[];
 // flags to ignore certain check in CanAttack function
 #define TF_CAN_ATTACK_FLAG_NONE				0
 #define TF_CAN_ATTACK_FLAG_GRAPPLINGHOOK	0x01
+#define TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY	0x02
 
 struct PlayerHistoryInfo_t
 {

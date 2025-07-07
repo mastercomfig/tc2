@@ -1339,7 +1339,12 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 					}
 					else if ( TFGameRules()->InSetup() && TFGameRules()->GetActiveRoundTimer() )
 					{
+						// TODO(mcoms): TF2_OG: maybe fine to make this 4x, if there's no kritz
+#ifdef TF2_OG
+						flChargeAmount *= 4.f;
+#else
 						flChargeAmount *= 3.f;
+#endif
 					}
 				}
 #endif

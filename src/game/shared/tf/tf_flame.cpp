@@ -27,7 +27,12 @@ const float tf_flame_burn_index_per_collide_remap_x = 10.f;
 const float tf_flame_burn_index_per_collide_remap_y = 50.f;
 const float tf_flame_burn_index_damage_scale_min = 0.5f;
 
-ConVar tf_flame_dmg_mode_dist( "tf_flame_dmg_mode_dist", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN );
+#ifdef TF2_OG
+#define DEFAULT_FLAME_DMG_MODE_DIST "1"
+#else
+#define DEFAULT_FLAME_DMG_MODE_DIST "0"
+#endif
+ConVar tf_flame_dmg_mode_dist( "tf_flame_dmg_mode_dist", DEFAULT_FLAME_DMG_MODE_DIST, FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN );
 
 #ifdef WATERFALL_FLAMETHROWER_TEST
 ConVar tf_flame_waterfall_speed_override( "tf_flame_waterfall_speed_override", "0", FCVAR_REPLICATED );

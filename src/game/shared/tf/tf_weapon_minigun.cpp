@@ -689,7 +689,11 @@ float CTFMinigun::GetInitialAfterburnDuration() const
 	CALL_ATTRIB_HOOK_INT( nRingOfFireWhileAiming, ring_of_fire_while_aiming );
 	if ( nRingOfFireWhileAiming != 0 )
 	{
+#ifdef TF2_OG
+		return TF_AFTERBURN_BASE_DURATION;
+#else
 		return 8.f;
+#endif
 	}
 
 	return BaseClass::GetInitialAfterburnDuration();

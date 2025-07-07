@@ -449,6 +449,7 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 #endif
 
 	virtual bool	CanAttack();
+	virtual bool	CanAttack(int iFlags);
 	virtual int		GetCanAttackFlags() const { return TF_CAN_ATTACK_FLAG_NONE; }
 
 	// Raising & Lowering for grenade throws

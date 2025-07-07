@@ -32,7 +32,7 @@ float CTFFireAxe::GetInitialAfterburnDuration() const
 	CALL_ATTRIB_HOOK_INT( iAddBurningDamageType, set_dmgtype_ignite );
 	if ( iAddBurningDamageType )
 	{
-		return 7.5f;
+		return TF_AFTERBURN_BASE_DURATION;
 	}
 
 	return BaseClass::GetInitialAfterburnDuration();

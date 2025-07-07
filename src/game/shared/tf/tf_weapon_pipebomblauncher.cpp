@@ -427,7 +427,7 @@ void CTFPipebombLauncher::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFPipebombLauncher::SecondaryAttack( void )
 {
-	if ( !CanAttack() )
+	if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
 		return;
 
 	if ( m_iPipebombCount )

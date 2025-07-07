@@ -1151,7 +1151,7 @@ void CObjectTeleporter::TeleporterThink( void )
 			pMatch->TeleporterReceive( m_hTeleportingPlayer, 1.0 );
 
 			int iUpgradeLevel = GetUpgradeLevel();
-			int iBaseUpgradeLevel = MIN(iUpgradeLevel, OBJ_MAX_UPGRADE_LEVEL);
+			int iBaseUpgradeLevel = MIN(iUpgradeLevel, GetMaxUpgradeLevel());
 			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[GetUpgradeLevel()];
 			if (iUpgradeLevel > iBaseUpgradeLevel)
 			{
@@ -1231,7 +1231,7 @@ void CObjectTeleporter::TeleporterThink( void )
 			SetState( TELEPORTER_STATE_RECHARGING );
 
 			int iUpgradeLevel = GetUpgradeLevel();
-			int iBaseUpgradeLevel = MIN(iUpgradeLevel, OBJ_MAX_UPGRADE_LEVEL);
+			int iBaseUpgradeLevel = MIN(iUpgradeLevel, GetMaxUpgradeLevel());
 			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[iBaseUpgradeLevel];
 			if (iUpgradeLevel > iBaseUpgradeLevel)
 			{
