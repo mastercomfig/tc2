@@ -14,14 +14,6 @@
 		"command" "OpenServerBrowser"
 		"subimage" "glyph_multiplayer"
 		"OnlyAtMenu" "1"
-	} 
-	
-	"ChangeServerButton"
-	{
-		"label" "#MMenu_PlayMultiplayer" 
-		"command" "OpenServerBrowser"
-		"subimage" "glyph_multiplayer"
-		"OnlyInGame" "1"
 	}
 
 	"ReplayBrowserButton"
@@ -80,25 +72,6 @@
 		"tooltip" "#MMenu_MutePlayers"
 	}
 	
-	"RequestCoachButton"
-	{
-		"label"			""
-		"command"		"engine cl_coach_find_coach"
-		"OnlyInGame"	"1"
-		"subimage" "icon_whistle"
-		"tooltip" "#MMenu_RequestCoach"
-	}
-	
-    "ReportPlayerButton"
-    {
-		"label"			""
-		"command"		"OpenReportPlayerDialog"
-		"OnlyInGame"	"1"
-		"subimage"		"glyph_alert"
-		"tooltip"		"#MMenu_ReportPlayer"
-		
-	}
-	
 	"NewGameButton"
 	{
 	  "label"         "#MMenu_NewGame" 
@@ -113,13 +86,6 @@
 		"command"       "0"
 		"subimage"      "glyph_server"
 		"OnlyInGame"    "1"
-	}
-	
-	"FakeChatButton"
-	{
-	    "label"         ""
-		"command"       "0"
-		"subimage"      "glyph_chat"
 	}
 	
 	"playlist"
