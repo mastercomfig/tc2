@@ -80,6 +80,12 @@ enum
 
 DECLARE_BUILD_FACTORY( CTFClassImage );
 
+#ifdef TF2_OG
+#define ShouldUsePlayerModel() false
+#else
+#define ShouldUsePlayerModel() cl_hud_playerclass_use_playermodel.GetBool()
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -104,7 +110,7 @@ CTFHudPlayerClass::CTFHudPlayerClass( Panel *parent, const char *name ) : Editab
 	m_flNextThink = 0.0f;
 	m_nKillStreak = 0;
 
-	m_bUsePlayerModel = cl_hud_playerclass_use_playermodel.GetBool();
+	m_bUsePlayerModel = ShouldUsePlayerModel();
 
 	ListenForGameEvent( "localplayer_changedisguise" );
 	ListenForGameEvent( "post_inventory_application" );
@@ -224,9 +230,9 @@ void CTFHudPlayerClass::OnThink()
 	}
 
 	bool bPlayerClassModeChange = false;
-	if ( m_bUsePlayerModel != cl_hud_playerclass_use_playermodel.GetBool() )
+	if ( m_bUsePlayerModel != ShouldUsePlayerModel() )
 	{
-		m_bUsePlayerModel = cl_hud_playerclass_use_playermodel.GetBool();
+		m_bUsePlayerModel = ShouldUsePlayerModel();
 		bPlayerClassModeChange = true;
 	}
 

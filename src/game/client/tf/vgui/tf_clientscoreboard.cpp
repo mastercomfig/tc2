@@ -1793,6 +1793,12 @@ static void PopulateDuelPanel( CTFClientScoreBoardDialog::duel_panel_t &duelPane
 	duelPanel.m_pPanel->SetDialogVariable( "score", unScore );
 }
 
+#ifdef TF2_OG
+#define ShouldUsePlayerModel() false
+#else
+#define ShouldUsePlayerModel() cl_hud_playerclass_use_playermodel.GetBool()
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: Updates details about a player
 //-----------------------------------------------------------------------------
@@ -1971,17 +1977,17 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 	m_pImagePanelHorizLine->SetFillColor( clr );
 
 	// update our image if our selected player or mode of display has changed
-	if ( ( m_hSelectedPlayer != pSelectedPlayer ) || ( m_bUsePlayerModel != cl_hud_playerclass_use_playermodel.GetBool() ) )
+	if ( ( m_hSelectedPlayer != pSelectedPlayer ) || ( m_bUsePlayerModel != ShouldUsePlayerModel() ) )
 	{
 		m_hSelectedPlayer = pSelectedPlayer;
-		m_bUsePlayerModel = cl_hud_playerclass_use_playermodel.GetBool();
+		m_bUsePlayerModel = ShouldUsePlayerModel();
 
 		int iClass = pSelectedPlayer->m_Shared.GetDesiredPlayerClassIndex();
 		int iTeam = pSelectedPlayer->GetTeamNumber();
 		if ( ( pLocalPlayer->InSameTeam( pSelectedPlayer ) || pLocalPlayer->GetTeamNumber() < FIRST_GAME_TEAM ) && 
 			 iTeam >= FIRST_GAME_TEAM && iClass >= TF_FIRST_NORMAL_CLASS && iClass <= TF_LAST_NORMAL_CLASS )
 		{
-			if ( cl_hud_playerclass_use_playermodel.GetBool() )
+			if ( ShouldUsePlayerModel() )
 			{
 				if ( !m_pPlayerModelPanel->IsVisible() )
 				{

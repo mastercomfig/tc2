@@ -370,14 +370,6 @@ DESCRIPTION INFO_OPTIONS
 		{ BOOL }
 		{ "1" }
 	}
-
-	"cl_hud_playerclass_use_playermodel"
-	{
-		"#GameUI_HudPlayerClassUsePlayerModel"
-		"#ToolTip_HudPlayerClassUsePlayerModel"
-		{ BOOL }
-		{ "1" }
-	}
 	
 	"viewmodel_fov"
 	{
