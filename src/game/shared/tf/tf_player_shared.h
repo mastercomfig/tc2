@@ -908,7 +908,7 @@ private:
 	void OnAddHalloweenHellHeal( void );
 	void OnRemoveHalloweenHellHeal( void );
 
-	float GetCritMult( void );
+	float GetCritMult( const bool bMelee );
 
 #ifdef GAME_DLL
 	void  UpdateCritMult( void );

@@ -1610,7 +1610,7 @@ bool CTFWeaponBase::CalcIsAttackCriticalHelper()
 		return false;
 
 	float flCritChance = 0.f;
-	float flPlayerCritMult = pPlayer->GetCritMult();
+	float flPlayerCritMult = pPlayer->GetCritMult(false);
 
 	if ( !CanFireCriticalShot() )
 		return false;

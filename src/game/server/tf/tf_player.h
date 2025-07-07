@@ -478,7 +478,7 @@ public:
 	void SetClassMenuOpen( bool bIsOpen );
 	bool IsClassMenuOpen( void );
 
-	float GetCritMult( void ) { return m_Shared.GetCritMult(); }
+	float GetCritMult(const bool bMelee) { return m_Shared.GetCritMult(bMelee); }
 	void  RecordDamageEvent( const CTakeDamageInfo &info, bool bKill, int nVictimPrevHealth ) { m_Shared.RecordDamageEvent(info,bKill,nVictimPrevHealth); }
 
 	bool GetHudClassAutoKill( void ){ return m_bHudClassAutoKill; }

@@ -1125,7 +1125,7 @@ bool CTFWeaponBaseMelee::CalcIsAttackCriticalHelper( void )
 	if ( pPlayer->m_Shared.IsCritBoosted() )
 		return true;
 
-	float flPlayerCritMult = pPlayer->GetCritMult();
+	float flPlayerCritMult = pPlayer->GetCritMult(true);
 	float flCritChance = TF_DAMAGE_CRIT_CHANCE_MELEE * flPlayerCritMult;
 	CALL_ATTRIB_HOOK_FLOAT( flCritChance, mult_crit_chance );
 

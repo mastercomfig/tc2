@@ -194,7 +194,7 @@ void CCriticalPanel::OnThink()
 	if ( cl_showcrit.GetInt() )
 	{
 		// Get the current critical multiplier.
-		float flCritMult = pPlayer->GetCritMult() * TF_DAMAGE_CRIT_CHANCE;
+		float flCritMult = pPlayer->GetCritMult(false) * TF_DAMAGE_CRIT_CHANCE;
 		flCritMult *= 100.0f;
 
 		if ( m_CritData.m_flAverage < 0.0f )

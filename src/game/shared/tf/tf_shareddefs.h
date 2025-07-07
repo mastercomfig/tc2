@@ -143,15 +143,28 @@ enum
 //-----------------------------------------------------------------------------
 // CVar replacements
 //-----------------------------------------------------------------------------
+#ifdef TF2_OG
+#define TF_DAMAGE_CRIT_CHANCE				0.05f
+#define TF_DAMAGE_CRIT_CHANCE_RAPID			0.05f
+#else
 #define TF_DAMAGE_CRIT_CHANCE				0.02f
 #define TF_DAMAGE_CRIT_CHANCE_RAPID			0.02f
+#endif
 #define TF_DAMAGE_CRIT_DURATION_RAPID		2.0f
 #define TF_DAMAGE_CRIT_CHANCE_MELEE			0.15f
 
 #define TF_DAMAGE_CRITMOD_MAXTIME			20
 #define TF_DAMAGE_CRITMOD_MINTIME			2
+#ifdef TF2_OG
+#define TF_DAMAGE_CRITMOD_DAMAGE			1600
+#else
 #define TF_DAMAGE_CRITMOD_DAMAGE			800
+#endif
+#ifdef TF2_OG
+#define TF_DAMAGE_CRITMOD_MAXMULT			4
+#else
 #define TF_DAMAGE_CRITMOD_MAXMULT			6
+#endif
 
 #define TF_DAMAGE_CRIT_MULTIPLIER			3.0f
 #define TF_DAMAGE_MINICRIT_MULTIPLIER		1.35f
