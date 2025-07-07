@@ -233,13 +233,21 @@ void CTFWeaponBaseMelee::PrimaryAttack()
 // -----------------------------------------------------------------------------
 void CTFWeaponBaseMelee::SecondaryAttack()
 {
-	if ( !CanAttack() )
+	// Get the current player.
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
 		return;
 
-	// Get the current player.
-	CTFPlayer *pPlayer = GetTFPlayerOwner();
-	if ( !pPlayer )
-		return;
+	if (pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_DEMOMAN)
+	{
+		if (!CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY))
+			return;
+	}
+	else
+	{
+		if (!CanAttack())
+			return;
+	}
 
 	pPlayer->DoClassSpecialSkill();
 

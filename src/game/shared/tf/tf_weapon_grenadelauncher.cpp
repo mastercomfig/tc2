@@ -492,7 +492,7 @@ void CTFGrenadeLauncher::SecondaryAttack( void )
 {
 #ifdef GAME_DLL
 
-	if ( !CanAttack() )
+	if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
 		return;
 
 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
