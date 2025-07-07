@@ -879,7 +879,7 @@ bool IsCreepWaveMode( void ) const;
 	virtual const char *GetGameDescription( void )
 	{
 #ifdef TF2_OG
-		return "Team Fortress";
+		return "Team Fortress 2: OG";
 #else
 		return "Team Comtress";
 #endif

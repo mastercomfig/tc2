@@ -1007,7 +1007,11 @@ void C_BaseObject::GetTargetIDDataString( OUT_Z_BYTECAP(iMaxLenInBytes) wchar_t 
 	}
 
 	// level 1 and 2 show upgrade progress
-	if ( !IsMiniBuilding() && !IsDisposableBuilding() )
+#ifdef TF2_OG
+	if ( !IsMiniBuilding() && !IsDisposableBuilding() && GetType() != OBJ_DISPENSER && GetType() != OBJ_TELEPORTER )
+#else
+	if (!IsMiniBuilding() && !IsDisposableBuilding())
+#endif
 	{
 		_snwprintf( wszUpgradeProgress, ARRAYSIZE(wszUpgradeProgress) - 1, L"%d / %d", m_iUpgradeMetal, GetUpgradeMetalRequired() );
 		wszUpgradeProgress[ ARRAYSIZE(wszUpgradeProgress)-1 ] = '\0';

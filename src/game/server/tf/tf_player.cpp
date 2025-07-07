@@ -199,7 +199,7 @@ ConVar tf_damage_multiplier_blue( "tf_damage_multiplier_blue", "1.0", FCVAR_CHEA
 ConVar tf_damage_multiplier_red( "tf_damage_multiplier_red", "1.0", FCVAR_CHEAT, "All incoming damage to a red player is multiplied by this value" );
 
 
-ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one", true, 0.1f, false, 0.f );
+ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "0.5", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one", true, 0.1f, false, 0.f );
 
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute +use while playing." );
 
@@ -229,7 +229,7 @@ ConVar tf_highfive_max_range( "tf_highfive_max_range", "150", FCVAR_CHEAT | FCVA
 ConVar tf_highfive_height_tolerance( "tf_highfive_height_tolerance", "12", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "The maximum height difference allowed for two high-fivers." );
 ConVar tf_highfive_debug( "tf_highfive_debug", "0", FCVAR_NONE, "Turns on some console spew for debugging high five issues." );
 
-ConVar tf_taunt_first_person_always( "tf_taunt_first_person_always", "1", FCVAR_REPLICATED, "1 = taunts are forced to remain first-person" );
+ConVar tf_taunt_first_person_always( "tf_taunt_first_person_always", "0", FCVAR_REPLICATED, "1 = taunts are forced to remain first-person" );
 
 ConVar tf_test_teleport_home_fx( "tf_test_teleport_home_fx", "0", FCVAR_CHEAT );
 
@@ -20156,7 +20156,7 @@ void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
 
 	float flTimeSinceAllowedVoice = gpGlobals->curtime - m_flNextVoiceCommandTime;
 
-#ifdef TF2_OG
+#ifndef TF2_OG
 	// if its longer than 5 seconds, reset the counter
 	if ( flTimeSinceAllowedVoice > 5.0f )
 	{
