@@ -31,7 +31,7 @@ jobs:
           CCACHE_COMPRESSLEVEL: 6
         run: |
           mkdir -p $CCACHE_DIR
-          ./src/buildallprojects_tf_og
+          ./src/buildallprojects_tf2_og
           ./src/buildallprojects
           ./game_clean/copy.sh
       - name: Push to Itch
