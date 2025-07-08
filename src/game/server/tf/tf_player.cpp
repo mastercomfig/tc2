@@ -20154,9 +20154,9 @@ void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
 {
 	Assert( pszScenePlayed );
 
+#ifndef TF2_OG
 	float flTimeSinceAllowedVoice = gpGlobals->curtime - m_flNextVoiceCommandTime;
 
-#ifndef TF2_OG
 	// if its longer than 5 seconds, reset the counter
 	if ( flTimeSinceAllowedVoice > 5.0f )
 	{

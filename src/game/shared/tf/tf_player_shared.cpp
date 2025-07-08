@@ -10784,6 +10784,12 @@ bool CTFPlayer::CanPlayerMove() const
 	return !bNoMovement;
 }
 
+#ifdef TF2_OG
+#define DEFAULT_MOVESPEED_SCALE_SPY "0.9375"
+#else
+#define DEFAULT_MOVESPEED_SCALE_SPY "1"
+#endif
+ConVar tf_movespeed_scale_spy("tf_movespeed_scale_spy", DEFAULT_MOVESPEED_SCALE_SPY, FCVAR_REPLICATED | FCVAR_HIDDEN);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -10810,6 +10816,11 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 
 	// First, get their max class speed
 	float default_speed = GetPlayerClassData( playerclass )->m_flMaxSpeed;
+
+	if (playerclass == TF_CLASS_SPY)
+	{
+		default_speed *= tf_movespeed_scale_spy.GetFloat();
+	}
 
 	// Avoid re-entering and calculating our velocity while we're calculating our velocity.
 	// This can happen if we have two characters trying to match each other's velocity, for
@@ -10849,7 +10860,11 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			if ( playerclass == TF_CLASS_HEAVYWEAPONS )
 			{
 				{
+#ifdef TF2_OG
+					flAimMax = 80;
+#else
 					flAimMax = 110;
+#endif
 				}
 			}
 			else

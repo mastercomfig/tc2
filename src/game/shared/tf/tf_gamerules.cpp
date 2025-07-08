@@ -1092,7 +1092,12 @@ static Vector s_BotSpawnPosition;
 
 ConVar tf_gravetalk( "tf_gravetalk", "1", FCVAR_NOTIFY, "Allows living players to hear dead players using text/voice chat.", true, 0, true, 1 );
 
-ConVar tf_ctf_bonus_time ( "tf_ctf_bonus_time", "10", FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
+#ifdef TF2_OG
+#define DEFAULT_CTF_BONUS_TIME "0"
+#else
+#define DEFAULT_CTF_BONUS_TIME "10"
+#endif
+ConVar tf_ctf_bonus_time ( "tf_ctf_bonus_time", DEFAULT_CTF_BONUS_TIME, FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
 
 #ifdef _DEBUG
 ConVar mp_scrambleteams_debug( "mp_scrambleteams_debug", "0", FCVAR_NONE, "Debug spew." );

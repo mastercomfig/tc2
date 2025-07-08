@@ -248,7 +248,12 @@ ConVar mp_restartround( "mp_restartround", "0", FCVAR_GAMEDLL, "If non-zero, the
 ConVar mp_stalemate_timelimit( "mp_stalemate_timelimit", "240", FCVAR_REPLICATED, "Timelimit (in seconds) of the stalemate round." );
 ConVar mp_autoteambalance( "mp_autoteambalance", "1", FCVAR_NOTIFY, "Automatically balance the teams based on mp_teams_unbalance_limit. 0 = off, 1 = forcibly switch, 2 = ask volunteers", true, 0, true, 2 );
 
-ConVar mp_stalemate_enable( "mp_stalemate_enable", "0", FCVAR_NOTIFY, "Enable/Disable stalemate mode." );
+#ifdef TF2_OG
+#define DEFAULT_STALEMATE "1"
+#else
+#define DEFAULT_STALEMATE "0"
+#endif
+ConVar mp_stalemate_enable( "mp_stalemate_enable", DEFAULT_STALEMATE, FCVAR_NOTIFY, "Enable/Disable stalemate mode." );
 ConVar mp_match_end_at_timelimit( "mp_match_end_at_timelimit", "0", FCVAR_NOTIFY, "Allow the match to end when mp_timelimit hits instead of waiting for the end of the current round." );
 
 ConVar mp_holiday_nogifts( "mp_holiday_nogifts", "0", FCVAR_NOTIFY, "Set to 1 to prevent holiday gifts from spawning when players are killed." );
