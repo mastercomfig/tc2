@@ -10,7 +10,7 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/materials,tf2_og/materials,tc2/cfg,tf2_og/cfg,tc2/scripts,tf2_og/scripts}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/materials,tf2_og/materials,tf2_og/pak1,tc2/cfg,tf2_og/cfg,tc2/scripts,tf2_og/scripts}
 mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR}
 
 declare -a DLLS=(
@@ -48,6 +48,8 @@ declare -a FILES_REP=(
   tf2_og/texture_preload_list.txt
   #
   tc2/materials/logo
+  #
+  tf2_og/pak1/materials
   #
   tc2/resource
   tf2_og/resource
