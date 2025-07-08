@@ -59,11 +59,21 @@ extern ConVar tf_nav_in_combat_range;
 
 #define SENTRYGUN_RECENTLY_ATTACKED_TIME 2.0
 
+#ifdef TF2_OG
+#define SENTRYGUN_MINIGUN_RESIST_LVL_1		0.0
+#define SENTRYGUN_MINIGUN_RESIST_LVL_2		0.2
+#define SENTRYGUN_MINIGUN_RESIST_LVL_3		0.33
+#else
 #define SENTRYGUN_MINIGUN_RESIST_LVL_1		0.0
 #define SENTRYGUN_MINIGUN_RESIST_LVL_2		0.15
 #define SENTRYGUN_MINIGUN_RESIST_LVL_3		0.20
+#endif
 
+#ifdef TF2_OG
 #define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.66f
+#else
+#define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.33f
+#endif
 
 #define SENTRYGUN_MAX_LEVEL_MINI			1
 #define MINI_SENTRY_SCALE			0.75f
@@ -2059,7 +2069,8 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 		newInfo.SetDamage( flDamage );
 	}
 
-#ifndef TF2_OG
+	// UNDONE(mcoms): bringing sapper resistance back
+#if defined(TF2_OG)
 	// Check to see if we are being sapped.
 	if ( !iAttackIgnoresResists && HasSapper() )
 	{

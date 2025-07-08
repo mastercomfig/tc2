@@ -390,6 +390,7 @@ void CTFWeaponBuilder::PrimaryAttack( void )
 					for( int i=0; i<playerVector.Count(); ++i )
 						playerVector[i]->OnSapperPlaced( pBuiltOnObject );
 
+#ifndef TF2_OG
 					// if we just placed a sapper on a teleporter...try to sap the match, too?
 					if ( pBuiltOnObject )
 					{
@@ -407,6 +408,7 @@ void CTFWeaponBuilder::PrimaryAttack( void )
 							}
 						}
 					}
+#endif
 				}
 
 				// Should we switch away?

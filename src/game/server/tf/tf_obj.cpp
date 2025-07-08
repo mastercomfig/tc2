@@ -2258,7 +2258,14 @@ void CBaseObject::CreateObjectGibs( void )
 	const CObjectInfo *pObjectInfo = GetObjectInfo( ObjectType() );
 
 	// grant some percentage of the cost to build if number of metal to drop is not specified
-	const float flMetalCostPercentage = 0.5f;
+	float flMetalCostPercentage = 0.5f;
+#ifdef TF2_OG
+	if (GetType() != OBJ_DISPENSER)
+	{
+		// slightly lower metal cost for sentries and teleporters
+		flMetalCostPercentage = 0.48f;
+	}
+#endif
 	int iCost = pObjectInfo->m_Cost;
 #ifdef TF2_OG
 	if (GetType() == OBJ_TELEPORTER)
