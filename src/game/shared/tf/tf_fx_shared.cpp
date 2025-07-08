@@ -19,7 +19,7 @@
 #include "tf_passtime_logic.h"
 #endif
 
-#ifdef TF2_OG
+#if defined(TF2_OG) || defined(TF2_VANILLA)
 #define DEFAULT_FIXED_WEAPONSPREADS "0"
 #else
 #define DEFAULT_FIXED_WEAPONSPREADS "1"
