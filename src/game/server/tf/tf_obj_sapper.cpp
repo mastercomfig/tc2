@@ -647,11 +647,13 @@ void CObjectSapper::Killed( const CTakeDamageInfo &info )
 		}
 	}
 
+#ifndef TF2_OG
 	CBaseObject *pParent = GetParentObject();
 	if ( pParent )
 	{
 		pParent->SetPlasmaDisabled( SAPPER_REMOVE_DISABLE_TIME );
 	}
+#endif
 
 	BaseClass::Killed( info );
 }
