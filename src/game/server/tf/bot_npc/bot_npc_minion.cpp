@@ -156,7 +156,7 @@ ConVar tf_bot_npc_minion_dmg_mult_arrow( "tf_bot_npc_minion_dmg_mult_arrow", "3"
 float MinionModifyDamage( const CTakeDamageInfo &info )
 {
 	CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase * >( info.GetWeapon() );
-	CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
+	CObjectSentrygun *sentry = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
 	if ( sentry )
 	{

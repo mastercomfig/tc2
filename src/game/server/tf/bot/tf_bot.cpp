@@ -1840,7 +1840,7 @@ void CTFBot::Event_Killed( const CTakeDamageInfo &info )
 
 	if ( info.GetInflictor() && info.GetInflictor()->GetTeamNumber() != GetTeamNumber() )
 	{
-		CObjectSentrygun *sentrygun = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
+		CObjectSentrygun *sentrygun = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
 		if ( sentrygun )
 		{

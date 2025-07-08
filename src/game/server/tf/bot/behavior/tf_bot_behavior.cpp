@@ -294,7 +294,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnInjured( CTFBot *me, const CTak
 
 	if ( info.GetInflictor() && info.GetInflictor()->GetTeamNumber() != me->GetTeamNumber() )
 	{
-		CObjectSentrygun *sentrygun = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
+		CObjectSentrygun *sentrygun = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
 		if ( sentrygun )
 		{
@@ -590,7 +590,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 	// if we saw a friend killed by a sentry, kill the sentry
 	if ( victim && victim->IsPlayer() && me->IsFriend( victim ) && info.GetInflictor() && me->IsEnemy( info.GetInflictor() ) && me->IsLineOfSightClear( victim->WorldSpaceCenter() ) )
 	{
-		CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
+		CObjectSentrygun *sentry = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
 		if ( sentry && !me->GetEnemySentry() )
 		{

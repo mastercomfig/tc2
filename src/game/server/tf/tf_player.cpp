@@ -9109,7 +9109,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 			// add to list of damagers via sentry so that later we can check for achievement: ACHIEVEMENT_TF_ENGINEER_SHOTGUN_KILL_PREV_SENTRY_TARGET
 			CBaseEntity *pInflictor = info.GetInflictor();
-			CObjectSentrygun *pSentry = dynamic_cast< CObjectSentrygun * >( pInflictor );
+			CObjectSentrygun *pSentry = TFGameRules()->GetSentryGunInflictor( pInflictor );
 			if ( pSentry )
 			{
 				m_AchievementData.AddSentryDamager( pAttacker, pInflictor );
@@ -10696,10 +10696,9 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		if ( pTFAttacker )
 		{
 			// track amount of damage dealt by defender's sentry guns
-			CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
-			CTFProjectile_SentryRocket *sentryRocket = dynamic_cast< CTFProjectile_SentryRocket * >( info.GetInflictor() );
+			CObjectSentrygun *sentry = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
-			if ( ( sentry && !sentry->IsDisposableBuilding() ) || sentryRocket )
+			if ( ( sentry && !sentry->IsDisposableBuilding() ) )
 			{
 				int flooredHealth = clamp( m_iHealth, 0, m_iHealth );
 
@@ -11471,10 +11470,9 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 		OnKilledOther_Effects( pVictim, info );
 
 		// track accumulated sentry gun kills on owning player for Sentry Busters in MvM (so they can't clear this by rebuilding their sentry)
-		CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
-		CTFProjectile_SentryRocket *sentryRocket = dynamic_cast< CTFProjectile_SentryRocket * >( info.GetInflictor() );
+		CObjectSentrygun *sentry = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 
-		if ( ( sentry && !sentry->IsDisposableBuilding() ) || sentryRocket )
+		if ( ( sentry && !sentry->IsDisposableBuilding() ) )
 		{
 			IncrementSentryGunKillCount();
 		}

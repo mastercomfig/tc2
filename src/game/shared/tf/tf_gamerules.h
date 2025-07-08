@@ -901,6 +901,7 @@ bool IsCreepWaveMode( void ) const;
 	const char *GetKillingWeaponName( const CTakeDamageInfo &info, CTFPlayer *pVictim, int *iWeaponID );
 	CBasePlayer *GetAssister( CBasePlayer *pVictim, CBasePlayer *pScorer, CBaseEntity *pInflictor );
 	CTFPlayer *GetRecentDamager( CTFPlayer *pVictim, int iDamager, float flMaxElapsed );
+	CObjectSentrygun* GetSentryGunInflictor( CBaseEntity *pInflictor );
 
 	virtual void ClientDisconnected( edict_t *pClient );
 

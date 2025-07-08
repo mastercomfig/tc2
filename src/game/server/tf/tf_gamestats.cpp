@@ -1135,7 +1135,7 @@ void CTFGameStats::Event_PlayerDamage( CBasePlayer *pBasePlayer, const CTakeDama
 
 	if ( !pSentry )
 	{
-		pSentry = dynamic_cast< CObjectSentrygun * >( pInflictor );
+		pSentry = TFGameRules()->GetSentryGunInflictor( pInflictor );
 	}
 
 	if ( pSentry != NULL )
@@ -1566,7 +1566,7 @@ void CTFGameStats::Event_PlayerKilled( CBasePlayer *pPlayer, const CTakeDamageIn
 	CBaseEntity *pKiller = info.GetAttacker();
 	CTFPlayer *pScorer = ToTFPlayer( TFGameRules()->GetDeathScorer( pKiller, pInflictor, pPlayer ) );
 
-	if ( pInflictor && pInflictor->IsBaseObject() && dynamic_cast< CObjectSentrygun * >( pInflictor ) != NULL )
+	if ( TFGameRules()->GetSentryGunInflictor( pInflictor ) )
 	{
 		killerOrg = pInflictor->GetAbsOrigin();
 	}

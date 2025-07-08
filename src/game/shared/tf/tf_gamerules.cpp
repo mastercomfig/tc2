@@ -6534,7 +6534,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			else if ( pVictim->m_Shared.InCond( TF_COND_DEFENSEBUFF ) || pVictim->m_Shared.InCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK ) )
 			{
 				// defense buffs gives 50% to sentry dmg and 35% from all other sources
-				CObjectSentrygun *pSentry = ( info.GetInflictor() && info.GetInflictor()->IsBaseObject() ) ? dynamic_cast< CObjectSentrygun* >( info.GetInflictor() ) : NULL;
+				CObjectSentrygun *pSentry = GetSentryGunInflictor( info.GetInflictor() );
 				if ( pSentry )
 				{
 					flDamage *= 0.50f;
@@ -6598,7 +6598,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			float flOptimalDistance = 512.0;
 
 			// Use Sentry position for distance mod
-			CObjectSentrygun *pSentry = dynamic_cast<CObjectSentrygun*>( info.GetInflictor() );
+			CObjectSentrygun *pSentry = GetSentryGunInflictor( info.GetInflictor() );
 			if ( pSentry )
 			{
 				vAttackerPos = pSentry->WorldSpaceCenter();
@@ -7403,7 +7403,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 
 		if ( info.GetInflictor() && info.GetInflictor()->IsBaseObject() )
 		{
-			CObjectSentrygun* pSentry = dynamic_cast<CObjectSentrygun*>( info.GetInflictor() );
+			CObjectSentrygun* pSentry = GetSentryGunInflictor( info.GetInflictor() );
 			if ( pSentry )
 			{
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim, flRealDamage, dmg_from_sentry_reduced );
@@ -10569,12 +10569,7 @@ CTFWeaponBase *GetKilleaterWeaponFromDamageInfo( const CTakeDamageInfo *pInfo )
 	if ( !pTFWeapon )
 	{
 		// If a sentry did the damage with bullets, it's the inflictor
-		CObjectSentrygun *pSentrygun = dynamic_cast<CObjectSentrygun *>( pInflictor );
-		if ( !pSentrygun )
-		{
-			// If a sentry's rocket did the damage, then the rocket is the inflictor, and the sentry is the rocket's owner
-			pSentrygun = pInflictor ? dynamic_cast<CObjectSentrygun *>( pInflictor->GetOwnerEntity() ) : NULL;
-		}
+		CObjectSentrygun *pSentrygun = TFGameRules()->GetSentryGunInflictor( pInfo->GetInflictor() );
 
 		if ( pSentrygun )
 		{
@@ -12818,7 +12813,7 @@ CBasePlayer *CTFGameRules::GetAssister( CBasePlayer *pVictim, CBasePlayer *pScor
 		CTFPlayer *pHealer = ToTFPlayer( pTFScorer->m_Shared.GetFirstHealer() );
 		// Must be a medic to receive a healing assist, otherwise engineers get credit for assists from dispensers doing healing.
 		// Also don't give an assist for healing if the inflictor was a sentry gun, otherwise medics healing engineers get assists for the engineer's sentry kills.
-		if ( pHealer && ( TF_CLASS_MEDIC == pHealer->GetPlayerClass()->GetClassIndex() ) && ( NULL == dynamic_cast<CObjectSentrygun *>( pInflictor ) ) )
+		if ( pHealer && ( TF_CLASS_MEDIC == pHealer->GetPlayerClass()->GetClassIndex() ) && ( NULL == GetSentryGunInflictor( pInflictor ) ) )
 		{
 			return pHealer;
 		}
@@ -12835,7 +12830,7 @@ CBasePlayer *CTFGameRules::GetAssister( CBasePlayer *pVictim, CBasePlayer *pScor
 			return pRecentDamager;
 
 		// if a teammate has recently helped this sentry (ie: wrench hit), they assisted in the kill
-		CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( pInflictor );
+		CObjectSentrygun *sentry = GetSentryGunInflictor( pInflictor );
 		if ( sentry )
 		{
 			CTFPlayer *pAssister = sentry->GetAssistingTeammate( TF_TIME_ASSIST_KILL );
@@ -12864,6 +12859,29 @@ CTFPlayer *CTFGameRules::GetRecentDamager( CTFPlayer *pVictim, int iDamager, flo
 			return pRecentDamager;
 	}
 	return NULL;
+}
+
+CObjectSentrygun *CTFGameRules::GetSentryGunInflictor(CBaseEntity *pInflictor)
+{
+	// safety
+	if ( !pInflictor )
+	{
+		return NULL;
+	}
+	// the dynamic_casts are unfortunate but what can you do.
+	// If bullets, then the inflictor is the sentry
+	CObjectSentrygun *pSentry = pInflictor->IsBaseObject() ? dynamic_cast< CObjectSentrygun* >( pInflictor ) : NULL;
+	if ( !pSentry )
+	{
+		// If not the inflictor is not a sentry, it might be a sentry rocket and the sentry is its owner
+		CBaseEntity *pInflictorOwner = pInflictor->GetOwnerEntity();
+		if ( pInflictorOwner && pInflictorOwner->IsBaseObject() )
+		{
+			pSentry = dynamic_cast< CObjectSentrygun* >( pInflictorOwner );
+		}
+	}
+
+	return pSentry;
 }
 
 //-----------------------------------------------------------------------------
@@ -12969,16 +12987,8 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 
 	// Kill eater events.
 	{
-		// Was this a sentry kill? If the sentry did the kill itself with bullets then it'll be the inflictor.
-		// If it got the kill by firing a rocket, the rocket will be the inflictor and the sentry will be the
-		// owner of the rocket.
-		//
-		// dynamic_cast quagmire of sadness below.
-		CObjectSentrygun *pSentrygun = dynamic_cast<CObjectSentrygun *>( pInflictor );
-		if ( !pSentrygun )
-		{
-			pSentrygun = pInflictor ? dynamic_cast<CObjectSentrygun *>( pInflictor->GetOwnerEntity() ) : NULL;
-		}
+		// Was this a sentry kill?
+		CObjectSentrygun *pSentrygun = GetSentryGunInflictor( info.GetInflictor() );
 
 		if ( pSentrygun )
 		{
@@ -13242,14 +13252,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				if ( !pAttribInterface )
 				{
 					// Check if you are a sentry and if so, use the wrench
-					// For Sentries Inflictor can be the sentry (bullets) or the Sentry Rocket
-
-					CObjectSentrygun *pSentry = dynamic_cast<CObjectSentrygun*>( pInflictor );
-					if ( !pSentry && pInflictor )
-					{
-						pSentry = dynamic_cast<CObjectSentrygun*>( pInflictor->GetOwnerEntity() );
-					}
-
+					CObjectSentrygun *pSentry = GetSentryGunInflictor( info.GetInflictor() );
 					if ( pSentry )
 					{
 						pKillStreakTarget = dynamic_cast<CTFWeaponBase*>( pScorer->GetEntityForLoadoutSlot( LOADOUT_POSITION_MELEE ) );

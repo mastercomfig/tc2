@@ -489,7 +489,7 @@ int CBotNPC::OnTakeDamage_Alive( const CTakeDamageInfo &rawInfo )
 		// sentry guns are first class attackers
 		if ( info.GetInflictor() )
 		{
-			CObjectSentrygun *sentry = dynamic_cast< CObjectSentrygun * >( info.GetInflictor() );
+			CObjectSentrygun *sentry = TFGameRules()->GetSentryGunInflictor( info.GetInflictor() );
 			if ( sentry )
 			{
 				attacker = sentry;
