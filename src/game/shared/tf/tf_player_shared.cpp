@@ -374,6 +374,7 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	RecvPropInt( RECVINFO( m_bJumping) ),
 	RecvPropInt( RECVINFO( m_nNumHealers ) ),
 	RecvPropInt( RECVINFO( m_iCritMult ) ),
+	RecvPropInt( RECVINFO( m_iCritMultMelee ) ),
 	RecvPropInt( RECVINFO( m_iAirDash ) ),
 	RecvPropInt( RECVINFO( m_nAirDucked ) ),
 	RecvPropFloat( RECVINFO( m_flDuckTimer ) ),
@@ -549,6 +550,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	SendPropInt( SENDINFO( m_bJumping ), 1, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nNumHealers ), 5, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_iCritMult ), 8, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_iCritMultMelee ), 8, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_iAirDash ), -1, SPROP_VARINT | SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nAirDucked ), 2, SPROP_UNSIGNED ),
 	SendPropFloat( SENDINFO( m_flDuckTimer )  ),
@@ -799,6 +801,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_flStealthNoAttackExpire = 0.0f;
 	m_flStealthNextChangeTime = 0.0f;
 	m_iCritMult = 0;
+	m_iCritMultMelee = 0;
 	m_flInvisibility = 0.0f;
 	m_flPrevInvisibility = 0.f;
 	m_flTmpDamageBonusAmount = 1.0f;
@@ -9465,11 +9468,13 @@ void CTFPlayerShared::SetAirDash( int iAirDash )
 //-----------------------------------------------------------------------------
 float CTFPlayerShared::GetCritMult( const bool bMelee )
 {
-	float flRemapCritMul = RemapValClamped( m_iCritMult, 0, 255, 1.0, bMelee ? 4.0 : TF_DAMAGE_CRITMOD_MAXMULT );
+	const int iCritMult = bMelee ? m_iCritMultMelee.Get() : m_iCritMult.Get();
+	const float flMaxMult = bMelee ? TF_DAMAGE_CRITMOD_MAXMULT_MELEE : TF_DAMAGE_CRITMOD_MAXMULT;
+	float flRemapCritMul = RemapValClamped( iCritMult, 0, 255, 1.0, flMaxMult );
 /*#ifdef CLIENT_DLL
-	Msg("CLIENT: Crit mult %.2f - %d\n",flRemapCritMul, m_iCritMult);
+	Msg("CLIENT: Crit mult %.2f - %d\n",flRemapCritMul, iCritMult );
 #else
-	Msg("SERVER: Crit mult %.2f - %d\n", flRemapCritMul, m_iCritMult );
+	Msg("SERVER: Crit mult %.2f - %d\n", flRemapCritMul, iCritMult );
 #endif*/
 
 	return flRemapCritMul;
@@ -9483,10 +9488,12 @@ void CTFPlayerShared::UpdateCritMult( void )
 {
 	const float flMinMult = 1.0;
 	const float flMaxMult = TF_DAMAGE_CRITMOD_MAXMULT;
+	const float flMaxMultMelee = TF_DAMAGE_CRITMOD_MAXMULT_MELEE;
 
 	if ( m_DamageEvents.Count() == 0 )
 	{
 		m_iCritMult = RemapValClamped( flMinMult, 1.0, flMaxMult, 0, 255 );
+		m_iCritMultMelee = RemapValClamped( flMinMult, 1.0, flMaxMultMelee, 0, 255 );
 		return;
 	}
 
@@ -9522,10 +9529,12 @@ void CTFPlayerShared::UpdateCritMult( void )
 	}
 
 	float flMult = RemapValClamped( flTotalDamage, 0, TF_DAMAGE_CRITMOD_DAMAGE, flMinMult, flMaxMult );
+	float flMultMelee = RemapValClamped( flTotalDamage, 0, TF_DAMAGE_CRITMOD_DAMAGE_MELEE, flMinMult, flMaxMultMelee );
 
-//	Msg( "   TotalDamage: %.2f   -> Mult %.2f\n", flTotalDamage, flMult );
+//	Msg( "   TotalDamage: %.2f   -> Mult %.2f | Melee %.2f\n", flTotalDamage, flMult, flMultMelee );
 
 	m_iCritMult = (int)RemapValClamped( flMult, flMinMult, flMaxMult, 0, 255 );
+	m_iCritMultMelee = (int)RemapValClamped( flMultMelee, flMinMult, flMaxMultMelee, 0, 255 );
 }
 
 #define CRIT_DAMAGE_TIME		0.1f
