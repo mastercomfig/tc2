@@ -2070,7 +2070,7 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 	}
 
 	// UNDONE(mcoms): bringing sapper resistance back
-#if defined(TF2_OG)
+#if !defined(TF2_OG) || 1
 	// Check to see if we are being sapped.
 	if ( !iAttackIgnoresResists && HasSapper() )
 	{

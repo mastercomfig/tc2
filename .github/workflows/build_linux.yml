@@ -31,7 +31,6 @@ jobs:
           CCACHE_COMPRESSLEVEL: 6
         run: |
           mkdir -p $CCACHE_DIR
-          chmod +x ./src/buildallprojects_tf2_og
           ./src/buildallprojects_tf2_og
           mkdir -p ./game_tmp
           mv ./game/tf2_og ./game_tmp/tf2_og
