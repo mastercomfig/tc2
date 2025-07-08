@@ -1,17 +1,19 @@
-"VertexLitGeneric"
+"VertexlitGeneric"
 {
-	"$basetexture" "models/weapons/c_models/c_minigun/c_minigun"
-	"$phongexponenttexture" "models/weapons/c_models/c_minigun/c_minigun_exp"
+	"$baseTexture" "models/weapons/c_models/c_revolver/c_revolver"
+	"$phongexponenttexture" "models/weapons/c_models/c_revolver/c_revolver_exp"
 	
 	"$phong" "1"
 	//commented out to use the exponent mask
 	//"$phongexponent" "255"
-	//"$phongboost" "4"	
-  "$phongboost" "10"	
+	//"$phongboost" "2"	
+  "$phongboost" "5"	
 	"$phongalbedotint" "1"
 	
 	//scales up the exponent texture which usually only has about 120 levels of exponent
-	"$phongexponentfactor"  "255"
+	//"$phongexponentfactor"  "90"
+  "$phongexponentfactor"  "7"
+	//"$phongalbedotint" "0"
 	
 	//"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
 	"$lightwarptexture" "models/lightwarps/weapon_lightwarp"
@@ -22,10 +24,9 @@
 	"$glowcolor" "1"
 	
 	"$envmap" "env_cubemap"
-	"$envmaptint" "[.025 .025 .025]"
+	"$envmaptint" "[.075 .075 .075]"
 
 	"$tempvar" "0"
-	
 
 	//commented out to use the exponent mask
 	//"$basephongexponent" "15"
@@ -37,6 +38,7 @@
 	"$rimlightexponent" "20"				
 	"$rimlightboost" ".25"
 	"$rimmask" "1"
+	
 
 	// Cloaking
 	"$cloakPassEnabled" "1"
@@ -88,7 +90,6 @@
 	
 	
 		"WeaponSkin" {
-			
 		}
 	}
 }

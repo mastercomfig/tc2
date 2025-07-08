@@ -8,16 +8,17 @@
 	//"$phongexponent" "255"
 	//"$phongboost" "5"	
 	"$phongexponent" "12"
-	"$phongboost" "3"	
+	"$phongboost" "5"	
 	
 	//scales up the exponent texture which usually only has about 120 levels of exponent
 	//"$phongexponentfactor"  "75"
 	"$phongalbedotint" "1"
 	
-	"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
+	//"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
+	"$lightwarptexture" "models/lightwarps/weapon_lightwarp"
 			
-	//"$phongfresnelranges"	"[.3 .5 3]"
-	"$phongfresnelranges"	"[.5 .5 3]"
+	"$phongfresnelranges"	"[.3 .5 3]"
+	//"$phongfresnelranges"	"[.5 .5 3]"
 	"$halflambert" "1"
 	"$glowcolor" "1"
 	
