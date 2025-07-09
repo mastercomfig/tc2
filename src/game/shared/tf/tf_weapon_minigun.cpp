@@ -34,13 +34,16 @@
 #define MAX_BARREL_SPIN_VELOCITY	20
 #if defined(TF2_OG)
 #if 1
-#define TF_MINIGUN_SPINUP_TIME 0.9f
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.9f"
 #else
-#define TF_MINIGUN_SPINUP_TIME 1.0f
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "1.0f"
 #endif
 #else
-#define TF_MINIGUN_SPINUP_TIME 0.75f
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.75f"
 #endif
+ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
+
+#define TF_MINIGUN_SPINUP_TIME tf_minigun_spinup_time.GetFloat()
 #define TF_MINIGUN_PENALTY_PERIOD 1.f
 
 //=============================================================================

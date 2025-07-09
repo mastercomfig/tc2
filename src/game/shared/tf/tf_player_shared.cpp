@@ -6755,7 +6755,7 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon, float 
 	{
 		
 #ifdef TF2_OG
-		flFlameLife = 10.0f;
+		flFlameLife = TF_AFTERBURN_BASE_DURATION;
 #else
 		flFlameLife = flBurningTime;
 #endif
@@ -10798,7 +10798,16 @@ bool CTFPlayer::CanPlayerMove() const
 #else
 #define DEFAULT_MOVESPEED_SCALE_SPY "1"
 #endif
-ConVar tf_movespeed_scale_spy("tf_movespeed_scale_spy", DEFAULT_MOVESPEED_SCALE_SPY, FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_move_speed_scale_spy("tf_move_speed_scale_spy", DEFAULT_MOVESPEED_SCALE_SPY, FCVAR_REPLICATED | FCVAR_HIDDEN);
+
+ConVar tf_move_speed_scale_pyro("tf_move_speed_scale_pyro", "1.0", FCVAR_REPLICATED | FCVAR_HIDDEN);
+
+#ifdef TF2_OG
+#define DEFAULT_MOVE_SPEED_HEAVY_AIMING "80"
+#else
+#define DEFAULT_MOVE_SPEED_HEAVY_AIMING "110"
+#endif
+ConVar tf_move_speed_heavy_aiming("tf_move_speed_heavy_aiming", DEFAULT_MOVE_SPEED_HEAVY_AIMING, FCVAR_REPLICATED | FCVAR_HIDDEN);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -10826,9 +10835,21 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 	// First, get their max class speed
 	float default_speed = GetPlayerClassData( playerclass )->m_flMaxSpeed;
 
-	if (playerclass == TF_CLASS_SPY)
+	switch (playerclass)
 	{
-		default_speed *= tf_movespeed_scale_spy.GetFloat();
+		case TF_CLASS_SPY:
+		{
+			default_speed *= tf_move_speed_scale_spy.GetFloat();
+			break;
+		}
+		case TF_CLASS_PYRO:
+		{
+			default_speed *= tf_move_speed_scale_pyro.GetFloat();
+		}
+		default:
+		{
+			break;
+		}
 	}
 
 	// Avoid re-entering and calculating our velocity while we're calculating our velocity.
@@ -10869,12 +10890,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			if ( playerclass == TF_CLASS_HEAVYWEAPONS )
 			{
 				{
-					// UNDONE(mcoms): testing this
-#if defined(TF2_OG) && 0
-					flAimMax = 80;
-#else
-					flAimMax = 110;
-#endif
+					flAimMax = tf_move_speed_heavy_aiming.GetFloat();
 				}
 			}
 			else

@@ -5941,6 +5941,13 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 	RadiusDamage(radiusinfo);
 }
 
+#if TF2_OG
+#define DEFAULT_DEFLECT_MINICRITS "0"
+#else
+#define DEFAULT_DEFLECT_MINICRITS "1"
+#endif
+ConVar tf_deflect_minicrits("tf_deflect_minicrits", DEFAULT_DEFLECT_MINICRITS, FCVAR_REPLICATED | FCVAR_HIDDEN);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -6191,9 +6198,12 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( ( pInflictor && pInflictor->IsPlayer() == false ) && ( ( pBaseRocket && pBaseRocket->GetDeflected() ) || ( pBaseGrenade && pBaseGrenade->GetDeflected() && ( pBaseGrenade->ShouldMiniCritOnReflect() ) ) ) )
 			{
-				// Reflected rockets, grenades (non-remote detonate), arrows always mini-crit
-				info.SetCritType( CTakeDamageInfo::CRIT_MINI );
-				eBonusEffect = kBonusEffect_MiniCrit;
+				if (tf_deflect_minicrits.GetBool())
+				{
+					// Reflected rockets, grenades (non-remote detonate), arrows always mini-crit
+					info.SetCritType(CTakeDamageInfo::CRIT_MINI);
+					eBonusEffect = kBonusEffect_MiniCrit;
+				}
 			}
 			else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_PLASMA_CHARGED )
 			{

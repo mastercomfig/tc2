@@ -28,7 +28,7 @@ const float tf_flame_burn_index_per_collide_remap_y = 50.f;
 const float tf_flame_burn_index_damage_scale_min = 0.5f;
 
 #ifdef TF2_OG
-#define DEFAULT_FLAME_DMG_MODE_DIST "1"
+#define DEFAULT_FLAME_DMG_MODE_DIST "-1"
 #else
 #define DEFAULT_FLAME_DMG_MODE_DIST "0"
 #endif
@@ -517,20 +517,24 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 	
 	float flDamageScale = 1.f;
 
-	// Distance-based calculation is what we shipped with
-	if ( tf_flame_dmg_mode_dist.GetBool() )
+	int iFlameDmgMode = tf_flame_dmg_mode_dist.GetInt();
+	if ( iFlameDmgMode >= 0 )
 	{
-		float flDistSqr = pFlame->m_vecPosition.DistToSqr( pFlame->m_vecInitialPos );
-		float flMaxDamageDistSqr = Square( tf_flame_maxdamagedist );
-		float flMinDamageDistSqr = Square( tf_flame_mindamagedist );
-		flDamageScale = RemapValClamped( flDistSqr, flMaxDamageDistSqr, flMinDamageDistSqr, 1.0f, tf_flame_min_damage_scale );
-	}
-	// Lifetime-based
-	else
-	{
-		float flTimeAlive = gpGlobals->curtime - pFlame->m_flSpawnTime;
-		float flLifeMax = pFlame->m_flLifeTime * tf_flame_min_damage_scale_time_cap;
-		flDamageScale = RemapValClamped( flTimeAlive, 0.f, flLifeMax, 1.f, tf_flame_min_damage_scale_time );
+		// Distance-based calculation is what we shipped with
+		if ( iFlameDmgMode == 1 )
+		{
+			float flDistSqr = pFlame->m_vecPosition.DistToSqr(pFlame->m_vecInitialPos);
+			float flMaxDamageDistSqr = Square(tf_flame_maxdamagedist);
+			float flMinDamageDistSqr = Square(tf_flame_mindamagedist);
+			flDamageScale = RemapValClamped(flDistSqr, flMaxDamageDistSqr, flMinDamageDistSqr, 1.0f, tf_flame_min_damage_scale);
+		}
+		// Lifetime-based
+		else
+		{
+			float flTimeAlive = gpGlobals->curtime - pFlame->m_flSpawnTime;
+			float flLifeMax = pFlame->m_flLifeTime * tf_flame_min_damage_scale_time_cap;
+			flDamageScale = RemapValClamped(flTimeAlive, 0.f, flLifeMax, 1.f, tf_flame_min_damage_scale_time);
+		}
 	}
 
 	// TODO(mcoms): re-evaluate this
