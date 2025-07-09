@@ -32,8 +32,12 @@
 #endif
 
 #define MAX_BARREL_SPIN_VELOCITY	20
-#ifdef TF2_OG
+#if defined(TF2_OG)
+#if 1
+#define TF_MINIGUN_SPINUP_TIME 0.9f
+#else
 #define TF_MINIGUN_SPINUP_TIME 1.0f
+#endif
 #else
 #define TF_MINIGUN_SPINUP_TIME 0.75f
 #endif

@@ -10869,7 +10869,8 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			if ( playerclass == TF_CLASS_HEAVYWEAPONS )
 			{
 				{
-#ifdef TF2_OG
+					// UNDONE(mcoms): testing this
+#if defined(TF2_OG) && 0
 					flAimMax = 80;
 #else
 					flAimMax = 110;
