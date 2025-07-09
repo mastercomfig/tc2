@@ -58,12 +58,12 @@ const float tf_flame_min_damage_scale = 0.845f;
 const float tf_flame_min_damage_scale = 0.5f;
 #endif
 #ifdef TF2_OG
-const float tf_flame_maxdamagedist = 100.f;
+const float tf_flame_maxdamagedist = 125.f;
 #else
 const float tf_flame_maxdamagedist = 150.f;
 #endif
 #ifdef TF2_OG
-const float tf_flame_mindamagedist = 150.f;
+const float tf_flame_mindamagedist = 175.f;
 #else
 const float tf_flame_mindamagedist = 300.f;
 #endif
