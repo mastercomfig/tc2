@@ -28,7 +28,7 @@ const float tf_flame_burn_index_per_collide_remap_y = 50.f;
 const float tf_flame_burn_index_damage_scale_min = 0.5f;
 
 #ifdef TF2_OG
-#define DEFAULT_FLAME_DMG_MODE_DIST "-1"
+#define DEFAULT_FLAME_DMG_MODE_DIST "1"
 #else
 #define DEFAULT_FLAME_DMG_MODE_DIST "0"
 #endif
@@ -52,9 +52,21 @@ float tf_flame_particle_min_density = 0.01f;
 
 #else // CLIENT_DLL
 
+#ifdef TF2_OG
+const float tf_flame_min_damage_scale = 0.845f;
+#else
 const float tf_flame_min_damage_scale = 0.5f;
+#endif
+#ifdef TF2_OG
+const float tf_flame_maxdamagedist = 100.f;
+#else
 const float tf_flame_maxdamagedist = 150.f;
+#endif
+#ifdef TF2_OG
+const float tf_flame_mindamagedist = 150.f;
+#else
 const float tf_flame_mindamagedist = 300.f;
+#endif
 const float tf_flame_min_damage_scale_time = 0.5f;
 const float tf_flame_min_damage_scale_time_cap = 0.5f;
 #endif
