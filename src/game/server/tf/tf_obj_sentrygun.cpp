@@ -358,6 +358,9 @@ void CObjectSentrygun::SentryThink( void )
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
 
+	m_bFireNextFrame = false;
+	m_bFireRocketNextFrame = false;
+
 	if ( TFGameRules()->IsBetaActive() )
 	{
 		// shield after disabling
@@ -367,6 +370,7 @@ void CObjectSentrygun::SentryThink( void )
 			m_nShieldLevel.Set( SHIELD_NORMAL );
 		}
 	}
+
 	if ( m_nShieldLevel > 0 && (gpGlobals->curtime > m_flShieldFadeTime) )
 	{
 		m_nShieldLevel.Set( SHIELD_NONE );
