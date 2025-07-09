@@ -571,8 +571,13 @@ public:
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "DamagedPlayer" );
 
+#ifdef TF2_OG
+				bool bHitEnabled = false;
+				bool bLastHitEnabled = false;
+#else
 				bool bHitEnabled = ( tf_dingalingaling.GetBool() );
 				bool bLastHitEnabled = ( tf_dingalingaling_lasthit.GetBool() );
+#endif
 				bool bLastHit = ( iHealth <= 0 ) || bDeadRingerSpy;
 				const float flDingTime = bLastHit ? m_flLastKillDingTime : m_flLastDingTime;
 				const float flDingDelay = bLastHit ? tf_dingaling_lasthit_repeat_delay.GetFloat() : tf_dingalingaling_repeat_delay.GetFloat();
@@ -615,7 +620,13 @@ public:
 				}
 			}
 
-			if ( hud_combattext.GetBool() )
+#ifdef TF2_OG
+			const bool bCombatText = false;
+#else
+			const bool bCombatText = hud_combattext.GetBool();
+#endif
+
+			if ( bCombatText )
 			{
 				// Ignore damage events on targets that we can't see, so it's not a cheat
 				trace_t	tr;
@@ -707,7 +718,12 @@ public:
 		}
 		else if ( FStrEq( event->GetName(), "player_healed" ) )
 		{
-			if ( hud_combattext.GetBool() && hud_combattext_healing.GetBool() )
+#ifdef TF2_OG
+			const bool bCombatText = false;
+#else
+			const bool bCombatText = hud_combattext.GetBool();
+#endif
+			if ( bCombatText && hud_combattext_healing.GetBool() )
 			{
 				CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 				if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
@@ -744,7 +760,12 @@ public:
 		}
 		else if ( FStrEq( event->GetName(), "player_bonuspoints" ) )
 		{
-			if ( hud_combattext.GetBool() )
+#ifdef TF2_OG
+			const bool bCombatText = false;
+#else
+			const bool bCombatText = hud_combattext.GetBool();
+#endif
+			if ( bCombatText )
 			{
 				CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 				if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
@@ -782,7 +803,12 @@ public:
 		}
 		else if ( FStrEq( event->GetName(), "building_healed" ) )
 		{
-			if ( !hud_combattext.GetBool() || !hud_combattext_healing.GetBool() )
+#ifdef TF2_OG
+			const bool bCombatText = false;
+#else
+			const bool bCombatText = hud_combattext.GetBool();
+#endif
+			if ( !bCombatText || !hud_combattext_healing.GetBool() )
 				return;
 
 			CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();

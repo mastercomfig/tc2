@@ -10880,9 +10880,13 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 			pVictim->SetNextAllSeeEffectTime( eBonusEffect, gpGlobals->curtime + 0.5f );
 		}
 		
+#ifdef TF2_OG
+		bool bCombatTextBlocks = false;
+#else
 		ConVarRef hud_combattext( "hud_combattext", false );
 		ConVarRef hud_combattext_doesnt_block_overhead_text( "hud_combattext_doesnt_block_overhead_text", false );
 		bool bCombatTextBlocks = hud_combattext.GetBool() && !hud_combattext_doesnt_block_overhead_text.GetBool();
+#endif
 
 		// Show the effect, unless combat text blocks
 		if( ShouldPlayEffect( eParticleFilter, pAttacker, pVictim ) && !bCombatTextBlocks )
