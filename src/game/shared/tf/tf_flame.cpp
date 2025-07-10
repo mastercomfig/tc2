@@ -53,7 +53,7 @@ float tf_flame_particle_min_density = 0.01f;
 #else // CLIENT_DLL
 
 #ifdef TF2_OG
-const float tf_flame_min_damage_scale = 0.845f;
+const float tf_flame_min_damage_scale = 0.725f;
 #else
 const float tf_flame_min_damage_scale = 0.5f;
 #endif

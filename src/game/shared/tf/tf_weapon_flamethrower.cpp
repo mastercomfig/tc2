@@ -64,7 +64,7 @@ ConVar	tf_debug_flamethrower("tf_debug_flamethrower", "0", FCVAR_CHEAT | FCVAR_R
 ConVar  tf_flamethrower_boxsize("tf_flamethrower_boxsize", "12.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Size of flame damage entities.", true, 1.f, true, 24.f );
 ConVar  tf_flamethrower_new_flame_offset( "tf_flamethrower_new_flame_offset", "40 5 0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Starting position relative to the flamethrower." );
 #ifdef TF2_OG
-const float	tf_flamethrower_initial_afterburn_duration = 10.f;
+const float	tf_flamethrower_initial_afterburn_duration = TF_AFTERBURN_BASE_DURATION;
 #else
 const float	tf_flamethrower_initial_afterburn_duration = 3.f;
 #endif
@@ -75,7 +75,7 @@ const float	tf_flamethrower_airblast_cone_angle = 35.0f;
 
 const float	tf_flamethrower_new_flame_fire_delay = 0.02f;
 #ifdef TF2_OG
-const float	tf_flamethrower_damage_per_tick = 15.f;
+const float	tf_flamethrower_damage_per_tick = 14.f;
 #else
 const float	tf_flamethrower_damage_per_tick = 13.f;
 #endif
