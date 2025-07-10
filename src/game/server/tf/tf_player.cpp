@@ -15223,7 +15223,7 @@ float CTFPlayer::PlayCritReceivedSound( void )
 	params.m_pflSoundDuration = 0;
 	EmitSound( receiverfilter, entindex(), params );
 
-	return 2.0f;
+	return 0.0f;
 }
 
 //-----------------------------------------------------------------------------
