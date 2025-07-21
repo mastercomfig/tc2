@@ -397,7 +397,7 @@ void CTFMatchmakingDashboard::OnCommand( const char *command )
 #endif
 	else if ( FStrEq( command, "quit" ) )
 	{
-		if ( engine->IsInGame() )
+		if ( engine->IsInGame() && !engine->IsLevelMainMenuBackground() )
 		{
 			PromptOrFireCommand( "disconnect" );
 		}

@@ -1313,7 +1313,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 	// So try and do the least amount of work if nothing has changed.
 
 	bool bSomethingChanged = false;
-	bool bInGame = engine->IsInGame();
+	bool bInGame = engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 	bool bIsConnected = engine->IsConnected();
 #if defined( REPLAY_ENABLED )
 	bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
