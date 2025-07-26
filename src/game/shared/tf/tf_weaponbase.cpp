@@ -2221,7 +2221,7 @@ bool CTFWeaponBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
 	if ( SendWeaponAnim( iActivity ) )
 	{
 		// We consider the reload finished 0.2 sec before the anim is, so that players don't keep accidentally aborting their reloads
-		flReloadTime = SequenceDuration() - 0.2;
+		flReloadTime = SequenceDuration() - 0.2f;
 	}
 	else
 	{
@@ -2261,13 +2261,11 @@ void CTFWeaponBase::UpdateReloadTimers( bool bStart )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFWeaponBase::SetReloadTimer( float flReloadTime )
+float CTFWeaponBase::GetReloadTimer( float flReloadTime )
 {
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
 	if ( !pPlayer )
-		return;
-
-	float flBaseReloadTime = flReloadTime;
+		return flReloadTime;
 
 	CALL_ATTRIB_HOOK_FLOAT( flReloadTime, mult_reload_time );
 	CALL_ATTRIB_HOOK_FLOAT( flReloadTime, mult_reload_time_hidden );
@@ -2309,12 +2307,29 @@ void CTFWeaponBase::SetReloadTimer( float flReloadTime )
 
 
 	int numHealers = pPlayer->m_Shared.GetNumHealers();
-	if ( numHealers == 1 )
+	if ( numHealers >= 1 )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, flReloadTime, mult_reload_time_while_healed );
 	}
 
 	flReloadTime = MAX( flReloadTime, 0.00001f );
+
+	return flReloadTime;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFWeaponBase::SetReloadTimer( float flReloadTime )
+{
+	CTFPlayer *pPlayer = GetTFPlayerOwner();
+	if ( !pPlayer )
+		return;
+
+	float flBaseReloadTime = flReloadTime;
+
+	flReloadTime = GetReloadTimer( flReloadTime );
+
 	if ( pPlayer->GetViewModel(0) )
 	{
 		pPlayer->GetViewModel(0)->SetPlaybackRate( flBaseReloadTime / flReloadTime );

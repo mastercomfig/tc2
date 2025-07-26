@@ -195,9 +195,8 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 				CBaseCombatWeapon *pWeapon = GetBasePlayer()->GetActiveWeapon();
 				if ( pWeapon )
 				{
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time );
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time_hidden );
-					CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, fast_reload );
+					CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>( pWeapon );
+					flPlaybackRate = pTFWeapon->GetReloadTimer( flPlaybackRate );
 				}
 				if ( flPlaybackRate > 0.f )
 				{
@@ -233,9 +232,8 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 			CBaseCombatWeapon *pWeapon = GetBasePlayer()->GetActiveWeapon();
 			if ( pWeapon )
 			{
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time );
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time_hidden );
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, fast_reload );
+				CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>( pWeapon );
+				flPlaybackRate = pTFWeapon->GetReloadTimer( flPlaybackRate );
 			}
 			if ( flPlaybackRate > 0.f )
 			{
@@ -271,9 +269,8 @@ void CMultiPlayerAnimState::DoAnimationEvent( PlayerAnimEvent_t event, int nData
 			CBaseCombatWeapon *pWeapon = GetBasePlayer()->GetActiveWeapon();
 			if ( pWeapon )
 			{
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time );
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, mult_reload_time_hidden );
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flPlaybackRate, fast_reload );
+				CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>( pWeapon );
+				flPlaybackRate = pTFWeapon->GetReloadTimer( flPlaybackRate );
 			}
 			if ( flPlaybackRate > 0.f )
 			{
