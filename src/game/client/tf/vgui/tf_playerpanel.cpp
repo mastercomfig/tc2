@@ -247,7 +247,7 @@ bool CTFPlayerPanel::Update( void )
 			int iCharge = ( iClass == TF_CLASS_MEDIC ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : 0;
 			if ( iCharge != m_iPrevCharge )
 			{
-				if ( iCharge > 0 && !( bReadyMode && !bObserver ) )
+				if ( iCharge > 0 && (!bReadyMode || bObserver) )
 				{
 					SetDialogVariable( "chargeamount", VarArgs( "%d%%", iCharge ) );
 					bChanged = true;

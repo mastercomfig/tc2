@@ -310,6 +310,22 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 			bChanged = true;
 		}
 
+		// charge
+		int iCharge = (iClass == TF_CLASS_MEDIC) ? g_TF_PR->GetChargeLevel(m_iPlayerIndex) : 0;
+		if (iCharge != m_iPrevCharge)
+		{
+			if (iCharge > 0)
+			{
+				SetDialogVariable("chargeamount", VarArgs("%d%%", iCharge));
+				bChanged = true;
+			}
+			else
+			{
+				SetDialogVariable("chargeamount", "");
+			}
+			m_iPrevCharge = iCharge;
+		}
+
 		// gamerules state
 		if ( TFGameRules()->State_Get() != m_iPrevState )
 		{
@@ -451,10 +467,19 @@ void CTFTeamStatus::PerformLayout( void )
 		int& iMaxExpand		= iTeam == TF_TEAM_BLUE ? m_iTeam1MaxExpand	: m_iTeam2MaxExpand;
 		const int iGap		= RemapValClamped( iTeamCount, 6, 12, m_i6v6Gap, m_i12v12Gap );
 
-		// Local player is always the innermost panel
-		int nTeamPanelIndex = bIsLocalPlayerPanel ? 0
-							: iTeam == nLocalPlayerTeam ? iProcessed + 1 
-							: iProcessed;
+		// Local player is always the innermost panel, unless we're using class order
+		int nTeamPanelIndex = iProcessed;
+		if ( !IsClassOrder() )
+		{
+			if (bIsLocalPlayerPanel)
+			{
+				nTeamPanelIndex = 0;
+			}
+			else if (iTeam == nLocalPlayerTeam)
+			{
+				nTeamPanelIndex += 1;
+			}
+		}
 
 		// Setup X-position and widths
 		// Use the max width if less than 6 (to fill out the space)
@@ -571,6 +596,8 @@ CTFTeamStatusPlayerPanel *CTFTeamStatus::GetOrAddPanel( int iPanelIndex )
 	return pPanel;
 }
 
+extern int g_ClassDefinesRemap[];
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -583,33 +610,44 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	int iPanel = 0;
 	bool bNeedsLayout = false;
 	int iLocalTeam = g_TF_PR->GetTeam( pPlayer->entindex() );
+	const bool bClassOrder = IsClassOrder();
 	if ( iLocalTeam >= FIRST_GAME_TEAM )
 	{
-		for ( int i = 1; i <= MAX_PLAYERS; i++ )
+		// doing this so we can share between the two.
+		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS : TF_FIRST_NORMAL_CLASS;
+		for (int nClass = iFirstClass; nClass >= TF_FIRST_NORMAL_CLASS; nClass--)
 		{
-			if ( !g_TF_PR->IsConnected( i ) )
-				continue;
+			// we want to sort the images to match the class menu selections
+			int nCurrentClass = g_ClassDefinesRemap[nClass];
 
-			int iTeam = g_TF_PR->GetTeam( i );
-			if ( iTeam < FIRST_GAME_TEAM )
-				continue;
-
-			// Add an entry
-			CTFTeamStatusPlayerPanel *pPanel = GetOrAddPanel( iPanel );
-
-			if ( pPanel->GetPlayerIndex() != i )
+			for (int i = 1; i <= MAX_PLAYERS; i++)
 			{
-				bNeedsLayout = true;
+				if (!g_TF_PR->IsConnected(i))
+					continue;
+
+				int iTeam = g_TF_PR->GetTeam(i);
+				if (iTeam < FIRST_GAME_TEAM)
+					continue;
+				if (bClassOrder && g_TF_PR->GetPlayerClass(i) != nCurrentClass)
+					continue;
+
+				// Add an entry
+				CTFTeamStatusPlayerPanel* pPanel = GetOrAddPanel(iPanel);
+
+				if (pPanel->GetPlayerIndex() != i)
+				{
+					bNeedsLayout = true;
+				}
+
+				pPanel->SetPlayerIndex(i);
+
+				if (pPanel->GetPreviousTeam() != pPanel->GetTeam())
+				{
+					bNeedsLayout = true;
+				}
+
+				++iPanel;
 			}
-
-			pPanel->SetPlayerIndex( i );
-
-			if ( pPanel->GetPreviousTeam() != pPanel->GetTeam() )
-			{
-				bNeedsLayout = true;
-			}
-
-			++iPanel;
 		}
 	}
 
@@ -627,6 +665,7 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	UpdatePlayerPanels();
 
 	if ( bNeedsLayout )
+
 	{
 		InvalidateLayout();	
 	}
@@ -644,4 +683,12 @@ void CTFTeamStatus::UpdatePlayerPanels( void )
 	{
 		m_PlayerPanels[i]->Update();
 	}
+}
+
+bool CTFTeamStatus::IsClassOrder()
+{
+	// If we're in a competitive mode, then order the players according to class, like the advanced specgui
+	const bool bCompetitive = TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMatchTypeCasual();
+	const bool bClassOrder = bCompetitive;
+	return bClassOrder;
 }

@@ -86,6 +86,7 @@ protected:
 	CTFTeamStatusPlayerPanel *GetOrAddPanel( int iPanelIndex );
 	void RecalculatePlayerPanels( void );
 	void UpdatePlayerPanels( void );
+	bool IsClassOrder( void );
 
 protected:
 
