@@ -154,7 +154,7 @@ bool CTFPlayerPanel::Update( void )
 				}
 
 				// Hide class info from the other team?
-				if ( !bObserver && 
+				if ( !bObserver &&
 					 TFGameRules()->IsCompetitiveMode() && 
 					 GetTeam() != g_TF_PR->GetTeam( pLocalPlayer->entindex() ) )
 				{
@@ -247,7 +247,7 @@ bool CTFPlayerPanel::Update( void )
 			int iCharge = ( iClass == TF_CLASS_MEDIC ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : 0;
 			if ( iCharge != m_iPrevCharge )
 			{
-				if ( iCharge > 0 && (!bReadyMode || bObserver) )
+				if ( iCharge > 0 && ( !m_bPlayerReadyModeActive || bObserver ) )
 				{
 					SetDialogVariable( "chargeamount", VarArgs( "%d%%", iCharge ) );
 					bChanged = true;
