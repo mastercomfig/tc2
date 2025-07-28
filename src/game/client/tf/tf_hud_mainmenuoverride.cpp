@@ -1101,7 +1101,8 @@ void CHudMainMenuOverride::LoadMenuEntries( void )
 		if ( !bLoaded )
 		{
 			// only allow to load loose files when using insecure mode
-			if ( CommandLine()->FindParm( "-insecure" ) )
+			// TODO(mcoms)
+			//if ( CommandLine()->FindParm( "-insecure" ) )
 			{
 				bLoaded = datafile->LoadFromFile( g_pFullFileSystem, "Resource/GameMenu.res" );
 			}

@@ -92,7 +92,7 @@ if [ $PLATFORM = "win" ]; then
     bin/$PLAT_DIR/steam_api64
   )
 
-  FILES+=(
+  FILES_REP+=(
     tc2.bat
     tc2_vulkan.bat
     tf2_og.bat
@@ -107,7 +107,7 @@ elif [ $PLATFORM = "linux" ]; then
     bin/$PLAT_DIR/libsteam_api
   )
 
-  FILES+=(
+  FILES_REP+=(
     tc2.sh
     tf2_og.sh
   )

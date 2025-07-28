@@ -1,1 +1,1 @@
-.\tc2_win64.exe -game tc2 -noborder -particles 1
+.\tc2_win64.exe -steam -noborder -particles 1

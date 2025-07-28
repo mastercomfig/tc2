@@ -33,6 +33,8 @@
 			//
 			// Note that this folder is scanned only when the game is booted.
 			game+mod+custom_mod	|gameinfo_path|custom/*
+			// Adding custom folder for tc2 specifically
+			game+mod+custom_mod |gameinfo_path|pak1
 
 			// Now search loose files.  We'll set the directory containing the gameinfo.txt file
 			// as the first "mod" search path (after any user customizations).  This is also the one

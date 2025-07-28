@@ -17,7 +17,12 @@
 
 C_TFRootPanel *g_pRootPanel = NULL;
 
-static ConVar tf_ui_version( "tf_ui_version", "-1", FCVAR_DEVELOPMENTONLY );
+#ifdef TF2_OG
+#define DEFAULT_UI_VERSION "-10000"
+#else
+#define DEFAULT_UI_VERSION "-1"
+#endif
+static ConVar tf_ui_version( "tf_ui_version", DEFAULT_UI_VERSION, FCVAR_DEVELOPMENTONLY );
 
 extern const char *COM_GetModDirectory();
 
@@ -56,8 +61,9 @@ void CheckCustomModSearchPaths()
 		}
 	}
 
+	// TODO(mcoms)
 	// only allow to load loose files when using insecure mode
-	if ( CommandLine()->FindParm( "-insecure" ) )
+	//if ( CommandLine()->FindParm( "-insecure" ) )
 	{
 		// allow lose files in these search paths
 		g_pFullFileSystem->AddSearchPath( "tc2", "vgui" );
