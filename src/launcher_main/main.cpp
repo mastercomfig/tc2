@@ -188,7 +188,7 @@ static bool LoadSteam( const char *pRootDir )
 	return true;
 }
 
-static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize )
+static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize, bool bDedicated )
 {
 	if ( !LoadSteam( pRootDir ) )
 	{
@@ -222,7 +222,10 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize 
 		unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
 	}
 
-	UnloadSteam();
+	if (!bDedicated)
+	{
+		UnloadSteam();
+	}
 
 	if ( unLength == 0 )
 	{
@@ -445,11 +448,29 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return 0;
 	}
 
+	int nArgs = 0;
+	LPWSTR* pBaseArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+
+	std::vector<std::wstring> pArgs;
+	for (int i = 0; i < nArgs; i++)
+	{
+		pArgs.push_back(pBaseArgs[i]);
+	}
+
+	bool bLaunchDedicated = false;
+	for (std::wstring& arg : pArgs)
+	{
+		if (arg == L"-dedicated")
+		{
+			bLaunchDedicated = true;
+		}
+	}
+
 	// Get the root directory the .exe is in
 	char* pRootDir = GetBaseDir( moduleName );
 	const char *pBinaryGameDir = pRootDir;
 	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096 ) )
+	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
 	{
 		return 1;
 	}
@@ -459,6 +480,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	SetEnvironmentVariableA( "SDK_EXEC_DIR", szGameInstallDir );
 
 #define LAUNCHER_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\launcher.dll"
+#define DEDICATED_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\dedicated.dll"
 #define LAUNCHER_PATH		"%s\\" PLATFORM_BIN_DIR
 
 	_snprintf( szBuffer, sizeof( szBuffer ), "PATH=" LAUNCHER_PATH ";%s", pBinaryGameDir, pPath );
@@ -466,7 +488,14 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	_putenv( szBuffer );
 
 	// Assemble the full path to our "launcher.dll"
-	_snprintf( szBuffer, sizeof( szBuffer ), LAUNCHER_DLL_PATH, pBinaryGameDir );
+	if (bLaunchDedicated)
+	{
+		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, pBinaryGameDir);
+	}
+	else
+	{
+		_snprintf(szBuffer, sizeof(szBuffer), LAUNCHER_DLL_PATH, pBinaryGameDir);
+	}
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
 
 	// STEAM OK ... filesystem not mounted yet
@@ -486,7 +515,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return 0;
 	}
 
-	LauncherMain_t main = (LauncherMain_t)GetProcAddress( launcher, "LauncherMain" );
+	LauncherMain_t main = (LauncherMain_t)GetProcAddress(launcher, bLaunchDedicated ? "DedicatedMain" : "LauncherMain");
 	return main( hInstance, hPrevInstance, lpCmdLine, nCmdShow );
 }
 
