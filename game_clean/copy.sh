@@ -10,7 +10,7 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/materials,tf2_og/materials,tf2_og/pak1,tc2/cfg,tf2_og/cfg,tc2/scripts,tf2_og/scripts}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/cfg,tf2_og/cfg}
 mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR}
 
 declare -a DLLS=(
@@ -20,39 +20,11 @@ declare -a DLLS=(
 
 declare -a FILES_REP=(
   #
-  tc2/cfg/valve.rc
-  tf2_og/cfg/valve.rc
-  #
-  tc2/cfg/default.cfg
-  tf2_og/cfg/default.cfg
-  #
-  tc2/cfg/config_default.cfg
-  tf2_og/cfg/config_default.cfg
-  #
-  tc2/cfg/user_default.scr
-  tf2_og/cfg/user_default.scr
-  #
   tc2/cfg/vscript_convar_allowlist.txt
   tf2_og/cfg/vscript_convar_allowlist.txt
   #
-  tc2/cfg/motd_default.txt
-  #
-  tc2/cfg/motd_text_default.txt
-  #
-  tf2_og/cfg/mapcycle_default.txt
-  #
-  tc2/scripts/newbindings.txt
-  tf2_og/scripts/newbindings.txt
-  #
-  tc2/texture_preload_list.txt
-  tf2_og/texture_preload_list.txt
-  #
-  tc2/materials/logo
-  #
-  tf2_og/pak1/materials
-  #
-  tc2/resource
-  tf2_og/resource
+  tc2/pak1
+  tf2_og/pak1
   #
   tc2/gameinfo.txt
   tf2_og/gameinfo.txt
