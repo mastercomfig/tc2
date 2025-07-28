@@ -4093,7 +4093,7 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 
 		if ( state.m_hEquipmentRequest != INVALID_HTTPREQUEST_HANDLE )
 		{
-			SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+			SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 			state.m_hEquipmentRequest = INVALID_HTTPREQUEST_HANDLE;
 		}
 
@@ -4117,14 +4117,14 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		Assert( state.m_pKVCurrentRequest != nullptr );
 		KeyValues* pKV = state.m_pKVCurrentRequest;
 
-		if ( !SteamHTTP() )
+		if ( !SteamGameServerHTTP() )
 			return;
 
 		// Request inventory from teamfortress.com webapi
 		CFmtStr strUrl( "%swebapi/ISDK/GetEquipment/v0001", GetWebBaseUrl() );
 
 		state.m_EquipmentRequestCompleted.Cancel();
-		state.m_hEquipmentRequest = SteamHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, strUrl.Get() );
+		state.m_hEquipmentRequest = SteamGameServerHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, strUrl.Get() );
 		if ( state.m_hEquipmentRequest == INVALID_HTTPREQUEST_HANDLE )
 		{
 			// try again next frame
@@ -4132,18 +4132,18 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		}
 
 		// This mod's appid (NOT tf2's appid)
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "appid", CNumStr( engine->GetAppID() ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "appid", CNumStr( engine->GetAppID() ) );
 
 		// Item list
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "msg", pKV->GetString( "msg", nullptr ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "msg", pKV->GetString( "msg", nullptr ) );
 
 		// Authentication token
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "ticket", pKV->GetString( "ticket", nullptr ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "ticket", pKV->GetString( "ticket", nullptr ) );
 
 		if ( GetUniverse() != k_EUniversePublic )
 		{
 			// use beta tf2 appid on non public universes
-			SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "game_appid", "810" );
+			SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "game_appid", "810" );
 		}
 
 		// Is there a way we can validate the existing so cache?  We could only request the new items.
@@ -4156,11 +4156,11 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		//CGCClientSharedObjectCache* pExistingSOCache = GetSOCache( steamID );
 		//if ( pExistingSOCache && pExistingSOCache->BIsSubscribed() )
 		//{
-		//	SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hInventoryRequest, "version", CNumStr( pExistingSOCache->GetVersion() ) );
+		//	SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hInventoryRequest, "version", CNumStr( pExistingSOCache->GetVersion() ) );
 		//}
 
 		SteamAPICall_t callResult;
-		if ( !SteamHTTP()->SendHTTPRequest( state.m_hEquipmentRequest, &callResult ) )
+		if ( !SteamGameServerHTTP()->SendHTTPRequest( state.m_hEquipmentRequest, &callResult ) )
 		{
 			state.Backoff();
 			return;
@@ -4229,7 +4229,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	state.Backoff();
 	state.m_eState = kWebapiEquipmentState_RequestInventory;
 
-	if ( !SteamHTTP() )
+	if ( !SteamGameServerHTTP() )
 		return;
 
 	if( bIOFailure || !pInfo || state.m_hEquipmentRequest != pInfo->m_hRequest )
@@ -4237,7 +4237,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 		Assert( false );
 		if( state.m_hEquipmentRequest != INVALID_HTTPREQUEST_HANDLE )
 		{
-			SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+			SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 		}
 		return;
 	}
@@ -4245,20 +4245,20 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	// request failed -- backoff and retry
 	if ( !pInfo->m_bRequestSuccessful || pInfo->m_eStatusCode != k_EHTTPStatusCode200OK )
 	{
-		SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+		SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 		return;
 	}
 
 	// Extract the result
 	uint32 unBytes;
-	Verify( SteamHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unBytes ) );
+	Verify( SteamGameServerHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unBytes ) );
 	CUtlBuffer bufInventory;
 	bufInventory.EnsureCapacity( unBytes );
 	bufInventory.SeekPut( CUtlBuffer::SEEK_HEAD, unBytes );
-	Verify( SteamHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, ( uint8* )bufInventory.Base(), unBytes ) );
+	Verify( SteamGameServerHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, ( uint8* )bufInventory.Base(), unBytes ) );
 
 	// We're done with the request now
-	SteamHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
+	SteamGameServerHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
 
 	// Parse it to json and extract the data
 	GCSDK::CWebAPIValues* pValues = GCSDK::CWebAPIValues::ParseJSON( bufInventory );
