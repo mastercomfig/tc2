@@ -599,7 +599,7 @@ static void WaitForDebuggerConnect( int argc, char *argv[], int time )
 
 static const char *GetExecutableModName( char *pszExePath )
 {
-	static char s_szFinalFilename[ MAX_PATH + 1 ] = "hl2";
+	static char s_szFinalFilename[ MAX_PATH + 1 ] = "tc2";
 
 	char szExePath[ MAX_PATH + 1 ];
 	strncpy( szExePath, pszExePath, sizeof( szExePath ) );
@@ -646,18 +646,52 @@ int main( int argc, char *argv[] )
 		return 1;
 	}
 
+	bool bLaunchDedicated = false;
+	for (int i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i], "-dedicated"))
+		{
+			bLaunchDedicated = true;
+		}
+	}
+
 	char* pRootDir = GetBaseDir( moduleName );
 
 	const char *pBinaryGameDir = pRootDir;
 
 	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096 ) )
+	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
 	{
 		return 1;
 	}
 
+	if (bLaunchDedicated)
+	{
+		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated.so"
+
+		char szBuffer[4096];
+		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, pBinaryGameDir);
+
+		void* launcher = Launcher_LoadModule(szBuffer);
+		if (!launcher)
+		{
+			fprintf(stderr, "Failed to load the launcher\n");
+			return 0;
+		}
+
+		LauncherMain_t main = (LauncherMain_t)Launcher_GetProcAddress(launcher, "DedicatedMain");
+		if (!main)
+		{
+			fprintf(stderr, "Failed to load the launcher entry proc\n");
+			return 0;
+		}
+
+		return main(argc, argv);
+	}
+
+	
 	char szExecutable[8192];
-	snprintf(szExecutable, sizeof(szExecutable), "%s/hl2.sh", szGameInstallDir );
+	snprintf(szExecutable, sizeof(szExecutable), "%s/tc2.sh", szGameInstallDir );
 
 	std::vector<char *> new_argv;
 
