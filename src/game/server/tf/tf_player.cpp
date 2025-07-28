@@ -6762,22 +6762,19 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 // 		return;
 // 	}
 
-	if ( TFGameRules()->IsCompetitiveMode() )
+	if ( !tf_tournament_classchange_allowed.GetBool() && 
+		 TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
 	{
-		if ( !tf_tournament_classchange_allowed.GetBool() && 
-			 TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
-		{
-			ClientPrint( this, HUD_PRINTCENTER, "#TF_Ladder_NoClassChangeRound" );
-			return;
-		}
+		ClientPrint( this, HUD_PRINTCENTER, "#TF_Ladder_NoClassChangeRound" );
+		return;
+	}
 
-		if ( !tf_tournament_classchange_ready_allowed.GetBool() && 
-			 TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS && 
-			 TFGameRules()->IsPlayerReady( entindex() ) )
-		{
-			ClientPrint( this, HUD_PRINTCENTER, "#TF_Ladder_NoClassChangeReady" );
-			return;
-		}
+	if ( !tf_tournament_classchange_ready_allowed.GetBool() && 
+		 TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS && 
+		 TFGameRules()->IsPlayerReady( entindex() ) )
+	{
+		ClientPrint( this, HUD_PRINTCENTER, "#TF_Ladder_NoClassChangeReady" );
+		return;
 	}
 
 	if ( IsCoaching() )

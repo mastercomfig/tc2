@@ -2255,6 +2255,37 @@ bool CTFGameRules::BInMatchStartCountdown() const
 	return false;
 }
 
+bool CTFGameRules::IsCompetitiveGame( void )
+{
+	// if competitive MM, we are competitive
+	if ( IsMatchTypeCompetitive() )
+	{
+		return true;
+	}
+
+	// if it isn't competitive match type, but still competitive mode, then it's not a true competition.
+	// maybe IsMatchTypeCasual is more explicit, but we're not sure if there will be more "Competitive Modes"
+	// in the future which are/aren't actual competition
+	if ( IsCompetitiveMode() )
+	{
+		return false;
+	}
+
+	// any MvM game is not competitive
+	if ( IsMannVsMachineMode() )
+	{
+		return false;
+	}
+
+	// community competitive uses tournament mode: either player ready status or team ready status
+	if ( IsInTournamentMode() )
+	{
+		return true;
+	}
+
+	return false;
+}
+
 ETFMatchGroup CTFGameRules::GetCurrentMatchGroup() const
 {
 
@@ -12068,7 +12099,7 @@ void CTFGameRules::CalcDominationAndRevenge( CTFPlayer *pAttacker, CBaseEntity *
 		return;
 
 	// no dominations/revenge in competitive mode
-	if ( IsMatchTypeCompetitive() )
+	if ( IsCompetitiveGame() )
 		return;
 
 	PlayerStats_t *pStatsVictim = CTF_GameStats.FindPlayerStats( pVictim );
@@ -13073,8 +13104,8 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				if ( GetGlobalTeam( pVictim->GetTeamNumber() ) && GetGlobalTeam( pVictim->GetTeamNumber() )->GetNumPlayers() > 1 )
 #endif // !DEBUG
 				{
-					float flFastTime = IsCompetitiveMode() ? 120.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
-					float flSlowTime = IsCompetitiveMode() ? 300.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
+					float flFastTime = IsCompetitiveGame() ? 120.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
+					float flSlowTime = IsCompetitiveGame() ? 300.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
 
 					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
 					{
@@ -13092,7 +13123,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 					m_bArenaFirstBlood = true;
 					bKillWasFirstBlood = true;
 
-					if ( IsCompetitiveMode() )
+					if ( IsCompetitiveGame() )
 					{
 // 						CTF_GameStats.Event_PlayerAwardBonusPoints( pScorer, pVictim, 10 );
 // 						
@@ -14080,10 +14111,9 @@ bool CTFGameRules::IsFirstBloodAllowed( void )
 	if ( IsInArenaMode() && tf_arena_first_blood.GetBool() )
 		return true;
 
-	if ( IsCompetitiveMode() && ( State_Get() == GR_STATE_RND_RUNNING ) )
+	if ( IsCompetitiveGame() && ( State_Get() == GR_STATE_RND_RUNNING ) )
 	{
-		if ( IsMatchTypeCompetitive() )
-			return true;
+		return true;
 	}
 
 	return false;
@@ -20843,6 +20873,18 @@ void CTFGameRules::BonusStateAbort( void )
 //-----------------------------------------------------------------------------
 void CTFGameRules::BetweenRounds_Start( void )
 {
+	// Reset player speeds after preround lock
+	CTFPlayer *pPlayer;
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+
+		if ( !pPlayer )
+			continue;
+
+		pPlayer->TeamFortress_SetSpeed();
+	}
+
 	SetSetup( true );
 
 	if ( IsMannVsMachineMode() )
@@ -20941,7 +20983,7 @@ void CTFGameRules::BetweenRounds_Think( void )
 
 			if ( IsCompetitiveMode() )
 			{
-				m_flCompModeRespawnPlayersAtMatchStart = gpGlobals->curtime + 2.0;
+				m_flCompModeRespawnPlayersAtMatchStart = gpGlobals->curtime + 2.0f;
 			}
 		}
 
@@ -22233,7 +22275,7 @@ void CTFGameRules::CreateSoldierStatue()
 	if ( !IsHolidayActive( kHoliday_Soldier ) )
 		return;
 
-	if ( IsMatchTypeCompetitive() )
+	if ( IsCompetitiveGame() )
 		return;
 
 	char szCurrentMap[MAX_MAP_NAME];
@@ -22538,6 +22580,7 @@ bool	ScriptIsPowerupMode()										{ return TFGameRules()->IsPowerupMode(); }
 bool	ScriptIsCompetitiveMode()									{ return TFGameRules()->IsCompetitiveMode(); }
 bool	ScriptIsMatchTypeCasual()									{ return TFGameRules()->IsMatchTypeCasual(); }
 bool	ScriptIsMatchTypeCompetitive()								{ return TFGameRules()->IsMatchTypeCompetitive(); }
+bool	ScriptIsCompetitiveGame()									{ return TFGameRules()->IsCompetitiveGame(); }
 bool	ScriptInMatchStartCountdown()								{ return TFGameRules()->InMatchStartCountdown(); }
 bool	ScriptMatchmakingShouldUseStopwatchMode()					{ return TFGameRules()->MatchmakingShouldUseStopwatchMode(); }
 bool	ScriptIsAttackDefenseMode()									{ return TFGameRules()->IsAttackDefenseMode(); }
@@ -22592,9 +22635,10 @@ void CTFGameRules::RegisterScriptFunctions()
 	TF_GAMERULES_SCRIPT_FUNC( IsPasstimeMode,							"No ball games." );
 	TF_GAMERULES_SCRIPT_FUNC( IsMannVsMachineRespecEnabled,				"Are players allowed to refund their upgrades?" );
 	TF_GAMERULES_SCRIPT_FUNC( IsPowerupMode,							"Playing powerup mode? Not compatible with MvM" );
-	TF_GAMERULES_SCRIPT_FUNC( IsCompetitiveMode,						"Playing competitive?" );
+	TF_GAMERULES_SCRIPT_FUNC( IsCompetitiveMode,						"Playing default matchmaking?" );
 	TF_GAMERULES_SCRIPT_FUNC( IsMatchTypeCasual,						"Playing casual?" );
 	TF_GAMERULES_SCRIPT_FUNC( IsMatchTypeCompetitive,					"Playing competitive?" );
+	TF_GAMERULES_SCRIPT_FUNC( IsCompetitiveGame,						"Playing a game of competition?" );
 	TF_GAMERULES_SCRIPT_FUNC( InMatchStartCountdown,					"Are we in the pre-match state?" );
 	TF_GAMERULES_SCRIPT_FUNC( MatchmakingShouldUseStopwatchMode,		"" );
 	TF_GAMERULES_SCRIPT_FUNC( IsAttackDefenseMode,						"" );

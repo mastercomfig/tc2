@@ -628,18 +628,31 @@ void CTFClassMenu::ShowPanel( bool bShow )
 {
 	if ( bShow )
 	{
+		int iLocalTeam = GetLocalPlayerTeam();
+		int iPanelTeam = GetTeamNumber();
+
+		// if we're already on a game team, we can't show the other one.
+		if ( iLocalTeam >= FIRST_GAME_TEAM )
+		{
+			if ( iLocalTeam != iPanelTeam )
+			{
+				SetVisible( false );
+				return;
+			}
+		}
+
 		// Hide the other class menu
 		if ( gViewPortInterface )
 		{
-			gViewPortInterface->ShowPanel( GetTeamNumber() == TF_TEAM_BLUE ? PANEL_CLASS_RED : PANEL_CLASS_BLUE, false );
+			gViewPortInterface->ShowPanel( iPanelTeam == TF_TEAM_BLUE ? PANEL_CLASS_RED : PANEL_CLASS_BLUE, false );
 		}
 
 		// can't change class if you're on the losing team during the "bonus time" after a team has won the round
 		if ( ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN && 
 			 C_TFPlayer::GetLocalTFPlayer() && 
-			 C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TFGameRules()->GetWinningTeam()
-			 && C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_SPECTATOR 
-			 && C_TFPlayer::GetLocalTFPlayer()->GetTeamNumber() != TEAM_UNASSIGNED
+			 iLocalTeam != TFGameRules()->GetWinningTeam()
+			 && iLocalTeam != TEAM_SPECTATOR
+			 && iLocalTeam != TEAM_UNASSIGNED
 			 && GetSpectatorMode() == OBS_MODE_NONE ) ||
 			 TFGameRules()->State_Get() == GR_STATE_GAME_OVER ||
 			( TFGameRules()->IsInTraining() && C_TFPlayer::GetLocalTFPlayer() &&

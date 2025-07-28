@@ -1571,25 +1571,32 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 		{
 			flTransitionTime = tf_competitive_preround_duration.GetFloat();
 			m_flCountdownTime = -1.f;
-			if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
+			if ( !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
 			{
-				// we do a countdown after the first round, so we need some extra pre-round time
-				flTransitionTime += tf_competitive_preround_countdown_duration.GetFloat();
-				m_flCountdownTime = gpGlobals->curtime + tf_competitive_preround_countdown_duration.GetFloat();
-
-				CTFPlayer *pPlayer;
-				for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+				if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) )
 				{
-					pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
-
-					if ( !pPlayer )
-						continue;
-
-					if ( pPlayer->GetTeamNumber() < FIRST_GAME_TEAM )
-						continue;
-
-					pPlayer->TeamFortress_SetSpeed();
+					// we do a countdown after the first round, so we need some extra pre-round time
+					flTransitionTime += tf_competitive_preround_countdown_duration.GetFloat();
+					m_flCountdownTime = gpGlobals->curtime + tf_competitive_preround_countdown_duration.GetFloat();
 				}
+			}
+		}
+		if ( flTransitionTime > 0.0f )
+		{
+			// set speed at start of pre-round. previously we only did this if there was an active roundtimer and in competitive
+			// but it is completely safe to refresh speed calculation at the start of pre-round. it happens anyway upon weapon switch.
+			CTFPlayer *pPlayer;
+			for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+			{
+				pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+
+				if ( !pPlayer )
+					continue;
+
+				if ( pPlayer->GetTeamNumber() < FIRST_GAME_TEAM )
+					continue;
+
+				pPlayer->TeamFortress_SetSpeed();
 			}
 		}
 #endif // TF_DLL
@@ -1642,27 +1649,20 @@ void CTeamplayRoundBasedRules::State_Think_PREROUND( void )
 #ifdef TF_DLL
 	else
 	{
-		if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() ) 
+		// otherwise it's most likely freeze time. prerounds are short enough anyway
+		// if there isn't a freeze that this is likely safe to do.
+		CTFPlayer *pPlayer;
+		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{
-			if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) && ( m_flCountdownTime > 0 ) )
-			{
-				if ( gpGlobals->curtime > m_flCountdownTime )
-				{
-					CTFPlayer *pPlayer;
-					for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-					{
-						pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+			pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
 
-						if ( !pPlayer )
-							continue;
+			if ( !pPlayer )
+				continue;
 
-						if ( pPlayer->GetTeamNumber() < FIRST_GAME_TEAM )
-							continue;
+			if ( pPlayer->GetTeamNumber() < FIRST_GAME_TEAM )
+				continue;
 
-						pPlayer->TeamFortress_SetSpeed();
-					}
-				}
-			}
+			pPlayer->TeamFortress_SetSpeed();
 		}
 	}
 #endif 

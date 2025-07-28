@@ -8842,7 +8842,7 @@ bool C_TFPlayer::CanShowClassMenu( void )
 	if ( IsHLTV() )
 		return false;
 		
-	if( TFGameRules()  )
+	if( TFGameRules() )
 	{
 		if ( TFGameRules()->IsInArenaMode() == true && tf_arena_use_queue.GetBool() == true )
 		{
@@ -8873,7 +8873,6 @@ bool C_TFPlayer::CanShowTeamMenu( void )
 		return false;
 
 	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsPowerupMode() ) )
-	
 		return false;
 
 	return ( GetTeamNumber() != TEAM_UNASSIGNED );
@@ -11125,13 +11124,12 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( event->GetName(), "player_changeclass" ) )
 	{
-		if ( TFGameRules() && TFGameRules()->IsMatchTypeCompetitive() )
+		if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() )
 		{
 			if ( g_PR &&
 				pLocalPlayer &&
 				pLocalPlayer == this &&
 				TFGameRules() &&
-				TFGameRules()->IsCompetitiveMode() &&
 				TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
 			{
 				CBaseHudChat *pHudChat = (CBaseHudChat*)GET_HUDELEMENT( CHudChat );

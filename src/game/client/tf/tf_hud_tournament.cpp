@@ -939,7 +939,7 @@ void CHudTournament::UpdatePlayerPanels( void )
 	int iTeam1 = TF_TEAM_BLUE;
 	int iTeam2 = TF_TEAM_RED;
 	int iLocalTeam = g_TF_PR->GetTeam( pPlayer->entindex() );
-	if ( ( iLocalTeam == TF_TEAM_RED || iLocalTeam == TF_TEAM_BLUE ) && !TFGameRules()->IsCompetitiveMode() )	// Blue always on left in comp
+	if ( ( iLocalTeam == TF_TEAM_RED || iLocalTeam == TF_TEAM_BLUE ) && !TFGameRules()->IsCompetitiveGame() )	// Blue always on left in comp
 	{
 		iTeam1 = iLocalTeam;
 		iTeam2 = ( iTeam1 == TF_TEAM_BLUE ) ? TF_TEAM_RED : TF_TEAM_BLUE;

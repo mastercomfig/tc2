@@ -10760,6 +10760,10 @@ bool CTFPlayer::CanPlayerMove() const
 	if ( IsViewingCYOAPDA() )
 		return false;
 
+	bool bInRoundRestart = TFGameRules() && TFGameRules()->InRoundRestart();
+	if ( !bInRoundRestart )
+		return true;
+
 	bool bFreezeOnRestart = tf_player_movement_restart_freeze.GetBool();
 	if ( bFreezeOnRestart )
 	{
@@ -10767,30 +10771,37 @@ bool CTFPlayer::CanPlayerMove() const
 		if ( mp_developer.GetBool() )
 			bFreezeOnRestart = false;
 #endif // _DEBUG || STAGING_ONLY
-
-	if ( TFGameRules() && TFGameRules()->UsePlayerReadyStatusMode() && ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS ) )
-		bFreezeOnRestart = false;
 	}
 
-	bool bInRoundRestart = TFGameRules() && TFGameRules()->InRoundRestart();
-	if ( bInRoundRestart && TFGameRules()->IsCompetitiveMode() )
+	bool bMatch = TFGameRules() && TFGameRules()->IsCompetitiveMode();
+	if ( bMatch )
 	{
 		if ( TFGameRules()->GetRoundsPlayed() > 0 )
 		{
 			if ( gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
 			{
+				// if we're in the countdown phase, force the freeze on, same as BInMatchStartCountdown.
 				bFreezeOnRestart = true;
+			}
+			else
+			{
+				// we're out of the countdown phase, force the freeze off,
+				// for the same reasons as explained below.
+				bFreezeOnRestart = false;
 			}
 		}
 		else
 		{
+			// we already freeze during match start countdown above.
+			// it was hard to interpret the exact intentions, but it seems that
+			// it's intended that for the extra tf_competitive_preround_duration (3 seconds),
+			// we unfreeze, to give all classes a chance to walk out of their
+			// random spawn position to the doors.
 			bFreezeOnRestart = false;
 		}
 	}
 
-	bool bNoMovement = bInRoundRestart && bFreezeOnRestart;
-
-	return !bNoMovement;
+	return !bFreezeOnRestart;
 }
 
 #ifdef TF2_OG
@@ -13117,15 +13128,11 @@ void CTFPlayer::GetActiveSets( CUtlVector<const CEconItemSetDefinition *> *pItem
 //-----------------------------------------------------------------------------
 bool CTFPlayer::CanMoveDuringTaunt()
 {
+	if ( !CanPlayerMove() )
+		return false;
 
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() )
-	{
-		if ( ( TFGameRules()->GetRoundRestartTime() > -1.f ) && ( (int)( TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime ) <= mp_tournament_readymode_countdown.GetInt() ) )
-			return false;
-
-		if ( TFGameRules()->PlayersAreOnMatchSummaryStage() )
-			return false;
-	}
+	if ( TFGameRules() && TFGameRules()->PlayersAreOnMatchSummaryStage() )
+		return false;
 
 	if ( m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 		return true;
@@ -13675,6 +13682,7 @@ bool CTFPlayerShared::IsLoser( void )
 		return false;
 
 	// No loser mode in competitive
+	// TODO(mcoms): also community competitive?
 	if ( TFGameRules()->IsMatchTypeCompetitive() )
 		return false;
 

@@ -632,6 +632,7 @@ bool IsCreepWaveMode( void ) const;
 	bool IsCompetitiveMode( void ) const;			// means we're using competitive/casual matchmaking
 	bool IsMatchTypeCasual( void ) const;
 	bool IsMatchTypeCompetitive( void ) const;
+	bool IsCompetitiveGame( void );			// is this a game played competitively: competitive MM or community competitive
 	// Are we showing the match-start-countdown doors right now
 	bool BInMatchStartCountdown() const;
 #ifdef GAME_DLL

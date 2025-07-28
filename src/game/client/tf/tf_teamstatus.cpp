@@ -688,7 +688,7 @@ void CTFTeamStatus::UpdatePlayerPanels( void )
 bool CTFTeamStatus::IsClassOrder()
 {
 	// If we're in a competitive mode, then order the players according to class, like the advanced specgui
-	const bool bCompetitive = TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMatchTypeCasual();
+	const bool bCompetitive = TFGameRules()->IsCompetitiveGame();
 	const bool bClassOrder = bCompetitive;
 	return bClassOrder;
 }
