@@ -192,9 +192,6 @@ void CMDLPanel::SetMDL( const char *pMDLName, void *pProxyData )
 
 	SetMDL( hMDL, pProxyData );
 
-	// reset
-	SetLightProbe(nullptr);
-
 	// FindMDL takes a reference and the the CMDL will also hold a reference for as long as it sticks around. Release the FindMDL reference.
 	int nRef = vgui::MDLCache()->Release( hMDLFindResult );
 	(void)nRef; // Avoid unreferenced variable warning

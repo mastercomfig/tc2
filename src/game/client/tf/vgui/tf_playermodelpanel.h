@@ -158,6 +158,7 @@ private:
 	void	UpdateEyeGlows( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix, bool bIsRightEye );
 	void	UpdateActionSlotEffects( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	void	UpdateTauntEffects( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
+	void	UpdateHeadLighting(IMatRenderContext* pRenderContext, CStudioHdr* pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t* pWorldMatrix);
 
 	int				m_iCurrentClassIndex;
 	int				m_iCurrentSlotIndex;
@@ -205,6 +206,9 @@ private:
 
 	bool m_bUpdateEyeGlows;
 	bool m_bPlaySparks;
+	bool m_bUpdateHeadLighting = false;
+
+	Vector m_vHeadLightPos;
 
 	char m_pszEyeGlowParticleName[MAX_PATH];
 	Vector m_vEyeGlowColor1;

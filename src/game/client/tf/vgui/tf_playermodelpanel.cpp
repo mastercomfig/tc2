@@ -1345,13 +1345,14 @@ void CTFPlayerModelPanel::SetMDL(MDLHandle_t handle, void* pProxyData)
 	BaseClass::SetMDL(handle, pProxyData);
 
 	m_flLastTickTime = 0;
+
+	// reset lights
+	SetLightProbe(nullptr);
 }
 
 void CTFPlayerModelPanel::SetMDL(const char* pMDLName, void* pProxyData)
 {
 	BaseClass::SetMDL(pMDLName, pProxyData);
-
-	m_flLastTickTime = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1432,6 +1433,8 @@ void CTFPlayerModelPanel::RenderingRootModel( IMatRenderContext *pRenderContext,
 	
 	// Taunt Effects
 	UpdateTauntEffects( pRenderContext, pStudioHdr, mdlHandle, pWorldMatrix );
+
+	UpdateHeadLighting(pRenderContext, pStudioHdr, mdlHandle, pWorldMatrix);
 }
 
 CEconItemView *CTFPlayerModelPanel::GetLoadoutItemFromMDLHandle( loadout_positions_t iPosition, MDLHandle_t mdlHandle )
@@ -1545,36 +1548,37 @@ IMaterial* CTFPlayerModelPanel::GetOverrideMaterial( MDLHandle_t mdlHandle )
 
 void CTFPlayerModelPanel::CreateDefaultLights()
 {
-	Vector vecBoundsMin, vecBoundsMax;
-	if (GetBoundingBox(vecBoundsMin, vecBoundsMax))
+	Vector vecCenter;
+	float flRadius;
+	if (GetBoundingSphere(vecCenter, flRadius))
 	{
-		Vector vecModelCenter = (vecBoundsMin + vecBoundsMax) * 0.5f;
-
 		for (int i = 0; i < 6; ++i)
 		{
 			m_vecAmbientCube[i].Init(0.4f, 0.4f, 0.4f, 1.0f);
 		}
 
+		// fill light
 		memset(&m_Lights[0].m_Desc, 0, sizeof(LightDesc_t));
 		SetIdentityMatrix(m_Lights[0].m_LightToWorld);
-
-		// fill light
-		m_Lights[0].m_Desc.InitDirectional(Vector(0.241844f, -0.241844f, 0.93969262f), Vector(1, 1, 1));
-		//m_Lights[0].m_Desc.m_Range = 100.0f;
-		m_Lights[0].m_Desc.RecalculateDerivedValues();
+		m_Lights[0].m_Desc.InitDirectional(Vector(0.664463f, 0.664463f, -0.34202f), Vector(1, 1, 1));
 
 		// head light
 		memset(&m_Lights[1].m_Desc, 0, sizeof(LightDesc_t));
 		SetIdentityMatrix(m_Lights[1].m_LightToWorld);
-		float flHeadHeight = vecModelCenter.z + ClassZoomZ[m_iCurrentClassIndex];
-		m_Lights[1].m_Desc.InitSpot(Vector(vecBoundsMin.x - 5, 0, flHeadHeight), Vector(1, 1, 1), Vector(0, 0, flHeadHeight), 0.035f, 0.342f);
+		// best effort before update from anim
+		Vector headPos = vecCenter;
+		headPos.z += ClassZoomZ[m_iCurrentClassIndex];
+		Vector pos = headPos;
+		pos -= Vector(1, 0, 0) * (flRadius + 10.0f);
+		m_Lights[1].m_Desc.InitSpot(pos, Vector(0.3f, 0.3f, 0.3f), headPos, 0.035f, 0.6981317f);
+
+		m_bUpdateHeadLighting = true;
 
 		// rim light
 		memset(&m_Lights[2].m_Desc, 0, sizeof(LightDesc_t));
 		SetIdentityMatrix(m_Lights[2].m_LightToWorld);
-		m_Lights[2].m_Desc.InitSpot(Vector(vecBoundsMin.x + 5, 0, vecModelCenter.z + flHeadHeight), Vector(5, 5, 5), Vector(0, 0, 0), 0.035f, 0.6981317f);
-		m_Lights[2].m_Desc.m_Direction = Vector(-0.163176f, -0.92541f, 0.342f);
-		m_Lights[2].m_Desc.RecalculateDerivedValues();
+		Vector dir(-0.059391f, -0.336824f, -0.939693f);
+		m_Lights[2].m_Desc.InitSpot(vecCenter - dir * (flRadius + 100.0f), Vector(0.1f, 0.1f, 0.1f), vecCenter, 0.035f, 0.6981317f);
 
 		m_nLightCount = 3;
 	}
@@ -1888,6 +1892,43 @@ void CTFPlayerModelPanel::UpdateTauntEffects(
 
 	CUtlVector< int > vecAttachments;
 	m_aParticleSystems[SYSTEM_TAUNT]->UpdateControlPoints( pStudioHdr, &matAttachToWorld, vecAttachments, 0, m_vecPlayerPos );
+}
+
+//-----------------------------------------------------------------------------
+void CTFPlayerModelPanel::UpdateHeadLighting(
+	IMatRenderContext* pRenderContext,
+	CStudioHdr* pStudioHdr,
+	MDLHandle_t mdlHandle,
+	matrix3x4_t* pWorldMatrix
+)
+{
+	if (m_nLightCount < 2)
+	{
+		return;
+	}
+
+	int iBone = Studio_BoneIndexByName(pStudioHdr, "bip_head");
+	if (iBone < 0)
+		return;
+
+	matrix3x4_t matAttachToWorld = pWorldMatrix[iBone];
+	Vector vecPosition, vecForward, vecRight, vecUp;
+	MatrixVectors(matAttachToWorld, &vecForward, &vecRight, &vecUp);
+	MatrixPosition(matAttachToWorld, vecPosition);
+
+	// snap to only initial head location so we get some nice angles as the head moves
+	Vector vecCenter;
+	float flRadius;
+	if (m_bUpdateHeadLighting && GetBoundingSphere(vecCenter, flRadius))
+	{
+		m_vHeadLightPos = vecPosition;
+		Vector dir(1, 0, 0);
+		m_vHeadLightPos -= dir * (flRadius + 10.0f);
+		m_bUpdateHeadLighting = false;
+	}
+
+	// follow the head
+	m_Lights[1].m_Desc.InitSpot(m_vHeadLightPos, Vector(1, 1, 1), vecPosition, 0.035f, 0.6981317f);
 }
 
 //-----------------------------------------------------------------------------
