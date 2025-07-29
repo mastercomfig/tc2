@@ -56,6 +56,9 @@ public:
 
 	void	UpdatePreviewVisuals( void );
 
+	virtual void	SetMDL(MDLHandle_t handle, void* pProxyData = NULL) OVERRIDE;
+	virtual void	SetMDL(const char* pMDLName, void* pProxyData = NULL) OVERRIDE;
+
 	// From IChoreoEventCallback
 	virtual void	StartEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
 	virtual void	EndEvent( float currenttime, CChoreoScene *scene, CChoreoEvent *event );
@@ -83,6 +86,7 @@ protected:
 	virtual void	RenderingRootModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	virtual void	RenderingMergedModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	virtual IMaterial* GetOverrideMaterial( MDLHandle_t mdlHandle ) OVERRIDE;
+	virtual void CreateDefaultLights() override;
 
 private:
 
@@ -151,7 +155,6 @@ private:
 		CEconItemView					*pEconItem
 	);
 
-	void UpdateSpotlight(IMatRenderContext* pRenderContext);
 	void	UpdateEyeGlows( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix, bool bIsRightEye );
 	void	UpdateActionSlotEffects( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	void	UpdateTauntEffects( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );

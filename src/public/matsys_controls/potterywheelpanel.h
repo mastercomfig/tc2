@@ -134,9 +134,14 @@ protected:
 	bool	m_bRenderToTexture;
 
 	virtual void SetupRenderState( int nDisplayWidth, int nDisplayHeight );
+	virtual void CreateDefaultLights();
+
+	int m_nLightCount;
+	LightInfo_t m_Lights[MAX_LIGHT_COUNT];
+	Vector4D m_vecAmbientCube[6];
 
 private:
-	void CreateDefaultLights();
+	void FinalizeLights();
 	void DestroyLights();
 	void ParseLightsFromKV( KeyValues *pLightsKV );
 
@@ -147,9 +152,6 @@ private:
 
 	Camera_t m_Camera;
 	matrix3x4_t m_CameraPivot;
-	int m_nLightCount;
-	LightInfo_t m_Lights[MAX_LIGHT_COUNT];
-	Vector4D m_vecAmbientCube[6];
 
 	Color m_ClearColor;
 	Vector					m_vecCameraOffset;

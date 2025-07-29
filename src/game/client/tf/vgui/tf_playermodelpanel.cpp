@@ -188,6 +188,9 @@ void CTFPlayerModelPanel::ApplySettings( KeyValues *inResourceData )
 
 	// always allow particle for this panel
 	m_bUseParticle = true;
+
+	// refresh default lights
+	SetLightProbe(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -391,7 +394,7 @@ void CTFPlayerModelPanel::ClearScene( void )
 	m_pScene = NULL;
 	m_flSceneTime = 0;
 	m_flSceneEndTime = 0;
-	m_flLastTickTime = 0;
+	m_flLastTickTime = -1.0; // setting to -1 to indicate pending update
 	m_bLoopScene = true;
 	//memset( m_flexWeight, 0, sizeof( m_flexWeight ) );
 }
@@ -507,6 +510,24 @@ void CTFPlayerModelPanel::FireEvent( const char *pszEventName, const char *pszEv
 		{
 			m_aMergeMDLs[nWeaponIndex].m_bDisabled = false;
 		}
+	}
+	else if ( V_strcmp(pszEventName, "AE_CL_PLAYSOUND") == 0 )
+	{
+		if (m_bDisableSpeakEvent)
+			return;
+
+		soundlevel_t iSoundlevel = SNDLVL_TALKING;
+
+		EmitSound_t es;
+		es.m_nChannel = CHAN_VOICE;
+		es.m_flVolume = 1;
+		es.m_SoundLevel = iSoundlevel;
+		es.m_flSoundTime = gpGlobals->curtime;
+		es.m_bEmitCloseCaption = false;
+		es.m_pSoundName = pszEventOptions;
+
+		C_RecipientFilter filter;
+		C_BaseEntity::EmitSound(filter, SOUND_FROM_UI_PANEL, es);
 	}
 }
 
@@ -998,6 +1019,7 @@ void CTFPlayerModelPanel::EquipItem( CEconItemView *pItem )
 			if ( iSequence != ACT_INVALID )
 			{
 				SetSequence( iSequence, true );
+				m_flLastTickTime = -1.0f;
 			}
 		}
 	}
@@ -1318,6 +1340,20 @@ Vector CTFPlayerModelPanel::GetZoomOffset()
 	return m_bZoomedToHead ? -vecOffset : vecOffset;
 }
 
+void CTFPlayerModelPanel::SetMDL(MDLHandle_t handle, void* pProxyData)
+{
+	BaseClass::SetMDL(handle, pProxyData);
+
+	m_flLastTickTime = -1.0f;
+}
+
+void CTFPlayerModelPanel::SetMDL(const char* pMDLName, void* pProxyData)
+{
+	BaseClass::SetMDL(pMDLName, pProxyData);
+
+	m_flLastTickTime = -1.0f;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1383,9 +1419,7 @@ void CTFPlayerModelPanel::PostPaint3D( IMatRenderContext *pRenderContext )
 // For TF we use this as a way to render effects on top of model as appropriate (ie Unusual effects)
 //-----------------------------------------------------------------------------
 void CTFPlayerModelPanel::RenderingRootModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix )
-{
-	UpdateSpotlight(pRenderContext);
-	
+{	
 	if ( !m_bUseParticle )
 		return;
 
@@ -1507,6 +1541,49 @@ IMaterial* CTFPlayerModelPanel::GetOverrideMaterial( MDLHandle_t mdlHandle )
 	}
 
 	return NULL;
+}
+
+void CTFPlayerModelPanel::CreateDefaultLights()
+{
+	Vector vecBoundsMin, vecBoundsMax;
+	if (GetBoundingBox(vecBoundsMin, vecBoundsMax))
+	{
+		Vector vecModelCenter = (vecBoundsMin + vecBoundsMax) * 0.5f;
+
+		for (int i = 0; i < 6; ++i)
+		{
+			m_vecAmbientCube[i].Init(0.4f, 0.4f, 0.4f, 1.0f);
+		}
+
+		memset(&m_Lights[0].m_Desc, 0, sizeof(LightDesc_t));
+		SetIdentityMatrix(m_Lights[0].m_LightToWorld);
+
+		// fill light
+		m_Lights[0].m_Desc.InitDirectional(Vector(0.515181f, -0.515181f, -0.684965f), Vector(1, 1, 1));
+		//m_Lights[0].m_Desc.m_Range = 100.0f;
+		m_Lights[0].m_Desc.RecalculateDerivedValues();
+
+		// head light
+		memset(&m_Lights[1].m_Desc, 0, sizeof(LightDesc_t));
+		SetIdentityMatrix(m_Lights[1].m_LightToWorld);
+		float flHeadHeight = (vecBoundsMin.z + vecBoundsMax.z) * 0.75f;
+		m_Lights[1].m_Desc.InitSpot(Vector(vecBoundsMin.x - 5, 0, flHeadHeight), Vector(1, 1, 1), Vector(0, 0, flHeadHeight), 0.035f, 0.6981317f);
+		//m_Lights[1].m_Desc.m_Range = 100.0f;
+
+		// rim light
+		memset(&m_Lights[2].m_Desc, 0, sizeof(LightDesc_t));
+		SetIdentityMatrix(m_Lights[2].m_LightToWorld);
+		m_Lights[2].m_Desc.InitSpot(Vector(vecBoundsMin.x + 5, 0, vecModelCenter.z + flHeadHeight), Vector(5, 5, 5), Vector(0, 0, 0), 0.035f, 0.6981317f);
+		//m_Lights[2].m_Desc.m_Range = 100.0f
+		m_Lights[2].m_Desc.m_Direction = Vector(-0.717668f, -0.126544f, -0.93969262f);
+		m_Lights[2].m_Desc.RecalculateDerivedValues();
+
+		m_nLightCount = 3;
+	}
+	else
+	{
+		BaseClass::CreateDefaultLights();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1673,36 +1750,6 @@ bool CTFPlayerModelPanel::UpdateCosmeticParticles(
 
 	m_aParticleSystems[ iSystem ]->UpdateControlPoints( pStudioHdr, pWorldMatrix, vecAttachments, iBone, vecParticleOffset );
 	return true;
-}
-
-void CTFPlayerModelPanel::UpdateSpotlight(IMatRenderContext* pRenderContext)
-{
-	pRenderContext->SetLightingOrigin(vec3_origin);
-	pRenderContext->SetAmbientLight(0.4, 0.4, 0.4);
-
-	static Vector white[6] =
-	{
-		Vector(0.4, 0.4, 0.4),
-		Vector(0.4, 0.4, 0.4),
-		Vector(0.4, 0.4, 0.4),
-		Vector(0.4, 0.4, 0.4),
-		Vector(0.4, 0.4, 0.4),
-		Vector(0.4, 0.4, 0.4),
-	};
-
-	g_pStudioRender->SetAmbientLightColors(white);
-	g_pStudioRender->SetLocalLights(0, NULL);
-
-	if (m_BMPResData.m_bUseSpotlight)
-	{
-		Vector vecBoundsMin, vecBoundsMax;
-		if (GetBoundingBox(vecBoundsMin, vecBoundsMax))
-		{
-			Vector vecCenter = (vecBoundsMin + vecBoundsMax) * 0.5f;
-			LightDesc_t spotLight(vec3_origin + Vector(0, 0, 200), Vector(1, 1, 1), vecCenter + Vector(0, 0, (vecBoundsMax.z - vecBoundsMin.z) * 0.75f), 0.035f, 0.873f);
-			g_pStudioRender->SetLocalLights(1, &spotLight);
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2287,10 +2334,22 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 
 	LocalFlexController_t i;
 
-	// Decay to neutral
-	for ( i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
+	// a bit hackish, but this will let us know if we're entering a new scene.
+	if (m_flLastTickTime < FLT_EPSILON)
 	{
-		SetFlexWeight( i, GetFlexWeight( i ) * 0.95 );
+		// reset flex weights
+		for (i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
+		{
+			SetFlexWeight(i, 0.0f);
+		}
+	}
+	else
+	{
+		// Decay to neutral
+		for (i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
+		{
+			SetFlexWeight(i, GetFlexWeight(i) * 0.95f);
+		}
 	}
 
 	// Run scene
@@ -2323,11 +2382,26 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 		// Advance time
 		if ( m_flLastTickTime < FLT_EPSILON )
 		{
-			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1;
+			if (m_RootMDL.m_MDL.m_flTime > 0.1f)
+			{
+				// a bit hackish, but we need to hold this frame until after our model update goes through on the next frame.
+				if (m_flLastTickTime < 0)
+				{
+					m_flLastTickTime = 0;
+				}
+				else
+				{
+					m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1f;
+				}
+			}
 		}
 
-		m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
-		m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
+		// we're pending a model update, so don't stomp the last tick time with the old model.
+		if (m_flLastTickTime > 0)
+		{
+			m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
+			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
+		}
 
 		if ( m_flSceneEndTime > FLT_EPSILON && m_flSceneTime > m_flSceneEndTime )
 		{

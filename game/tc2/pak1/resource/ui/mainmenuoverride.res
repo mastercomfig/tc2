@@ -272,7 +272,7 @@
 
 		"render_texture"	"0"
 		"fov"			"30"
-		"allow_rot"		"1"
+		"allow_rot"		"0"
 
 		"model"
 		{
@@ -287,7 +287,6 @@
 			"frame_origin_x"	"0"
 			"frame_origin_y"	"0"
 			"frame_origin_z"	"0"
-			"spotlight" "1"
 
 			"modelname"		""
 		}
