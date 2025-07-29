@@ -1559,23 +1559,21 @@ void CTFPlayerModelPanel::CreateDefaultLights()
 		SetIdentityMatrix(m_Lights[0].m_LightToWorld);
 
 		// fill light
-		m_Lights[0].m_Desc.InitDirectional(Vector(0.515181f, -0.515181f, -0.684965f), Vector(1, 1, 1));
+		m_Lights[0].m_Desc.InitDirectional(Vector(0.241844f, -0.241844f, 0.93969262f), Vector(1, 1, 1));
 		//m_Lights[0].m_Desc.m_Range = 100.0f;
 		m_Lights[0].m_Desc.RecalculateDerivedValues();
 
 		// head light
 		memset(&m_Lights[1].m_Desc, 0, sizeof(LightDesc_t));
 		SetIdentityMatrix(m_Lights[1].m_LightToWorld);
-		float flHeadHeight = (vecBoundsMin.z + vecBoundsMax.z) * 0.75f;
-		m_Lights[1].m_Desc.InitSpot(Vector(vecBoundsMin.x - 5, 0, flHeadHeight), Vector(1, 1, 1), Vector(0, 0, flHeadHeight), 0.035f, 0.6981317f);
-		//m_Lights[1].m_Desc.m_Range = 100.0f;
+		float flHeadHeight = vecModelCenter.z + ClassZoomZ[m_iCurrentClassIndex];
+		m_Lights[1].m_Desc.InitSpot(Vector(vecBoundsMin.x - 5, 0, flHeadHeight), Vector(1, 1, 1), Vector(0, 0, flHeadHeight), 0.035f, 0.342f);
 
 		// rim light
 		memset(&m_Lights[2].m_Desc, 0, sizeof(LightDesc_t));
 		SetIdentityMatrix(m_Lights[2].m_LightToWorld);
 		m_Lights[2].m_Desc.InitSpot(Vector(vecBoundsMin.x + 5, 0, vecModelCenter.z + flHeadHeight), Vector(5, 5, 5), Vector(0, 0, 0), 0.035f, 0.6981317f);
-		//m_Lights[2].m_Desc.m_Range = 100.0f
-		m_Lights[2].m_Desc.m_Direction = Vector(-0.717668f, -0.126544f, -0.93969262f);
+		m_Lights[2].m_Desc.m_Direction = Vector(-0.163176f, -0.92541f, 0.342f);
 		m_Lights[2].m_Desc.RecalculateDerivedValues();
 
 		m_nLightCount = 3;
