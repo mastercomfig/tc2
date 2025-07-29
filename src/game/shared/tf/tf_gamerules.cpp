@@ -2410,7 +2410,7 @@ void CTFGameRules::StartCompetitiveMatch( void )
 void CTFGameRules::StopCompetitiveMatch( CMsgGC_Match_Result_Status nCode )
 {
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	int nActiveMatchPlayers = pMatch->GetNumActiveMatchPlayers();
+	int nActiveMatchPlayers = pMatch ? pMatch->GetNumActiveMatchPlayers() : 0;
 	if ( BAttemptMapVoteRollingMatch() &&
 		nCode == CMsgGC_Match_Result_Status_MATCH_SUCCEEDED &&
 		nActiveMatchPlayers > 0 )

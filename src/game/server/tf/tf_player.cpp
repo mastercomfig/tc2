@@ -13856,6 +13856,11 @@ bool CTFPlayer::SetObserverMode(int mode)
 		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
 	}
 
+	if ( TFGameRules()->IsEmulatingMatch() )
+	{
+		bAllowSpecModeChange = true;
+	}
+
 	if ( !bAllowSpecModeChange )
 	{
 		if ( ( mode != OBS_MODE_DEATHCAM ) && ( mode != OBS_MODE_FREEZECAM ) && ( GetTeamNumber() > TEAM_SPECTATOR ) )

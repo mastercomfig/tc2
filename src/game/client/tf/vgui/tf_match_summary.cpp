@@ -967,8 +967,10 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 
 	if ( FStrEq( type, "competitive_victory" ) )
 	{
+#ifndef SOURCESDK
 		Q_memset( m_SkillRatings, 0, sizeof( m_SkillRatings ) );
 		Leaderboards_LadderRefresh();
+#endif
 	}
 	else if ( FStrEq( type, "competitive_stats_update" ) )
 	{

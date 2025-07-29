@@ -1888,7 +1888,7 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 	SendWinPanelInfo( bGameOver );
 
 #ifdef TF_DLL
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() && bGameOver )
+	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && bGameOver )
 	{
 		TFGameRules()->StopCompetitiveMatch( CMsgGC_Match_Result_Status_MATCH_SUCCEEDED );
 	}
@@ -1996,7 +1996,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				State_Enter( GR_STATE_GAME_OVER );
 				m_flStateTransitionTime = gpGlobals->curtime + GetPostMatchPeriod();
 
-				if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() )
+				if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 				{
 					TFGameRules()->MatchSummaryStart();
 				}

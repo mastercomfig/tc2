@@ -349,6 +349,9 @@ uint32 CQuestItemTracker::GetEarnedPoints( uint32 eType ) const
 //-----------------------------------------------------------------------------
 void CQuestItemTracker::IncrementCount( uint32 nIncrementValue, const QuestObjectiveInstance_t& objective, const CSteamID& steamIDScorer )
 {
+#ifdef SOURCESDK
+	return;
+#endif
 #if defined( DEBUG ) || defined( STAGING_ONLY )
 	if ( !tf_quests_progress_enabled.GetBool() )
 		return;
@@ -506,6 +509,9 @@ void CQuestItemTracker::Spew() const
 
 void CQuestItemTracker::FireGameEvent( IGameEvent *event )
 {
+#ifdef SOURCESDK
+	return;
+#endif
 #ifdef GAME_DLL
 	if ( FStrEq( event->GetName(), "show_match_summary" ) ||
 		 FStrEq( event->GetName(), "teamplay_round_win" ) )
