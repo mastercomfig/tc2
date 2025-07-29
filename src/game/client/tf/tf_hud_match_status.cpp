@@ -581,7 +581,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 		// FIX: Refresh versus doors so late-joiners do not see the wrong skin
 		int nSkin = 0;
 		int nSubModel = 0;
-		if (pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
+		if (pMatchDesc && pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
 		{
 			// Is VS doors model not initialized yet?
 			if (m_pMatchStartModelPanel->m_hModel == NULL)
