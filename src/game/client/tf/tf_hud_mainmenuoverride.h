@@ -100,6 +100,8 @@ public:
 	void		 RemoveAllMenuEntries( void );
 	virtual void FireGameEvent( IGameEvent *event );
 
+	void PlayMainMenuMusic( void );
+
 	void		 LoadCharacterImageFile( void );
 
 	void		 UpdateNotifications();
@@ -192,6 +194,9 @@ private:
 	bool					m_bReloadedAllMOTDs;
 	int						m_iCurrentMOTD;
 	bool					m_bMOTDShownAtStartup;
+
+	bool					m_bGameStartup;
+	bool					m_bPlayingMusic;
 
 	vgui::ImagePanel		*m_pCharacterImagePanel;
 	int						 m_iCharacterImageIdx;

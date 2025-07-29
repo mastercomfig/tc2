@@ -185,6 +185,9 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_bHaveNewMOTDs = false;
 	m_bMOTDShownAtStartup = false;
 
+	m_bGameStartup = true;
+	m_bPlayingMusic = false;
+
 	m_iCharacterImageIdx = -1;
 
 	m_pCharacterModelPanel = NULL;
@@ -667,6 +670,101 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	GetMMDashboard();
 	GetCompRanksTooltip();
 }
+
+void CHudMainMenuOverride::PlayMainMenuMusic()
+{
+	if (CommandLine()->FindParm("-nostartupsound"))
+		return;
+
+	FileFindHandle_t fh;
+
+	CUtlVector<char*> fileNames;
+	char path[4096];
+
+	bool bHolidayFound = false;
+
+	// only want to run the holiday check for TF2
+	const char* pGameName = CommandLine()->ParmValue("-game", "hl2");
+	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0))
+	{
+		// check for a holiday sound file
+		const char* pszHoliday = UTIL_GetActiveHolidayString();
+
+		if (pszHoliday && pszHoliday[0])
+		{
+			V_snprintf(path, sizeof(path), "sound/ui/holiday/gamestartup_%s*.mp3", pszHoliday);
+			V_FixSlashes(path);
+
+			char const* fn = g_pFullFileSystem->FindFirstEx(path, "MOD", &fh);
+			{
+				if (fn)
+				{
+					bHolidayFound = true;
+				}
+			}
+		}
+	}
+
+	// only want to do this if we haven't found a holiday file
+	if (!bHolidayFound)
+	{
+		V_snprintf(path, sizeof(path), "sound/ui/gamestartup*.mp3");
+		V_FixSlashes(path);
+	}
+
+	char const* fn = g_pFullFileSystem->FindFirstEx(path, "MOD", &fh);
+	if (fn)
+	{
+		do
+		{
+			char ext[256];
+			V_ExtractFileExtension(fn, ext, sizeof(ext));
+
+			if (!V_stricmp(ext, "mp3"))
+			{
+				char temp[4096];
+				if (bHolidayFound)
+				{
+					V_snprintf(temp, sizeof(temp), "ui/holiday/%s", fn);
+				}
+				else
+				{
+					V_snprintf(temp, sizeof(temp), "ui/%s", fn);
+				}
+
+				char* found = new char[strlen(temp) + 1];
+				V_strncpy(found, temp, strlen(temp) + 1);
+
+				V_FixSlashes(found);
+				fileNames.AddToTail(found);
+			}
+
+			fn = g_pFullFileSystem->FindNext(fh);
+
+		} while (fn);
+
+		g_pFullFileSystem->FindClose(fh);
+	}
+
+	// did we find any?
+	if (fileNames.Count() > 0)
+	{
+		int index = RandomInt(0, fileNames.Count() - 1);
+
+		if (fileNames.IsValidIndex(index) && fileNames[index])
+		{
+			const char* pSoundFile = fileNames[index];
+
+			char found[4096];
+			V_snprintf(found, sizeof(found), "play *#%s", pSoundFile);
+
+			engine->ClientCmd_Unrestricted(found);
+		}
+
+		fileNames.PurgeAndDeleteElements();
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -1315,6 +1413,9 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		{
 			m_pCharacterModelPanel->SetVisible(false);
 		}
+		// we're now in game, so no longer in the startup phase.
+		m_bGameStartup = false;
+		m_bPlayingMusic = false;
 	}
 	else if ( !bInGame && !bInReplay )
 	{
@@ -1326,6 +1427,12 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		{
 			LoadCharacterImageFile();
 			m_pCharacterModelPanel->SetVisible(m_bBackgroundUsesCharacterImages);
+		}
+		// no longer in the startup phase, try playing music!
+		if (!m_bGameStartup && !m_bPlayingMusic)
+		{
+			PlayMainMenuMusic();
+			m_bPlayingMusic = true;
 		}
 	}
 
