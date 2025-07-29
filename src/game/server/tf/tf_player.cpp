@@ -3922,7 +3922,7 @@ void CTFPlayer::Spawn()
 	if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
 	{
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-		if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
+		if ( TFGameRules()->IsEmulatingMatch() || pMatchDesc && pMatchDesc->BUsesAutoReady() )
 		{
 			TFGameRules()->PlayerReadyStatus_UpdatePlayerState( this, true );
 		}
@@ -22566,7 +22566,7 @@ void CTFPlayer::PlayReadySound( void )
 			{
 				pszFormat = "%s.ReadyMvM";
 			}
-			else if ( TFGameRules()->IsCompetitiveMode() )
+			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
 			{
 				pszFormat = "%s.ReadyComp";
 			}

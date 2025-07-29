@@ -140,7 +140,7 @@ void CHudTournament::PlaySounds( int nTime )
 	if ( !pLocalPlayer )
 		return;
 
-	bool bCompetitiveMode = TFGameRules() && TFGameRules()->IsCompetitiveMode();
+	bool bCompetitiveMode = TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() );
 
 	switch( nTime )
 	{
@@ -270,7 +270,7 @@ void CHudTournament::PreparePanel( void )
 	if ( TFGameRules()->IsInPreMatch() )
 	{
 		bool bCountdownVisible = false;
-		bool bAutoReady = false;
+		bool bAutoReady = TFGameRules()->IsEmulatingMatch();
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatchDesc )
 		{
@@ -607,7 +607,7 @@ void CHudTournament::OnTick( void )
 				InvalidateLayout( false, true );
 			}
 
-			if ( TFGameRules()->IsCompetitiveMode() )
+			if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
 			{
 				if ( !m_bCompetitiveMode )
 				{
@@ -629,7 +629,7 @@ void CHudTournament::OnTick( void )
 		if ( m_bReadyStatusMode )
 		{
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-			if ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() )
+			if ( !TFGameRules()->IsEmulatingMatch() && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
 			{
 				RecalculatePlayerPanels();
 

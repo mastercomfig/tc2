@@ -10773,7 +10773,7 @@ bool CTFPlayer::CanPlayerMove() const
 #endif // _DEBUG || STAGING_ONLY
 	}
 
-	bool bMatch = TFGameRules() && TFGameRules()->IsCompetitiveMode();
+	bool bMatch = TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() );
 	if ( bMatch )
 	{
 		if ( TFGameRules()->GetRoundsPlayed() > 0 )

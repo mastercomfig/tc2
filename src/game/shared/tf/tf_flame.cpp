@@ -30,7 +30,7 @@ const float tf_flame_burn_index_damage_scale_min = 0.5f;
 #ifdef TF2_OG
 #define DEFAULT_FLAME_DMG_MODE_DIST "1"
 #else
-#define DEFAULT_FLAME_DMG_MODE_DIST "0"
+#define DEFAULT_FLAME_DMG_MODE_DIST "1"
 #endif
 ConVar tf_flame_dmg_mode_dist( "tf_flame_dmg_mode_dist", DEFAULT_FLAME_DMG_MODE_DIST, FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN );
 

@@ -815,7 +815,11 @@ void CTeamplayRoundBasedRules::CheckChatForReadySignal( CBasePlayer *pPlayer, co
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::GoToIntermission( void )
 {
-	if ( IsInTournamentMode() == true )
+	if ( IsInTournamentMode() == true
+#ifdef TF_DLL
+		&& TFGameRules() && ( !TFGameRules()->IsEmulatingMatch() || TFGameRules()->IsMannVsMachineMode() )
+#endif
+		)
 		return;
 
 	BaseClass::GoToIntermission();
@@ -1567,7 +1571,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 	{
 		float flTransitionTime = 5 * mp_enableroundwaittime.GetFloat();
 #ifdef TF_DLL
-		if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() )
+		if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 		{
 			flTransitionTime = tf_competitive_preround_duration.GetFloat();
 			m_flCountdownTime = -1.f;
@@ -1716,7 +1720,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 					return;
 				}
 			}
-			else if ( TFGameRules()->IsCompetitiveMode() )
+			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
 			{
 				TFGameRules()->StartCompetitiveMatch();
 				return;
@@ -1926,7 +1930,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 		{
 			bool bShowScorboard = true;
 #ifdef TF_DLL
-			if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() )
+			if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 			{
 				bShowScorboard = false;
 			}
@@ -2570,7 +2574,7 @@ void CC_CH_TournamentRestart( void )
 	}
 
 #ifdef TF_DLL
-	if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() ) )
+	if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 		return;
 #endif // TF_DLL
 
