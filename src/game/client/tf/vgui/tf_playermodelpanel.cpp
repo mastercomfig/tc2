@@ -394,7 +394,7 @@ void CTFPlayerModelPanel::ClearScene( void )
 	m_pScene = NULL;
 	m_flSceneTime = 0;
 	m_flSceneEndTime = 0;
-	m_flLastTickTime = -1.0; // setting to -1 to indicate pending update
+	m_flLastTickTime = 0;
 	m_bLoopScene = true;
 	//memset( m_flexWeight, 0, sizeof( m_flexWeight ) );
 }
@@ -1019,7 +1019,7 @@ void CTFPlayerModelPanel::EquipItem( CEconItemView *pItem )
 			if ( iSequence != ACT_INVALID )
 			{
 				SetSequence( iSequence, true );
-				m_flLastTickTime = -1.0f;
+				m_flLastTickTime = 0;
 			}
 		}
 	}
@@ -1344,14 +1344,14 @@ void CTFPlayerModelPanel::SetMDL(MDLHandle_t handle, void* pProxyData)
 {
 	BaseClass::SetMDL(handle, pProxyData);
 
-	m_flLastTickTime = -1.0f;
+	m_flLastTickTime = 0;
 }
 
 void CTFPlayerModelPanel::SetMDL(const char* pMDLName, void* pProxyData)
 {
 	BaseClass::SetMDL(pMDLName, pProxyData);
 
-	m_flLastTickTime = -1.0f;
+	m_flLastTickTime = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -2382,26 +2382,12 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 		// Advance time
 		if ( m_flLastTickTime < FLT_EPSILON )
 		{
-			if (m_RootMDL.m_MDL.m_flTime > 0.1f)
-			{
-				// a bit hackish, but we need to hold this frame until after our model update goes through on the next frame.
-				if (m_flLastTickTime < 0)
-				{
-					m_flLastTickTime = 0;
-				}
-				else
-				{
-					m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1f;
-				}
-			}
+			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1f;
 		}
 
 		// we're pending a model update, so don't stomp the last tick time with the old model.
-		if (m_flLastTickTime > 0)
-		{
-			m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
-			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
-		}
+		m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
+		m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
 
 		if ( m_flSceneEndTime > FLT_EPSILON && m_flSceneTime > m_flSceneEndTime )
 		{
