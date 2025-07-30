@@ -48,6 +48,10 @@ bool ShouldUseMatchHUD()
 	if (TFGameRules() && TFGameRules()->IsMannVsMachineMode())
 		return false;
 
+	// TODO(mcoms): enforce this better
+	if (TFGameRules() && (TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2))
+		return true;
+
 	return tf_use_match_hud.GetBool();
 #endif
 }
