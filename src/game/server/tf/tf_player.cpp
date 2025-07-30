@@ -4020,6 +4020,14 @@ void CTFPlayer::RemoveNemesisRelationships()
 //-----------------------------------------------------------------------------
 void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 {
+	// if a class is pending, respawn
+	int iDesiredClass = GetDesiredPlayerClassIndex();
+	if ( GetDesiredPlayerClassIndex() >= TF_CLASS_UNDEFINED && !IsPlayerClass(iDesiredClass) )
+	{
+		ForceRegenerateAndRespawn();
+		return;
+	}
+
 	// We may have been boosted over our max health. If we have, 
 	// restore it after we reset out class values.
 	int nOldMaxHealth = GetMaxHealth();
@@ -4167,6 +4175,8 @@ void CTFPlayer::InitClass( void )
 	// Do it after items have been delivered, so items can modify it
 	SetMaxHealth( GetMaxHealth() );
 	SetHealth( GetMaxHealth() );
+	// reset damage time (for out of combat properties to active)
+	SetLastEntityDamagedTime(0.0f);
 
 	TeamFortress_SetSpeed();
 
@@ -7004,9 +7014,11 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 	bool bInRespawnRoom = PointInRespawnRoom( this, WorldSpaceCenter(), true );
 	if ( bInRespawnRoom && !IsAlive() )
 	{
+		// UNDONE: dead and in respawn room is ALWAYS irrelevant, dying in a respawn room and spectating yourself doesn't give you perks.
 		// If we're not spectating ourselves, ignore respawn rooms. Otherwise we'll get instant spawns
 		// by spectating someone inside a respawn room.
-		bInRespawnRoom = (GetObserverTarget() == this);
+		//bInRespawnRoom = (GetObserverTarget() == this);
+		bInRespawnRoom = false;
 	}
 	bool bDeadInstantSpawn = !IsAlive();
 	if ( bDeadInstantSpawn && m_flDeathTime )
@@ -7049,13 +7061,18 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		}
 	}
 
+	// in games with competitive integrity, we block respawn room respawns from happening
+	if ( TFGameRules()->IsCompetitiveGame() && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
+	{
+		bShouldNotRespawn = true;
+	}
+
 	if ( TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
 		m_bAllowInstantSpawn = true;
 
 	if ( bShouldNotRespawn == false && ( m_bAllowInstantSpawn || bDeadInstantSpawn || bInRespawnRoom || bInStalemateClassChangeTime ) )
 	{
 		ForceRespawn();
-
 
 		return;
 	}
@@ -7109,6 +7126,10 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 
 	// Not in Arena mode
 	if ( TFGameRules()->IsInArenaMode() == true )
+		return;
+
+	// Not in competitive games
+	if ( TFGameRules()->IsCompetitiveGame() )
 		return;
 
 	// Not if we're on the losing team
@@ -14692,7 +14713,9 @@ void CTFPlayer::ForceRespawn( void )
 	CTF_GameStats.Event_PlayerForceRespawn( this );
 
 	m_flSpawnTime = gpGlobals->curtime;
-	m_Shared.m_flHolsterAnimTime = 0.f;	// BRETT SAID I COULD DO THIS
+	m_Shared.m_flHolsterAnimTime = 0.f;	// BRETT SAID I COULD DO THIS'
+	// reset damage time for out of combat
+	SetLastEntityDamagedTime(0.0f);
 
 	bool bRandom = false;
 
