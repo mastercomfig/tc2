@@ -362,12 +362,23 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 		AddSubKeyNamed( pConditions, "if_match" );
 
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GTFGCClientSystem()->GetLiveMatchGroup() );
+		bool bHasLargeTeam = false;
+
 		if ( pMatchDesc )
 		{
 			if ( pMatchDesc->GetMatchSize() > 12 )
 			{
-				AddSubKeyNamed( pConditions, "if_large" );
+				bHasLargeTeam = true;
 			}
+		}
+		else
+		{
+			bHasLargeTeam = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
+		}
+
+		if ( bHasLargeTeam )
+		{
+			AddSubKeyNamed(pConditions, "if_large");
 		}
 	}
 

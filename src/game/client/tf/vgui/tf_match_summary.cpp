@@ -175,19 +175,18 @@ void CTFMatchSummary::ApplySchemeSettings( vgui::IScheme *pScheme )
 	KeyValues *pConditions = NULL;
 	if ( TFGameRules() )
 	{
+		auto lambdaAddCondition = [ &pConditions ]( const char* pszCondition )
+		{
+			if ( !pConditions )
+				pConditions = new KeyValues( "conditions" );
+			AddSubKeyNamed( pConditions, pszCondition );
+		};
+
 		const IMatchGroupDescription* pMatch = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatch )
 		{
-			auto lambdaAddCondition = [ &pConditions ]( const char* pszCondition )
-			{
-				if ( !pConditions )
-					pConditions = new KeyValues( "conditions" );
-				AddSubKeyNamed( pConditions, pszCondition );
-			};
-
 			if ( pMatch->GetMatchSize() > 12 )
 			{
-				lambdaAddCondition( "if_large" );
 				m_bLargeMatchGroup = true;
 			}
 
@@ -200,6 +199,15 @@ void CTFMatchSummary::ApplySchemeSettings( vgui::IScheme *pScheme )
 			{
 				lambdaAddCondition( "if_uses_xp" );
 			}
+		}
+		else
+		{
+			m_bLargeMatchGroup = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
+		}
+
+		if ( m_bLargeMatchGroup )
+		{
+			lambdaAddCondition( "if_large" );
 		}
 	}
 
