@@ -144,6 +144,35 @@ enum {
 	STOPWATCH_OVERTIME,
 };
 
+enum class EDraftPhase : uint8
+{
+	INTRO_PHASE = 0,
+	CAPTAINPICK_PHASE,
+	PLANNING_PHASE,
+	SELECT_PHASE,
+	STRATEGY_PHASE,
+};
+
+enum class EDraftSelectState : uint8
+{
+	BAN1_TEAM0 = 0,
+	BAN2_TEAM0,
+	BAN3_TEAM0,
+	BAN4_TEAM0,
+	BAN5_TEAM0,
+	BAN6_TEAM0,
+	BAN1_TEAM1,
+	BAN2_TEAM1,
+	BAN3_TEAM1,
+	BAN4_TEAM1,
+	BAN5_TEAM1,
+	BAN6_TEAM1,
+	PICK1_TEAM0,
+	PICK2_TEAM0,
+	PICK1_TEAM1,
+	PICK2_TEAM1,
+};
+
 class CTFGameRulesProxy : public CTeamplayRoundBasedRulesProxy, public CGameEventListener
 {
 public:

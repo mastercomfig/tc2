@@ -135,4 +135,25 @@ private:
 	bool m_bUseMatchHUD;
 };
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+class CTFHudItemDraft : public CHudElement, public EditablePanel
+{
+	DECLARE_CLASS_SIMPLE(CTFHudMatchStatus, EditablePanel);
+public:
+	CTFHudItemDraft(const char* pElementName);
+	virtual ~CTFHudItemDraft(void);
+
+	virtual void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+	virtual void FireGameEvent(IGameEvent* event) OVERRIDE;
+	virtual void OnThink() OVERRIDE;
+	virtual void PerformLayout() OVERRIDE;
+
+	virtual bool IsVisible(void) OVERRIDE;
+	virtual bool ShouldDraw(void) OVERRIDE;
+
+	virtual void Reset() OVERRIDE;
+};
+
 #endif	// TF_HUD_MATCH_STATUS_H

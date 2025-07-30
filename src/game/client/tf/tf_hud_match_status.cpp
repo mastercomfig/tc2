@@ -982,3 +982,339 @@ void CTFHudMatchStatus::UpdateTeamInfo()
 	m_pBlueTeamName->SetVisible( bShowAvatars );
 	m_pBlueTeamImage->SetVisible( !bShowAvatars );
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CTFHudItemDraft::CTFHudItemDraft(const char* pElementName)
+	: CHudElement(pElementName)
+	, BaseClass(NULL, "HudMatchStatus")
+#if 0
+	, m_pTimePanel(NULL)
+#endif
+{
+	Panel* pParent = g_pClientMode->GetViewport();
+	SetParent(pParent);
+
+	SetHiddenBits(HIDEHUD_MISCSTATUS | HIDEHUD_MATCH_STATUS);
+
+#if 0
+	m_pMatchStartModelPanel = new CModelPanel(this, "MatchDoors");
+
+	m_pRoundCounter = new CRoundCounterPanel(this, "RoundCounter");
+	m_pTimePanel = new CTFHudTimeStatus(this, "ObjectiveStatusTimePanel");
+	m_pRoundSignModel = new CModelPanel(this, "RoundSignModel");
+	m_pTeamStatus = new CTFTeamStatus(this, "TeamStatus");
+
+	m_pBlueTeamPanel = new vgui::EditablePanel(this, "BlueTeamPanel");
+	m_pPlayerListBlue = new vgui::SectionedListPanel(m_pBlueTeamPanel, "BluePlayerList");
+	m_pBlueLeaderAvatarImage = new CAvatarImagePanel(m_pBlueTeamPanel, "BlueLeaderAvatar");
+	m_pBlueLeaderAvatarBG = new EditablePanel(m_pBlueTeamPanel, "BlueLeaderAvatarBG");
+	m_pBlueTeamImage = new ImagePanel(m_pBlueTeamPanel, "BlueTeamImage");
+	m_pBlueTeamName = new CExLabel(m_pBlueTeamPanel, "BlueTeamLabel", "");
+	m_pRedTeamPanel = new vgui::EditablePanel(this, "RedTeamPanel");
+	m_pPlayerListRed = new vgui::SectionedListPanel(m_pRedTeamPanel, "RedPlayerList");
+	m_pRedLeaderAvatarImage = new CAvatarImagePanel(m_pRedTeamPanel, "RedLeaderAvatar");
+	m_pRedLeaderAvatarBG = new EditablePanel(m_pRedTeamPanel, "RedLeaderAvatarBG");
+	m_pRedTeamImage = new ImagePanel(m_pRedTeamPanel, "RedTeamImage");
+	m_pRedTeamName = new CExLabel(m_pRedTeamPanel, "RedTeamLabel", "");
+
+	m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
+	m_mapAvatarsToImageList.RemoveAll();
+#endif
+
+	ListenForGameEvent("teamplay_round_start");
+	ListenForGameEvent("restart_timer_time");
+	ListenForGameEvent("show_match_summary");
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CTFHudItemDraft::~CTFHudItemDraft()
+{
+#if 0
+	if (NULL != m_pImageList)
+	{
+		delete m_pImageList;
+		m_pImageList = NULL;
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudItemDraft::Reset()
+{
+#if 0
+	if (m_pTimePanel)
+	{
+		m_pTimePanel->Reset();
+	}
+
+	if (m_pTeamStatus)
+	{
+		m_pTeamStatus->Reset();
+	}
+#endif
+
+	CHudElement::Reset();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudItemDraft::ApplySchemeSettings(IScheme* pScheme)
+{
+	BaseClass::ApplySchemeSettings(pScheme);
+
+	KeyValues* pConditions = NULL;
+	if (ShouldUseMatchHUD())
+	{
+		pConditions = new KeyValues("conditions");
+		AddSubKeyNamed(pConditions, "if_match");
+
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(GTFGCClientSystem()->GetLiveMatchGroup());
+		bool bHasLargeTeam = false;
+
+		if (pMatchDesc)
+		{
+			if (pMatchDesc->GetMatchSize() > 12)
+			{
+				bHasLargeTeam = true;
+			}
+		}
+		else
+		{
+			bHasLargeTeam = TFGameRules() && (GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6);
+			if (TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1)
+			{
+				bHasLargeTeam = true;
+			}
+		}
+
+		if (bHasLargeTeam)
+		{
+			AddSubKeyNamed(pConditions, "if_large");
+		}
+	}
+
+	// load control settings...
+	LoadControlSettings("resource/UI/HudMatchStatus.res", NULL, NULL, pConditions);
+
+	if (pConditions)
+	{
+		pConditions->deleteThis();
+	}
+
+#if 0
+	if (m_pImageList)
+		delete m_pImageList;
+
+	m_pImageList = new ImageList(false);
+
+	m_mapAvatarsToImageList.RemoveAll();
+
+	m_pPlayerListBlue->SetImageList(m_pImageList, false);
+	m_pPlayerListRed->SetImageList(m_pImageList, false);
+
+	InitPlayerList(m_pPlayerListBlue, TF_TEAM_BLUE);
+	InitPlayerList(m_pPlayerListRed, TF_TEAM_RED);
+
+	m_hPlayerListFont = pScheme->GetFont("Default", true);
+
+	UpdatePlayerList();
+	UpdateTeamInfo();
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudItemDraft::FireGameEvent(IGameEvent* event)
+{
+#if 0
+	if (FStrEq("teamplay_round_start", event->GetName()))
+	{
+		// Drop the round sign right when the match starts on rounds > 1
+		if (TFGameRules()->GetRoundsPlayed() > 0)
+		{
+			ShowRoundSign(TFGameRules()->GetRoundsPlayed());
+		}
+	}
+	else if (FStrEq("restart_timer_time", event->GetName()))
+	{
+		HandleCountdown(event->GetInt("time"));
+	}
+	else if (FStrEq("show_match_summary", event->GetName()))
+	{
+		if (m_pBlueTeamPanel)
+		{
+			m_pBlueTeamPanel->SetVisible(false);
+		}
+
+		if (m_pRedTeamPanel)
+		{
+			m_pRedTeamPanel->SetVisible(false);
+		}
+
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(TFGameRules()->GetCurrentMatchGroup());
+
+		// FIX: Refresh versus doors so late-joiners do not see the wrong skin
+		int nSkin = 0;
+		int nSubModel = 0;
+		if (TFGameRules() && TFGameRules()->IsEmulatingMatch())
+		{
+			nSubModel = 1;
+			nSkin = 3;
+		}
+		if (TFGameRules() && TFGameRules()->IsEmulatingMatch() || pMatchDesc && pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
+		{
+			// Is VS doors model not initialized yet?
+			if (m_pMatchStartModelPanel->m_hModel == NULL)
+			{
+				m_pMatchStartModelPanel->UpdateModel();
+			}
+
+			m_pMatchStartModelPanel->SetBodyGroup("logos", nSubModel);
+			m_pMatchStartModelPanel->UpdateModel();
+			m_pMatchStartModelPanel->SetSkin(nSkin);
+		}
+
+		bool bForceDoors = TFGameRules() && TFGameRules()->IsEmulatingMatch();
+		if (bForceDoors || (pMatchDesc && pMatchDesc->BUsesPostRoundDoors()))
+		{
+			if (TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && ((bForceDoors && !pMatchDesc) || pMatchDesc->BUseMatchSummaryStage()))
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudMatchStatus_ShowMatchWinDoors", false);
+			}
+			else
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudMatchStatus_ShowMatchWinDoors_NoOpen", false);
+			}
+		}
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudItemDraft::PerformLayout()
+{
+	BaseClass::PerformLayout();
+}
+
+bool CTFHudItemDraft::IsVisible(void)
+{
+	return BaseClass::IsVisible();
+}
+
+bool CTFHudItemDraft::ShouldDraw(void)
+{
+	// Force to draw during match summary so the doors show up.  This panel 
+	// will try to hide itself if you're dead, but we want to ignore that
+	// behavior and force us to draw.
+	if (TFGameRules() && TFGameRules()->ShowMatchSummary())
+		return true;
+
+	if (gViewPortInterface->GetActivePanel())
+		return false;
+
+	return CHudElement::ShouldDraw();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFHudItemDraft::OnThink()
+{
+	if (!TFGameRules())
+		return;
+
+	bool bReload = false;
+
+	if (bReload)
+	{
+		InvalidateLayout(false, true);
+	}
+
+#if 0
+	// check for an active timer and turn the time panel on or off if we need to
+	if (m_pTimePanel)
+	{
+		// Don't draw in freezecam, or when the game's not running
+		C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+		bool bDisplayTimer = !(pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM);
+
+		if (TeamplayRoundBasedRules()->IsInTournamentMode() && TeamplayRoundBasedRules()->IsInWaitingForPlayers())
+		{
+			bDisplayTimer = false;
+		}
+
+		if (bDisplayTimer)
+		{
+			// is the time panel still pointing at an active timer?
+			int iCurrentTimer = m_pTimePanel->GetTimerIndex();
+			CTeamRoundTimer* pTimer = dynamic_cast<CTeamRoundTimer*>(ClientEntityList().GetEnt(iCurrentTimer));
+
+			if (pTimer && !pTimer->IsDormant() && !pTimer->IsDisabled() && pTimer->ShowInHud())
+			{
+				// the current timer is fine, make sure the panel is visible
+				bDisplayTimer = true;
+			}
+			else if (ObjectiveResource())
+			{
+				// check for a different timer
+				int iActiveTimer = ObjectiveResource()->GetTimerToShowInHUD();
+
+				pTimer = dynamic_cast<CTeamRoundTimer*>(ClientEntityList().GetEnt(iActiveTimer));
+				bDisplayTimer = (iActiveTimer != 0 && pTimer && !pTimer->IsDormant());
+				m_pTimePanel->SetTimerIndex(iActiveTimer);
+			}
+		}
+
+		if (bDisplayTimer && !TFGameRules()->ShowMatchSummary())
+		{
+			if (!TFGameRules()->IsInKothMode())
+			{
+				if (!m_pTimePanel->IsVisible())
+				{
+					m_pTimePanel->SetVisible(true);
+
+					// If our spectator GUI is visible, invalidate its layout so that it moves the reinforcement label
+					if (g_pSpectatorGUI)
+					{
+						g_pSpectatorGUI->InvalidateLayout();
+					}
+				}
+			}
+			else
+			{
+				bool bVisible = TeamplayRoundBasedRules()->IsInWaitingForPlayers();
+
+				if (m_pTimePanel->IsVisible() != bVisible)
+				{
+					m_pTimePanel->SetVisible(bVisible);
+
+					// If our spectator GUI is visible, invalidate its layout so that it moves the reinforcement label
+					if (g_pSpectatorGUI)
+					{
+						g_pSpectatorGUI->InvalidateLayout();
+					}
+				}
+			}
+		}
+		else
+		{
+			if (m_pTimePanel->IsVisible())
+			{
+				m_pTimePanel->SetVisible(false);
+			}
+		}
+	}
+#endif
+
+	BaseClass::OnThink();
+}
