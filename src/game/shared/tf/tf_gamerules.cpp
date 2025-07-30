@@ -17963,12 +17963,9 @@ int CTFGameRules::GetBonusRoundTime( bool bGameOver /* = false*/ )
 	{
 		return 5;
 	}
-	else if ( IsCompetitiveMode() && bGameOver )
+	if ( IsCompetitiveGame() && bGameOver )
 	{
-		if ( IsMatchTypeCompetitive() )
-		{
-			return 5;
-		}
+		return 5;
 	}
 
 	return BaseClass::GetBonusRoundTime( bGameOver );

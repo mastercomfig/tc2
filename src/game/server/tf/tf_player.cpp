@@ -6028,10 +6028,20 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 	{
 		if ( TFGameRules() )
 		{
+			int iTeamSizeRestriction = 0;
 			if ( TFGameRules()->IsInHighlanderMode() )
 			{
-				if ( ( pBlue->GetNumPlayers() >= TF_LAST_NORMAL_CLASS - 1 ) &&
-					 ( pRed->GetNumPlayers() >= TF_LAST_NORMAL_CLASS - 1 ) )
+				iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
+			}
+			else if ( TFGameRules()->IsInSixesMode() )
+			{
+				iTeamSizeRestriction = 6;
+			}
+
+			if ( iTeamSizeRestriction > 0 )
+			{
+				if ( ( pBlue->GetNumPlayers() >= iTeamSizeRestriction ) &&
+					 ( pRed->GetNumPlayers() >= iTeamSizeRestriction ) )
 				{
 					// teams are full....join team Spectator for now
 					return TEAM_SPECTATOR;
@@ -6428,7 +6438,20 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 			return;	// we wouldn't change the team
 		}
 
-		if ( TFGameRules() && TFGameRules()->IsInHighlanderMode() )
+		int iTeamSizeRestriction = 0;
+		if ( TFGameRules() )
+		{
+			if ( TFGameRules()->IsInHighlanderMode() )
+			{
+				iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
+			}
+			else if ( TFGameRules()->IsInSixesMode() )
+			{
+				iTeamSizeRestriction = 6;
+			}
+		}
+
+		if ( iTeamSizeRestriction > 0 )
 		{
 			CTFTeam *pTeam = TFTeamMgr()->GetTeam( iTeam );
 			if ( pTeam )
@@ -6552,7 +6575,7 @@ void CTFPlayer::ForceChangeTeam( int iTeamNum, bool bFullTeamSwitch )
 	{
 		RemoveNemesisRelationships();
 
-		if ( TFGameRules() && TFGameRules()->IsInHighlanderMode() )
+		if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 		{
 			if ( IsAlive() )
 			{
@@ -6668,7 +6691,7 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 
 	BaseClass::ChangeTeam( iTeamNum, bAutoTeam, bSilent, bAutoBalance );
 
-	if ( TFGameRules() && TFGameRules()->IsInHighlanderMode() )
+	if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 	{
 		if ( IsAlive() )
 		{
@@ -7424,7 +7447,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "resetclass" ) )
 	{
-		if ( TFGameRules() && TFGameRules()->IsInHighlanderMode() && ( GetTeamNumber() > LAST_SHARED_TEAM ) )
+		if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) && (GetTeamNumber() > LAST_SHARED_TEAM))
 		{
 			if ( IsAlive() )
 			{

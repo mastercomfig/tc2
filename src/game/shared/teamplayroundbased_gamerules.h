@@ -213,6 +213,7 @@ public:
 	virtual bool ShouldBalanceTeams( void );
 	bool		IsInTournamentMode( void );
 	bool		IsInHighlanderMode( void );
+	bool		IsInSixesMode( void );
 	bool		IsInPreMatch( void ) { return (IsInTournamentMode() && IsInWaitingForPlayers()); }
 	bool		IsWaitingForTeams( void ) { return m_bAwaitingReadyRestart; }
 	bool		IsInStopWatch( void ) { return m_bStopWatch; }

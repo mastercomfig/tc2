@@ -785,6 +785,7 @@ void CTFTeamMenu::OnTick()
 		return;
 
 	bool bHighlander = pRules->IsInHighlanderMode();
+	bool bSixes = pRules->IsInSixesMode();
 
 	if ( m_pHighlanderLabel )
 	{
@@ -811,9 +812,19 @@ void CTFTeamMenu::OnTick()
 	
 	int iCurrentTeam = pLocalPlayer->GetTeamNumber();
 
+	int iTeamSizeRestriction = 0;
+	if ( bHighlander )
+	{
+		iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
+	}
+	else if (bSixes)
+	{
+		iTeamSizeRestriction = 6;
+	}
+
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_RED ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_RED, iCurrentTeam ) ) ||
-		 ( bHighlander && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= TF_LAST_NORMAL_CLASS - 1 ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction ) ||
 		 ( pRules->IsMannVsMachineMode() && ( GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= tf_mvm_defenders_team_size.GetInt() ) )	 )
 	{
 		m_bRedDisabled = true;
@@ -821,14 +832,14 @@ void CTFTeamMenu::OnTick()
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_BLUE ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, iCurrentTeam ) ) ||
-		 ( bHighlander && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= TF_LAST_NORMAL_CLASS - 1 ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction ) ||
 		 ( pRules->IsMannVsMachineMode() ) )
 	{
 		m_bBlueDisabled = true;
 	}
 
 	bool bTeamsFull = m_bRedDisabled && m_bBlueDisabled;
-	SetHighlanderTeamsFullPanels( bHighlander && bTeamsFull );
+	SetHighlanderTeamsFullPanels( iTeamSizeRestriction > 0 && bTeamsFull );
 
 	if ( m_pSpecTeamButton && m_pSpecLabel && m_pAutoTeamButton )
 	{
@@ -854,7 +865,7 @@ void CTFTeamMenu::OnTick()
 					m_pSpecLabel->SetVisible( false );
 				}
 
-				if ( bHighlander )
+				if ( iTeamSizeRestriction > 0 )
 				{
 					if ( bTeamsFull )
 					{

@@ -1069,7 +1069,7 @@ void CTFClassMenu::Update()
 #else
 		SetCancelButtonVisible( true );
 
-		if ( TFGameRules() && TFGameRules()->IsInHighlanderMode() )
+		if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 		{
 			SetVisibleButton( "ResetButton", true );
 		}
@@ -1321,7 +1321,7 @@ void CTFClassMenu::OnCommand( const char *command )
 	}
 	else if ( !V_strnicmp( command, "resetclass", 10 ) )
 	{
-		if ( TFGameRules() && !TFGameRules()->IsInHighlanderMode() )
+		if ( TFGameRules() && !(TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 			return;
 
 		engine->ClientCmd( const_cast<char *>( command ) );

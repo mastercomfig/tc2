@@ -204,6 +204,7 @@ ConVar mp_tournament_post_match_period( "mp_tournament_post_match_period", "90",
 
 #if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
 ConVar mp_highlander( "mp_highlander", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow only 1 of each player class type." );
+ConVar mp_sixes("mp_sixes", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enforces standard Sixes competitive ruleset.");
 #endif
 #ifdef TF_DLL
 extern ConVar tf_competitive_preround_duration;
@@ -3510,6 +3511,28 @@ bool CTeamplayRoundBasedRules::IsInHighlanderMode( void )
 		return false;
 
 	return mp_highlander.GetBool();
+#else
+	return false;
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: returns true if we are running highlander mode
+//-----------------------------------------------------------------------------
+bool CTeamplayRoundBasedRules::IsInSixesMode(void)
+{
+#if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
+	// can't use sixes mode and the queue system
+	if (IsInArenaMode() == true && tf_arena_use_queue.GetBool() == true)
+		return false;
+
+	if (!IsInTournamentMode())
+		return false;
+
+	if (!TFGameRules()->IsCompetitiveGame())
+		return false;
+
+	return mp_sixes.GetBool();
 #else
 	return false;
 #endif

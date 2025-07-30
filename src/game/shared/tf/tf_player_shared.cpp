@@ -13690,8 +13690,7 @@ bool CTFPlayerShared::IsLoser( void )
 		return false;
 
 	// No loser mode in competitive
-	// TODO(mcoms): also community competitive?
-	if ( TFGameRules()->IsMatchTypeCompetitive() )
+	if ( TFGameRules()->IsCompetitiveGame() )
 		return false;
 
 	if ( TFGameRules()->State_Get() != GR_STATE_TEAM_WIN )
