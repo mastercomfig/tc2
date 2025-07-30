@@ -38,7 +38,7 @@ void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
 bool IsTakingAFreezecamScreenshot();
 
 //-----------------------------------------------------------------------------
-// Purpose: Use the new match HUD or the old?  Right now, Comp is the key
+// Purpose: Use the new match HUD or the old?
 //-----------------------------------------------------------------------------
 bool ShouldUseMatchHUD()
 {

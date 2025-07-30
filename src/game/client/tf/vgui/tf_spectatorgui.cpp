@@ -38,6 +38,8 @@
 
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
+
+#include "tf_hud_match_status.h"
 #include "vgui_avatarimage.h"
 
 using namespace vgui;
@@ -1065,7 +1067,7 @@ bool CTFSpectatorGUI::InTournamentGUI( void )
 		bOverride = true;
 	}
 
-	return ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsCompetitiveMode() && ( cl_use_tournament_specgui.GetBool() || bOverride ) );
+	return ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() && !ShouldUseMatchHUD() && ( cl_use_tournament_specgui.GetBool() || bOverride ) );
 }
 
 //-----------------------------------------------------------------------------
