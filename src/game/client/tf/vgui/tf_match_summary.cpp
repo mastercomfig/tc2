@@ -1120,7 +1120,7 @@ void CTFMatchSummary::OnTick()
 	if ( !pMatchDesc && ( !TFGameRules() || !TFGameRules()->IsEmulatingMatch() ) )
 		return;
 
-	if ( ( pMatchDesc->BAllowDrawingAtMatchHistory() || TFGameRules() && TFGameRules()->IsEmulatingMatch() )
+	if ( ( pMatchDesc && pMatchDesc->BAllowDrawingAtMatchHistory() || TFGameRules() && TFGameRules()->IsEmulatingMatch() == 2 )
 	     && m_pDrawingPanel 
 	     && ( m_flDrawingPanelTime > 0 ) 
 	     && ( m_flDrawingPanelTime < gpGlobals->curtime ) )
