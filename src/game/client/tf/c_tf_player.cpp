@@ -5523,7 +5523,7 @@ void C_TFPlayer::TurnOnTauntCam( void )
 	m_TauntCameraData.m_vecHullMin.Init( -9.0f, -9.0f, -9.0f );
 	m_TauntCameraData.m_vecHullMax.Init( 9.0f, 9.0f, 9.0f );
 
-	if ( tf_taunt_first_person.GetBool() || tf_taunt_first_person_always.GetBool() )
+	if ( tf_taunt_first_person.GetBool() || tf_taunt_first_person_always.GetBool() || TFGameRules()->IsCompetitiveGame() )
 	{
 		// Remain in first-person.
 	}
