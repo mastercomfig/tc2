@@ -203,6 +203,10 @@ void CTFMatchSummary::ApplySchemeSettings( vgui::IScheme *pScheme )
 		else
 		{
 			m_bLargeMatchGroup = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
+			if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1 )
+			{
+				m_bLargeMatchGroup = true;
+			}
 		}
 
 		if ( m_bLargeMatchGroup )
@@ -343,16 +347,19 @@ void CTFMatchSummary::SetVisible( bool state )
 
 		m_flDrawingPanelTime = gpGlobals->curtime + 4.5f;
 
-		CPvPRankPanel* pPvPRankPanel = FindControl< CPvPRankPanel >( "RankPanel" );
-		if ( pPvPRankPanel )
+		if ( !TFGameRules() || !TFGameRules()->IsEmulatingMatch() )
 		{
-			pPvPRankPanel->SetMatchGroup( TFGameRules()->GetCurrentMatchGroup() );
-		}
+			CPvPRankPanel* pPvPRankPanel = FindControl< CPvPRankPanel >("RankPanel");
+			if (pPvPRankPanel)
+			{
+				pPvPRankPanel->SetMatchGroup(TFGameRules()->GetCurrentMatchGroup());
+			}
 
-		pPvPRankPanel = FindControl< CPvPRankPanel >( "RankModelPanel" );
-		if ( pPvPRankPanel )
-		{
-			pPvPRankPanel->SetMatchGroup( TFGameRules()->GetCurrentMatchGroup() );
+			pPvPRankPanel = FindControl< CPvPRankPanel >("RankModelPanel");
+			if (pPvPRankPanel)
+			{
+				pPvPRankPanel->SetMatchGroup(TFGameRules()->GetCurrentMatchGroup());
+			}
 		}
 
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_LowerChatWindow", false );

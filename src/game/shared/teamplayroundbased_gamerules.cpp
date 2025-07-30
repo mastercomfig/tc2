@@ -815,7 +815,11 @@ void CTeamplayRoundBasedRules::CheckChatForReadySignal( CBasePlayer *pPlayer, co
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::GoToIntermission( void )
 {
-	if ( IsInTournamentMode() == true )
+	if ( IsInTournamentMode() == true
+#ifdef TF_DLL
+		&& TFGameRules() && ( !TFGameRules()->IsEmulatingMatch() || TFGameRules()->IsMannVsMachineMode() )
+#endif
+		)
 		return;
 
 	BaseClass::GoToIntermission();

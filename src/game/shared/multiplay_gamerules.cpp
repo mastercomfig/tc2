@@ -1149,6 +1149,13 @@ ConVarRef suitcharger( "sk_suitcharger" );
 				
 		m_flIntermissionEndTime = gpGlobals->curtime + flWaitTime;
 
+#ifdef TF_DLL
+		if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() )
+		{
+			return;
+		}
+#endif
+
 		for ( int i = 1; i <= MAX_PLAYERS; i++ )
 		{
 			CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
