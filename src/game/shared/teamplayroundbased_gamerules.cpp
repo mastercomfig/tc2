@@ -1869,7 +1869,7 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 	bool bGameOver = IsGameOver();
 
 #ifdef TF_DLL
-	if ( bGameOver && TFGameRules() && TFGameRules()->IsCompetitiveMode() && TFGameRules()->IsCommunityGameMode() )
+	if ( bGameOver && TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && TFGameRules()->IsCommunityGameMode() )
 	{
 		extern ConVar tf_gamemode_community;
 		extern ConVar tf_gamemode_misc;

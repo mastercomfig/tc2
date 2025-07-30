@@ -128,9 +128,8 @@ public:
 
 		engine->ServerCommand( CFmtStr( "exec %s\n", pszExecFile ) );
 
-		// leave stopwatch off for now
-		TFGameRules()->SetInStopWatch( false );//bUseStopWatch );
-		mp_tournament_stopwatch.SetValue( false );//bUseStopWatch );
+		TFGameRules()->SetInStopWatch(bUseStopWatch);
+		mp_tournament_stopwatch.SetValue(bUseStopWatch);
 
 		// Hack for now, this map is having issues with players getting dropped while connecting
 		if ( !Q_stricmp( szCurrentMap, "pl_corruption" ) )

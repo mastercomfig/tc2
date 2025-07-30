@@ -3641,35 +3641,38 @@ void CTFGameRules::LevelInitPostEntity( void )
 	m_flMatchSummaryTeleportTime = -1.f;
 
 
-	const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+	ETFMatchGroup eMatchGroup = GetCurrentMatchGroup();
+	if ( IsEmulatingMatch() )
+	{
+		if (IsEmulatingMatch() == 1)
+		{
+			eMatchGroup = k_eTFMatchGroup_Casual_12v12;
+		}
+		if (IsEmulatingMatch() == 2)
+		{
+			eMatchGroup = k_eTFMatchGroup_Ladder_6v6;
+		}
+		if ( IsCustomGameMode(STRING(gpGlobals->mapname)) )
+		{
+			// HACK(misyl): Force a custom cfg for custom game modes.
+			engine->ServerCommand("exec server_custom.cfg\n");
+		}
+		else
+		{
+			if (eMatchGroup == k_eTFMatchGroup_Ladder_6v6)
+			{
+				engine->ServerCommand("exec server_competitive.cfg\n");
+			}
+			else
+			{
+				engine->ServerCommand("exec server_casual.cfg\n");
+			}
+		}
+	}
+	const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( eMatchGroup );
 	if ( pMatchDesc )
 	{
 		pMatchDesc->InitGameRulesSettingsPostEntity();
-	}
-	if (IsEmulatingMatch())
-	{
-		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
-		bool bMultiStagePLR = (tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() &&
-			pMaster->GetNumRounds() > 1 && TFGameRules()->HasMultipleTrains());
-		bool bCTF = tf_gamemode_ctf.GetBool();
-		bool bUseStopWatch = TFGameRules()->MatchmakingShouldUseStopwatchMode();
-
-		// Exec our match settings
-		const char* pszExecFile = bUseStopWatch ? "server_casual_stopwatch_win_conditions.cfg" :
-			((bMultiStagePLR || bCTF) ? "server_casual_max_rounds_win_conditions.cfg" : "server_casual_rounds_win_conditions.cfg");
-
-		if (TFGameRules()->IsPowerupMode())
-		{
-			pszExecFile = "server_casual_max_rounds_win_conditions_mannpower.cfg";
-		}
-
-		engine->ServerCommand("exec server_casual.cfg\n");
-		engine->ServerCommand("exec server_casual_mod.cfg\n");
-		engine->ServerCommand(CFmtStr("exec %s\n", pszExecFile));
-
-		// leave stopwatch off for now
-		TFGameRules()->SetInStopWatch(bUseStopWatch);//bUseStopWatch );
-		mp_tournament_stopwatch.SetValue(bUseStopWatch);//bUseStopWatch );
 	}
 
 #endif // GAME_DLL
@@ -4573,6 +4576,12 @@ void CTFGameRules::Activate()
 		pMatchDesc->InitGameRulesSettings();
 	}
 
+	if (IsEmulatingMatch())
+	{
+		if (!TFGameRules()->IsCommunityGameMode())
+			TFGameRules()->SetAllowBetweenRounds(true);
+	}
+
 	CLogicMannPower *pLogicMannPower = dynamic_cast< CLogicMannPower* > ( gEntList.FindEntityByClassname( NULL, "tf_logic_mannpower" ) );
 	tf_powerup_mode.SetValue( pLogicMannPower ? 1 : 0 );
 
@@ -4581,7 +4590,7 @@ void CTFGameRules::Activate()
 		CreateSoldierStatue();
 	}
 
-	if ( IsCompetitiveMode() && IsCustomGameMode() )
+	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && IsCustomGameMode() )
 	{
 		m_bAwaitingReadyRestart.Set( false );
 		tf_gamemode_community.SetValue( 1 );
