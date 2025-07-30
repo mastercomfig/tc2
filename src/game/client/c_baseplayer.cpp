@@ -1929,7 +1929,7 @@ void C_BasePlayer::ThirdPersonSwitch( bool bThirdperson )
 	}
 
 #ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() && TFGameRules()->PlayersAreOnMatchSummaryStage() )
+	if ( TFGameRules() && TFGameRules()->PlayersAreOnMatchSummaryStage() )
 	{
 		return false;
 	}

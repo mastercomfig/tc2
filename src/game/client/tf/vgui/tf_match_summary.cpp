@@ -1117,10 +1117,10 @@ void CTFMatchSummary::OnTick()
 		return;
 
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-	if ( !pMatchDesc )
+	if ( !pMatchDesc && ( !TFGameRules() || !TFGameRules()->IsEmulatingMatch() ) )
 		return;
 
-	if ( pMatchDesc->BAllowDrawingAtMatchHistory()
+	if ( ( pMatchDesc->BAllowDrawingAtMatchHistory() || TFGameRules() && TFGameRules()->IsEmulatingMatch() )
 	     && m_pDrawingPanel 
 	     && ( m_flDrawingPanelTime > 0 ) 
 	     && ( m_flDrawingPanelTime < gpGlobals->curtime ) )

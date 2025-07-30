@@ -455,6 +455,11 @@ bool IsFixedWeaponSpreadEnabled( CTFWeaponBase *pWeapon /*= NULL*/ )
 		bFixedSpread = pMatchDesc->BUsesFixedWeaponSpread();
 	}
 
+	if (TFGameRules()->IsEmulatingMatch() == 2 )
+	{
+		bFixedSpread = true;
+	}
+
 	if ( pWeapon && !bFixedSpread )
 	{
 		int iFixedSpread = 0;

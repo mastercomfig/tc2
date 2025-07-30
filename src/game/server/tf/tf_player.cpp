@@ -13856,7 +13856,7 @@ bool CTFPlayer::SetObserverMode(int mode)
 		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
 	}
 
-	if ( TFGameRules()->IsEmulatingMatch() )
+	if ( TFGameRules()->IsEmulatingMatch() == 1 )
 	{
 		bAllowSpecModeChange = true;
 	}
@@ -16502,7 +16502,7 @@ bool CTFPlayer::IsValidObserverTarget( CBaseEntity * target )
 		}
 		else
 		{
-			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() );
+			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() && !(TFGameRules()->IsEmulatingMatch() == 1) );
 		}
 
 		if ( bStrictRules )

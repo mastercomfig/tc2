@@ -102,6 +102,11 @@ bool CTFAutobalance::ShouldBeActive() const
 		return pMatchDesc->BUsesAutoBalance();
 	}
 
+	if ( TFGameRules()->IsEmulatingMatch() == 1 )
+	{
+		return true;
+	}
+
 	// outside of managed matches, we don't normally do any balancing for tournament mode
 	if ( TFGameRules()->IsInTournamentMode() )
 		return false;

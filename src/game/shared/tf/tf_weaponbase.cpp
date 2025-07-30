@@ -5808,6 +5808,9 @@ bool CTFWeaponBase::AreRandomCritsEnabled( void )
 		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatchDesc )
 			return pMatchDesc->BUsesRandomCrits();
+
+		if ( TFGameRules()->IsEmulatingMatch() == 2 )
+			return false;
 	}
 
 	return tf_weapon_criticals.GetBool();

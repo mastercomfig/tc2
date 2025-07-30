@@ -2268,7 +2268,7 @@ bool CTFGameRules::IsCompetitiveGame( void )
 	// if it isn't competitive match type, but still competitive mode, then it's not a true competition.
 	// maybe IsMatchTypeCasual is more explicit, but we're not sure if there will be more "Competitive Modes"
 	// in the future which are/aren't actual competition
-	if ( IsCompetitiveMode() || IsEmulatingMatch() )
+	if ( IsCompetitiveMode() || IsEmulatingMatch() == 1 )
 	{
 		return false;
 	}
@@ -2290,6 +2290,11 @@ bool CTFGameRules::IsCompetitiveGame( void )
 
 int CTFGameRules::IsEmulatingMatch() const
 {
+	// can't emulate Mann Up at this time
+	if ( IsMannVsMachineMode() )
+	{
+		return false;
+	}
 	return tf_match_emulation.GetInt();
 }
 
@@ -2977,6 +2982,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 
 	// Non-match
 	bool bAtLeastOneReady = false;
+	int iPlayerReadyCount = 0;
 	for ( int i = 1; i <= MAX_PLAYERS; ++i )
 	{
 		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
@@ -2991,6 +2997,13 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		{
 			bAtLeastOneReady = true;
 		}
+	}
+
+	if ( IsEmulatingMatch() )
+	{
+		// only auto-start an emulated match if we have a 6v6 available (our smallest match group possible).
+		// otherwise, just keep waiting for players.
+		return iPlayerReadyCount >= 12;
 	}
 
 	// Team isn't ready if there was nobody on it.
@@ -8301,6 +8314,11 @@ void CTFGameRules::Think()
 				}
 				else
 				{
+					if ( IsEmulatingMatch() )
+					{
+						MatchSummaryEnd();
+					}
+
 					// Readymode (Tournament) path
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
@@ -15619,7 +15637,7 @@ void CTFGameRules::RequestClientInventory( CSteamID steamID )
 //-----------------------------------------------------------------------------
 void CTFGameRules::BroadcastDrawLine( CTFPlayer *pTFPlayer, KeyValues *pKeyValues )
 {
-	if ( !IsMatchTypeCompetitive() || !m_bPlayersAreOnMatchSummaryStage || pTFPlayer->BHaveChatSuspensionInCurrentMatch() )
+	if ( ( !IsMatchTypeCompetitive() && !( IsEmulatingMatch() == 2 ) ) || !m_bPlayersAreOnMatchSummaryStage || pTFPlayer->BHaveChatSuspensionInCurrentMatch() )
 		return;
 
 	int paneltype = clamp( pKeyValues->GetInt( "panel", DRAWING_PANEL_TYPE_NONE ), DRAWING_PANEL_TYPE_NONE, DRAWING_PANEL_TYPE_MAX - 1 );
@@ -17801,7 +17819,7 @@ bool CTFGameRules::ShouldConfirmOnDisconnect()
 //-----------------------------------------------------------------------------
 bool CTFGameRules::ShouldShowPreRoundDoors() const
 {
-	if (IsEmulatingMatch())
+	if ( IsEmulatingMatch() )
 	{
 		return true;
 	}
@@ -21436,6 +21454,11 @@ void CTFGameRules::MatchSummaryTeleport()
 
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
 	if ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() )
+	{
+		bUseMatchSummaryStage = true;
+	}
+
+	if ( IsEmulatingMatch() == 2 )
 	{
 		bUseMatchSummaryStage = true;
 	}
