@@ -29,6 +29,7 @@ public:
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme ) OVERRIDE;
 	virtual void UpdateBorder( void ) OVERRIDE;
 	virtual bool Update( void ) OVERRIDE;
+	virtual void Reset() OVERRIDE;
 	int GetPreviousTeam( void ) { return m_iTeam; }
 	int GetPreviousClass(void) { return m_iPrevClass; }
 
@@ -86,7 +87,7 @@ protected:
 
 	CTFTeamStatusPlayerPanel *GetOrAddPanel( int iPanelIndex );
 	void RecalculatePlayerPanels( void );
-	void UpdatePlayerPanels( void );
+	bool UpdatePlayerPanels( void );
 	bool IsClassOrder( void );
 
 protected:

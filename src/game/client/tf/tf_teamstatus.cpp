@@ -337,6 +337,13 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 	return bChanged;
 }
 
+void CTFTeamStatusPlayerPanel::Reset()
+{
+	BaseClass::Reset();
+
+	m_iTeam = TEAM_UNASSIGNED;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -614,7 +621,7 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	if ( iLocalTeam >= FIRST_GAME_TEAM )
 	{
 		// doing this so we can share between the two.
-		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS - 1 : TF_FIRST_NORMAL_CLASS;
+		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS : TF_FIRST_NORMAL_CLASS;
 		for (int nClass = iFirstClass; nClass >= TF_FIRST_NORMAL_CLASS; nClass--)
 		{
 			// we want to sort the images to match the class menu selections
@@ -634,17 +641,17 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 				// Add an entry
 				CTFTeamStatusPlayerPanel* pPanel = GetOrAddPanel(iPanel);
 
+				if (bClassOrder && pPanel->GetPreviousClass() != nCurrentClass)
+				{
+					bNeedsLayout = true;
+				}
+
 				if (pPanel->GetPlayerIndex() != i)
 				{
 					bNeedsLayout = true;
 				}
 
 				pPanel->SetPlayerIndex(i);
-
-				if (bClassOrder && pPanel->GetPreviousClass() != nCurrentClass)
-				{
-					bNeedsLayout = true;
-				}
 
 				if (pPanel->GetPreviousTeam() != pPanel->GetTeam())
 				{
@@ -667,27 +674,36 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 		m_PlayerPanels[i]->SetPlayerIndex( 0 );
 	}
 
-	UpdatePlayerPanels();
+	if ( UpdatePlayerPanels() )
+	{
+		bNeedsLayout = true;
+	}
 
 	if ( bNeedsLayout )
-
 	{
-		InvalidateLayout();	
+		InvalidateLayout();
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFTeamStatus::UpdatePlayerPanels( void )
+bool CTFTeamStatus::UpdatePlayerPanels( void )
 {
 	if ( !g_TF_PR )
-		return;
+		return false;
+
+	bool bNeedsLayout = false;
 
 	for ( int i = 0; i < m_PlayerPanels.Count(); i++ )
 	{
-		m_PlayerPanels[i]->Update();
+		if ( m_PlayerPanels[i]->Update() )
+		{
+			bNeedsLayout = true;
+		}
 	}
+
+	return bNeedsLayout;
 }
 
 bool CTFTeamStatus::IsClassOrder()
