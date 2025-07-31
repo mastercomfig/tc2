@@ -3214,7 +3214,7 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 				}
 			}
 		}
-		else if ( !pMatch )
+		else if ( !pMatch && !UsePlayerReadyStatusMode() )
 		{
 			// Unofficial modes set team ready state here
 			int nRed = 0;
@@ -5904,7 +5904,8 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	CBaseEntity *pInflictor = dmgInfo->GetInflictor();
 
 	// Check that the explosion can 'see' this entity.
-	std::vector<Vector> vecSpots{ pEntity->EyePosition() };
+	Vector vecMainSpot = pEntity->BodyTarget(vecSrc, false);
+	std::vector<Vector> vecSpots{ vecMainSpot, pEntity->EyePosition() };
 	static const float flInnerRadiusPct = 0.05f;
 	CTraceFilterIgnorePlayers filterPlayers( pInflictor, COLLISION_GROUP_PROJECTILE );
 	CTraceFilterIgnoreProjectiles filterProjectiles( pInflictor, COLLISION_GROUP_PROJECTILE );
@@ -5914,7 +5915,6 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	Vector vecOffset;
 	int totalChecks = 1;
 	int passedChecks = 0;
-	Vector vecMainSpot = pEntity->BodyTarget(vecSrc, false);
 	UTIL_TraceLine(vecSrc, vecMainSpot, MASK_RADIUS_DAMAGE, &filter, &tr);
 
 	if ( tr.startsolid && tr.m_pEnt )
@@ -5942,6 +5942,7 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 					vecOffset.z = z * flInnerRadiusPct;
 					for (auto& vecSpot : vecSpots)
 					{
+						totalChecks++;
 						UTIL_TraceLine(vecSrc + vecOffset, vecSpot, MASK_RADIUS_DAMAGE, &filter, &tr);
 						if (tr.startsolid && tr.m_pEnt)
 						{
@@ -5954,11 +5955,9 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 							UTIL_TraceLine(vecSrc + vecOffset, vecSpot, MASK_RADIUS_DAMAGE, &filterSelf, &tr);
 						}
 
-						totalChecks++;
 						// If we don't trace the whole way to the target, and we didn't hit the target entity, we're blocked
-						if (tr.fraction != 1.0 && tr.m_pEnt != pEntity)
-							return 0;
-						passedChecks++;
+						if ( !( tr.fraction != 1.0 && tr.m_pEnt != pEntity ) )
+							passedChecks++;
 					}
 				}
 			}
@@ -5967,6 +5966,11 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	else
 	{
 		passedChecks++;
+	}
+
+	if (passedChecks < 1)
+	{
+		return 0;
 	}
 
 	// Adjust the damage - apply falloff.
