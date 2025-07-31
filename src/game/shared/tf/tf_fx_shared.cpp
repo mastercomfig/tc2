@@ -25,6 +25,7 @@
 #define DEFAULT_FIXED_WEAPONSPREADS "1"
 #endif
 ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", DEFAULT_FIXED_WEAPONSPREADS, FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
+ConVar tf_use_circular_weaponspreads("tf_use_circular_weaponspreads", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a true circular pellet distribution (for both random and fixed spread).");
 
 // Client specific.
 #ifdef CLIENT_DLL
@@ -113,7 +114,7 @@ void EndGroupingSounds() {}
 
 #endif
 
-// 10, Square
+// 9, Square
 Vector g_vecFixedWpnSpreadPellets[] = 
 {
 	Vector( 0,0,0 ),	// First and last pellet goes down the middle to reward fine aim
@@ -121,10 +122,24 @@ Vector g_vecFixedWpnSpreadPellets[] =
 	Vector( -1,0,0 ),	
 	Vector( 0,-1,0 ),	
 	Vector( 0,1,0 ),	
-	Vector( 0.85,-0.85,0 ),	
-	Vector( 0.85,0.85,0 ),	
-	Vector( -0.85,-0.85,0 ),	
-	Vector( -0.85,0.85,0 ),	
+	Vector( 0.85f,-0.85f,0 ),	
+	Vector( 0.85f,0.85f,0 ),	
+	Vector( -0.85f,-0.85f,0 ),	
+	Vector( -0.85f,0.85f,0 ),	
+};
+
+// 9, Circle
+Vector g_vecFixedWpnSpreadPelletsCircular[] =
+{
+	Vector(0,0,0),	// First and last pellet goes down the middle to reward fine aim
+	Vector(1,0,0),
+	Vector(-1,0,0),
+	Vector(0,-1,0),
+	Vector(0,1,0),
+	Vector(0.707f,-0.707f,0),
+	Vector(0.707f,0.707f,0),
+	Vector(-0.707f,-0.707f,0),
+	Vector(-0.707f,0.707f,0),
 };
 
 // 15, Rectangle - slight noise applied below (+/- 0.07)
@@ -338,8 +353,16 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 					iSpread -= ARRAYSIZE( g_vecFixedWpnSpreadPellets );
 				}
 				float flScalar = 0.5f;
-				x = g_vecFixedWpnSpreadPellets[iSpread].x * flScalar;
-				y = g_vecFixedWpnSpreadPellets[iSpread].y * flScalar;
+				if (tf_use_circular_weaponspreads.GetBool())
+				{
+					x = g_vecFixedWpnSpreadPelletsCircular[iSpread].x * flScalar;
+					y = g_vecFixedWpnSpreadPelletsCircular[iSpread].y * flScalar;
+				}
+				else
+				{
+					x = g_vecFixedWpnSpreadPellets[iSpread].x * flScalar;
+					y = g_vecFixedWpnSpreadPellets[iSpread].y * flScalar;
+				}
 			}
 		}
 		else
@@ -353,38 +376,22 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				const float flMinAccuracyCooldown = 0.25f;
 				const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;
 
-				if ( nBulletsPerShot > 1 && flTimeSinceLastShot > flMinAccuracyCooldown )
+				if ( nBulletsPerShot > 1 )
 				{
 					bAccuracyBonus = true;
 				}
 				else if ( nBulletsPerShot == 1 )
 				{
-#ifdef MCOMS_BALANCE_PACK
-					if ( pWpn->GetWeaponID() == TF_WEAPON_REVOLVER )
-					{
-						// Ambassador is always accurate.
-						int iMode = 0;
-						CALL_ATTRIB_HOOK_INT_ON_OTHER( pWpn, iMode, set_weapon_mode);
-						if (iMode == 1)
-						{
-							bAccuracyBonus = true;
-						}
-					}
-					if ( !bAccuracyBonus )
-#endif
-					{
-#ifdef MCOMS_BALANCE_PACK
-						// Give players control over accuracy vs. speed on their revolvers / pistols
-						const float flShotTimeCooldown = 1.0f / 0.6f;
-						const float flAccuracyCooldown = Clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
+#if defined(MCOMS_BALANCE_PACK) || 1
+					// Give players control over accuracy vs. speed on their revolvers / pistols
+					const float flShotTimeCooldown = 1.0f / 0.6f;
+					const float flAccuracyCooldown = Clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
 #else
-						const float flAccuracyCooldown = flMaxAccuracyCooldown;
+					const float flAccuracyCooldown = flMaxAccuracyCooldown;
 #endif
-						if (flTimeSinceLastShot > flAccuracyCooldown)
-						{
-							bAccuracyBonus = true;
-						}
-						
+					if (flTimeSinceLastShot > flAccuracyCooldown)
+					{
+						bAccuracyBonus = true;
 					}
 				}
 
@@ -399,15 +406,30 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				}
 			}
 
-			if ( flVariance != 0.f )
+			if ( flVariance != 0.f && flSpread != 0.f )
 			{
-				x = RandomFloat( -flVariance, flVariance ) + RandomFloat( -flVariance, flVariance );
-				y = RandomFloat( -flVariance, flVariance ) + RandomFloat( -flVariance, flVariance );
+				float flScalar = 1.0f;
+				if (tf_use_circular_weaponspreads.GetBool())
+				{
+					float angle = 2.0 * M_PI * RandomFloat();
+					float radius = flScalar * FastSqrt(RandomFloat());
+					float s, c;
+					FastSinCos(angle, &s, &c);
+					x = radius * s;
+					y = radius * c;
+				}
+				else
+				{
+					x = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
+					y = RandomFloat(-0.5, 0.5) + RandomFloat(-0.5, 0.5);
+					x *= flScalar;
+					y *= flScalar;
+				}
 			}
 		}
 
 		// Initialize the variable firing information.
-		fireInfo.m_vecDirShooting = vecShootForward + ( x *  flSpread * vecShootRight ) + ( y * flSpread * vecShootUp );
+		fireInfo.m_vecDirShooting = vecShootForward + ( x * flSpread * vecShootRight ) + ( y * flSpread * vecShootUp );
 		fireInfo.m_vecDirShooting.NormalizeInPlace();
 		fireInfo.m_bUseServerRandomSeed = pWpn && pWpn->UseServerRandomSeed();
 
@@ -453,11 +475,6 @@ bool IsFixedWeaponSpreadEnabled( CTFWeaponBase *pWeapon /*= NULL*/ )
 	if ( pMatchDesc )
 	{
 		bFixedSpread = pMatchDesc->BUsesFixedWeaponSpread();
-	}
-
-	if (TFGameRules()->IsEmulatingMatch() == 2 )
-	{
-		bFixedSpread = true;
 	}
 
 	if ( pWeapon && !bFixedSpread )

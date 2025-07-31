@@ -204,9 +204,14 @@ float CTFRevolver::GetWeaponSpread( void )
 
 	if ( CanHeadshot() )
 	{
+#if defined(MCOMS_BALANCE_PACK) || 1
+		// Always accurate
+		fSpread = 0.0f;
+#else
 		// We are highly accurate for our first shot.
 		float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
 		fSpread = RemapValClamped( flTimeSinceCheck, 1.0f, 0.5f, 0.f, fSpread );
+#endif
 	}
 
 	//DevMsg( "Spread: base %3.5f mod: %3.5f\n", BaseClass::GetWeaponSpread(), fSpread );
