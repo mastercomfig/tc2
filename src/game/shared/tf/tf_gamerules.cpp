@@ -3046,7 +3046,6 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 	}
 
 	// Non-match
-	bool bAtLeastOneReady = false;
 	int iPlayerReadyCount = 0;
 	for ( int i = 1; i <= MAX_PLAYERS; ++i )
 	{
@@ -3060,7 +3059,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		}
 		else
 		{
-			bAtLeastOneReady = true;
+			iPlayerReadyCount++;
 		}
 	}
 
@@ -3072,7 +3071,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 	}
 
 	// Team isn't ready if there was nobody on it.
-	return bAtLeastOneReady;
+	return iPlayerReadyCount > 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -3080,9 +3079,6 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 //-----------------------------------------------------------------------------
 bool CTFGameRules::PlayerReadyStatus_ShouldStartCountdown( void )
 {
-	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-
-
 	if ( IsMannVsMachineMode() )
 	{
 		if ( !IsTeamReady( TF_TEAM_PVE_DEFENDERS ) && m_flRestartRoundTime >= gpGlobals->curtime + mp_tournament_readymode_countdown.GetInt() )
@@ -3095,7 +3091,7 @@ bool CTFGameRules::PlayerReadyStatus_ShouldStartCountdown( void )
 			}
 		}
 	}
-	else if ( pMatch &&
+	else if ( UsePlayerReadyStatusMode() &&
 	          PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_RED ) &&
 	          PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_BLUE ) )
 	{
@@ -3190,6 +3186,7 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 	}
 	else
 	{
+		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
 		if ( IsMannVsMachineMode() || IsCompetitiveMode() || IsEmulatingMatch() )
 		{
 			// Reduce timer as each player hits Ready, but only once per-player
@@ -3217,11 +3214,9 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 				}
 			}
 		}
-
-		// Unofficial modes set team ready state here
-		CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-		if ( !pMatch && !IsMannVsMachineMode() )
+		else if ( !pMatch )
 		{
+			// Unofficial modes set team ready state here
 			int nRed = 0;
 			int nRedCount = 0;
 			int nBlue = 0;
