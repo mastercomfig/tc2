@@ -818,7 +818,7 @@ void CTeamplayRoundBasedRules::GoToIntermission( void )
 {
 	if ( IsInTournamentMode() == true
 #ifdef TF_DLL
-		&& TFGameRules() && ( !TFGameRules()->IsEmulatingMatch() || TFGameRules()->IsMannVsMachineMode() )
+		&& TFGameRules() && ( !(TFGameRules()->IsEmulatingMatch() == 1) || TFGameRules()->IsMannVsMachineMode() )
 #endif
 		)
 		return;
