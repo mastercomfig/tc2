@@ -5905,8 +5905,8 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 
 	// Check that the explosion can 'see' this entity.
 	Vector vecMainSpot = pEntity->BodyTarget(vecSrc, false);
-	std::vector<Vector> vecSpots{ vecMainSpot, pEntity->EyePosition() };
-	static const float flInnerRadiusPct = 0.05f;
+	std::vector<Vector> vecSpots{ vecMainSpot };
+	static const float flInnerRadiusPct = 0.04f * TF_ROCKET_RADIUS * 0.5f;
 	CTraceFilterIgnorePlayers filterPlayers( pInflictor, COLLISION_GROUP_PROJECTILE );
 	CTraceFilterIgnoreProjectiles filterProjectiles( pInflictor, COLLISION_GROUP_PROJECTILE );
 	CTraceFilterIgnoreFriendlyCombatItems filterCombatItems( pInflictor, COLLISION_GROUP_PROJECTILE, pInflictor->GetTeamNumber() );
@@ -5942,8 +5942,8 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 					vecOffset.z = z * flInnerRadiusPct;
 					for (auto& vecSpot : vecSpots)
 					{
-						totalChecks++;
 						UTIL_TraceLine(vecSrc + vecOffset, vecSpot, MASK_RADIUS_DAMAGE, &filter, &tr);
+						
 						if (tr.startsolid && tr.m_pEnt)
 						{
 							// Return when inside an enemy combat shield and tracing against a player of that team ("absorbed")
@@ -5955,9 +5955,13 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 							UTIL_TraceLine(vecSrc + vecOffset, vecSpot, MASK_RADIUS_DAMAGE, &filterSelf, &tr);
 						}
 
+						totalChecks++;
+
 						// If we don't trace the whole way to the target, and we didn't hit the target entity, we're blocked
 						if ( !( tr.fraction != 1.0 && tr.m_pEnt != pEntity ) )
+						{
 							passedChecks++;
+						}
 					}
 				}
 			}
