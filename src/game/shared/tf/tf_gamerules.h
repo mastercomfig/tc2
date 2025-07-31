@@ -151,6 +151,9 @@ enum class EDraftPhase : uint8
 	PLANNING_PHASE,
 	SELECT_PHASE,
 	STRATEGY_PHASE,
+	MEET_TEAM0,
+	MEET_TEAM1,
+	// add new draft phase here
 };
 
 enum class EDraftSelectState : uint8
@@ -171,7 +174,15 @@ enum class EDraftSelectState : uint8
 	PICK2_TEAM0,
 	PICK1_TEAM1,
 	PICK2_TEAM1,
+	// add new select state here
 };
+
+extern int DraftSelectStateToTeam[];
+
+extern EDraftSelectState NextDraftSelectState[];
+
+#define FIRST_DRAFT_SELECT_STATE EDraftSelectState::BAN1_TEAM0
+#define LAST_DRAFT_SELECT_STATE EDraftSelectState::PICK2_TEAM1
 
 class CTFGameRulesProxy : public CTeamplayRoundBasedRulesProxy, public CGameEventListener
 {
@@ -568,6 +579,19 @@ protected:
 
 	void BroadcastDrawLine( CTFPlayer *pTFPlayer, KeyValues *pKeyValues );
 
+	void StartItemDraft();
+	CTeamRoundTimer* CreateItemDraftTimer( const char* pszTimerName, int iTimeSeconds );
+	void StartDraftTimer(int iTeam);
+	void ResetDraftTimer(int iTeam);
+	void UseReserveTime();
+	void AdvanceDraftPhase();
+	void AdvanceSelect();
+
+	int GetCurrentDraftTeam();
+
+	CTeamRoundTimer* GetActiveDraftTimer(bool bForceNoReserve, bool& bWasReserve);
+	bool InReserveTime() { return false; }
+
 #endif // GAME_DLL
 
 public:
@@ -586,6 +610,10 @@ public:
 	virtual void	BetweenRounds_Think( void );
 	virtual void	PreRound_Start( void ) OVERRIDE;
 	virtual void	PreRound_End( void ) OVERRIDE;
+
+	// Start game handling
+	virtual bool StartGame_Start() OVERRIDE;
+	virtual void StartGame_Think() OVERRIDE;
 #endif
 
 public:
@@ -616,6 +644,9 @@ public:
 	const char *GetTeamGoalString( int iTeam );
 
 	int		GetStopWatchState( void ) { return m_nStopWatchState; }
+
+	EDraftPhase	GetDraftPhase( void ) { return static_cast<EDraftPhase>( m_nDraftPhase.Get() ); }
+	EDraftSelectState GetDraftSelectState( void ) { return static_cast<EDraftSelectState>( m_nDraftSelectState.Get() ); }
 	
 	// Game Modes
 	virtual bool IsInArenaMode( void ) const OVERRIDE;
@@ -1114,9 +1145,14 @@ private:
 	int m_iCurrentMiniRoundMask;
 
 	CHandle<CTeamRoundTimer>	m_hStopWatchTimer;
-	
 
 	CTeamRoundTimer* GetStopWatchTimer( void ) { return (CTeamRoundTimer*)m_hStopWatchTimer.Get(); }
+
+	CHandle<CTeamRoundTimer>	m_hItemDraftTimer;
+	CHandle<CTeamRoundTimer>	m_hBluReserveTimer;
+	CHandle<CTeamRoundTimer>	m_hRedReserveTimer;
+	CHandle<CTeamRoundTimer>	m_hBluDraftTimer;
+	CHandle<CTeamRoundTimer>	m_hRedDraftTimer;
 
 	EHANDLE m_hRequiredObserverTarget;
 	EHANDLE m_hObjectiveObserverTarget;
@@ -1187,6 +1223,8 @@ private:
 
 	CNetworkVar( ETFGameType, m_nGameType ); // Type of game this map is (CTF, CP)
 	CNetworkVar( int, m_nStopWatchState );
+	CNetworkVar( int, m_nDraftPhase );
+	CNetworkVar( int, m_nDraftSelectState );
 	CNetworkString( m_pszTeamGoalStringRed, MAX_TEAMGOAL_STRING );
 	CNetworkString( m_pszTeamGoalStringBlue, MAX_TEAMGOAL_STRING );
 	CNetworkVar( float, m_flCapturePointEnableTime );

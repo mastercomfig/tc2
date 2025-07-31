@@ -160,6 +160,48 @@
 #define HELLTOWER_RARE_LINE_CHANCE	0.15	// 15%
 #define HELLTOWER_MISC_CHANCE		0.50	// 50%
 
+int DraftSelectStateToTeam[] = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,
+	1,
+	1,
+	1,
+	1,
+	1,
+	0,
+	0,
+	1,
+	1,
+};
+
+// TODO: COMPILE_TIME_ASSERT( ARRAYSIZE( g_szProjectileNames ) == TF_NUM_PROJECTILES );
+
+EDraftSelectState NextDraftSelectState[] = {
+	EDraftSelectState::BAN1_TEAM1, // BAN1_TEAM0
+	EDraftSelectState::BAN3_TEAM1, // BAN2_TEAM0
+	EDraftSelectState::PICK1_TEAM0, // BAN3_TEAM0
+	EDraftSelectState::BAN5_TEAM0, // BAN4_TEAM0
+	EDraftSelectState::BAN5_TEAM1, // BAN5_TEAM0
+	EDraftSelectState::BAN6_TEAM1, // BAN6_TEAM0
+	EDraftSelectState::BAN2_TEAM1, // BAN1_TEAM1
+	EDraftSelectState::BAN2_TEAM0, // BAN2_TEAM1
+	EDraftSelectState::BAN4_TEAM1, // BAN3_TEAM1
+	EDraftSelectState::BAN3_TEAM0, // BAN4_TEAM1
+	EDraftSelectState::PICK2_TEAM1, // BAN5_TEAM1
+	EDraftSelectState::BAN1_TEAM0, // BAN6_TEAM1
+	EDraftSelectState::PICK1_TEAM1, // PICK1_TEAM0
+	EDraftSelectState::BAN6_TEAM0, // PICK2_TEAM0
+	EDraftSelectState::BAN4_TEAM0, // PICK1_TEAM1
+	EDraftSelectState::PICK2_TEAM0, // PICK2_TEAM1
+};
+
+// TODO: COMPILE_TIME_ASSERT( ARRAYSIZE( g_szProjectileNames ) == TF_NUM_PROJECTILES );
+
 static int g_TauntCamRagdollAchievements[] = 
 {
 	0,		// TF_CLASS_UNDEFINED
@@ -813,6 +855,7 @@ ConVar tf_autobalance_dead_candidates_maxtime( "tf_autobalance_dead_candidates_m
 ConVar tf_autobalance_force_candidates_maxtime( "tf_autobalance_force_candidates_maxtime", "5", FCVAR_REPLICATED );
 ConVar tf_autobalance_xp_bonus( "tf_autobalance_xp_bonus", "500", FCVAR_REPLICATED );
 
+ConVar tf_competitive_item_draft("tf_competitive_item_draft", "0", FCVAR_REPLICATED);
 
 #ifdef GAME_DLL
 
@@ -1413,6 +1456,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 
 	RecvPropInt( RECVINFO( m_nGameType ) ),
 	RecvPropInt( RECVINFO( m_nStopWatchState ) ),
+	RecvPropInt( RECVINFO( m_nDraftPhase ) ),
+	RecvPropInt( RECVINFO( m_nDraftSelectState ) ),
 	RecvPropString( RECVINFO( m_pszTeamGoalStringRed ) ),
 	RecvPropString( RECVINFO( m_pszTeamGoalStringBlue ) ),
 	RecvPropTime( RECVINFO( m_flCapturePointEnableTime ) ),
@@ -1483,6 +1528,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 
 	SendPropInt( SENDINFO( m_nGameType ), 4, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nStopWatchState ), 3, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_nDraftPhase ), 3, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_nDraftSelectState ), 3, SPROP_UNSIGNED ),
 	SendPropString( SENDINFO( m_pszTeamGoalStringRed ) ),
 	SendPropString( SENDINFO( m_pszTeamGoalStringBlue ) ),
 	SendPropTime( SENDINFO( m_flCapturePointEnableTime ) ),
@@ -21105,6 +21152,255 @@ void CTFGameRules::PreRound_End( void )
 	}
 
 	BaseClass::PreRound_End();
+}
+
+ConVar tf_competitive_item_draft_reserve_time("tf_competitive_item_draft_reserve_time", "60");
+ConVar tf_competitive_item_draft_time("tf_competitive_item_draft_time", "15");
+
+bool CTFGameRules::StartGame_Start( void )
+{
+	// we don't delay starting the round unless we're in competitive item draft mode.
+	if ( IsCompetitiveGame() && tf_competitive_item_draft.GetBool() )
+	{
+		StartItemDraft();
+		return false;
+	}
+
+	return true;
+}
+
+int CTFGameRules::GetCurrentDraftTeam()
+{
+	EDraftPhase DraftPhase = GetDraftPhase();
+	if ( DraftPhase != EDraftPhase::SELECT_PHASE )
+	{
+		return TEAM_UNASSIGNED;
+	}
+
+	EDraftSelectState SelectState = GetDraftSelectState();
+
+	// TODO(mcoms): first pick != team. but let's make blue have first pick for now
+	// because RED has strategic advantage for A/D modes. doesn't matter for 5cp
+	// but this is temp anyway.
+	bool bSwapDraftTeams = false;
+
+	int iDraftTeam = DraftSelectStateToTeam[static_cast<int>(SelectState)];
+	if (iDraftTeam == 0 )
+	{
+		return bSwapDraftTeams ? TF_TEAM_RED : TF_TEAM_BLUE;
+	}
+
+	if ( iDraftTeam == 1 )
+	{
+		return bSwapDraftTeams ? TF_TEAM_BLUE : TF_TEAM_RED;
+	}
+}
+
+CTeamRoundTimer* CTFGameRules::GetActiveDraftTimer(bool bForceNoReserve, bool& bWasReserve)
+{
+	bWasReserve = false;
+	EDraftPhase DraftPhase = GetDraftPhase();
+	if (DraftPhase == EDraftPhase::SELECT_PHASE)
+	{
+		CTeamRoundTimer* pTimer = NULL;
+		int iCurTeam = GetCurrentDraftTeam();
+		if (iCurTeam == TF_TEAM_BLUE)
+		{
+			pTimer = m_hBluDraftTimer;
+			if ( !bForceNoReserve && pTimer->GetTimeRemaining() <= 0.0f )
+			{
+				pTimer = m_hBluReserveTimer;
+				bWasReserve = true;
+			}
+		}
+		else if (iCurTeam == TF_TEAM_RED)
+		{
+			pTimer = m_hRedDraftTimer;
+			if ( !bForceNoReserve && pTimer->GetTimeRemaining() <= 0.0f )
+			{
+				pTimer = m_hRedReserveTimer;
+				bWasReserve = true;
+			}
+		}
+		return pTimer;
+	}
+
+	return m_hItemDraftTimer;
+}
+
+void CTFGameRules::StartGame_Think( void )
+{
+	// TODO: there is a better way to do this for sure. this doesn't even respect ready up.
+
+	// can't do this without everyone connected and spawned.
+	if ( GetGlobalTeam(TF_TEAM_BLUE)->GetAliveMembers() < 6 || GetGlobalTeam(TF_TEAM_RED)->GetAliveMembers() < 6 )
+	{
+		return;
+	}
+
+	bool bWasReserve;
+	CTeamRoundTimer* pActiveTimer = GetActiveDraftTimer(false, bWasReserve);
+	switch ( GetDraftPhase() )
+	{
+	case EDraftPhase::INTRO_PHASE:
+	{
+		// this is largely a client/cosmetic phase to inform players of item draft.
+		// item draft timer expired
+		if (pActiveTimer->GetTimeRemaining() <= 0.0f)
+		{
+			// now let's start the captain pick.
+			m_nDraftPhase.Set(static_cast<int>(EDraftPhase::CAPTAINPICK_PHASE));
+			// reset the timer to 10 seconds for captain pick phase.
+			pActiveTimer->SetTimeRemaining(10.0f);
+		}
+		break;
+	}
+	case EDraftPhase::CAPTAINPICK_PHASE:
+	{
+		if (pActiveTimer->GetTimeRemaining() <= 0.0f)
+		{
+			// TODO(mcoms): if they haven't picked their captains, choose for them!
+			// now let's go to planning phase
+			m_nDraftPhase.Set(static_cast<int>(EDraftPhase::PLANNING_PHASE));
+			pActiveTimer->SetTimeRemaining(60.0f);
+		}
+		break;
+	}
+	case EDraftPhase::PLANNING_PHASE:
+	{
+		// yet another client/cosmetic phase with no extra handling
+		// players are just given breathing room to talk
+		if (pActiveTimer->GetTimeRemaining() <= 0.0f)
+		{
+			// now we get into selection.
+			m_nDraftPhase.Set(static_cast<int>(EDraftPhase::SELECT_PHASE));
+			// we set our generic timer in preparation for strategy phase.
+			pActiveTimer->SetTimeRemaining(20.0f);
+			// alert the team they're up for select.
+			TFGameRules()->BroadcastSound(GetCurrentDraftTeam(), "Hud.Hint");
+		}
+		break;
+	}
+	case EDraftPhase::SELECT_PHASE:
+	{
+		EDraftSelectState CurState = GetDraftSelectState();
+		// eh.
+		bool bIsPick = CurState == EDraftSelectState::PICK1_TEAM0
+			|| CurState == EDraftSelectState::PICK2_TEAM0
+			|| CurState == EDraftSelectState::PICK1_TEAM1
+			|| CurState == EDraftSelectState::PICK2_TEAM1;
+		bool bNeedsNextState = false;
+		if (pActiveTimer->GetTimeRemaining() <= 0.0f)
+		{
+			// if we ran out of time, but it wasn't the reserve time, check again next tick with the reserve timer before continuining
+			bNeedsNextState = bWasReserve;
+			if (!bWasReserve)
+			{
+				BroadcastSound(255, "Game.Overtime");
+			}
+		}
+		// TODO(mcoms): selection
+		bool bReceivedSelect = false;
+		if (bReceivedSelect)
+		{
+			// TODO: get class weapon was banned for from client
+			int iClassWeaponSelect = TF_CLASS_SCOUT;
+			const char* pszSoundName = UTIL_VarArgs(bIsPick ? "%s.PickCheer" : "%s.BanJeer", GetPlayerClassName(iClassWeaponSelect));
+			BroadcastSound(255, pszSoundName);
+			// TODO: add this to the whitelist list in item draft game rules..
+			// TODO: process that list in the whitelist code.
+			bNeedsNextState = true;
+		}
+		if ( bNeedsNextState )
+		{
+			EDraftSelectState NextState = NextDraftSelectState[static_cast<int>(CurState)];
+			m_nDraftSelectState.Set(static_cast<int>(NextState));
+			// if we've looped back to the start, we're going to strategy phase
+			if (NextState == FIRST_DRAFT_SELECT_STATE)
+			{
+				m_nDraftPhase.Set(static_cast<int>(EDraftPhase::STRATEGY_PHASE));
+			}
+			else
+			{
+				// we're switching to a new state, so alert the team they're up.
+				TFGameRules()->BroadcastSound(GetCurrentDraftTeam(), "Hud.Hint");
+			}
+		}
+		break;
+	}
+	case EDraftPhase::STRATEGY_PHASE:
+	{
+		if (pActiveTimer->GetTimeRemaining() <= 0.0f)
+		{
+			// reset phase for next time
+			m_nDraftPhase.Set(static_cast<int>(EDraftPhase::INTRO_PHASE));
+			m_hItemDraftTimer->SetTimeRemaining(10);
+			const int ReserveTime = tf_competitive_item_draft_reserve_time.GetInt();
+			const int DraftTime = tf_competitive_item_draft_time.GetInt();
+			m_hBluReserveTimer->SetTimeRemaining(ReserveTime);
+			m_hRedReserveTimer->SetTimeRemaining(ReserveTime);
+			m_hBluDraftTimer->SetTimeRemaining(DraftTime);
+			m_hRedDraftTimer->SetTimeRemaining(DraftTime);
+
+			// end looping music
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				CTFPlayer* pTFPlayer = ToTFPlayer(UTIL_PlayerByIndex(i));
+				CSingleUserRecipientFilter filter(pTFPlayer);
+
+				pTFPlayer->StopSound(SOUND_FROM_WORLD, CHAN_STATIC, "MatchMaking.RoundEndStalemateMusic");
+			}
+
+			// start game
+			CompleteStartGame();
+		}
+		break;
+	}
+	}
+}
+
+void CTFGameRules::StartItemDraft( void )
+{
+	const int ReserveTime = tf_competitive_item_draft_reserve_time.GetInt();
+	const int DraftTime = tf_competitive_item_draft_time.GetInt();
+
+	// intro is 10 seconds, we will use it later for other "both team" phases
+	m_hItemDraftTimer = CreateItemDraftTimer("zz_itemdraft_generic_timer", 10);
+	// per team timers to keep track of their account
+	m_hBluReserveTimer = CreateItemDraftTimer("zz_itemdraft_blu_reserve_timer", ReserveTime);
+	m_hRedReserveTimer = CreateItemDraftTimer("zz_itemdraft_red_reserve_timer", ReserveTime);
+	m_hBluDraftTimer = CreateItemDraftTimer("zz_itemdraft_blu_draft_timer", DraftTime);
+	m_hRedDraftTimer = CreateItemDraftTimer("zz_itemdraft_red_draft_timer", DraftTime);
+
+	EmitSound_t ep;
+	ep.m_nChannel = CHAN_STATIC;
+	ep.m_pSoundName = "MatchMaking.RoundEndStalemateMusic";
+	ep.m_flVolume = 1;
+	ep.m_SoundLevel = SNDLVL_NONE;
+	ep.m_nPitch = 1;
+
+	// todo: how to do looping sound?
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		CTFPlayer* pTFPlayer = ToTFPlayer(UTIL_PlayerByIndex(i));
+		CSingleUserRecipientFilter filter(pTFPlayer);
+
+		pTFPlayer->EmitSound(filter, SOUND_FROM_WORLD, ep);
+	}
+}
+
+CTeamRoundTimer* CTFGameRules::CreateItemDraftTimer( const char* pszTimerName, int iTimeSeconds )
+{
+	CTeamRoundTimer* pTimer = (CTeamRoundTimer*)CBaseEntity::CreateNoSpawn("team_round_timer", vec3_origin, vec3_angle);
+	pTimer->SetName(MAKE_STRING(pszTimerName));
+	pTimer->SetShowInHud(false);
+	pTimer->SetAutoCountdown(false);
+	variant_t sVariant;
+	sVariant.SetInt(iTimeSeconds);
+	pTimer->AcceptInput("Enable", NULL, NULL, sVariant, 0);
+	pTimer->AcceptInput("SetTime", NULL, NULL, sVariant, 0);
+	pTimer->AcceptInput("Pause", NULL, NULL, sVariant, 0);
+	return pTimer;
 }
 
 //-----------------------------------------------------------------------------

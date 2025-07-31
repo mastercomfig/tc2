@@ -988,7 +988,7 @@ void CTFHudMatchStatus::UpdateTeamInfo()
 //-----------------------------------------------------------------------------
 CTFHudItemDraft::CTFHudItemDraft(const char* pElementName)
 	: CHudElement(pElementName)
-	, BaseClass(NULL, "HudMatchStatus")
+	, BaseClass(NULL, "HudItemDraft")
 #if 0
 	, m_pTimePanel(NULL)
 #endif

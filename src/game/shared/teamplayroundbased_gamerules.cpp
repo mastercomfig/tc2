@@ -1481,9 +1481,23 @@ void CTeamplayRoundBasedRules::State_Think_PREGAME( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::State_Enter_STARTGAME( void )
 {
-	m_flStateTransitionTime = gpGlobals->curtime;
-
+	// mark as the game starting for the first round
 	m_bInitialSpawn = true;
+
+	// if the gamerules wants to override and delay start, let it
+	if (StartGame_Start())
+	{
+		CompleteStartGame();
+	}
+	else
+	{
+		m_flStateTransitionTime = 0;
+	}
+}
+
+void CTeamplayRoundBasedRules::CompleteStartGame( void )
+{
+	m_flStateTransitionTime = gpGlobals->curtime;
 }
 
 //-----------------------------------------------------------------------------
@@ -1491,7 +1505,7 @@ void CTeamplayRoundBasedRules::State_Enter_STARTGAME( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::State_Think_STARTGAME()
 {
-	if( gpGlobals->curtime > m_flStateTransitionTime )
+	if( m_flStateTransitionTime > 0 && gpGlobals->curtime > m_flStateTransitionTime )
 	{
 		if ( !IsInTraining() && !IsInItemTestingMode() )
 		{
@@ -1504,7 +1518,11 @@ void CTeamplayRoundBasedRules::State_Think_STARTGAME()
 		}
 
 		State_Transition( GR_STATE_PREROUND );
+
+		return;
 	}
+
+	StartGame_Think();
 }
 	
 //-----------------------------------------------------------------------------
@@ -1619,6 +1637,9 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 void CTeamplayRoundBasedRules::State_Leave_PREROUND( void )
 {
 	PreRound_End();
+
+	// no longer the first round
+	m_bInitialSpawn = false;
 }
 
 //-----------------------------------------------------------------------------

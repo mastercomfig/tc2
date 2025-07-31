@@ -330,6 +330,10 @@ public:
 	virtual void	PreRound_Start( void ) { return; }
 	virtual void	PreRound_End( void ) { return; }
 
+	/** do extra StartGame logic and return if we should start the game immediately. */
+	virtual bool	StartGame_Start( void ) { return true; }
+	virtual void	StartGame_Think( void ) { return; }
+
 	bool PrevRoundWasWaitingForPlayers() { return m_bPrevRoundWasWaitingForPlayers; }
 
 	virtual bool ShouldScorePerRound( void ){ return true; }
@@ -472,6 +476,8 @@ protected:
 
 	// mp_scrambleteams_auto
 	void ResetTeamsRoundWinTracking( void );
+
+	void	CompleteStartGame(void);
 
 protected:
 	virtual void InitTeams( void );
