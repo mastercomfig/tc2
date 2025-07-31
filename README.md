@@ -17,10 +17,12 @@ We're also experimenting with continuing support work for gameplay balance and o
 
 ## Installation
 
-1. Install the [itch.io app](https://itch.io/app)
-2. Download [Team Comtress 2](https://mastercoms.itch.io/tc2) through the app to get auto-updates
-3. Get Source SDK Base 2013 Multiplayer under Tools in the Steam Library
-4. You can now play Team Comtress 2 in the itch app!
+Follow the [installation instructions on itch.io](https://mastercoms.itch.io/tc2)
+
+## Links
+
+* [Website](https://staging.mastercomfig-site.pages.dev/tc2/)
+* [Discord](https://comfig.app/discord)
 
 ## Legal
 
