@@ -17897,33 +17897,43 @@ bool CTFGameRules::ShouldShowPreRoundDoors() const
 //-----------------------------------------------------------------------------
 int CTFGameRules::GetClassLimit( int iClass )
 {
-	if ( IsInTournamentMode() || IsPasstimeMode() )
-	{
-		switch ( iClass )
-		{
-		case TF_CLASS_SCOUT: return tf_tournament_classlimit_scout.GetInt(); break;
-		case TF_CLASS_SNIPER: return tf_tournament_classlimit_sniper.GetInt(); break;
-		case TF_CLASS_SOLDIER: return tf_tournament_classlimit_soldier.GetInt(); break;
-		case TF_CLASS_DEMOMAN: return tf_tournament_classlimit_demoman.GetInt(); break;
-		case TF_CLASS_MEDIC: return tf_tournament_classlimit_medic.GetInt(); break;
-		case TF_CLASS_HEAVYWEAPONS: return tf_tournament_classlimit_heavy.GetInt(); break;
-		case TF_CLASS_PYRO: return tf_tournament_classlimit_pyro.GetInt(); break;
-		case TF_CLASS_SPY: return tf_tournament_classlimit_spy.GetInt(); break;
-		case TF_CLASS_ENGINEER: return tf_tournament_classlimit_engineer.GetInt(); break;
-		default:
-			break;
-		}
-	}
-	else if ( IsInHighlanderMode() )
+	if ( IsInHighlanderMode() )
 	{
 		return 1;
 	}
-	else if ( tf_classlimit.GetInt() )
+
+	if ( IsInSixesMode() )
 	{
-		return tf_classlimit.GetInt();
+		if ( iClass == TF_CLASS_MEDIC || iClass == TF_CLASS_DEMOMAN )
+		{
+			return 1;
+		}
+		return 2;
 	}
 
-	return NO_CLASS_LIMIT;
+	int ClassLimit = NO_CLASS_LIMIT;
+
+	switch ( iClass )
+	{
+	case TF_CLASS_SCOUT: ClassLimit = tf_tournament_classlimit_scout.GetInt(); break;
+	case TF_CLASS_SNIPER: ClassLimit = tf_tournament_classlimit_sniper.GetInt(); break;
+	case TF_CLASS_SOLDIER: ClassLimit = tf_tournament_classlimit_soldier.GetInt(); break;
+	case TF_CLASS_DEMOMAN: ClassLimit = tf_tournament_classlimit_demoman.GetInt(); break;
+	case TF_CLASS_MEDIC: ClassLimit = tf_tournament_classlimit_medic.GetInt(); break;
+	case TF_CLASS_HEAVYWEAPONS: ClassLimit = tf_tournament_classlimit_heavy.GetInt(); break;
+	case TF_CLASS_PYRO: ClassLimit = tf_tournament_classlimit_pyro.GetInt(); break;
+	case TF_CLASS_SPY: ClassLimit = tf_tournament_classlimit_spy.GetInt(); break;
+	case TF_CLASS_ENGINEER: ClassLimit = tf_tournament_classlimit_engineer.GetInt(); break;
+	default:
+		break;
+	}
+
+	if ( ClassLimit == NO_CLASS_LIMIT && tf_classlimit.GetInt() > 0 )
+	{
+		ClassLimit = tf_classlimit.GetInt();
+	}
+
+	return ClassLimit;
 }
 
 //-----------------------------------------------------------------------------
@@ -21194,6 +21204,8 @@ int CTFGameRules::GetCurrentDraftTeam()
 	{
 		return bSwapDraftTeams ? TF_TEAM_BLUE : TF_TEAM_RED;
 	}
+
+	return TEAM_UNASSIGNED;
 }
 
 CTeamRoundTimer* CTFGameRules::GetActiveDraftTimer(bool bForceNoReserve, bool& bWasReserve)
