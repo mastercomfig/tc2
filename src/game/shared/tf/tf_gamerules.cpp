@@ -8276,7 +8276,7 @@ void CTFGameRules::Think()
 
 	if ( g_fGameOver )
 	{
-		if ( IsCompetitiveMode() && !IsMannVsMachineMode() )
+		if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && !IsMannVsMachineMode() )
 		{
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
 
@@ -9778,7 +9778,35 @@ void CTFGameRules::PlayWinSong( int team )
 	if ( !IsInStopWatch() || bGameOver )
 	{
 		// Give the match a chance to play something custom.  It returns true if it handled everything
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+		ETFMatchGroup eMatchGroup = GetCurrentMatchGroup();
+		if (IsEmulatingMatch())
+		{
+			if (IsEmulatingMatch() == 1)
+			{
+				eMatchGroup = k_eTFMatchGroup_Casual_12v12;
+			}
+			if (IsEmulatingMatch() == 2)
+			{
+				eMatchGroup = k_eTFMatchGroup_Ladder_6v6;
+			}
+			if (IsCustomGameMode(STRING(gpGlobals->mapname)))
+			{
+				// HACK(misyl): Force a custom cfg for custom game modes.
+				engine->ServerCommand("exec server_custom.cfg\n");
+			}
+			else
+			{
+				if (eMatchGroup == k_eTFMatchGroup_Ladder_6v6)
+				{
+					engine->ServerCommand("exec server_competitive.cfg\n");
+				}
+				else
+				{
+					engine->ServerCommand("exec server_casual.cfg\n");
+				}
+			}
+		}
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( eMatchGroup );
 		if ( pMatchDesc && pMatchDesc->BPlayWinMusic( team, bGameOver ) )
 		{
 			return;
@@ -15693,7 +15721,7 @@ void CTFGameRules::RequestClientInventory( CSteamID steamID )
 //-----------------------------------------------------------------------------
 void CTFGameRules::BroadcastDrawLine( CTFPlayer *pTFPlayer, KeyValues *pKeyValues )
 {
-	if ( ( !IsMatchTypeCompetitive() && !( IsEmulatingMatch() == 2 ) ) || !m_bPlayersAreOnMatchSummaryStage || pTFPlayer->BHaveChatSuspensionInCurrentMatch() )
+	if ( ( !IsMatchTypeCompetitive() && !( IsEmulatingMatch() == 2 ) ) || !PlayersAreOnMatchSummaryStage() || pTFPlayer->BHaveChatSuspensionInCurrentMatch() )
 		return;
 
 	int paneltype = clamp( pKeyValues->GetInt( "panel", DRAWING_PANEL_TYPE_NONE ), DRAWING_PANEL_TYPE_NONE, DRAWING_PANEL_TYPE_MAX - 1 );
