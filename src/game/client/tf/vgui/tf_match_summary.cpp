@@ -1150,7 +1150,7 @@ void CTFMatchSummary::OnTick()
 	bool bMapHasMatchSummaryStage = ( TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() );
 
 	
-	bool bUseMatchSummaryStage = ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() );
+	bool bUseMatchSummaryStage = ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() || TFGameRules()->IsEmulatingMatch() == 2 );
 
 	switch ( m_iCurrentState )
 	{
@@ -1431,7 +1431,7 @@ void CTFMatchSummary::OnTick()
 		{
 			bool bMedalSoundTimeComplete = ( m_flMedalSoundTime > 0 ) && ( m_flMedalSoundTime < gpGlobals->curtime );
 
-			if ( !m_bXPShown /*&& ( !bShowMedals || bMedalSoundTimeComplete ) */)
+			if ( !TFGameRules()->IsEmulatingMatch() && !m_bXPShown /*&& ( !bShowMedals || bMedalSoundTimeComplete ) */)
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "CompetitiveGame_ShowPvPRankPanel", false );	
 				m_bXPShown = true;
