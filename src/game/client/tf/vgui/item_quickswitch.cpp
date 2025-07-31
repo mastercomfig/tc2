@@ -32,7 +32,10 @@
 
 #define MAX_QUICKSWITCH_SLOTS 11
 
+// UNDONE: unused
+#if 0
 extern ConVar tf_respawn_on_loadoutchanges;
+#endif
 
 extern const char *g_szEquipSlotHeader[CLASS_LOADOUT_POSITION_COUNT];
 int g_SlotsToLoadoutSlotsPerClass[TF_LAST_NORMAL_CLASS][MAX_QUICKSWITCH_SLOTS] =
@@ -427,10 +430,13 @@ void CItemQuickSwitchPanel::CloseQS( void )
 
 	if ( m_bLoadoutHasChanged )
 	{
+		// UNDONE: unused
+#if 0
 		if ( tf_respawn_on_loadoutchanges.GetBool() )
 		{
 			// Tell the GC to tell server that we should respawn if we're in a respawn room
 		}
+#endif
 
 		// Send the preset panel a msg so it can save the change
 		CEconItemView *pCurItemData = TFInventoryManager()->GetItemInLoadoutForClass( m_iClass, m_iSlot );

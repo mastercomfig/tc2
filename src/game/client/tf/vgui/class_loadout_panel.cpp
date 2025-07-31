@@ -21,6 +21,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
+#include "tf_gamerules.h"
+
 extern ConVar tf_respawn_on_loadoutchanges;
 
 ConVar tf_show_preset_explanation_in_class_loadout( "tf_show_preset_explanation_in_class_loadout", "1", FCVAR_HIDDEN | FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
@@ -996,7 +998,7 @@ void CClassLoadoutPanel::OnCancelSelection( void )
 //-----------------------------------------------------------------------------
 void CClassLoadoutPanel::RespawnPlayer()
 {
-	if ( tf_respawn_on_loadoutchanges.GetBool() )
+	if ( tf_respawn_on_loadoutchanges.GetBool() && !TFGameRules()->IsCompetitiveGame() )
 	{
 		// Tell the GC to tell server that we should respawn if we're in a respawn room
 		GCSDK::CGCMsg< MsgGCEmpty_t > msg( k_EMsgGCRespawnPostLoadoutChange );
