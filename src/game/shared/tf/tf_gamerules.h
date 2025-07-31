@@ -711,6 +711,7 @@ bool IsCreepWaveMode( void ) const;
 	bool IsAttackDefenseMode( void );
 
 	ETFMatchGroup GetCurrentMatchGroup() const;
+	ETFMatchGroup GetCurrentMatchGroupWithEmulation() const;
 	bool IsManagedMatchEnded() const;
 
 	bool UsePlayerReadyStatusMode( void );

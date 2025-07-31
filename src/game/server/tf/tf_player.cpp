@@ -16541,14 +16541,14 @@ bool CTFPlayer::IsValidObserverTarget( CBaseEntity * target )
 	if ( !target->IsPlayer() )
 	{
 		bool bStrictRules = false;
-		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 		if ( pMatchDesc )
 		{
 			bStrictRules = pMatchDesc->BUsesStrictSpectatorRules();
 		}
 		else
 		{
-			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() && !(TFGameRules()->IsEmulatingMatch() == 1) );
+			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() );
 		}
 
 		if ( bStrictRules )

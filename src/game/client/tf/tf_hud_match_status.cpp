@@ -595,17 +595,12 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 			m_pRedTeamPanel->SetVisible( false );
 		}
 
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 
 		// FIX: Refresh versus doors so late-joiners do not see the wrong skin
 		int nSkin = 0;
 		int nSubModel = 0;
-		if (TFGameRules() && TFGameRules()->IsEmulatingMatch())
-		{
-			nSubModel = 1;
-			nSkin = 3;
-		}
-		if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() || pMatchDesc && pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
+		if ( pMatchDesc && pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
 		{
 			// Is VS doors model not initialized yet?
 			if (m_pMatchStartModelPanel->m_hModel == NULL)
@@ -618,7 +613,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 			m_pMatchStartModelPanel->SetSkin( nSkin );
 		}
 
-		bool bForceDoors = TFGameRules() && TFGameRules()->IsEmulatingMatch();
+		bool bForceDoors = false;
 		if ( bForceDoors || ( pMatchDesc && pMatchDesc->BUsesPostRoundDoors() ) )
 		{
 			if ( TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && ( ( bForceDoors && !pMatchDesc ) || pMatchDesc->BUseMatchSummaryStage() ) )
@@ -666,18 +661,13 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 //-----------------------------------------------------------------------------
 void CTFHudMatchStatus::ShowMatchStartDoors()
 {
-	if ( TFGameRules()->GetCurrentMatchGroup() == k_eTFMatchGroup_Invalid && !TFGameRules()->IsEmulatingMatch() )
+	if ( TFGameRules()->GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Invalid )
 		return;
 
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 
 	int nSkin = 0;
 	int nSubModel = 0;
-	if (TFGameRules()->IsEmulatingMatch())
-	{
-		nSubModel = 1;
-		nSkin = 3;
-	}
 	if ( !pMatchDesc || pMatchDesc->BGetRoundDoorParameters( nSkin, nSubModel ) )
 	{
 		UpdatePlayerList();
@@ -694,7 +684,7 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors", false );
 
-		bool bUsesStickyRanks = pMatchDesc ? pMatchDesc->BUsesStickyRanks() : false;
+		bool bUsesStickyRanks = ( pMatchDesc && !TFGameRules()->IsEmulatingMatch() ) ? pMatchDesc->BUsesStickyRanks() : false;
 		SetControlVisible( "RankUpLabel", bUsesStickyRanks, true );
 		SetControlVisible( "RankUpShadowLabel", bUsesStickyRanks, true );
 
@@ -751,7 +741,7 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 //-----------------------------------------------------------------------------
 void CTFHudMatchStatus::ShowRoundSign( int nRoundNumber )
 {
-	if ( TFGameRules()->GetCurrentMatchGroup() == k_eTFMatchGroup_Invalid && !TFGameRules()->IsEmulatingMatch() )
+	if ( TFGameRules()->GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Invalid )
 		return;
 
 	if ( !m_pRoundSignModel || !m_pRoundSignModel->m_pModelInfo )
@@ -761,12 +751,9 @@ void CTFHudMatchStatus::ShowRoundSign( int nRoundNumber )
 
 	int nSkin = 0;
 	int nBodyGroup = 0;
-	if (TFGameRules()->IsEmulatingMatch())
-	{
-		nBodyGroup = 0;
-		nSkin = TFGameRules()->GetRoundsPlayed();
-	}
-	if (TFGameRules()->IsEmulatingMatch() || GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() )->BGetRoundStartBannerParameters( nSkin, nBodyGroup ) )
+	ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(eMatchGroup);
+	if (pMatchDesc && pMatchDesc->BGetRoundStartBannerParameters( nSkin, nBodyGroup ) )
 	{
 		if ( m_pRoundSignModel->m_hModel == NULL )
 		{
