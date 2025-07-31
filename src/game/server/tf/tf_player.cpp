@@ -10356,6 +10356,8 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 		{
 			// Use the original hull for damage force calculation to ensure our RJ height doesn't change due to crouch hull increase
 			// ^^ Comment above is an ancient lie, Ducking actually increases blast force, this value increases it even more 82 standing, 62 ducking, 55 modified
+			// ^^ Comment above is a misunderstanding, the duck hull size was changed from 55 to 62 during development, but this would have changed the proportion
+			// and thus the push force from RJ. Slamming it back down to the old proportion preserves the old RJ push force.
 			vecSize.z = 55;
 		}
 
