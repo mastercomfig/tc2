@@ -816,11 +816,7 @@ void CTeamplayRoundBasedRules::CheckChatForReadySignal( CBasePlayer *pPlayer, co
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::GoToIntermission( void )
 {
-	if ( IsInTournamentMode() == true
-#ifdef TF_DLL
-		&& TFGameRules() && ( !(TFGameRules()->IsEmulatingMatch() == 1) || TFGameRules()->IsMannVsMachineMode() )
-#endif
-		)
+	if ( IsInTournamentMode() == true )
 		return;
 
 	BaseClass::GoToIntermission();
@@ -2016,7 +2012,19 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 
 				g_fGameOver = true;
 				State_Enter( GR_STATE_GAME_OVER );
-				m_flStateTransitionTime = gpGlobals->curtime + GetPostMatchPeriod();
+				float flPostMatchPeriod = GetPostMatchPeriod();
+				if ( TFGameRules()->IsEmulatingMatch() )
+				{
+					if ( TFGameRules()->IsEmulatingMatch() == 1 )
+					{
+						flPostMatchPeriod = 10.0f;
+					}
+					else if ( TFGameRules()->IsEmulatingMatch() == 2 )
+					{
+						flPostMatchPeriod = 30.0f;
+					}
+				}
+				m_flStateTransitionTime = gpGlobals->curtime + flPostMatchPeriod;
 
 				if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 				{

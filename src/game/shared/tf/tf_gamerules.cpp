@@ -747,7 +747,7 @@ ConVar tf_test_special_ducks( "tf_test_special_ducks", "1", FCVAR_DEVELOPMENTONL
 
 ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_max", "1", FCVAR_DEVELOPMENTONLY );
 #endif // GAME_DLL
-ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "30", FCVAR_REPLICATED );
+ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "10", FCVAR_REPLICATED );
 
 ConVar tf_match_emulation("tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
@@ -8388,13 +8388,20 @@ void CTFGameRules::Think()
 					// Matchmaking path
 					pMatchDesc->PostMatchClearServerSettings();
 				}
+				else if ( IsEmulatingMatch() )
+				{
+					MatchSummaryEnd();
+					
+					if (nTimePassed >= tf_mm_next_map_vote_time.GetInt())
+					{
+						ChangeLevel();
+					}
+					
+					if (!IsCommunityGameMode())
+						m_bAllowBetweenRounds = true;
+				}
 				else
 				{
-					if ( IsEmulatingMatch() )
-					{
-						MatchSummaryEnd();
-					}
-
 					// Readymode (Tournament) path
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
@@ -19611,9 +19618,6 @@ LINK_ENTITY_TO_CLASS( tf_logic_competitive, CCompetitiveLogic );
 //-----------------------------------------------------------------------------
 void CCompetitiveLogic::OnSpawnRoomDoorsShouldLock( void )
 {
-	if ( !TFGameRules() || !TFGameRules()->IsCompetitiveMode() )
-		return; 
-
 	m_OnSpawnRoomDoorsShouldLock.FireOutput( this, this );
 }
 
@@ -19622,9 +19626,6 @@ void CCompetitiveLogic::OnSpawnRoomDoorsShouldLock( void )
 //-----------------------------------------------------------------------------
 void CCompetitiveLogic::OnSpawnRoomDoorsShouldUnlock( void )
 {
-	if ( !TFGameRules() || !TFGameRules()->IsCompetitiveMode() )
-		return; 
-
 	m_OnSpawnRoomDoorsShouldUnlock.FireOutput( this, this );
 }
 
