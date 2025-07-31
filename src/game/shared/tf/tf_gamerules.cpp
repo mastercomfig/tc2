@@ -4958,13 +4958,23 @@ void SpawnRunes( void )
 
 void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 {
-	// Skip the respawn at the beginning of a round in casual/comp mode since we already
-	// handled it when the pre-round doors closed over the players' views
-	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && ( GetRoundsPlayed() == 0 ) && bForceRespawn && ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) )
+	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && bForceRespawn )
 	{
-		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-		if ( !pMaster || !pMaster->PlayingMiniRounds() || ( pMaster->GetCurrentRoundIndex() == 0 ) )
-			return;
+		bool bShouldSkipRespawn = false;
+		// Skip the respawn at the beginning of a round in casual/comp mode since we already
+		// handled it when the pre-round doors closed over the players' views
+		if ( ( GetRoundsPlayed() == 0 ) && ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) )
+		{
+			CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+			if ( !pMaster || !pMaster->PlayingMiniRounds() || ( pMaster->GetCurrentRoundIndex() == 0 ) )
+				bShouldSkipRespawn = true;
+		}
+		if ( !bShouldSkipRespawn )
+		{
+			// use the comp mode respawn logic instead.
+			m_flCompModeRespawnPlayersAtMatchStart = gpGlobals->curtime;
+		}
+		return;
 	}
 
 	BaseClass::RespawnPlayers( bForceRespawn, bTeam, iTeam );
@@ -8556,16 +8566,48 @@ void CTFGameRules::Think()
 			}
 
 			// Handle re-spawning the players after the doors have shut at the beginning of a match
-			if ( ( m_flCompModeRespawnPlayersAtMatchStart > 0 ) && ( m_flCompModeRespawnPlayersAtMatchStart < gpGlobals->curtime ) )
+			if ( ( m_flCompModeRespawnPlayersAtMatchStart > 0 ) && ( m_flCompModeRespawnPlayersAtMatchStart <= gpGlobals->curtime ) )
 			{
-				for ( int i = 1; i <= MAX_PLAYERS; i++ )
+				bool bClassOrder = IsCompetitiveGame();
+				// spawn order won't be very relevant for old maps... but at least it's consistent
+				int ClassSpawnOrder[] = {
+					TF_CLASS_UNDEFINED,
+					TF_CLASS_HEAVYWEAPONS, // heavy first
+					TF_CLASS_ENGINEER, // engineer
+					TF_CLASS_PYRO, // pyro
+					TF_CLASS_SOLDIER, // soldier
+					TF_CLASS_DEMOMAN, // demo after soldier
+					TF_CLASS_SCOUT, // scout is fastest
+					TF_CLASS_MEDIC, // medic is the first of the support classes
+					TF_CLASS_SNIPER, // support classes last
+					TF_CLASS_SPY, // spy very last
+					TF_CLASS_CIVILIAN,
+				};
+				const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS : TF_CLASS_UNDEFINED;
+				for (int nClass = iFirstClass; nClass >= TF_CLASS_UNDEFINED; nClass--)
 				{
-					CTFPlayer *pPlayer = static_cast<CTFPlayer*>( UTIL_PlayerByIndex( i ) );
-					if ( !pPlayer )
-						continue;
+					int nCurrentClass = ClassSpawnOrder[nClass];
+					for (int i = 1; i <= MAX_PLAYERS; i++)
+					{
+						CTFPlayer* pPlayer = static_cast<CTFPlayer*>(UTIL_PlayerByIndex(i));
+						if (!pPlayer)
+							continue;
 
-					pPlayer->RemoveAllOwnedEntitiesFromWorld();
-					pPlayer->ForceRespawn();
+						if (!pPlayer->GetPlayerClass() || pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED)
+						{
+							// if not spawned, then just remove owned entities
+							if (nCurrentClass == TF_CLASS_UNDEFINED)
+							{
+								pPlayer->RemoveAllOwnedEntitiesFromWorld();
+							}
+							continue;
+						}
+						if (bClassOrder && pPlayer->GetPlayerClass()->GetClassIndex() != nCurrentClass)
+							continue;
+
+						pPlayer->RemoveAllOwnedEntitiesFromWorld();
+						pPlayer->ForceRespawn();
+					}
 				}
 
 				m_flCompModeRespawnPlayersAtMatchStart = -1.f;
