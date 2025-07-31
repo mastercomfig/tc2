@@ -46,8 +46,10 @@ END_RECV_TABLE()
 //------------------------------------------------------------------------------
 void C_WaterLODControl::OnDataChanged(DataUpdateType_t updateType)
 {
+#if 0
 	view->SetCheapWaterStartDistance( m_flCheapWaterStartDistance );
 	view->SetCheapWaterEndDistance( m_flCheapWaterEndDistance );
+#endif
 }
 
 //------------------------------------------------------------------------------

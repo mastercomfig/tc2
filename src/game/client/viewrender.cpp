@@ -934,8 +934,8 @@ void CSimpleRenderExecutor::AddView( CRendering3dView *pView )
 CViewRender::CViewRender()
 	: m_SimpleExecutor( this )
 {
-	m_flCheapWaterStartDistance = 0.0f;
-	m_flCheapWaterEndDistance = 0.1f;
+	m_flCheapWaterStartDistance = 8192.0f;
+	m_flCheapWaterEndDistance = 8192.1f;
 	m_BaseDrawFlags = 0;
 	m_pActiveRenderer = NULL;
 	m_pCurrentlyDrawingEntity = NULL;
