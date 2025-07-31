@@ -7062,7 +7062,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 	}
 
 	// in games with competitive integrity, we block respawn room respawns from happening
-	if ( TFGameRules()->IsCompetitiveGame() && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
+	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
 	{
 		bShouldNotRespawn = true;
 	}
@@ -7129,7 +7129,7 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 		return;
 
 	// Not in competitive games
-	if ( TFGameRules()->IsCompetitiveGame() )
+	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
 		return;
 
 	// Not if we're on the losing team
