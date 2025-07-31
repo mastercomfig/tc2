@@ -30,6 +30,7 @@ public:
 	virtual void UpdateBorder( void ) OVERRIDE;
 	virtual bool Update( void ) OVERRIDE;
 	int GetPreviousTeam( void ) { return m_iTeam; }
+	int GetPreviousClass(void) { return m_iPrevClass; }
 
 private:
 

@@ -614,7 +614,7 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	if ( iLocalTeam >= FIRST_GAME_TEAM )
 	{
 		// doing this so we can share between the two.
-		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS : TF_FIRST_NORMAL_CLASS;
+		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS - 1 : TF_FIRST_NORMAL_CLASS;
 		for (int nClass = iFirstClass; nClass >= TF_FIRST_NORMAL_CLASS; nClass--)
 		{
 			// we want to sort the images to match the class menu selections
@@ -640,6 +640,11 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 				}
 
 				pPanel->SetPlayerIndex(i);
+
+				if (bClassOrder && pPanel->GetPreviousClass() != nCurrentClass)
+				{
+					bNeedsLayout = true;
+				}
 
 				if (pPanel->GetPreviousTeam() != pPanel->GetTeam())
 				{
