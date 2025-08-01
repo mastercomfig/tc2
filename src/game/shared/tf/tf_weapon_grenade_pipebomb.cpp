@@ -464,12 +464,18 @@ CTFGrenadePipebombProjectile* CTFGrenadePipebombProjectile::Create( const Vector
 		// Set the pipebomb mode before calling spawn, so the model & associated vphysics get setup properly
 		pGrenade->SetPipebombMode( iPipeBombDetonateType );
 		DispatchSpawn( pGrenade );
-
-		pGrenade->InitGrenade( velocity, angVelocity, pOwner, weaponInfo );
+		if (iPipeBombType == -1)
+		{
+			pGrenade->InitGrenade(velocity, angVelocity, pOwner, 100.0f, 146.0f); // stickbomb hack
+		}
+		else
+		{
+			pGrenade->InitGrenade( velocity, angVelocity, pOwner, weaponInfo ); // normal
+		}
 		pGrenade->SetDamage( pGrenade->GetDamage() * flMultDmg );
 		pGrenade->SetFullDamage( pGrenade->GetDamage() );
 
-		if ( pGrenade->m_iType != TF_GL_MODE_REMOTE_DETONATE )
+		if ( pGrenade->m_iType != TF_GL_MODE_REMOTE_DETONATE && iPipeBombType != -1 )
 		{
 			// Some hackery here. Reduce the damage, so that if we explode on timeout,
 			// we'll do less damage. If we explode on contact, we'll restore this to full damage.

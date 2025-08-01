@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "tf_weapon_bottle.h"
 #include "decals.h"
+#include "tf_weapon_grenade_pipebomb.h"
 
 // Client specific.
 #ifdef CLIENT_DLL
@@ -253,13 +254,24 @@ void CTFStickBomb::Smack( void )
 
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
-			int dmgType = DMG_BLAST | DMG_NOCLOSEDISTANCEMOD;
-			if ( IsCurrentAttackACrit() )
+			int dmgType = DMG_BLAST | DMG_NOCLOSEDISTANCEMOD | DMG_HALF_FALLOFF;
+			const bool bIsCrit = IsCurrentAttackACrit();
+			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, explosion, explosion, 75.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
-			CTFRadiusDamageInfo radiusinfo( &info, explosion, 100.f );
+			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, explosion, explosion, 50.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
+			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
 			TFGameRules()->RadiusDamage( radiusinfo );
+
+			CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create(vecSwingStart, QAngle(180, 0, 0), Vector(0, 0, 100), vec3_origin, pTFPlayer, GetTFWpnData(), -1, 1.0f);
+			if (pProjectile)
+			{
+				pProjectile->SetLauncher(this);
+				pProjectile->SetCritical(bIsCrit);
+				pProjectile->SetModel(BaseClass::GetWorldModel());
+				pProjectile->SetDetonateTimerLength(0.7f);
+				UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
+			}
 		}
 #endif
 	}

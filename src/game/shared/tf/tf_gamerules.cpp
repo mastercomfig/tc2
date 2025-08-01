@@ -6020,11 +6020,13 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	{
 		switch( pWeapon->GetWeaponID() )
 		{
-			case TF_WEAPON_PIPEBOMBLAUNCHER :
-			case TF_WEAPON_GRENADELAUNCHER :
-			case TF_WEAPON_CANNON :
-			case TF_WEAPON_STICKBOMB :
+			case TF_WEAPON_PIPEBOMBLAUNCHER:
+			case TF_WEAPON_GRENADELAUNCHER:
+			case TF_WEAPON_CANNON:
 				flAdjustedDamage *= 0.75f;
+				break;
+			case TF_WEAPON_STICKBOMB:
+				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
 				break;
 		}
 	}
@@ -6793,8 +6795,12 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 
 			float flDistance = MAX( 1.0, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
-				
-			float flCenter = RemapValClamped( flDistance / flOptimalDistance, 0.0, 2.0, 1.0, 0.0 );
+			// let max weapon damage happen when the players are touching (within 1 unit of tolerance for collision issues)
+			float flMinAttackerRad = MIN(pAttacker->WorldAlignSize().x, pAttacker->WorldAlignSize().y);
+			float flMinVictimRad = MIN(pVictimBaseEntity->WorldAlignSize().x, pVictimBaseEntity->WorldAlignSize().y);
+			float flMinDistance = 0.5f * (flMinAttackerRad + flMinVictimRad) + 1.0f;
+			flMinDistance /= flOptimalDistance;
+			float flCenter = RemapValClamped( flDistance / flOptimalDistance, flMinDistance, 2.0, 1.0, 0.0 );
 			if ( ( flCenter > 0.5 && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5 )
 			{
 				if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
