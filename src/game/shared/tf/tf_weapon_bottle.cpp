@@ -268,6 +268,10 @@ void CTFStickBomb::Smack( void )
 			{
 				pProjectile->SetLauncher(this);
 				pProjectile->SetCritical(bIsCrit);
+				if (!bIsCrit && m_bMiniCrit)
+				{
+					pProjectile->IncrementDeflected(); // hack for minicrits
+				}
 				pProjectile->SetModel(BaseClass::GetWorldModel());
 				pProjectile->SetDetonateTimerLength(0.7f);
 				UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
