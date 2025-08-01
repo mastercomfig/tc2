@@ -6585,10 +6585,12 @@ bool CTFWeaponBase::CanBeCritBoosted( void )
 
 bool CTFWeaponBase::CanHaveRevengeCrits( void )
 {
+#if !(defined(MCOMS_BALANCE_PACK) || 1)
 	int iSapperCrits = 0;
 	CALL_ATTRIB_HOOK_INT( iSapperCrits, sapper_kills_collect_crits );
 	if ( iSapperCrits != 0 )
 		return true;
+#endif
 
 	int iExtinguishCrits = 0;
 	CALL_ATTRIB_HOOK_INT( iExtinguishCrits, extinguish_revenge );

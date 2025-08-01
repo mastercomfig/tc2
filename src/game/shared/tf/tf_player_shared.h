@@ -660,6 +660,10 @@ public:
 
 	int GetLastDuckStreakIncrement( void ) const	{ return m_nLastDuckStreakIncrement; }
 
+#ifdef GAME_DLL
+	void AddStuckJet(CTFPlayer* pAttacker, CTFWeaponBase* pWeapon, int iCount);
+	int GetStuckJets() const { return m_StuckJets.Count(); }
+#endif
 	void SetRevengeCrits( int iVal );
 	int GetRevengeCrits( void ) const { return m_iRevengeCrits; }
 	void IncrementRevengeCrits( void );
@@ -1049,6 +1053,16 @@ private:
 		int						nDmgType;
 	};
 	CUtlVector <bleed_struct_t> m_PlayerBleeds;
+
+	struct microjets_struct_t
+	{
+		CHandle<CTFPlayer>	hAttacker;
+		CHandle<CTFWeaponBase>  hWeapon;
+		int		iExplosionCount;
+		int		iCurrentExplosion;
+		float	m_flJetTime;
+	};
+	CUtlVector<microjets_struct_t> m_StuckJets;
 #endif // GAME_DLL
 
 	CNetworkVar( int, m_iTauntIndex );

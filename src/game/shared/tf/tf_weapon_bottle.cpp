@@ -259,7 +259,7 @@ void CTFStickBomb::Smack( void )
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, explosion, explosion, 50.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
+			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, 50.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
 			TFGameRules()->RadiusDamage( radiusinfo );
 

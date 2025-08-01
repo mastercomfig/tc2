@@ -136,6 +136,7 @@ ConVar tf_mvm_bot_flag_carrier_movement_penalty( "tf_mvm_bot_flag_carrier_moveme
 //ConVar tf_scout_dodge_move_penalty_duration( "tf_scout_dodge_move_penalty_duration", "3.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );
 //ConVar tf_scout_dodge_move_penalty( "tf_scout_dodge_move_penalty", "0.5", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );
 
+#define TF_BASE_STUCK_JET_TIME 0.5f
 
 #ifdef GAME_DLL
 ConVar tf_boost_drain_time( "tf_boost_drain_time", "15.0", FCVAR_DEVELOPMENTONLY, "Time is takes for a full health boost to drain away from a player.", true, 0.1, false, 0 );
@@ -1547,6 +1548,14 @@ void CTFPlayerShared::RemoveAllCond()
 			RemoveCond( (ETFCond)i );
 		}
 	}
+
+#ifdef GAME_DLL
+	// hack for now
+	if ( m_StuckJets.Count() )
+	{
+		m_StuckJets.RemoveAll();
+	}
+#endif
 
 	// Now remove all the rest
 	m_nPlayerCond = 0;
@@ -3059,6 +3068,61 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			RemoveCond( TF_COND_BLEEDING );
 		}
 	}
+
+#if defined(MCOMS_BALANCE_PACK) || 1
+	const int iJetCount = m_StuckJets.Count();
+	if ( iJetCount )
+	{
+		constexpr float JetBaseDamage = 5.0f;
+		constexpr float JetStackingIncrement = 0.05f;
+		const float Dmg = JetBaseDamage + JetBaseDamage * (iJetCount * JetStackingIncrement);
+		constexpr float BaseRadius = 146.0f * 1.75f / 7.0f;
+		const float Radius = BaseRadius * iJetCount;
+		FOR_EACH_VEC_BACK(m_StuckJets, i)
+		{
+			microjets_struct_t& jet = m_StuckJets[i];
+			if (TFGameRules() && TFGameRules()->IsTruceActive() && jet.hAttacker && jet.hAttacker->IsTruceValidForEnt())
+			{
+				m_StuckJets.FastRemove(i);
+			}
+			else if ((gpGlobals->curtime >= jet.m_flJetTime))
+			{
+				Vector explosion = m_pOuter->WorldSpaceCenter();
+
+				int dmgType = DMG_BLAST | DMG_USEDISTANCEMOD | DMG_HALF_FALLOFF;
+
+				CTakeDamageInfo info(jet.hAttacker, jet.hAttacker, jet.hWeapon, vec3_origin, explosion, Dmg, dmgType, 0, &explosion);
+				CTFRadiusDamageInfo radiusinfo(&info, explosion, Radius);
+				TFGameRules()->RadiusDamage(radiusinfo);
+
+				if (Radius >= 100.0f)
+				{
+					CPVSFilter filter(explosion);
+					TE_TFExplosion(filter, 0.0f, explosion, Vector(0, 0, 1), TF_WEAPON_GRENADELAUNCHER, jet.hAttacker->entindex(), -1, SPECIAL1, INVALID_STRING_INDEX);
+				}
+
+				if (jet.iExplosionCount <= jet.iCurrentExplosion)
+				{
+					m_StuckJets.FastRemove(i);
+					continue;
+				}
+
+				float flJetTime = TF_BASE_STUCK_JET_TIME / (1 << jet.iCurrentExplosion);
+				if (flJetTime < 0.075f)
+				{
+					flJetTime = 0.075f;
+				}
+				jet.m_flJetTime = gpGlobals->curtime + flJetTime; // ex. 0.5 / (1 ^ (2 * 1)) = 0.25
+				jet.iCurrentExplosion += 1;
+
+				// It's very possible we died from the take damage, which clears all our conditions
+				// and nukes m_StuckJets.  If that happens, bust out of this loop.
+				if (m_StuckJets.Count() == 0)
+					break;
+			}
+		}
+	}
+#endif
 
 	{
 		m_flSpyTranqBuffDuration = 0;
@@ -14502,11 +14566,32 @@ void CTFPlayerShared::IncrementRevengeCrits( void )
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::SetRevengeCrits( int iVal )
-{	
-	m_iRevengeCrits = clamp( iVal, 0, 35 );
+{
+	CTFWeaponBase* pWeapon = m_pOuter->GetActiveTFWeapon();
+	if (!pWeapon)
+		return;
 
-	CTFWeaponBase *pWeapon = m_pOuter->GetActiveTFWeapon();
-	if ( ( pWeapon && pWeapon->CanHaveRevengeCrits() ) )
+	int iMaxRevengeCrits = 35;
+	// find the revenge weapons
+	for (int i = FIRST_LOADOUT_SLOT_WITH_CHARGE_METER; i <= LAST_LOADOUT_SLOT_WITH_CHARGE_METER; ++i)
+	{
+		CBaseCombatWeapon* pSlotWeapon = m_pOuter->GetWeapon(i);
+		if (!pSlotWeapon)
+			continue;
+
+		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(pSlotWeapon);
+		if (!pSlotWeapon)
+			continue;
+
+		if (pTFWeapon->GetMaxRevengeCrits() < iMaxRevengeCrits )
+		{
+			iMaxRevengeCrits = pTFWeapon->GetMaxRevengeCrits();
+		}
+	}
+
+	m_iRevengeCrits = clamp( iVal, 0, iMaxRevengeCrits );
+	
+	if ( pWeapon->CanHaveRevengeCrits() )
 	{
 		if ( m_iRevengeCrits > 0 && !InCond( TF_COND_CRITBOOSTED ) )
 		{
@@ -14518,6 +14603,33 @@ void CTFPlayerShared::SetRevengeCrits( int iVal )
 		}
 	}
 }
+
+#ifdef GAME_DLL
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayerShared::AddStuckJet(CTFPlayer* pPlayer, CTFWeaponBase* pWeapon, int iCount)
+{
+	// Don't bother if they are dead
+	if (!m_pOuter->IsAlive())
+		return;
+
+	// Required for the CTakeDamageInfo we create later
+	Assert(pPlayer && pWeapon);
+	if (!pPlayer && !pWeapon)
+		return;
+
+	microjets_struct_t jetinfo =
+	{
+		pPlayer,
+		pWeapon,
+		iCount,
+		1,
+		gpGlobals->curtime + TF_BASE_STUCK_JET_TIME,
+	};
+	m_StuckJets.AddToTail(jetinfo);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 

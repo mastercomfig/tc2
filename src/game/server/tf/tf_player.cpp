@@ -10785,6 +10785,19 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		m_Shared.MakeBleed( pTFAttacker, dynamic_cast< CTFWeaponBase * >( info.GetWeapon() ), flBleedingTime );
 	}
 
+#if defined(MCOMS_BALANCE_PACK) || 1
+	if ( pTFAttacker && !(info.GetDamageType() & DMG_BLAST) )
+	{
+		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
+		int iSapperCrits = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pTFWeapon, iSapperCrits, sapper_kills_collect_crits);
+		if (iSapperCrits != 0)
+		{
+			m_Shared.AddStuckJet(pTFAttacker, pTFWeapon, pTFAttacker->m_Shared.GetRevengeCrits() + 1);
+		}
+	}
+#endif
+
 	// Don't recieve reflected damage if you are carrying Reflect (prevents a loop in a game with two Reflect players)
 	if ( ( info.GetDamageType() & TF_DMG_CUSTOM_RUNE_REFLECT ) && m_Shared.GetCarryingRuneType() == RUNE_REFLECT )
 	{

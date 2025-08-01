@@ -170,6 +170,8 @@ void CTFRevolver::PrimaryAttack( void )
 
 	m_flLastAccuracyCheck = gpGlobals->curtime;
 
+
+#if !(defined(MCOMS_BALANCE_PACK) || 1)
 	if ( SapperKillsCollectCrits() )
 	{
 		// Do this after the attack, so that we know if we are doing custom damage
@@ -183,6 +185,7 @@ void CTFRevolver::PrimaryAttack( void )
 			}
 		}
 	}
+#endif
 #ifdef GAME_DLL
 	// Lower bonus for each attack
 	int iExtraDamageOnHitPenalty = 0;
@@ -202,9 +205,18 @@ float CTFRevolver::GetWeaponSpread( void )
 {
 	float fSpread = BaseClass::GetWeaponSpread();
 
-	if ( CanHeadshot() )
+#if defined(MCOMS_BALANCE_PACK) || 1
+	int iMode = 0;
+	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
+	const bool bCanHeadshot = (iMode == 1);
+#else
+	const bool bCanHeadshot = CanHeadshot();
+#endif
+
+	if ( bCanHeadshot )
 	{
 #if defined(MCOMS_BALANCE_PACK) || 1
+
 		// Always accurate
 		fSpread = 0.0f;
 #else
@@ -269,6 +281,9 @@ int CTFRevolver::GetCount( void )
 //-----------------------------------------------------------------------------
 const char* CTFRevolver::GetEffectLabelText( void )
 {
+#if defined(MCOMS_BALANCE_PACK) || 1
+	return "#TF_BONUS";
+#else
 	int iExtraDamageOnHit = 0;
 	CALL_ATTRIB_HOOK_INT( iExtraDamageOnHit, extra_damage_on_hit );
 	if ( iExtraDamageOnHit )
@@ -276,6 +291,7 @@ const char* CTFRevolver::GetEffectLabelText( void )
 		return "#TF_BONUS";
 	}
 	return "#TF_CRITS";
+#endif
 }
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -286,6 +302,7 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
+#if !(defined(MCOMS_BALANCE_PACK) || 1)
 		if ( SapperKillsCollectCrits() )
 		{	
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -293,6 +310,7 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 				pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
 			}
 		}
+#endif
 
 		if ( HasLastShotCritical() )
 		{
@@ -313,6 +331,7 @@ bool CTFRevolver::Deploy( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
+#if !(defined(MCOMS_BALANCE_PACK) || 1)
 		if ( SapperKillsCollectCrits() )
 		{
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -320,6 +339,7 @@ bool CTFRevolver::Deploy( void )
 				pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED );
 			}
 		}
+#endif
 
 		if ( HasLastShotCritical() )
 		{
@@ -364,6 +384,13 @@ float CTFRevolver::GetProjectileDamage( void )
 			flDamageMod = 1.0f + ( Min( 200, pOwner->m_Shared.GetDecapitations() ) * 0.01f );
 		}
 	}
+#if defined(MCOMS_BALANCE_PACK) || 1
+	if (SapperKillsCollectCrits())
+	{
+		// low initial damage
+		flDamageMod *= 0.3f;
+	}
+#endif
 
 	return BaseClass::GetProjectileDamage() * flDamageMod;
 }

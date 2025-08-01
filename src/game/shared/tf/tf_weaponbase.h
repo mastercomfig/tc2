@@ -340,6 +340,7 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	virtual bool OwnerCanTaunt( void ) { return true; }
 	virtual bool CanBeCritBoosted( void );
 	bool CanHaveRevengeCrits( void );
+	virtual int GetMaxRevengeCrits(void) { return 35; }
 
 	virtual const CEconItemView *GetTauntItem() const;
 

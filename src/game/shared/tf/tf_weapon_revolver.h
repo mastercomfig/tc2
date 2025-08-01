@@ -46,10 +46,9 @@ public:
 
 	virtual bool	DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 	bool			CanHeadshot(void) const
 	{
-		bool bCanAttackWhileCloaked = false;
 		// L'Etranger can't headshot
 		int iAddCloakOnHit = 0;
 		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
@@ -68,6 +67,8 @@ public:
 #endif
 
 	bool			SapperKillsCollectCrits( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, sapper_kills_collect_crits ); return (iMode == 1); };
+
+	virtual int GetMaxRevengeCrits(void) OVERRIDE { return 10; }
 
 	virtual bool		Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	virtual bool		Deploy( void );
