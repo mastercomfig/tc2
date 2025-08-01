@@ -11,8 +11,10 @@
 // Client specific.
 #ifdef CLIENT_DLL
 #include "c_tf_player.h"
+#include "c_basedoor.h"
 // Server specific.
 #else
+#include "doors.h"
 #include "soundent.h"
 #include "te_effect_dispatch.h"
 #include "tf_player.h"
@@ -539,7 +541,10 @@ void CTFProjectile_Jar::PipebombTouch( CBaseEntity *pOther )
 	{
 		// Exception to this rule - if we're a jar or milk, and our potential victim is on fire, then allow collision after all.
 		// If we're a jar or milk, then still allow collision if our potential victim is on fire.
-		if (m_iProjectileType == TF_PROJECTILE_JAR || m_iProjectileType == TF_PROJECTILE_JAR_MILK)
+		// This condition only applies to non-cleaver jars, since there's so many jar types capable of extinguishing.
+		if ( m_iProjectileType != TF_PROJECTILE_CLEAVER && 
+			m_iProjectileType != TF_PROJECTILE_SPELL && 
+			m_iProjectileType != TF_PROJECTILE_THROWABLE)
 		{
 			auto victim = ToTFPlayer(pOther);
 			if (!victim->m_Shared.InCond(TF_COND_BURNING))
@@ -943,7 +948,39 @@ CTFProjectile_Jar *CTFCleaver::CreateJarProjectile( const Vector &position, cons
 {
 	return CTFProjectile_Cleaver::Create( position, angles, velocity, angVelocity, pOwner, weaponInfo, GetSkin() );
 }
+
 #endif
+
+//-----------------------------------------------------------------------------
+// Purpose: Determines if there is space to create a cleaver. 
+//			The player technically has a 0.1s window between this passing through and then aiming against the wall
+//			to get the cleaver through the it, but this is difficult to do so this bug has been effectively mitigated.
+//-----------------------------------------------------------------------------
+bool CTFCleaver::CanCreateCleaver(CTFPlayer* pPlayer)
+{
+	Vector vecForward, vecUp;
+	AngleVectors(pPlayer->EyeAngles(), &vecForward, NULL, &vecUp);
+	Vector vecCleaverStart = pPlayer->GetAbsOrigin() + Vector(0, 0, 50);
+	Vector vecCleaverlEnd = vecCleaverStart + vecForward * 32.f;
+
+	// Trace out and see if we hit a wall.
+	trace_t trace;
+	CTraceFilterSimple traceFilter(this, COLLISION_GROUP_NONE);
+	UTIL_TraceHull(vecCleaverStart, vecCleaverlEnd, -Vector(8, 8, 8), Vector(8, 8, 8), MASK_SOLID_BRUSHONLY, &traceFilter, &trace);
+	if (trace.DidHitWorld() || trace.startsolid)
+		return false;
+	else
+	{
+		if (trace.m_pEnt)
+		{
+			// Don't let the player throw the cleaver through doors.
+			CBaseDoor* pDoor = dynamic_cast<CBaseDoor*>(trace.m_pEnt);
+			if (pDoor)
+				return false;
+		}
+		return true;
+	}
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -953,6 +990,23 @@ float CTFCleaver::GetProjectileSpeed( void )
 	return TF_CLEAVER_LAUNCH_SPEED;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFCleaver::PrimaryAttack(void)
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return;
+
+	if ( CanCreateCleaver(pPlayer) )
+		return BaseClass::PrimaryAttack();
+
+	return;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
 //-----------------------------------------------------------------------------
 void CTFCleaver::SecondaryAttack( void )
 {
@@ -1129,6 +1183,14 @@ void CTFProjectile_Cleaver::Detonate( void )
 	UTIL_TraceLine ( vecSpot, vecSpot + Vector ( 0, 0, -32 ), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, & tr);
 
 	Explode( &tr, GetDamageType() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFProjectile_Cleaver::DetonateThink(void)
+{
+	// nothing here, so the cleaver never fizzles out
 }
 
 //-----------------------------------------------------------------------------

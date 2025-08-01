@@ -222,7 +222,8 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 		 !pOther->IsSolid() ||
 		 pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) ||
 		 ( pOther->GetCollisionGroup() == TFCOLLISION_GROUP_RESPAWNROOMS ) ||
-		 pOther->IsFuncLOD() )
+		 pOther->IsFuncLOD() ||
+		pOther->GetFlags() & FL_WORLDBRUSH) // Hack for func_brushes
 	{
 		return;
 	}
@@ -257,7 +258,8 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 	if ( bCombatEntity )
 	{
 		// Bison projectiles shouldn't collide with friendly things
-		if ( ShouldPenetrate() && ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < tf_bison_tick_time.GetFloat() ) )
+		// Pomson projectiles shouldn't collide with nearby teammates
+		if ( ( ShouldPenetrate() || !CanCollideWithTeammates() ) && ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < tf_bison_tick_time.GetFloat() ) )
 			return;
 
 		m_flLastHitTime = gpGlobals->curtime;

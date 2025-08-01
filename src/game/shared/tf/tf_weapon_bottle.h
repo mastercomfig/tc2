@@ -102,6 +102,7 @@ public:
 
 	void				SetDetonated( int iVal ) { m_iDetonated = iVal; }
 	int					GetDetonated( void ) { return m_iDetonated; }
+	virtual void		OnResourceMeterFilled() OVERRIDE;
 
 private:
 

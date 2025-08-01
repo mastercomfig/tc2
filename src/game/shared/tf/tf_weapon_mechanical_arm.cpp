@@ -250,12 +250,13 @@ void CTFMechanicalArm::SecondaryAttack( void )
 
 	if ( ShockAttack() )
 	{
+		CalcIsAttackCritical();
 		WeaponSound( SPECIAL3 );
 #ifdef GAME_DLL
 		Vector vecForward, vecRight, vecUp;
 		AngleVectors( pOwner->EyeAngles(), &vecForward, &vecRight, &vecUp );
 
-		float fRight = 8.f;
+		float fRight = 15.f;
 		if ( IsViewModelFlipped() )
 		{
 			fRight *= -1;
@@ -264,7 +265,7 @@ void CTFMechanicalArm::SecondaryAttack( void )
 // 		vecSrc = vecSrc + ( vecUp * -9.0f ) + ( vecRight * 7.0f ) + ( vecForward * 3.0f );
 		Vector vecSrc = pOwner->EyePosition()
 			+ ( vecForward * 40.f )
-			+ ( vecRight * 15.f )
+			+ ( vecRight * fRight )
 			+ ( vecUp * -10.f );
 
 		QAngle angForward = pOwner->EyeAngles();
@@ -287,7 +288,8 @@ void CTFMechanicalArm::SecondaryAttack( void )
 				pOrb->SetAbsVelocity( vForward * tf_mecharm_orb_speed );
 
 				pOrb->ChangeTeam( pOwner->GetTeamNumber() );
-				pOrb->SetCritical( false );
+				pOrb->SetCritical( IsCurrentAttackACrit() );
+//				pOrb->SetCritical( false );
 
 				DispatchSpawn( pOrb );
 			}
@@ -479,6 +481,8 @@ void CTFMechanicalArm::PrimaryAttack()
 	//int nAmmoToTake = bShocked ? 0 : GetAmmoPerShot();
 	//pOwner->RemoveAmmo( nAmmoToTake, m_iPrimaryAmmoType );
 
+	CalcIsAttackCritical(); // fix for weapon being incapable of dealing critical hits with primary fire
+
 	FireProjectile( pPlayer );
 #endif
 
@@ -643,6 +647,9 @@ bool CTFProjectile_MechanicalArmOrb::ShouldProjectileIgnore( CBaseEntity *pOther
 	if ( pOther->IsFuncLOD() )
 		return true;
 
+	if ( pOther->GetFlags() & FL_WORLDBRUSH )
+		return true;
+
 	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 	if ( pTrace->surface.flags & CONTENTS_LADDER )
 		return true;
@@ -745,7 +752,14 @@ void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap, bool bCanHi
 	info.SetDamage( tf_mecharm_orb_zap_damage );
 	info.SetDamageCustom( TF_DMG_CUSTOM_PLASMA );
 	info.SetDamagePosition( GetAbsOrigin() );
-	info.SetDamageType( DMG_SHOCK );
+
+	// the short circuit already can't random crit, so this is in place for when the owner is crit boosted via external means.
+	int iDmgType = DMG_SHOCK;
+	if ( IsCritical() )
+	{
+		iDmgType |= DMG_CRITICAL;
+	}
+	info.SetDamageType( iDmgType );
 
 	CBaseEntity *pListOfEntities[5];
 	int iEntities = UTIL_EntitiesInSphere( pListOfEntities, 5, GetAbsOrigin(), tf_mecharm_orb_size, FL_CLIENT | FL_FAKECLIENT | FL_NPC );

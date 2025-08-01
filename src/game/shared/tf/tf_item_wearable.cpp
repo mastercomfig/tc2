@@ -812,6 +812,34 @@ ShadowType_t CTFWearableVM::ShadowCastType( void )
 
 	return SHADOWS_RENDER_TO_TEXTURE;
 }
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//		Allow botkiller attachments and server mod viewmodel VMs to properly flip with the player's weapon.
+//-----------------------------------------------------------------------------
+int CTFWearableVM::InternalDrawModel(int flags)
+{
+	C_TFPlayer* pOwner = ToTFPlayer(GetOwnerEntity());
+
+	CMatRenderContextPtr pRenderContext(materials);
+
+	if (pOwner)
+	{
+		CTFWeaponBase* pWpn = pOwner->GetActiveTFWeapon();
+
+		if (pWpn)
+		{
+			if (pWpn->IsViewModelFlipped())
+				pRenderContext->CullMode(MATERIAL_CULLMODE_CW);
+		}
+	}
+
+	int ret = BaseClass::InternalDrawModel(flags);
+
+	pRenderContext->CullMode(MATERIAL_CULLMODE_CCW);
+
+	return ret;
+}
 #endif
 
 

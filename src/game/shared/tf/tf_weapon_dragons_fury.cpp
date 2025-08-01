@@ -109,6 +109,8 @@ void CTFWeaponFlameBall::PrimaryAttack( void )
 #else
 	C_CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
 #endif
+	// the DF does not list a "no random crits" stat, therefore it should random crit
+	CalcIsAttackCritical();
 
 	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
 
@@ -147,14 +149,14 @@ CBaseEntity* CTFWeaponFlameBall::FireProjectile( CTFPlayer *pPlayer )
 	Vector vecForward, vecRight, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
 
-	float fRight = 8.f;
+	float fRight = 7.f;
 	if ( IsViewModelFlipped() )
 	{
 		fRight *= -1;
 	}
 	Vector vecSrc = pPlayer->Weapon_ShootPosition();
 	// Shoot from the right location
-	vecSrc = vecSrc + (vecUp * -9.0f) + (vecRight * 7.0f) + (vecForward * 3.0f);
+	vecSrc = vecSrc + (vecUp * -9.0f) + (vecRight * fRight) + (vecForward * 3.0f);
 
 	QAngle angForward = pPlayer->EyeAngles();
 
@@ -180,7 +182,7 @@ CBaseEntity* CTFWeaponFlameBall::FireProjectile( CTFPlayer *pPlayer )
 
 		pRocket->SetDamage( 20 );
 		pRocket->ChangeTeam( pPlayer->GetTeamNumber() );
-		pRocket->SetCritical( pPlayer->m_Shared.IsCritBoosted() );
+		pRocket->SetCritical( IsCurrentAttackACrit() );
 
 		DispatchSpawn( pRocket );
 

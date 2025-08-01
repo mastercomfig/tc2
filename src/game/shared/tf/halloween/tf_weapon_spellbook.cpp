@@ -939,14 +939,14 @@ void CTFSpellBook::TossJarThink( void )
 	Vector vecForward, vecRight, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
 
-	float fRight = 8.f;
+	float fRight = 7.f;
 	if ( IsViewModelFlipped() )
 	{
 		fRight *= -1;
 	}
 	Vector vecSrc = pPlayer->Weapon_ShootPosition();
 	// Make spell toss position at the hand
-	vecSrc = vecSrc + (vecUp * -9.0f) + (vecRight * 7.0f) + (vecForward * 3.0f);
+	vecSrc = vecSrc + (vecUp * -9.0f) + (vecRight * fRight) + (vecForward * 3.0f);
 
 	Vector vecVelocity = GetVelocityVector( vecForward, vecRight, vecUp ) * pSpellData->m_flSpeedScale;
 	QAngle angForward = pPlayer->EyeAngles();
@@ -1417,6 +1417,7 @@ bool CTFSpellBook::CastRocketJump( CTFPlayer *pPlayer )
 	CTakeDamageInfo info;
 	info.SetAttacker( pPlayer );
 	info.SetInflictor( pPlayer ); 
+	info.SetWeapon( pPlayer->GetActiveWeapon() );
 	info.SetDamage( 20.f );
 	info.SetDamageCustom( TF_DMG_CUSTOM_SPELL_BLASTJUMP );
 	info.SetDamagePosition( origin );
@@ -1716,6 +1717,8 @@ public:
 		if ( pBaseTarget->GetTeamNumber() == GetTeamNumber() )
 			return;
 
+		CBaseEntity* pInflictor = GetLauncher();
+
 		if ( pTarget )
 		{
 			if ( pTarget->m_Shared.IsInvulnerable() )
@@ -1724,13 +1727,13 @@ public:
 			if ( pTarget->m_Shared.InCond( TF_COND_PHASE ) || pTarget->m_Shared.InCond( TF_COND_PASSTIME_INTERCEPTION ) )
 				return;
 
-			pTarget->m_Shared.SelfBurn( 5.0f );
+			// self burn from an enemy projectile just feels wrong. credit the damager properly
+			pTarget->m_Shared.Burn( pThrower, dynamic_cast<CTFWeaponBase*>( pInflictor ), 5.0f );
 		}
 
 		const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 		trace_t *pNewTrace = const_cast<trace_t*>( pTrace );
 
-		CBaseEntity *pInflictor = GetLauncher();
 		CTakeDamageInfo info;
 		info.SetAttacker( pThrower );
 		info.SetInflictor( this ); 

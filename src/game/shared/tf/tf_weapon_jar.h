@@ -114,11 +114,14 @@ public:
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_CLEAVER; }
 	virtual float		GetProjectileSpeed( void );
 
+	virtual void		PrimaryAttack(void);
 	virtual void		SecondaryAttack( void );
 
 	virtual const char*			GetEffectLabelText( void ) { return "#TF_CLEAVER"; }
 
 	virtual float		InternalGetEffectBarRechargeTime( void ) { return 5.1; }
+
+	virtual bool		CanCreateCleaver(CTFPlayer* pPlayer);
 
 #ifdef GAME_DLL
 	virtual const AngularImpulse GetAngularImpulse( void ){ return AngularImpulse( 0, 500, 0 ); }
@@ -244,6 +247,7 @@ public:
 	virtual void		OnHit( CBaseEntity *pOther ) OVERRIDE;
 	virtual void		Explode( trace_t *pTrace, int bitsDamageType ) OVERRIDE;
 	virtual void		Detonate() OVERRIDE;
+	virtual void		DetonateThink() OVERRIDE;
 	virtual const char* GetImpactEffect() OVERRIDE { return ""; }
 	virtual ETFCond		GetEffectCondition( void ) OVERRIDE { return TF_COND_BLEEDING; }
 	

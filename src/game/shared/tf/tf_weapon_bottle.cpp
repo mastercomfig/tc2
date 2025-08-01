@@ -226,6 +226,11 @@ void CTFStickBomb::Smack( void )
 	{
 		m_iDetonated = 1;
 		m_bBroken = true;
+		CTFPlayer* pOwner = GetTFPlayerOwner();
+		if (pOwner)
+		{
+			pOwner->m_Shared.SetItemChargeMeter(LOADOUT_POSITION_MELEE, 0.f);
+		}
 		SwitchBodyGroups();
 
 #ifdef GAME_DLL
@@ -258,6 +263,8 @@ void CTFStickBomb::Smack( void )
 			const bool bIsCrit = IsCurrentAttackACrit();
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
+			else if (m_bMiniCrit) // the explosion minicrits from the charge minicrit, too
+				dmgType |= DMG_RADIUS_MAX;
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, explosion, explosion, 50.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
@@ -357,3 +364,12 @@ void RecvProxy_Detonated( const CRecvProxyData *pData, void *pStruct, void *pOut
 }
 
 #endif
+
+void CTFStickBomb::OnResourceMeterFilled()
+{
+	CTFPlayer* pOwner = GetTFPlayerOwner();
+	if (!pOwner)
+		return;
+
+	WeaponRegenerate();
+}
