@@ -4953,7 +4953,7 @@ void SpawnRunes( void )
 
 void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 {
-	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && bForceRespawn )
+	if (!bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && !PlayersAreOnMatchSummaryStage() )
 	{
 		bool bShouldSkipRespawn = false;
 		// Skip the respawn at the beginning of a round in casual/comp mode since we already
@@ -5926,6 +5926,17 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 		filterPlayers.SetPassEntity( tr.m_pEnt );
 		CTraceFilterChain filterSelf( &filterPlayers, &filterCombatItems );
 		UTIL_TraceLine( vecSrc, vecMainSpot, MASK_RADIUS_DAMAGE, &filterSelf, &tr );
+	}
+
+	bool bDebug = false;
+	if (bDebug)
+	{
+		NDebugOverlay::Box( 
+			vecSrc, 
+			-Vector( -1, -1, -1) * flInnerRadiusPct, 
+			Vector( 1, 1, 1 ) * flInnerRadiusPct, 
+			255, 0, 0, 20, 1.0f
+		);
 	}
 
 	// If we don't trace the whole way to the target, and we didn't hit the target entity, we're blocked, so do a more robust check
