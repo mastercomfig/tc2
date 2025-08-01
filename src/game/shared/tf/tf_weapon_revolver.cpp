@@ -216,7 +216,6 @@ float CTFRevolver::GetWeaponSpread( void )
 	if ( bCanHeadshot )
 	{
 #if defined(MCOMS_BALANCE_PACK) || 1
-
 		// Always accurate
 		fSpread = 0.0f;
 #else
