@@ -254,12 +254,12 @@ void CTFStickBomb::Smack( void )
 
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
-			int dmgType = DMG_BLAST | DMG_NOCLOSEDISTANCEMOD | DMG_HALF_FALLOFF;
+			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE;
 			const bool bIsCrit = IsCurrentAttackACrit();
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, 50.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
+			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, 75.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
 			TFGameRules()->RadiusDamage( radiusinfo );
 

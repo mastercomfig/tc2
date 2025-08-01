@@ -9452,7 +9452,18 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			VectorNormalize( vecDir );
 		}
 
-		ApplyPushFromDamage( info, vecDir );
+		if ((info.GetDamageType() & DMG_PREVENT_PHYSICS_FORCE) == 0)
+		{
+			if (info.GetInflictor() && (GetMoveType() == MOVETYPE_WALK) &&
+				(!pAttacker->IsSolidFlagSet(FSOLID_TRIGGER)) &&
+				(!m_Shared.InCond(TF_COND_DISGUISED)))
+			{
+				if (!m_Shared.IsImmuneToPushback())
+				{
+					ApplyPushFromDamage(info, vecDir);
+				}
+			}
+		}
 
 		if ( m_Shared.InCond( TF_COND_PHASE ) )
 		{
@@ -10793,7 +10804,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(pTFWeapon, iSapperCrits, sapper_kills_collect_crits);
 		if (iSapperCrits != 0)
 		{
-			m_Shared.AddStuckJet(pTFAttacker, pTFWeapon, pTFAttacker->m_Shared.GetRevengeCrits() + 1);
+			m_Shared.AddStuckJet(pTFAttacker, pTFWeapon, pTFAttacker->m_Shared.GetRevengeCrits() + 2);
 		}
 	}
 #endif

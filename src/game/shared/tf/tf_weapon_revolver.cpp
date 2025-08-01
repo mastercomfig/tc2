@@ -244,7 +244,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 	{
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
-		flScale = RemapValClamped( flTimeSinceCheck, 1.0f, 0.5f, 0.75f, 2.5f );
+		flScale = RemapValClamped(flTimeSinceCheck, 1.0f, 0.5f, 0.75f, 2.5f);
 	}
 	else
 	{
@@ -387,7 +387,7 @@ float CTFRevolver::GetProjectileDamage( void )
 	if (SapperKillsCollectCrits())
 	{
 		// low initial damage
-		flDamageMod *= 0.3f;
+		flDamageMod *= 0.47f;
 	}
 #endif
 

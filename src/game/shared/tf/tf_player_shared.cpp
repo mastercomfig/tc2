@@ -3073,10 +3073,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	const int iJetCount = m_StuckJets.Count();
 	if ( iJetCount )
 	{
-		constexpr float JetBaseDamage = 5.0f;
+		constexpr float JetBaseDamage = 15.0f;
 		constexpr float JetStackingIncrement = 0.05f;
 		const float Dmg = JetBaseDamage + JetBaseDamage * (iJetCount * JetStackingIncrement);
-		constexpr float BaseRadius = 146.0f * 1.75f / 7.0f;
+		constexpr float BaseRadius = 146.0f * 3.0f / 7.0f;
 		const float Radius = BaseRadius * iJetCount;
 		FOR_EACH_VEC_BACK(m_StuckJets, i)
 		{
@@ -3089,7 +3089,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			{
 				Vector explosion = m_pOuter->WorldSpaceCenter();
 
-				int dmgType = DMG_BLAST | DMG_USEDISTANCEMOD | DMG_HALF_FALLOFF;
+				int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
 
 				CTakeDamageInfo info(jet.hAttacker, jet.hAttacker, jet.hWeapon, vec3_origin, explosion, Dmg, dmgType, 0, &explosion);
 				CTFRadiusDamageInfo radiusinfo(&info, explosion, Radius);
@@ -3098,7 +3098,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 				if (Radius >= 100.0f)
 				{
 					CPVSFilter filter(explosion);
-					TE_TFExplosion(filter, 0.0f, explosion, Vector(0, 0, 1), TF_WEAPON_GRENADELAUNCHER, jet.hAttacker->entindex(), -1, SPECIAL1, INVALID_STRING_INDEX);
+					TE_TFExplosion(filter, 0.0f, explosion, Vector(0, 0, 1), TF_WEAPON_GRENADE_PIPEBOMB, kInvalidEHandleExplosion, -1, SPECIAL1, INVALID_STRING_INDEX);
 				}
 
 				if (jet.iExplosionCount <= jet.iCurrentExplosion)
