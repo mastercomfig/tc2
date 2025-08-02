@@ -6023,11 +6023,16 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 			case TF_WEAPON_PIPEBOMBLAUNCHER:
 			case TF_WEAPON_GRENADELAUNCHER:
 			case TF_WEAPON_CANNON:
+#if !defined(MCOMS_BALANCE_PACK)
+			case TF_WEAPON_STICKBOMB:
+#endif
 				flAdjustedDamage *= 0.75f;
 				break;
+#if defined(MCOMS_BALANCE_PACK)
 			case TF_WEAPON_STICKBOMB:
 				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
 				break;
+#endif
 		}
 	}
 
@@ -6746,7 +6751,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 		// SMG headshots falloff
 		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
 		{

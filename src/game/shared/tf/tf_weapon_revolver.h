@@ -46,7 +46,7 @@ public:
 
 	virtual bool	DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 	bool			CanHeadshot(void) const
 	{
 		// L'Etranger can't headshot

@@ -171,7 +171,7 @@ void CTFRevolver::PrimaryAttack( void )
 	m_flLastAccuracyCheck = gpGlobals->curtime;
 
 
-#if !(defined(MCOMS_BALANCE_PACK) || 1)
+#if !(defined(MCOMS_BALANCE_PACK) || 0)
 	if ( SapperKillsCollectCrits() )
 	{
 		// Do this after the attack, so that we know if we are doing custom damage
@@ -205,7 +205,7 @@ float CTFRevolver::GetWeaponSpread( void )
 {
 	float fSpread = BaseClass::GetWeaponSpread();
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 	int iMode = 0;
 	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 	const bool bCanHeadshot = (iMode == 1);
@@ -215,7 +215,7 @@ float CTFRevolver::GetWeaponSpread( void )
 
 	if ( bCanHeadshot )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 		// Always accurate
 		fSpread = 0.0f;
 #else
@@ -280,7 +280,7 @@ int CTFRevolver::GetCount( void )
 //-----------------------------------------------------------------------------
 const char* CTFRevolver::GetEffectLabelText( void )
 {
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 	return "#TF_BONUS";
 #else
 	int iExtraDamageOnHit = 0;
@@ -301,7 +301,7 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !(defined(MCOMS_BALANCE_PACK) || 1)
+#if !(defined(MCOMS_BALANCE_PACK) || 0)
 		if ( SapperKillsCollectCrits() )
 		{	
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -330,7 +330,7 @@ bool CTFRevolver::Deploy( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !(defined(MCOMS_BALANCE_PACK) || 1)
+#if !(defined(MCOMS_BALANCE_PACK) || 0)
 		if ( SapperKillsCollectCrits() )
 		{
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -383,7 +383,7 @@ float CTFRevolver::GetProjectileDamage( void )
 			flDamageMod = 1.0f + ( Min( 200, pOwner->m_Shared.GetDecapitations() ) * 0.01f );
 		}
 	}
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) || 0
 	if (SapperKillsCollectCrits())
 	{
 		// low initial damage

@@ -235,6 +235,7 @@ void CTFStickBomb::Smack( void )
 			Vector vecForward; 
 			AngleVectors( pTFPlayer->EyeAngles(), &vecForward );
 			Vector vecSwingStart = pTFPlayer->WorldSpaceCenter();
+			Vector vecSwingEnd = vecSwingStart + vecForward * GetSwingRange();
 
 			Vector explosion = vecSwingStart;
 
@@ -254,15 +255,24 @@ void CTFStickBomb::Smack( void )
 
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
-			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE;
+#if defined(MCOMS_BALANCE_PACK)
+			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF;
+#else
+			int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
+#endif
 			const bool bIsCrit = IsCurrentAttackACrit();
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, 75.0f, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
+#if defined(MCOMS_BALANCE_PACK)
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
+#else
+			CTFRadiusDamageInfo radiusinfo( &info, explosion, 100.0f );
+#endif
 			TFGameRules()->RadiusDamage( radiusinfo );
 
+#if defined(MCOMS_BALANCE_PACK)
 			CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create(vecSwingStart, QAngle(180, 0, 0), Vector(0, 0, 100), vec3_origin, pTFPlayer, GetTFWpnData(), -1, 1.0f);
 			if (pProjectile)
 			{
@@ -276,6 +286,7 @@ void CTFStickBomb::Smack( void )
 				pProjectile->SetDetonateTimerLength(0.7f);
 				UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
 			}
+#endif
 		}
 #endif
 	}
