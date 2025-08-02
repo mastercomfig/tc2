@@ -680,7 +680,7 @@ extern ConVar tf_teleporter_fov_start;
 #ifdef GAME_DLL
 extern ConVar mp_holiday_nogifts;
 extern ConVar tf_debug_damage;
-extern ConVar tf_damage_range;
+ConVar tf_damage_range( "tf_damage_range", "0.5", FCVAR_DEVELOPMENTONLY );
 extern ConVar tf_damage_disablespread;
 extern ConVar tf_populator_damage_multiplier;
 extern ConVar tf_mm_trusted;
@@ -6783,7 +6783,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		// If we're doing any distance modification, we need to do that first
 		float flRandomDamage = info.GetDamage() * tf_damage_range.GetFloat();
 
-		float flRandomDamageSpread = 0.10f;
+		constexpr float flRandomDamageSpread = 0.10f;
 		float flCenter = 0.5f;
 		float flMin = flCenter - flRandomDamageSpread;
 		float flMax = flCenter + flRandomDamageSpread;
@@ -6848,8 +6848,15 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flRandomRangeVal;
 		if ( bNoDamageSpread )
 		{
-			// additional falloff based on old random range val.
-			flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.5f, 0.0f, flRandomDamageSpread, 0.0f);
+			if (bitsDamage & DMG_USEDISTANCEMOD)
+			{
+				flRandomRangeVal = flCenter;
+			}
+			else
+			{
+				// if center was lower, don't apply the full amount.
+				flRandomRangeVal = flMin + MIN(flCenter, flRandomDamageSpread);
+			}
 		}
 		else
 		{
@@ -6898,7 +6905,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 
 		// Random damage variance.
-		flDmgVariance = SimpleSplineRemapValClamped( flRandomRangeVal, 0, 1, -flRandomDamage, flRandomDamage );
+		flDmgVariance = SimpleSplineRemapValClamped( flRandomRangeVal, 0.0f, 1.0f, -flRandomDamage, flRandomDamage );
 		if ( ( bDoShortRangeDistanceIncrease && flDmgVariance > 0.f ) || bDoLongRangeDistanceDecrease )
 		{
 			flDamage += flDmgVariance;
