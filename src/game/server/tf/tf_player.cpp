@@ -2143,7 +2143,6 @@ void CTFPlayer::StrandedSpawnThink(void)
 	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.01f, "StrandedSpawnThink" );
 }
 
-#pragma optimize("", off)
 bool CTFPlayer::CheckStrandedSpawn(void)
 {
 	// if time elapsed
@@ -2228,7 +2227,6 @@ bool CTFPlayer::CheckStrandedSpawn(void)
 	return false;
 #endif
 }
-#pragma optimize("", on)
 
 //-----------------------------------------------------------------------------
 // Estimate where a projectile fired from the given weapon will initially hit (it may bounce on from there).
