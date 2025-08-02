@@ -998,7 +998,7 @@ void CClassLoadoutPanel::OnCancelSelection( void )
 //-----------------------------------------------------------------------------
 void CClassLoadoutPanel::RespawnPlayer()
 {
-	if ( tf_respawn_on_loadoutchanges.GetBool() && !TFGameRules()->IsCompetitiveGame() )
+	if ( tf_respawn_on_loadoutchanges.GetBool() )
 	{
 		// Tell the GC to tell server that we should respawn if we're in a respawn room
 		GCSDK::CGCMsg< MsgGCEmpty_t > msg( k_EMsgGCRespawnPostLoadoutChange );

@@ -310,7 +310,16 @@ void CFuncRespawnRoom::AddVisualizer( CFuncRespawnRoomVisualizer *pViz )
 //-----------------------------------------------------------------------------
 // Purpose: Is a given point contained within a respawn room?
 //-----------------------------------------------------------------------------
-bool PointInRespawnRoom( const CBaseEntity *pTarget, const Vector &vecOrigin, bool bTouching_SameTeamOnly /*= false*/ )
+bool PointInRespawnRoom(const CBaseEntity* pTarget, const Vector& vecOrigin, bool bTouching_SameTeamOnly /*= false*/)
+{
+	CFuncRespawnRoom* pRespawnRoom;
+	return GetMyRespawnRoom(pTarget, vecOrigin, pRespawnRoom, bTouching_SameTeamOnly);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool GetMyRespawnRoom( const CBaseEntity *pTarget, const Vector &vecOrigin, CFuncRespawnRoom*& pRespawnRoom, bool bTouching_SameTeamOnly /*= false*/ )
 {
 	// Find out whether we're in a respawn room or not
 	for ( int i=0; i<IFuncRespawnRoomAutoList::AutoList().Count(); ++i )

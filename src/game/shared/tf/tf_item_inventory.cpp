@@ -2086,7 +2086,7 @@ CON_COMMAND( load_itempreset, "Equip all items for a given preset on the player.
 	{
 		// Tell the GC to tell server that we should respawn if we're in a respawn room
 		extern ConVar tf_respawn_on_loadoutchanges;
-		if ( tf_respawn_on_loadoutchanges.GetBool() && !TFGameRules()->IsCompetitiveGame() )
+		if ( tf_respawn_on_loadoutchanges.GetBool() )
 		{
 			GCSDK::CGCMsg< ::MsgGCEmpty_t > msg( k_EMsgGCRespawnPostLoadoutChange );
 			GCClientSystem()->BSendMessage( msg );

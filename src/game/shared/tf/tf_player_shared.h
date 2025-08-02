@@ -677,6 +677,7 @@ public:
 
 	void IncrementRespawnTouchCount() { ++m_iSpawnRoomTouchCount; }
 	void DecrementRespawnTouchCount() { m_iSpawnRoomTouchCount = Max( m_iSpawnRoomTouchCount - 1, 0 ); }
+	bool IsInStrandedSpawn() { return m_bInStrandedSpawn; }
 	int GetRespawnTouchCount() const { return m_iSpawnRoomTouchCount; }
 
 #ifdef CLIENT_DLL
@@ -1186,6 +1187,8 @@ private:
 	float m_flChargeEndTime;
 
 	CNetworkVar( int,  m_iDisguiseBody );
+
+	CNetworkVar(bool, m_bInStrandedSpawn);
 
 	CNetworkVar( int,  m_iSpawnRoomTouchCount );
 

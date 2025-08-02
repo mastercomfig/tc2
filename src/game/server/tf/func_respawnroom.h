@@ -69,6 +69,7 @@ private:
 // Is a given point contained within a respawn room?
 //-----------------------------------------------------------------------------
 bool PointInRespawnRoom( const CBaseEntity *pEntity, const Vector &vecOrigin, bool bTouching_SameTeamOnly = false );
+bool GetMyRespawnRoom(const CBaseEntity* pEntity, const Vector& vecOrigin, CFuncRespawnRoom*& pRespawnRoom, bool bTouching_SameTeamOnly = false);
 
 bool PointsCrossRespawnRoomVisualizer( const Vector& vecStart, const Vector &vecEnd, int nTeamToIgnore = TEAM_UNASSIGNED );
 #endif // FUNC_RESPAWNROOM_H

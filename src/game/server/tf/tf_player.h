@@ -1113,6 +1113,8 @@ protected:
 	void				TFPlayerThink();
 	void				UpdateTimers( void );
 	void				PostSpawnThink( void );
+	void				StrandedSpawnThink( void );
+	bool				CheckStrandedSpawn(void);
 
 	// Regeneration due to being a Medic, or derived from items
 	void				RegenThink();

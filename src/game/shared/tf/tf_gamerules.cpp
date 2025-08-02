@@ -3067,7 +3067,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 	{
 		// only auto-start an emulated match if we have a 6v6 available (our smallest match group possible).
 		// otherwise, just keep waiting for players.
-		return iPlayerReadyCount >= 12;
+		return iPlayerReadyCount >= 6;
 	}
 
 	// Team isn't ready if there was nobody on it.
@@ -6784,13 +6784,14 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flRandomDamage = info.GetDamage() * tf_damage_range.GetFloat();
 
 		float flRandomDamageSpread = 0.10f;
-		float flMin = 0.5 - flRandomDamageSpread;
-		float flMax = 0.5 + flRandomDamageSpread;
-
-		if ( bitsDamage & DMG_USEDISTANCEMOD )
+		float flCenter = 0.5f;
+		float flMin = flCenter - flRandomDamageSpread;
+		float flMax = flCenter + flRandomDamageSpread;
+		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
+		if ( bitsDamage & DMG_USEDISTANCEMOD || bNoDamageSpread )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
-			float flOptimalDistance = 512.0;
+			float flOptimalDistance = 512.0f;
 
 			// Use Sentry position for distance mod
 			CObjectSentrygun *pSentry = GetSentryGunInflictor( info.GetInflictor() );
@@ -6806,25 +6807,29 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				flOptimalDistance *= 2.5f;
 			}
 
-			float flDistance = MAX( 1.0, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
+			float flDistance = MAX( 1.0f, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
 			// let max weapon damage happen when the players are touching (within 1 unit of tolerance for collision issues)
-			float flMinAttackerRad = MIN(pAttacker->WorldAlignSize().x, pAttacker->WorldAlignSize().y);
-			float flMinVictimRad = MIN(pVictimBaseEntity->WorldAlignSize().x, pVictimBaseEntity->WorldAlignSize().y);
-			float flMinDistance = 0.5f * (flMinAttackerRad + flMinVictimRad) + 1.0f;
+			float flMinAttackerExtent = MIN(pAttacker->WorldAlignSize().x, pAttacker->WorldAlignSize().y);
+			float flMinVictimExtent = MIN(pVictimBaseEntity->WorldAlignSize().x, pVictimBaseEntity->WorldAlignSize().y);
+			float flMinDistance = 0.5f * (flMinAttackerExtent + flMinVictimExtent) + 1.0f;
 			flMinDistance /= flOptimalDistance;
-			float flCenter = RemapValClamped( flDistance / flOptimalDistance, flMinDistance, 2.0, 1.0, 0.0 );
-			if ( ( flCenter > 0.5 && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5 )
+			flCenter = RemapValClamped( flDistance / flOptimalDistance, flMinDistance, 2.0f, 1.0f, 0.0f );
+			if ( ( flCenter > 0.5f && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5f )
 			{
-				if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
+				// We check again because tf_damage_disablespread can check our distance.
+				if (bitsDamage & DMG_USEDISTANCEMOD)
 				{
-					if ( flCenter > 0.5 )
+					if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
 					{
-						// Reduce the damage bonus at close range
-						flCenter = RemapVal( flCenter, 0.5, 1.0, 0.5, 0.65 );
+						if ( flCenter > 0.5f )
+						{
+							// Reduce the damage bonus at close range
+							flCenter = RemapVal( flCenter, 0.5f, 1.0f, 0.5f, 0.65f );
+						}
 					}
+					flMin = MAX(0.0f, flCenter - flRandomDamageSpread);
+					flMax = MIN(1.0f, flCenter + flRandomDamageSpread);
 				}
-				flMin = MAX( 0.0, flCenter - flRandomDamageSpread );
-				flMax = MIN( 1.0, flCenter + flRandomDamageSpread );
 
 				if ( bDebug )
 				{
@@ -6841,9 +6846,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 		//Msg("Range: %.2f - %.2f\n", flMin, flMax );
 		float flRandomRangeVal;
-		if ( tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION ) )
+		if ( bNoDamageSpread )
 		{
-			flRandomRangeVal = flMin + flRandomDamageSpread;
+			// additional falloff based on old random range val.
+			flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.5f, 0.0f, flRandomDamageSpread, 0.0f);
 		}
 		else
 		{
@@ -6871,7 +6877,6 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				}
 				break;
 			case TF_WEAPON_PIPEBOMBLAUNCHER :	// Stickies
-			case TF_WEAPON_GRENADELAUNCHER :
 			case TF_WEAPON_CANNON :
 				if ( !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
 				{
@@ -15742,7 +15747,14 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "+inspect_server" ) )
 		{
-			pTFPlayer->InspectButtonPressed();
+			if (pTFPlayer->m_Shared.IsInStrandedSpawn())
+			{
+				pTFPlayer->ForceRespawn();
+			}
+			else
+			{
+				pTFPlayer->InspectButtonPressed();
+			}
 		}
 		else if ( FStrEq( pszCommand, "-inspect_server" ) )
 		{

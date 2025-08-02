@@ -2130,6 +2130,106 @@ void CTFPlayer::PostSpawnThink( void )
 	}
 }
 
+void CTFPlayer::StrandedSpawnThink(void)
+{
+	if (!CheckStrandedSpawn())
+	{
+		// if we left, then we can't be stranded anymore
+		m_Shared.m_bInStrandedSpawn = false;
+		return;
+	}
+
+	m_Shared.m_bInStrandedSpawn = true;
+	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.01f, "StrandedSpawnThink" );
+}
+
+#pragma optimize("", off)
+bool CTFPlayer::CheckStrandedSpawn(void)
+{
+	// if time elapsed
+	if (m_flSpawnTime == 0.0f || gpGlobals->curtime - m_flSpawnTime >= 7.0f)
+	{
+		return false;
+	}
+
+	// if the player died, exit
+	if (!IsAlive())
+	{
+		return false;
+	}
+
+	// not spectator
+	if (GetTeamNumber() <= LAST_SHARED_TEAM)
+	{
+		return false;
+	}
+
+	// we don't care during match summary
+	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
+	if (bMatchSummary)
+	{
+		return false;
+	}
+
+	// left respawn room
+	if (m_Shared.GetRespawnTouchCount() <= 0)
+	{
+		return false;
+	}
+
+	// just allow players to respawn during first 7 seconds
+#if 1
+	return true;
+#else
+	CBaseEntity* pLastSpawnPoint = GetSpawnPoint();
+	if (!pLastSpawnPoint)
+	{
+		return false;
+	}
+	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
+	CFuncRespawnRoom* pLastRespawnRoom;
+	GetMyRespawnRoom(NULL, vLastSpawnPos, pLastRespawnRoom);
+
+	// An unfortunate copy of EntSelectSpawnPoint
+	CBaseEntity* pNewSpawnPoint = NULL;
+	// See if the map is asking to force this player to spawn at a specific location
+	if (GetRespawnLocationOverride() && !bMatchSummary)
+	{
+		SelectSpawnSpotByName(GetRespawnLocationOverride(), pNewSpawnPoint);
+
+		// If the entity doesn't exist - or isn't valid - let the regular system handle it
+	}
+
+	if (!pNewSpawnPoint)
+	{
+		const char* pSpawnPointName = "info_player_teamspawn";
+		SelectSpawnSpotByType(pSpawnPointName, pNewSpawnPoint);
+	}
+
+	if (pNewSpawnPoint)
+	{
+		// TODO: how to deal with random spawns? it should be fine since competitive maps don't seem to use them...
+		// if these spawn points are close together, it doesn't matter what the respawn room entity is.
+		const float flDistanceSq = (pNewSpawnPoint->GetAbsOrigin() - pLastSpawnPoint->GetAbsOrigin()).LengthSqr();
+		if ( flDistanceSq <= 512.0f * 512.0f )
+		{
+			return false;
+		}
+		// just make sure these don't share a respawn entity.
+		Vector vNewSpawnPos = pLastSpawnPoint->GetAbsOrigin();
+		CFuncRespawnRoom* pNewRespawnRoom;
+		GetMyRespawnRoom(NULL, vNewSpawnPos, pNewRespawnRoom);
+		if (pNewRespawnRoom != pLastRespawnRoom)
+		{
+			return true;
+		}
+	}
+
+	return false;
+#endif
+}
+#pragma optimize("", on)
+
 //-----------------------------------------------------------------------------
 // Estimate where a projectile fired from the given weapon will initially hit (it may bounce on from there).
 // NOTE: We should be able to directly compute this knowing initial velocity, angle, gravity, etc, 
@@ -3645,7 +3745,7 @@ void CTFPlayer::Spawn()
 		UpdateSkin( GetTeamNumber() );
 
 		// Prevent firing for a second so players don't blow their faces off
-		SetNextAttack( gpGlobals->curtime + 1.0 );
+		SetNextAttack( gpGlobals->curtime + 1.0f );
 
 		DoAnimationEvent( PLAYERANIMEVENT_SPAWN );
 
@@ -3948,7 +4048,10 @@ void CTFPlayer::Spawn()
 		SetHealth( GetMaxHealth() );
 	}
 
+	m_Shared.m_bInStrandedSpawn = false;
+
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
+	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.1f, "StrandedSpawnThink" );
 }
 
 //-----------------------------------------------------------------------------
@@ -7062,7 +7165,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 	}
 
 	// in games with competitive integrity, we block respawn room respawns from happening
-	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
+	if ( TFGameRules()->IsCompetitiveGame() && !m_Shared.IsInStrandedSpawn() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
 	{
 		bShouldNotRespawn = true;
 	}
@@ -7129,7 +7232,7 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 		return;
 
 	// Not in competitive games
-	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
+	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !m_Shared.IsInStrandedSpawn() )
 		return;
 
 	// Not if we're on the losing team
@@ -14739,7 +14842,7 @@ void CTFPlayer::ForceRespawn( void )
 	CTF_GameStats.Event_PlayerForceRespawn( this );
 
 	m_flSpawnTime = gpGlobals->curtime;
-	m_Shared.m_flHolsterAnimTime = 0.f;	// BRETT SAID I COULD DO THIS'
+	m_Shared.m_flHolsterAnimTime = 0.f;	// BRETT SAID I COULD DO THIS
 	// reset damage time for out of combat
 	SetLastEntityDamagedTime(0.0f);
 
