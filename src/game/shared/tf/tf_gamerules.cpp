@@ -7540,6 +7540,33 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					pVictim->PlayDamageResistSound( flOriginalDamage, flDamageBase );
 				}
 			}
+
+#if defined(MCOMS_BALANCE_PACK)
+			if ( pVictim->GetActiveTFWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
+			{
+				bool bShouldResist = true;
+				float flClassResourceLevelMod = 1.0f;
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pVictim->GetActiveTFWeapon(), flClassResourceLevelMod, mult_player_movespeed_resource_level);
+				if (flClassResourceLevelMod != 1.0f)
+				{
+					bShouldResist = false;
+				}
+				int iModHealthOnHit = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(pVictim->GetActiveTFWeapon(), iModHealthOnHit, add_onhit_addhealth);
+				if (iModHealthOnHit)
+				{
+					bShouldResist = false;
+				}
+				if (bShouldResist)
+				{
+					CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pVictim->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
+					if (pMedigun)
+					{
+						flDamageBase *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 0.5f);
+					}
+				}
+			}
+#endif
 		}
 
 		// If the damage changed at all play the resist sound

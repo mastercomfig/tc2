@@ -13,6 +13,7 @@
 #include "tf_weapon_jar.h"
 #include "tf_weapon_flaregun.h"
 #include "tf_projectile_energy_ring.h"
+#include "tf_weapon_medigun.h"
 
 #if !defined( CLIENT_DLL )	// Server specific.
 
@@ -986,6 +987,23 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 			}
 		}
 	}
+
+#if defined(MCOMS_BALANCE_PACK)
+	// Medic Uber
+	if (GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC && pPlayer)
+	{
+		int iModHealthOnHit = 0;
+		CALL_ATTRIB_HOOK_INT(iModHealthOnHit, add_onhit_addhealth);
+		if (iModHealthOnHit)
+		{
+			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
+			if (pMedigun)
+			{
+				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 2.0f);
+			}
+		}
+	}
+#endif
 
 	if ( GetWeaponProjectileType() == TF_PROJECTILE_BULLET )
 	{
