@@ -6877,8 +6877,9 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				}
 				break;
 			case TF_WEAPON_PIPEBOMBLAUNCHER :	// Stickies
+			case TF_WEAPON_GRENADELAUNCHER :
 			case TF_WEAPON_CANNON :
-				if ( !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
+				if ( !bNoDamageSpread && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
 				{
 					flRandomDamage *= 0.2f;
 				}
