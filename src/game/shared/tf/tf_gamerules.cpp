@@ -6854,8 +6854,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else
 			{
-				// if center was lower, don't apply the full amount.
-				flRandomRangeVal = flMin + MIN(flCenter, flRandomDamageSpread);
+				// additional falloff based on old random range val.
+				flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.35f, 0.0f, flRandomDamageSpread, 0.0f);
 			}
 		}
 		else
