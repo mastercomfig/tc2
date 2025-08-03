@@ -15,7 +15,7 @@
 #include "tier0/memdbgon.h"
 
 
-#if HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 // In Episodic we unify the NO_WORLD_ILLUMINATION lights to use 
 // the more efficient elight structure instead. This should theoretically
 // be extended to other projects but may have unintended consequences

@@ -254,7 +254,7 @@ bool CAI_ScriptConditions::EvalActorSeeTarget( const EvalArgs_t &args )
 
 		CAI_BaseNPC *pNPCActor = args.pActor->MyNPCPointer();
 
-#ifdef HL2_EPISODIC
+#if ( HL2_EPISODIC || !defined( HL2_DLL ) ) && !defined( PORTAL )
 		// This is the code we want to have written for HL2, but HL2 shipped without the QuerySeeEntity() call. This #ifdef really wants to be
 		// something like #ifndef HL2_RETAIL, since this change does want to be in any products that are built henceforth. (sjb)
 		bool fSee = pNPCActor->FInViewCone( args.pTarget ) && pNPCActor->FVisible( args.pTarget ) && pNPCActor->QuerySeeEntity( args.pTarget );

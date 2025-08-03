@@ -1260,7 +1260,7 @@ void CBaseAnimating::HandleAnimEvent( animevent_t *pEvent )
 			BecomeRagdollOnClient( vec3_origin );
 			return;
 		}
-#ifdef HL2_EPISODIC
+#if defined(HL2_EPISODIC) || defined(TF_DLL)
 		else if ( pEvent->event == AE_SV_DUSTTRAIL )
 		{
 			char szAttachment[128];

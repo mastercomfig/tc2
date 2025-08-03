@@ -13,7 +13,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifdef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 	#define SMOKESTACK_MAX_MATERIALS 8
 #else
 	#define SMOKESTACK_MAX_MATERIALS 1
@@ -244,7 +244,7 @@ void C_SmokeStack::Start(CParticleMgr *pParticleMgr, IPrototypeArgAccess *pArgs)
 
 	m_MaterialHandle[0] = m_ParticleEffect.FindOrAddMaterial( str );
 
-#ifdef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 	int iCount = 1;
 	char szNames[512];
 
@@ -333,7 +333,7 @@ void C_SmokeStack::Update(float fTimeDelta)
 		{
 			int iRandomFrame = random->RandomInt( 0, m_iMaxFrames );
 
-#ifndef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 			iRandomFrame = 0;
 #endif
 	
@@ -355,7 +355,7 @@ void C_SmokeStack::Update(float fTimeDelta)
 				pParticle->m_Lifetime = 0;
 				pParticle->m_flAngle = 0.0f;
 
-#ifdef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 				pParticle->m_flAngle = RandomFloat( 0, 360 );
 #endif
 				pParticle->m_flRollDelta = random->RandomFloat( -m_flRollSpeed, m_flRollSpeed );
@@ -441,7 +441,7 @@ void C_SmokeStack::SimulateParticles( CParticleSimulateIterator *pIterator )
 		bQuickTest = true;
 	}
 
-#ifndef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 	bQuickTest = false;
 	bSortNow = true;
 #endif
@@ -474,7 +474,7 @@ void C_SmokeStack::SimulateParticles( CParticleSimulateIterator *pIterator )
 				pParticle->m_Pos.y = vTwist.x * m_TwistMat[1][0] + vTwist.y * m_TwistMat[1][1] + GetAbsOrigin().y;
 			}
 
-#ifndef HL2_EPISODIC
+#if (defined(HL2_EPISODIC) || !defined(HL2_CLIENT_DLL)) && !defined(PORTAL)
 			pParticle->m_Pos = pParticle->m_Pos + 
 				pParticle->m_Velocity * pIterator->GetTimeDelta() + 
 				pParticle->m_vAccel * (0.5f * pIterator->GetTimeDelta() * pIterator->GetTimeDelta());

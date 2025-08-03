@@ -3389,13 +3389,7 @@ void CTriggerCamera::Move()
 
 	// In vanilla HL2, the camera is either on a path, or doesn't move. In episodic
 	// we add the capacity for interpolation to the start point. 
-#if HL2_EPISODIC
 	if (m_pPath)
-#else
-	// Not moving on a path, return
-	if (!m_pPath)
-		return;
-#endif
 	{
 		// Subtract movement from the previous frame
 		m_moveDistance -= m_flSpeed * gpGlobals->frametime;
