@@ -723,7 +723,7 @@ public:
 					if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
 					{
 						EmitSound_t es(params);
-						es.m_nPitch = 1.0f;
+						es.m_nPitch = 100.0f;
 						es.m_flVolume = tf_dingaling_volume.GetFloat();
 						pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
 					}
