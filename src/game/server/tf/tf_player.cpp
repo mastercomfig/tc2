@@ -11025,6 +11025,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			event->SetInt( "attacker", pPlayer->GetUserID() );
 			
 			event->SetInt( "custom", info.GetDamageCustom() );
+			event->SetBool("bullet", (info.GetDamageType() & (DMG_BULLET | DMG_BUCKSHOT) ) != 0 );
 			event->SetBool( "showdisguisedcrit", m_bShowDisguisedCrit );
 			event->SetBool( "crit", (info.GetDamageType() & DMG_CRITICAL) != 0 );
 			event->SetBool( "minicrit", m_bMiniCrit );

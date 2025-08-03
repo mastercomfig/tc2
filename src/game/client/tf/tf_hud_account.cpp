@@ -78,7 +78,7 @@ typedef struct
 
 ConVar hud_combattext( "hud_combattext", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_healing( "hud_combattext_healing", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Shows health restored per-second over heal targets." );
-ConVar hud_combattext_batching( "hud_combattext_batching", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set to 1, numbers that are too close together are merged." );
+ConVar hud_combattext_batching( "hud_combattext_batching", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set to 1, numbers that are too close together are merged." );
 ConVar hud_combattext_batching_window( "hud_combattext_batching_window", "0.2", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Maximum delay between damage events in order to batch numbers.", true, 0.1, true, 2.0 );
 ConVar hud_combattext_doesnt_block_overhead_text( "hud_combattext_doesnt_block_overhead_text", "1", FCVAR_USERINFO | FCVAR_ARCHIVE, "If set to 1, allow text like \"CRIT\" to still show over a victim's head." );
 ConVar hud_combattext_red( "hud_combattext_red", "255", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
@@ -87,18 +87,22 @@ ConVar hud_combattext_blue( "hud_combattext_blue", "0", FCVAR_USERINFO | FCVAR_A
 
 ConVar tf_dingalingaling( "tf_dingalingaling", "1", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
 ConVar tf_dingaling_volume( "tf_dingaling_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the hit sound.", true, 0.0, true, 1.0 );
-ConVar tf_dingaling_pitchmindmg( "tf_dingaling_pitchmindmg", "100", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a minimal damage hit (<= 10 health) is done.", true, 1, true, 255 );
-ConVar tf_dingaling_pitchmaxdmg( "tf_dingaling_pitchmaxdmg", "100", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a maximum damage hit (>= 150 health) is done.", true, 1, true, 255 );
+ConVar tf_dingaling_pitchmindmg( "tf_dingaling_pitchmindmg", "154.64", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a minimal damage hit (<= 10 health) is done.", true, 1, true, 255 );
+ConVar tf_dingaling_pitchmaxdmg( "tf_dingaling_pitchmaxdmg", "51.4", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a maximum damage hit (>= 150 health) is done.", true, 1, true, 255 );
 ConVar tf_dingaling_pitch_override( "tf_dingaling_pitch_override", "-1", FCVAR_NONE, "If set, pitch for all hit sounds." );
 
 ConVar tf_dingalingaling_lasthit( "tf_dingalingaling_lasthit", "1", FCVAR_ARCHIVE, "If set to 1, play a sound whenever one of your attacks kills an enemy. The sound can be customized by replacing the 'tf/sound/ui/killsound.wav' file." );
-ConVar tf_dingaling_lasthit_volume( "tf_dingaling_lasthit_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the last hit sound.", true, 0.0, true, 1.0 );
-ConVar tf_dingaling_lasthit_pitchmindmg( "tf_dingaling_lasthit_pitchmindmg", "100", FCVAR_ARCHIVE, "Desired pitch of the last hit sound when a minimal damage hit (<= 10 health) is done.", true, 1, true, 255 );
-ConVar tf_dingaling_lasthit_pitchmaxdmg( "tf_dingaling_lasthit_pitchmaxdmg", "100", FCVAR_ARCHIVE, "Desired pitch of the last hit sound when a maximum damage hit (>= 150 health) is done.", true, 1, true, 255 );
+ConVar tf_dingaling_lasthit_volume( "tf_dingaling_lasthit_volume", "0.82", FCVAR_ARCHIVE, "Desired volume of the last hit sound.", true, 0.0, true, 1.0 );
+ConVar tf_dingaling_lasthit_pitchmindmg( "tf_dingaling_lasthit_pitchmindmg", "153", FCVAR_ARCHIVE, "Desired pitch of the last hit sound when a minimal damage hit (<= 10 health) is done.", true, 1, true, 255 );
+ConVar tf_dingaling_lasthit_pitchmaxdmg( "tf_dingaling_lasthit_pitchmaxdmg", "50.1", FCVAR_ARCHIVE, "Desired pitch of the last hit sound when a maximum damage hit (>= 150 health) is done.", true, 1, true, 255 );
 ConVar tf_dingaling_lasthit_pitch_override( "tf_dingaling_lasthit_pitch_override", "-1", FCVAR_NONE, "If set, pitch for last hit sounds." );
 
 ConVar tf_dingalingaling_repeat_delay( "tf_dingalingaling_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the hit sound.  Set to 0 to play a sound for every instance of damage dealt.", true, 0.f, false, 0.f );
 ConVar tf_dingaling_lasthit_repeat_delay( "tf_dingaling_lasthit_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the last hit sound.  Set to 0 to play a sound for every last hit.", true, 0.f, false, 0.f );
+
+#define TF_DAMAGEFEEDBACK_VERSION 1
+
+ConVar tf_damagefeedback_version("tf_damagefeedback_version", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN);
 
 ConVar hud_damagemeter( "hud_damagemeter", "0", FCVAR_CHEAT, "Display damage-per-second information in the lower right corner of the screen." );
 ConVar hud_damagemeter_period( "hud_damagemeter_period", "0", FCVAR_NONE, "When set to zero, average damage-per-second across all recent damage events, otherwise average damage across defined period (number of seconds)." );
@@ -171,8 +175,8 @@ static const hitsound_params_t g_LastHitSounds[] =
 	hitsound_params_t( "Player.KillSoundSquasher", 1, 255 ),
 };
 
-ConVar tf_dingalingaling_effect( "tf_dingalingaling_effect", "0", FCVAR_ARCHIVE, "Which Dingalingaling sound is used", true, 0, true, ARRAYSIZE( g_HitSounds )-1 );
-ConVar tf_dingalingaling_last_effect( "tf_dingalingaling_last_effect", "0", FCVAR_ARCHIVE, "Which final hit sound to play when the target expires.", true, 0, true, ARRAYSIZE( g_LastHitSounds )-1 );
+ConVar tf_dingalingaling_effect( "tf_dingalingaling_effect", "6", FCVAR_ARCHIVE, "Which Dingalingaling sound is used", true, 0, true, ARRAYSIZE( g_HitSounds )-1 );
+ConVar tf_dingalingaling_last_effect( "tf_dingalingaling_last_effect", "6", FCVAR_ARCHIVE, "Which final hit sound to play when the target expires.", true, 0, true, ARRAYSIZE( g_LastHitSounds )-1 );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -390,7 +394,7 @@ public:
 	bool ShouldDraw( void )
 	{
 		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( !pPlayer || !pPlayer->IsAlive() )
+		if ( !pPlayer )
 		{
 			m_AccountDeltaItems.RemoveAll();
 		}
@@ -430,7 +434,7 @@ public:
 		if ( Q_strcmp(pszEventName, m_pszEventName) == 0 )
 		{
 			CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-			if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
+			if ( !pLocalPlayer )
 				return;
 
 			int nTeam = event->GetInt( "team" );
@@ -529,7 +533,7 @@ public:
 			return;
 
 		CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
+		if ( !pLocalPlayer )
 			return;
 
 		if ( !pAttacker || !pVictim )
@@ -703,6 +707,28 @@ public:
 			}
 
 			DisplayDamageFeedback( pAttacker, pVictim, iDamage, iHealth, bLargeText );
+
+			const bool bIsBullet = event->GetBool("bullet");
+
+			// play squasher for bullets, unless we already played it as the hitsound.
+			if (bIsBullet && tf_dingalingaling_effect.GetInt() != 8 )
+			{
+				CTFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+				if (pLocalPlayer)
+				{
+					CSoundParameters params;
+					CLocalPlayerFilter filter;
+					const char* pszSound = g_HitSounds[8].m_pszName;
+					const hitsound_params_t* pHitSound = &g_HitSounds[8];
+					if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
+					{
+						EmitSound_t es(params);
+						es.m_nPitch = 1.0f;
+						es.m_flVolume = tf_dingaling_volume.GetFloat();
+						pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
+					}
+				}
+			}
 		}
 		else if ( FStrEq( event->GetName(), "npc_hurt" ) )
 		{
@@ -726,7 +752,7 @@ public:
 			if ( bCombatText && hud_combattext_healing.GetBool() )
 			{
 				CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-				if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
+				if ( !pLocalPlayer )
 					return;
 
 				const int iHealer = engine->GetPlayerForUserID( event->GetInt( "healer" ) );
@@ -768,7 +794,7 @@ public:
 			if ( bCombatText )
 			{
 				CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-				if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
+				if ( !pLocalPlayer )
 					return;
 
 				const int nPoints = ( event->GetInt( "points" ) / 10 );
@@ -812,7 +838,7 @@ public:
 				return;
 
 			CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-			if ( !pLocalPlayer || !pLocalPlayer->IsAlive() )
+			if ( !pLocalPlayer )
 				return;
 
 			CBaseEntity *pHealer = ClientEntityList().GetEnt( event->GetInt( "healer" ) );
@@ -849,7 +875,7 @@ public:
 	bool ShouldDraw( void )
 	{
 		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( !pPlayer || !pPlayer->IsAlive() )
+		if ( !pPlayer )
 		{
 			m_AccountDeltaItems.RemoveAll();
 		}
@@ -868,6 +894,26 @@ public:
 	//-----------------------------------------------------------------------------
 	virtual void LevelInit( void ) OVERRIDE
 	{
+		// hack, this should be in a better place
+		const int iUserVer = tf_damagefeedback_version.GetInt();
+		if (iUserVer != TF_DAMAGEFEEDBACK_VERSION)
+		{
+			tf_damagefeedback_version.SetValue(TF_DAMAGEFEEDBACK_VERSION);
+			if (iUserVer < 1)
+			{
+				hud_combattext_batching.SetValue(hud_combattext_batching.GetDefault());
+				tf_dingalingaling.SetValue(tf_dingalingaling.GetDefault());
+				tf_dingalingaling_lasthit.SetValue(tf_dingalingaling_lasthit.GetDefault());
+				tf_dingaling_pitchmindmg.SetValue(tf_dingaling_pitchmindmg.GetDefault());
+				tf_dingaling_pitchmaxdmg.SetValue(tf_dingaling_pitchmaxdmg.GetDefault());
+				tf_dingaling_lasthit_pitchmindmg.SetValue(tf_dingaling_lasthit_pitchmindmg.GetDefault());
+				tf_dingaling_lasthit_pitchmaxdmg.SetValue(tf_dingaling_lasthit_pitchmaxdmg.GetDefault());
+				tf_dingaling_lasthit_volume.SetValue(tf_dingaling_lasthit_volume.GetDefault());
+				tf_dingalingaling_effect.SetValue(tf_dingalingaling_effect.GetDefault());
+				tf_dingalingaling_last_effect.SetValue(tf_dingalingaling_last_effect.GetDefault());
+			}
+		}
+
 		ResetDamageVars();
 
 		BaseClass::LevelInit();
@@ -1039,7 +1085,7 @@ account_delta_t *CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewVa
 	int iDelta = iNewValue - iOldValue;
 
 	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( iDelta != 0 && pPlayer && pPlayer->IsAlive() )
+	if ( iDelta != 0 && pPlayer )
 	{
 		int index = m_AccountDeltaItems.AddToTail();
 		account_delta_t *pNewDeltaItem = &m_AccountDeltaItems[index];
