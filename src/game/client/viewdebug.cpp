@@ -531,7 +531,8 @@ void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &viewDebug )
 //-----------------------------------------------------------------------------
 void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &viewDebug )
 {
-	if ( IsX360() && IsRetail() )
+#ifdef DEV_BUILD
+	if ( IsRetail() )
 		return;
 
 	// HDRFIXME: Assert NULL rendertarget
@@ -622,6 +623,7 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &viewDebug )
 	{
 		shadowmgr->DrawFlashlightDepthTexture( );
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------

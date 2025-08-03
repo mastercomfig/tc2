@@ -42,8 +42,10 @@ inline void UpdateRefractTexture( int x, int y, int w, int h, bool bForceUpdate 
 {
 	Assert( !DrawingShadowDepthView() );
 
+#ifdef DEV_BUILD
 	if ( !IsRetail() && !r_updaterefracttexture.GetBool() )
 		return;
+#endif
 
 	CMatRenderContextPtr pRenderContext( materials );
 	ITexture *pTexture = GetPowerOfTwoFrameBufferTexture();

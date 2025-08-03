@@ -202,8 +202,8 @@ $Configuration "Release"
 		// However it can cause confusion during development and can make tracking down certain
 		// bugs tricky by making code/stack/heap addresses change between runs. Enable for retail,
 		// but disable for development builds.
-		$RandomizedBaseAddress				"true" [$RETAIL]
-		$RandomizedBaseAddress				"false" [!$RETAIL]
+		// UNDONE: enable for all builds
+		$RandomizedBaseAddress				"true"
 
 		// Optimization
 		$References							"Eliminate Unreferenced Data (/OPT:REF)"
@@ -212,8 +212,8 @@ $Configuration "Release"
 		// equivalent to the logical function). The performance benefit is small enough that
 		// it is not worth enabling in the development builds. It should be enabled on retail
 		// builds.
-		$EnableCOMDATFolding				"Remove Redundant COMDATs (/OPT:ICF)" [$RETAIL]
-		$EnableCOMDATFolding				"No (/OPT:NOICF)" [!$RETAIL]
+		// UNDONE: enable for all builds
+		$EnableCOMDATFolding				"Remove Redundant COMDATs (/OPT:ICF)"
 		$OptimizeForWindows98
 		$FunctionOrder
 		$ProfileGuidedDatabase

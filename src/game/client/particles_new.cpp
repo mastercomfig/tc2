@@ -534,10 +534,12 @@ int CNewParticleEffect::DrawModel( int flags )
 	pRenderContext->GetWorldSpaceCameraPosition( &vecCamera );
 	if ( CalcSqrDistanceToAABB( m_MinBounds, m_MaxBounds, vecCamera ) > ( m_pDef->m_flMaxDrawDistance * m_pDef->m_flMaxDrawDistance ) )
 	{
+#ifdef DEV_BUILD
 		if ( !IsRetail() && ( g_cl_particle_show_bbox || ( g_cl_particle_show_bbox_cost != 0 ) ) )
 		{
 			DebugDrawBbox ( true );
 		}
+#endif
 
 		// Still need to make sure we set this or they won't follow their attachemnt points.
 		m_flNextSleepTime = Max ( m_flNextSleepTime, ( g_pParticleSystemMgr->GetLastSimulationTime() + m_pDef->m_flNoDrawTimeToGoToSleep ));
@@ -590,6 +592,7 @@ int CNewParticleEffect::DrawModel( int flags )
 		g_pParticleSystemMgr->AddToRenderCache( this );
 	}
 
+#ifdef DEV_BUILD
 	if ( !IsRetail() )
 	{
 		CParticleMgr *pMgr = ParticleMgr();
@@ -603,6 +606,7 @@ int CNewParticleEffect::DrawModel( int flags )
 			DebugDrawBbox ( false );
 		}
 	}
+#endif
 
 	return 1;
 }

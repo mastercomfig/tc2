@@ -997,7 +997,7 @@ CON_COMMAND_F( sv_soundemitter_flush, "Flushes the sounds.txt system (server onl
 	S_SoundEmitterSystemFlush( );
 }
 
-#if !defined(_RETAIL)
+#if !defined(_RETAIL) && defined(DEV_BUILD)
 
 #if !defined( CLIENT_DLL ) 
 

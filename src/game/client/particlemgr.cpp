@@ -381,7 +381,7 @@ int CParticleEffectBinding::DrawModel( int flags )
 		}
 	}
 
-
+#ifdef DEV_BUILD
 	if ( !IsRetail() )
 	{
 		CParticleMgr *pMgr = ParticleMgr();
@@ -479,6 +479,7 @@ int CParticleEffectBinding::DrawModel( int flags )
 			}
 		}
 	}
+#endif
 
 	RenderEnd( mTempModel, mTempView );
 	return 1;
