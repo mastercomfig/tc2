@@ -1204,7 +1204,7 @@ void CLCD::DumpPlayer()
 	}
 
 	// Change this to 0 to exclude player resource
-#if 0
+#if 1
 	Msg( "(playerresource)\n\n" );
 
 	if ( g_PR )
