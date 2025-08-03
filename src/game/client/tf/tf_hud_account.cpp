@@ -527,7 +527,7 @@ public:
 	//-----------------------------------------------------------------------------
 	// Purpose: 
 	//-----------------------------------------------------------------------------
-	void DisplayDamageFeedback( CTFPlayer *pAttacker, CBaseCombatCharacter *pVictim, int iDamage, int iHealth, bool bIsCrit )
+	void DisplayDamageFeedback( CTFPlayer *pAttacker, CBaseCombatCharacter *pVictim, int iDamage, int iHealth, bool bIsCrit, bool bIsBullet = false )
 	{
 		if ( iDamage <= 0 ) // zero value (invuln?)
 			return;
@@ -622,6 +622,26 @@ public:
 						}
 					}
 				}
+
+				// play squasher for bullets, unless we already played it as the hitsound.
+				if (bIsBullet && tf_dingalingaling_effect.GetInt() != 8)
+				{
+					CTFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+					if (pLocalPlayer)
+					{
+						CSoundParameters params;
+						CLocalPlayerFilter filter;
+						const char* pszSound = g_HitSounds[8].m_pszName;
+						const hitsound_params_t* pHitSound = &g_HitSounds[8];
+						if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
+						{
+							EmitSound_t es(params);
+							es.m_nPitch = 100.0f;
+							es.m_flVolume = tf_dingaling_volume.GetFloat();
+							pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
+						}
+					}
+				}
 			}
 
 #ifdef TF2_OG
@@ -706,29 +726,9 @@ public:
 				bLargeText |= event->GetBool( "minicrit", false );
 			}
 
-			DisplayDamageFeedback( pAttacker, pVictim, iDamage, iHealth, bLargeText );
-
 			const bool bIsBullet = event->GetBool("bullet");
 
-			// play squasher for bullets, unless we already played it as the hitsound.
-			if (bIsBullet && tf_dingalingaling_effect.GetInt() != 8 )
-			{
-				CTFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-				if (pLocalPlayer)
-				{
-					CSoundParameters params;
-					CLocalPlayerFilter filter;
-					const char* pszSound = g_HitSounds[8].m_pszName;
-					const hitsound_params_t* pHitSound = &g_HitSounds[8];
-					if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
-					{
-						EmitSound_t es(params);
-						es.m_nPitch = 100.0f;
-						es.m_flVolume = tf_dingaling_volume.GetFloat();
-						pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
-					}
-				}
-			}
+			DisplayDamageFeedback( pAttacker, pVictim, iDamage, iHealth, bLargeText, bIsBullet );
 		}
 		else if ( FStrEq( event->GetName(), "npc_hurt" ) )
 		{
