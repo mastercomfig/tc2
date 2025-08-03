@@ -235,7 +235,7 @@ void CTFStickBomb::Smack( void )
 			Vector vecForward; 
 			AngleVectors( pTFPlayer->EyeAngles(), &vecForward );
 			Vector vecSwingStart = pTFPlayer->WorldSpaceCenter();
-			Vector vecSwingEnd = vecSwingStart + vecForward * GetSwingRange();
+			//Vector vecSwingEnd = vecSwingStart + vecForward * GetSwingRange();
 
 			Vector explosion = vecSwingStart;
 
