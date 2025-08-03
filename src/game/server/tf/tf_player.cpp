@@ -18784,7 +18784,7 @@ void CTFPlayer::DoTauntAttack( void )
 			CPVSFilter filter( bonePos );
 			TE_TFExplosion( filter, 0.0f, bonePos, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, entindex() );
 
-			CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vec3_origin, bonePos, 200.f, DMG_BLAST | DMG_USEDISTANCEMOD, TF_DMG_CUSTOM_TAUNTATK_GRENADE, &bonePos );
+			CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vec3_origin, bonePos, 200.f, DMG_BLAST | DMG_HALF_FALLOFF | DMG_USEDISTANCEMOD, TF_DMG_CUSTOM_TAUNTATK_GRENADE, &bonePos );
 			CTFRadiusDamageInfo radiusinfo( &info, bonePos, 100.f );
 			TFGameRules()->RadiusDamage( radiusinfo );
 		}
