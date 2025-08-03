@@ -2069,7 +2069,7 @@ public:
 				}
 				pPlayer->m_Shared.m_bChargeGlowing = false;
 			}
-			else if ( pPlayer->m_Shared.IsHypeBuffed() )
+			else if ( pPlayer->m_Shared.IsHypeBuffed() || ( pPlayer->GetActiveTFWeapon() && pPlayer->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SODA_POPPER && pPlayer->m_Shared.GetScoutHypeMeter() >= 100.0f ) )
 			{
 				vResult = Vector( 50, 2, 48 );
 				pPlayer->m_Shared.m_bChargeGlowing = false;

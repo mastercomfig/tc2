@@ -1700,6 +1700,12 @@ void CTFPlayer::TFPlayerThink()
 		}
 	}
 
+	// maintain soda popper hype buff mark for death
+	if ( m_Shared.IsHypeBuffed() && Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) )
+	{
+		m_Shared.AddCond(TF_COND_MARKEDFORDEATH_SILENT, 0.1f);
+	}
+
 	// You can't touch a hooked target, so transmit plague when you get as close as you can
 	if ( GetGrapplingHookTarget() && GetGrapplingHookTarget()->IsPlayer() && m_Shared.GetCarryingRuneType() == RUNE_PLAGUE )
 	{

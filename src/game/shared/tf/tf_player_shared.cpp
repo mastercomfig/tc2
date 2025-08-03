@@ -7711,6 +7711,9 @@ void CTFPlayerShared::OnRemoveSodaPopperHype( void )
 	{
 		m_pOuter->EmitSound( "DisciplineDevice.PowerDown" );
 	}
+#else
+	// make sure we clear it out
+	SetScoutHypeMeter(0.0f);
 #endif // CLIENT_DLL
 }
 
@@ -14173,7 +14176,7 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 			m_flHypeMeter -= gpGlobals->frametime * (m_fEnergyDrinkConsumeRate*0.75f);
 			if ( m_flHypeMeter <= 0.0f )
 			{
-				RemoveCond( TF_COND_SODAPOPPER_HYPE );
+				StopScoutHypeDrain();
 			}
 		}
 

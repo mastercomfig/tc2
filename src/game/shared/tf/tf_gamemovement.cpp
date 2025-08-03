@@ -1207,6 +1207,8 @@ void CTFGameMovement::ToggleParachute()
 	}
 }
 
+extern ConVar tf_scout_air_dash_count;
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1292,6 +1294,18 @@ bool CTFGameMovement::CheckJumpButton()
 	// (unless you are a scout or ghost or parachute
 	if ( !bOnGround )
 	{
+		// enter hype mode on jump.
+		// if we're not already in hype mode
+		const bool bNotHyped = !m_pTFPlayer->m_Shared.IsHypeBuffed();
+		// if our soda popper is active
+		const bool bHasHype = m_pTFPlayer->GetActiveTFWeapon() && gpGlobals->curtime >= m_pTFPlayer->GetActiveTFWeapon()->GetLastReadyTime() && m_pTFPlayer->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SODA_POPPER && m_pTFPlayer->m_Shared.GetScoutHypeMeter() >= 100.0f;
+		// if we're trying our hype jump
+		const bool bOutOfAirDashes = m_pTFPlayer->m_Shared.GetAirDash() >= tf_scout_air_dash_count.GetInt();
+		if ( bNotHyped && bHasHype && bOutOfAirDashes )
+		{
+			m_pTFPlayer->m_Shared.AddCond(TF_COND_SODAPOPPER_HYPE);
+		}
+
 		if ( m_pTFPlayer->CanAirDash() )
 		{
 			bAirDash = true;
@@ -3026,6 +3040,12 @@ void CTFGameMovement::SetGroundEntity( trace_t *pm )
 		m_pTFPlayer->m_Shared.m_bScattergunJump = false;
 		m_pTFPlayer->m_Shared.SetAirDash( 0 );
 		m_pTFPlayer->m_Shared.SetAirDucked( 0 );
+
+		// upon landing on the ground, remove the soda popper buff.
+		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) )
+		{
+			m_pTFPlayer->m_Shared.StopScoutHypeDrain();
+		}
 
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) )
 		{

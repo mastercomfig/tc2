@@ -540,6 +540,8 @@ void CTFSodaPopper::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFSodaPopper::SecondaryAttack()
 {
+	// does nothing anymore
+#if 0
 	CTFPlayer *pPlayer = GetTFPlayerOwner( );
 	if ( !pPlayer || pPlayer->m_Shared.IsHypeBuffed() )
 		return;
@@ -548,6 +550,7 @@ void CTFSodaPopper::SecondaryAttack()
 	{
 		pPlayer->m_Shared.AddCond( TF_COND_SODAPOPPER_HYPE );
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
