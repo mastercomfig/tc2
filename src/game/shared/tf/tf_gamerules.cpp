@@ -6854,8 +6854,16 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else
 			{
-				// additional falloff based on old random range val.
-				flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.35f, 0.0f, flRandomDamageSpread, 0.0f);
+				if ( flCenter > 0.9f )
+				{
+					// additional rampup based upon old random range val.
+					flRandomRangeVal = flMax - RemapValClamped(flCenter, 0.9f, 1.0f, 0.1f, 0.0f);
+				}
+				else
+				{
+					// additional falloff based on old random range val.
+					flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.35f, 0.0f, flRandomDamageSpread, 0.0f);
+				}
 			}
 		}
 		else
