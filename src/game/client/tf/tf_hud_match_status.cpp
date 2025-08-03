@@ -377,7 +377,7 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 		}
 		else
 		{
-			bHasLargeTeam = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
+			bHasLargeTeam = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE) && GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
 			if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1 )
 			{
 				bHasLargeTeam = true;
@@ -1074,7 +1074,7 @@ void CTFHudItemDraft::ApplySchemeSettings(IScheme* pScheme)
 		}
 		else
 		{
-			bHasLargeTeam = TFGameRules() && (GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6);
+			bHasLargeTeam = TFGameRules() && (GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6);
 			if (TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1)
 			{
 				bHasLargeTeam = true;

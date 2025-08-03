@@ -202,7 +202,7 @@ void CTFMatchSummary::ApplySchemeSettings( vgui::IScheme *pScheme )
 		}
 		else
 		{
-			m_bLargeMatchGroup = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
+			m_bLargeMatchGroup = TFGameRules() && (GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE) && GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
 			if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1 )
 			{
 				m_bLargeMatchGroup = true;
