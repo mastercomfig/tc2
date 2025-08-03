@@ -537,6 +537,8 @@ steam_appid.txt
 tf2_playerstats.dmx
 downloadlists
 viewed.res
+server.cfg
+mapcycle.txt
 
 .vscode/settings.json
 
