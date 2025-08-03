@@ -42,6 +42,7 @@ public:
 
 	// Handle animation events
 	virtual void FireEvent( const char *pszEventName, const char *pszEventOptions );
+	void FireSoundEvent(const char *pszEventOptions);
 
 	const CUtlVector<CEconItemView*> &GetCarriedItems() { return m_ItemsToCarry; }
 	int		GetNumCarriedItems() const { return m_ItemsToCarry.Count(); }

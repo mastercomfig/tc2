@@ -22,6 +22,8 @@
 #include "vphysics_interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include <string>
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -786,7 +788,13 @@ void CMDLPanel::DoAnimationEvents( CStudioHdr *pStudioHdr, int nSeqNum, float fl
 	{
 		if ( (pevent[i].cycle > pEventState->m_flPrevEventCycle && pevent[i].cycle <= flEventCycle) )
 		{
-			FireEvent( pevent[ i ].pszEventName(), pevent[ i ].pszOptions() );
+			// big hack. I am sorry. These old events just rely on the ID, and can't use their event name.
+			std::string str = std::to_string(pevent[i].event);
+			const char* pszEventName =
+				pevent[i].event == 5004 // CL_EVENT_SOUND
+				|| (pevent[i].event >= 6004 && pevent[i].event <= 6009) ? // CL_EVENT_FOOTSTEP_ & CL_EVENT_MFOOTSTEP_
+				str.c_str() : pevent[i].pszEventName();
+			FireEvent( pszEventName, pevent[ i ].pszOptions() );
 		}
 	}
 

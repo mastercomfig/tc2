@@ -513,23 +513,42 @@ void CTFPlayerModelPanel::FireEvent( const char *pszEventName, const char *pszEv
 	}
 	else if ( V_strcmp(pszEventName, "AE_CL_PLAYSOUND") == 0 )
 	{
-		if (m_bDisableSpeakEvent)
-			return;
-
-		soundlevel_t iSoundlevel = SNDLVL_TALKING;
-
-		EmitSound_t es;
-		es.m_nChannel = CHAN_VOICE;
-		es.m_flVolume = 1;
-		es.m_SoundLevel = iSoundlevel;
-		es.m_flSoundTime = gpGlobals->curtime;
-		es.m_bEmitCloseCaption = false;
-		es.m_pSoundName = pszEventOptions;
-
-		C_RecipientFilter filter;
-		C_BaseEntity::EmitSound(filter, SOUND_FROM_UI_PANEL, es);
+		FireSoundEvent(pszEventOptions);
+	}
+	else if (V_strcmp(pszEventName, "5004") == 0) // CL_EVENT_SOUND
+	{
+		FireSoundEvent(pszEventOptions);
+	}
+	else if (V_strcmp(pszEventName, "6004") == 0) // CL_EVENT_FOOTSTEP_LEFT
+	{
+		FireSoundEvent(pszEventOptions);
+	}
+	else if (V_strcmp(pszEventName, "6005") == 0) // CL_EVENT_FOOTSTEP_RIGHT
+	{
+		FireSoundEvent(pszEventOptions);
+	}
+	else
+	{
+		DevWarning("Unhandled player model panel event: %s with option %s!\n", pszEventName, pszEventOptions);
 	}
 }
+
+void CTFPlayerModelPanel::FireSoundEvent(const char* pszEventOptions)
+{
+	soundlevel_t iSoundlevel = SNDLVL_NONE;
+
+	EmitSound_t es;
+	es.m_nChannel = CHAN_STATIC;
+	es.m_flVolume = 1;
+	es.m_SoundLevel = iSoundlevel;
+	es.m_flSoundTime = gpGlobals->curtime;
+	es.m_bEmitCloseCaption = false;
+	es.m_pSoundName = pszEventOptions;
+
+	C_RecipientFilter filter;
+	C_BaseEntity::EmitSound(filter, SOUND_FROM_UI_PANEL, es);
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
