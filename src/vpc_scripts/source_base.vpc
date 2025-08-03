@@ -8,7 +8,7 @@
 
 $MacroRequired VPC_TRIVIAL_DEPENDENCY_PATH "$SRCDIR/vpc_scripts/vpc_trivial_dependency.txt"
 
-$Macro "DEFAULT_RUN_ARGS" "-dev -w 1920 -h 1080 -windowed"
+$Macro "DEFAULT_RUN_ARGS" "-dev"
 
 $Configuration "Debug"
 {
