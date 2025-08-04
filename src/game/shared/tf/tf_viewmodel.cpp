@@ -383,6 +383,7 @@ int CTFViewModel::GetSkin()
 		CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
 		if ( pItem->IsValid() )
 		{
+			CEconItemViewDataCacher dataCacher(pItem);
 			iItemSkin = pItem->GetSkin( pPlayer->GetTeamNumber(), true );
 		}
 

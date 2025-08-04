@@ -2689,7 +2689,9 @@ public:
 		}
 
 		C_BaseEntity *pBaseEntity = pRend->GetIClientUnknown()->GetBaseEntity();
-		const CEconItemView *pItem = dynamic_cast< CEconItemView* >( pRend );
+		CEconItemView *pItem = dynamic_cast< CEconItemView* >( pRend );
+
+		CEconItemViewDataCacher itemDataCacher(pItem);
 
 		uint32 unAttrValue = 0;
 		uint32 unEffectValue = 0;
@@ -2731,6 +2733,7 @@ public:
 					if ( pWearable )
 					{
 						pItem = pWearable->GetAttributeContainer()->GetItem();
+						itemDataCacher.SetItem(pItem);
 						pTFPlayer = ToTFPlayer( pWearable->GetOwnerEntity() );
 						break;
 					}
@@ -2740,6 +2743,7 @@ public:
 						if ( pModel->GetOuter() )
 						{
 							pItem = pModel->GetOuter()->GetAttributeContainer()->GetItem();
+							itemDataCacher.SetItem(pItem);
 							pBaseEntity = pBaseEntity->GetOwnerEntity();
 							if ( pItem )
 							{
@@ -2762,6 +2766,7 @@ public:
 							if ( pWeapon )
 							{
 								pItem = pWeapon->GetAttributeContainer()->GetItem();
+								itemDataCacher.SetItem(pItem);
 								pBaseEntity = pWeapon;
 							}
 							bIsFirstPerson = true;
@@ -2774,6 +2779,7 @@ public:
 						if ( pWeapon )
 						{
 							pItem = pWeapon->GetAttributeContainer()->GetItem();
+							itemDataCacher.SetItem(pItem);
 							pBaseEntity = pWeapon;
 						}
 					}
@@ -2782,6 +2788,7 @@ public:
 			else
 			{
 				pItem = pWeapon->GetAttributeContainer()->GetItem();
+				itemDataCacher.SetItem(pItem);
 				pBaseEntity = pWeapon;
 				pTFPlayer = ToTFPlayer( pWeapon->GetOwner() );
 			}
@@ -2803,6 +2810,7 @@ public:
 					if ( pTFPlayer && pTFPlayer->m_Shared.GetDisguiseWeapon() )
 					{
 						pItem = pTFPlayer->m_Shared.GetDisguiseWeapon()->GetAttributeContainer()->GetItem();
+						itemDataCacher.SetItem(pItem);
 						pBaseEntity = pTFPlayer->m_Shared.GetDisguiseWeapon();
 					}
 				}
@@ -3440,6 +3448,8 @@ public:
 		CEconItemView *pItem = GetEconItemViewFromProxyEntity( pC_BaseEntity );
 		if ( !pItem )
 			return;
+
+		CEconItemViewDataCacher dataCacher(pItem);
 
 		C_TFPlayer *pOwner = GetOwnerFromProxyEntity( pC_BaseEntity );
 		int desiredW = m_pBaseTextureOrig->GetActualWidth();
