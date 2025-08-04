@@ -802,6 +802,10 @@ bool IsCreepWaveMode( void ) const;
 	bool MapHasMatchSummaryStage( void ){ return m_bMapHasMatchSummaryStage; }
 	bool PlayersAreOnMatchSummaryStage( void ){ return m_bPlayersAreOnMatchSummaryStage; }
 
+#ifdef GAME_DLL
+	bool ShouldDoMatchSummaryTeleport(void) { return (m_flMatchSummaryTeleportTime > 0) && (gpGlobals->curtime > m_flMatchSummaryTeleportTime); }
+#endif
+
 	bool ShowMatchSummary( void ){ return m_bShowMatchSummary; }
 
 	bool HaveStopWatchWinner( void ) { return m_bStopWatchWinner; }
