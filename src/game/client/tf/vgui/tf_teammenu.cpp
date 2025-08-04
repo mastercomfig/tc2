@@ -27,6 +27,8 @@
 #include "basemodelpanel.h"
 #include "tf_teammenu.h"
 #include <convar.h>
+
+#include "c_playerresource.h"
 #include "IGameUIFuncs.h" // for key bindings
 #include "hud.h" // for gEngfuncs
 #include "c_tf_player.h"
@@ -822,9 +824,50 @@ void CTFTeamMenu::OnTick()
 		iTeamSizeRestriction = 6;
 	}
 
+	bool bRedHasBots = false;
+	bool bBluHasBots = false;
+	for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)
+	{
+		if (!g_PR->IsConnected(playerIndex) || !g_PR->IsValid(playerIndex))
+		{
+			continue;
+		}
+
+		int nTeam = g_PR->GetTeam(playerIndex);
+		if (nTeam <= LAST_SHARED_TEAM)
+		{
+			continue;
+		}
+
+		if (!g_PR->IsFakePlayer(playerIndex))
+		{
+			continue;
+		}
+
+		switch (nTeam)
+		{
+		case TF_TEAM_BLUE:
+		{
+			bBluHasBots = true;
+			break;
+		}
+		case TF_TEAM_RED:
+		{
+			bRedHasBots = true;
+			break;
+		}
+		}
+
+		// we don't need to check further
+		if (bBluHasBots && bRedHasBots)
+		{
+			break;
+		}
+	}
+
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_RED ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_RED, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction && !bRedHasBots ) ||
 		 ( pRules->IsMannVsMachineMode() && ( GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= tf_mvm_defenders_team_size.GetInt() ) )	 )
 	{
 		m_bRedDisabled = true;
@@ -832,7 +875,7 @@ void CTFTeamMenu::OnTick()
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_BLUE ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction && !bBluHasBots ) ||
 		 ( pRules->IsMannVsMachineMode() ) )
 	{
 		m_bBlueDisabled = true;
