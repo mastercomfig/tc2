@@ -17,7 +17,7 @@
 // CTFLobby supercedes this, this just provides CTFLobbyShared + SharedObject (whereas the GS Lobby is nested within the
 // greater proto object on the GC -- see CTFGSLobby_Dummy)
 
-class CTFGSLobby : public CTFLobbyShared, public GCSDK::CProtoBufSharedObject<CSOTFGameServerLobby, k_EProtoObjectTFGameServerLobby>
+class CTFGSLobby final : public CTFLobbyShared, public GCSDK::CProtoBufSharedObject<CSOTFGameServerLobby, k_EProtoObjectTFGameServerLobby>
 {
 	typedef GCSDK::CProtoBufSharedObject<CSOTFGameServerLobby, k_EProtoObjectTFGameServerLobby> BaseClass;
 public:

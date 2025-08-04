@@ -20,7 +20,7 @@
 
 class CTFLobby;
 
-class CTFParty : public GCSDK::CProtoBufSharedObject<CSOTFParty, k_EProtoObjectTFParty>, public GCSDK::IParty
+class CTFParty final : public GCSDK::CProtoBufSharedObject<CSOTFParty, k_EProtoObjectTFParty>, public GCSDK::IParty
 {
 	typedef GCSDK::CProtoBufSharedObject<CSOTFParty, k_EProtoObjectTFParty> BaseClass;
 
