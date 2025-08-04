@@ -6795,7 +6795,9 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flMin = flCenter - flRandomDamageSpread;
 		float flMax = flCenter + flRandomDamageSpread;
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
-		if ( bitsDamage & DMG_USEDISTANCEMOD || bNoDamageSpread )
+		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
+		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
+		if ( bHasDistanceMod || bNoDamageSpread )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
 			float flOptimalDistance = 512.0f;
@@ -6809,7 +6811,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				flOptimalDistance = SENTRY_MAX_RANGE;
 			}
 			// The base sniper rifle doesn't have DMG_USEDISTANCEMOD, so this isn't used. Unlockable rifle had it for a bit.
-			else if ( pWeapon && WeaponID_IsSniperRifle( pWeapon->GetWeaponID() ) )
+			else if ( bIsSniperRifle )
 			{
 				flOptimalDistance *= 2.5f;
 			}
@@ -6824,7 +6826,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			if ( ( flCenter > 0.5f && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5f )
 			{
 				// We check again because tf_damage_disablespread can check our distance.
-				if (bitsDamage & DMG_USEDISTANCEMOD)
+				if (bHasDistanceMod)
 				{
 					if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
 					{
@@ -6853,9 +6855,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 		//Msg("Range: %.2f - %.2f\n", flMin, flMax );
 		float flRandomRangeVal;
+		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		if ( bNoDamageSpread )
 		{
-			if (bitsDamage & DMG_USEDISTANCEMOD)
+			if (!bApplySpreadToRampup)
 			{
 				flRandomRangeVal = flCenter;
 			}
@@ -6901,7 +6904,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			case TF_WEAPON_PIPEBOMBLAUNCHER :	// Stickies
 			case TF_WEAPON_GRENADELAUNCHER :
 			case TF_WEAPON_CANNON :
-				if ( ( !bNoDamageSpread || flRandomRangeVal > 0.5 ) && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
+				if ( ( !bNoDamageSpread || bApplySpreadToRampup && flRandomRangeVal > 0.5 ) && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
 				{
 					flRandomDamage *= 0.2f;
 				}
