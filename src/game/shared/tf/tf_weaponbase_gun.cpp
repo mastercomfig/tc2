@@ -9,6 +9,7 @@
 #include "tf_fx_shared.h"
 #include "effect_dispatch_data.h"
 #include "takedamageinfo.h"
+#include "tf_gamerules.h"
 #include "tf_projectile_nail.h"
 #include "tf_weapon_jar.h"
 #include "tf_weapon_flaregun.h"
