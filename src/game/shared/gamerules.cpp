@@ -268,7 +268,7 @@ void CGameRules::RefreshSkillData ( bool forceUpdate )
 	char	szExec[256];
 #endif 
 
-	ConVarRef skill( "skill" );
+	static ConVarRef skill( "skill" );
 
 	SetSkillLevel( skill.IsValid() ? skill.GetInt() : 1 );
 

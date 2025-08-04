@@ -105,7 +105,7 @@ void CReplayScreenshotTaker::TakeScreenshot( WriteReplayScreenshotParams_t &para
 		return;
 
 	CFastTimer timer;
-	ConVarRef replay_debug( "replay_debug" );
+	static ConVarRef replay_debug( "replay_debug" );
 	bool bDbg = replay_debug.IsValid() && replay_debug.GetBool();
 
 	int width = params.m_nWidth;

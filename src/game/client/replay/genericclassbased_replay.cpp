@@ -91,7 +91,7 @@ void CGenericClassBasedReplay::Update()
 
 float CGenericClassBasedReplay::GetKillScreenshotDelay()
 {
-	ConVarRef replay_screenshotkilldelay( "replay_screenshotkilldelay" );
+	static ConVarRef replay_screenshotkilldelay( "replay_screenshotkilldelay" );
 	return replay_screenshotkilldelay.IsValid() ? replay_screenshotkilldelay.GetFloat() : 0.5f;
 }
 
@@ -286,7 +286,7 @@ void CGenericClassBasedReplay::AddKill( const char *pPlayerName, int nPlayerClas
 	V_strcpy_safe( pNewKillData->m_szPlayerName , pPlayerName );
 	pNewKillData->m_nPlayerClass = nPlayerClass;
 
-	ConVarRef replay_debug( "replay_debug" );
+	static ConVarRef replay_debug( "replay_debug" );
 	if ( replay_debug.IsValid() && replay_debug.GetBool() )
 	{
 		DevMsg( "\n\nRecorded kill: name=%s, class=%s (this=%p)\n\n", pPlayerName, GetPlayerClass( nPlayerClass ), this );

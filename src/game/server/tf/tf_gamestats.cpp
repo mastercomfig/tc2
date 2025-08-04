@@ -1501,8 +1501,8 @@ void CTFGameStats::Event_PlayerDefendedPoint( CTFPlayer *pPlayer )
 {
 	IncrementStat( pPlayer, TFSTAT_DEFENSES, 1 );
 
-	ConVarRef tf_gamemode_cp( "tf_gamemode_cp" );
-	ConVarRef tf_gamemode_payload( "tf_gamemode_payload" );
+	static ConVarRef tf_gamemode_cp( "tf_gamemode_cp" );
+	static ConVarRef tf_gamemode_payload( "tf_gamemode_payload" );
 	if ( tf_gamemode_cp.GetInt() == 1 )
 	{
 		SW_GameEvent( pPlayer, "point_blocked", 1 );
@@ -3130,7 +3130,7 @@ void CTFGameStats::SW_WriteHostsRow()
 	{
 		pKVData->SetInt( "TimeLimit", mp_timelimit.GetInt() );
 	}
-	ConVarRef tf_flag_caps_per_round( "tf_flag_caps_per_round" );
+	static ConVarRef tf_flag_caps_per_round( "tf_flag_caps_per_round" );
 	if ( tf_flag_caps_per_round.GetInt() )
 	{
 		pKVData->SetInt( "FlagCapsPerRound", tf_flag_caps_per_round.GetInt() );
@@ -3143,7 +3143,7 @@ void CTFGameStats::SW_WriteHostsRow()
 	{
 		pKVData->SetInt( "WinLimit", mp_winlimit.GetInt() );
 	}
-	ConVarRef mp_disable_respawn_times( "mp_disable_respawn_times" );
+	static ConVarRef mp_disable_respawn_times( "mp_disable_respawn_times" );
 	if ( mp_disable_respawn_times.GetInt() )
 	{
 		pKVData->SetInt( "DisableRespawnTimes", mp_disable_respawn_times.GetInt() );

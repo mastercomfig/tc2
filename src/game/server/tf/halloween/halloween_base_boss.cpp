@@ -28,7 +28,7 @@ void CHalloweenBaseBoss::Spawn( void )
 {
 	BaseClass::Spawn();
 
-	ConVarRef sv_cheats( "sv_cheats" );
+	static ConVarRef sv_cheats( "sv_cheats" );
 	if ( sv_cheats.IsValid() && sv_cheats.GetBool() )
 	{
 		// remember we spawned with a cheat command

@@ -115,7 +115,7 @@ void CTFReplay::MedicUpdate()
 
 float CTFReplay::GetSentryKillScreenshotDelay()
 {
-	ConVarRef replay_screenshotsentrykilldelay( "replay_screenshotsentrykilldelay" );
+	static ConVarRef replay_screenshotsentrykilldelay( "replay_screenshotsentrykilldelay" );
 	return replay_screenshotsentrykilldelay.IsValid() ? replay_screenshotsentrykilldelay.GetFloat() : 0.5f;
 }
 

@@ -81,7 +81,7 @@ CReplayRenderDialog::CReplayRenderDialog( Panel *pParent, ReplayHandle_t hReplay
 
 void CReplayRenderDialog::UpdateControlsValues()
 {
-	ConVarRef replay_voice_during_playback( "replay_voice_during_playback" );
+	static ConVarRef replay_voice_during_playback( "replay_voice_during_playback" );
 
 	m_pQuitWhenDoneCheck->SetSelected( replay_rendersetting_quitwhendone.GetBool() );
 	m_pExportRawCheck->SetSelected( replay_rendersetting_exportraw.GetBool() );
@@ -447,7 +447,7 @@ void CReplayRenderDialog::Render()
 		replay_rendersetting_renderglow.SetValue( m_pGlowEnabledCheck->IsSelected() );
 	}
 
-	ConVarRef replay_voice_during_playback( "replay_voice_during_playback" );
+	static ConVarRef replay_voice_during_playback( "replay_voice_during_playback" );
 	if ( replay_voice_during_playback.IsValid() && m_pPlayVoiceCheck->IsEnabled() )
 	{
 		replay_voice_during_playback.SetValue( (int)m_pPlayVoiceCheck->IsSelected() );

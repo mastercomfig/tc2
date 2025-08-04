@@ -493,7 +493,7 @@ void C_CTFGameStats::SW_GameStats_WriteClientSessionSummary()
 		pKVData->SetInt( "ServerConnects", GetSteamWorksSGameStatsUploader().GetNumServerConnects() );
 	}
 
-	ConVarRef sb_firstopentime( "sb_firstopentime" );
+	static ConVarRef sb_firstopentime( "sb_firstopentime" );
 
 	if ( m_currentSession.m_FirstConnect > 0 )
 	{
@@ -517,7 +517,7 @@ void C_CTFGameStats::SW_GameStats_WriteClientSessionSummary()
 		pKVData->SetInt( "TimeFromStartToBrowse", iTimeFromStartToBrowse );
 	}
 
-	ConVarRef sb_numtimesopened( "sb_numtimesopened" );
+	static ConVarRef sb_numtimesopened( "sb_numtimesopened" );
 	pKVData->SetInt( "TimesOpenedServerBrowser", sb_numtimesopened.GetInt() );
 
 	int iClassesPlayed = 0;

@@ -528,7 +528,7 @@ void CHudCommentary::StartCommentary( C_PointCommentaryNode *pNode, char *pszSpe
 	g_pVGuiLocalize->ConvertANSIToUnicode( pszSpeakers, m_szSpeakers, sizeof(m_szSpeakers) );
 
 	// Don't draw the element itself if closecaptions are on (and captions are always on in non-english mode)
-	ConVarRef pCVar( "closecaption" );
+	static ConVarRef pCVar( "closecaption" );
 	if ( pCVar.IsValid() )
 	{
 		m_bShouldPaint = ( !pCVar.GetBool() && english.GetBool() );

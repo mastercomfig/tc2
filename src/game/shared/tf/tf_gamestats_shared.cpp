@@ -546,14 +546,14 @@ const char* g_aRoundEndReasons[] =
 // Get a string describing the current game type.
 const char* GetGameTypeID()
 {
-	ConVarRef tf_gamemode_arena( "tf_gamemode_arena" );
-	ConVarRef tf_gamemode_cp( "tf_gamemode_cp" );
-	ConVarRef tf_gamemode_ctf( "tf_gamemode_ctf" );
-	ConVarRef tf_gamemode_sd( "tf_gamemode_sd" );
-	ConVarRef tf_gamemode_payload( "tf_gamemode_payload" );
-	ConVarRef tf_gamemode_mvm( "tf_gamemode_mvm" );
-	ConVarRef tf_powerup_mode( "tf_powerup_mode" );
-	ConVarRef tf_gamemode_passtime( "tf_gamemode_passtime" );
+	static ConVarRef tf_gamemode_arena( "tf_gamemode_arena" );
+	static ConVarRef tf_gamemode_cp( "tf_gamemode_cp" );
+	static ConVarRef tf_gamemode_ctf( "tf_gamemode_ctf" );
+	static ConVarRef tf_gamemode_sd( "tf_gamemode_sd" );
+	static ConVarRef tf_gamemode_payload( "tf_gamemode_payload" );
+	static ConVarRef tf_gamemode_mvm( "tf_gamemode_mvm" );
+	static ConVarRef tf_powerup_mode( "tf_powerup_mode" );
+	static ConVarRef tf_gamemode_passtime( "tf_gamemode_passtime" );
 
 	const char* pszGameTypeID = NULL;
 	if ( tf_gamemode_arena.GetBool() )
