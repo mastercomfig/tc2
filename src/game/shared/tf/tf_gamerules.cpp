@@ -6913,18 +6913,16 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			case TF_WEAPON_GRENADELAUNCHER : // Grenades
 			case TF_WEAPON_CANNON :
 				// This was likely the Smissmas 2014 change "Damage variance on grenades and stickybombs reduced from +/- 10% damage to +/-2%"
-				// However, this changes the distance-based damage ramp accidentally, when it was meant to balance random damage spread (according to the LnL patch notes).
-				// It also labels the distance variance as damage variance. Though distance varied by +/- 10%, damage varied by +/-15%, and was nerfed to +/-3%.
-				// So, only apply this to non-distance modified damage when random damage spread is on, since that was the balance intention.
-				// Also apply this as a ramp up penalty in general. Otherwise, we buff the falloff, and we're keeping this in at all because we probably want to
-				// keep the nerf to ramp up on these weapons.
-				// This also never applied to stickies, as they always have DMG_NOCLOSEDISTANCEMOD, and the check was likely meant to be DMG_USEDISTANCEMOD
-				// However, we're keeping this nerf in to stickies damage ramp up, to keep in line with at least some of the idea behind the original change.
-				//if (!(bitsDamage & DMG_NOCLOSEDISTANCEMOD))
-				if ( ( !bNoDamageSpread && !bHasDistanceMod ) || ( flRandomRangeVal > 0.5 ) /* && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) */ )
+				// This was a bit of a misnomer, as the percentages refer to the distance variance from damage spread, not the damage values itself.
+				// The actual change was reduced from +/-15% damage to +/-3% damage.
+				// This also never applied to stickies, as they always have DMG_NOCLOSEDISTANCEMOD, and originally that caused this to not apply.
+				// We also don't need to apply this change when damage spread is disabled, since we don't have to worry about the variance.
+				// So instead now, we only apply this if we don't have distance mod, which means pipe directs and stickytraps, and only
+				// if we have random damage spread turned on, since otherwise it's not relevant. If we turn it on for distance mod, it means
+				// we also change the damage ramp and we don't want to do that. Only change the random damage spread on the base damage value
+				// applied.
+				if ( ( !bNoDamageSpread && !bHasDistanceMod ) || ( flRandomRangeVal > 0.5 )  )
 				{
-					// apply less damage spread when we have random damage spread on, and we aren't falling off by distance
-					// or apply it when we are ramping up damage and we haven't already reduced our rampup through DMG_NOCLOSEDISTANCEMOD
 					flRandomDamage *= 0.2f;
 				}
 				break;
