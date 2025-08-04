@@ -6790,6 +6790,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		// If we're doing any distance modification, we need to do that first
 		float flRandomDamage = info.GetDamage() * tf_damage_range.GetFloat();
 
+		// default values center, and the subsequence min and max.
 		constexpr float flRandomDamageSpread = 0.10f;
 		float flCenter = 0.5f;
 		float flMin = flCenter - flRandomDamageSpread;
@@ -6797,8 +6798,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
-		const bool bIsNoFalloffWeapon = !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
-		const bool bApplySpreadToRampup = bNoDamageSpread && bIsNoFalloffWeapon;
+		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
@@ -6824,11 +6824,11 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			float flMinVictimExtent = MIN(pVictimBaseEntity->WorldAlignSize().x, pVictimBaseEntity->WorldAlignSize().y);
 			float flMinDistance = 0.5f * (flMinAttackerExtent + flMinVictimExtent) + 1.0f;
 			flMinDistance /= flOptimalDistance;
-			flCenter = RemapValClamped( flDistance / flOptimalDistance, flMinDistance, 2.0f, 1.0f, 0.0f );
+			flCenter = flDistance <= flOptimalDistance ? RemapValClamped( flDistance / flOptimalDistance, flMinDistance, 1.0f, 1.0f, 0.5f ) : RemapValClamped( flDistance / flOptimalDistance, 1.0f, 2.0f, 0.5f, 0.0f );
 			if ( ( flCenter > 0.5f && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5f )
 			{
 				// We check again because tf_damage_disablespread can check our distance.
-				if (bHasDistanceMod)
+				if ( bHasDistanceMod )
 				{
 					if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
 					{
@@ -6853,6 +6853,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				{
 					Warning("    NO DISTANCE MOD: Dist %.2f, Ctr: %.2f, Min: %.2f, Max: %.2f\n", flDistance, flCenter, flMin, flMax );
 				}
+				// if we don't wanna touch flMin/flMax, don't touch flCenter either.
+				flCenter = 0.5f;
 			}
 		}
 		//Msg("Range: %.2f - %.2f\n", flMin, flMax );
@@ -6875,7 +6877,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				}
 				else if ( flCenter >= flSpreadFalloffRange )
 				{
-					flRandomRangeVal = flMin + flRandomDamageSpread;
+					flRandomRangeVal = 0.5f;
 				}
 				else
 				{
@@ -6921,7 +6923,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				// if we have random damage spread turned on, since otherwise it's not relevant. If we turn it on for distance mod, it means
 				// we also change the damage ramp and we don't want to do that. Only change the random damage spread on the base damage value
 				// applied.
-				if ( ( !bNoDamageSpread && !bHasDistanceMod ) || ( flRandomRangeVal > 0.5 )  )
+				// We also apply it for cases where we're ramping up damage on the projectiles.
+				if ( ( !bNoDamageSpread && !bHasDistanceMod ) || ( flRandomRangeVal > 0.5 ) && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
 				{
 					flRandomDamage *= 0.2f;
 				}
