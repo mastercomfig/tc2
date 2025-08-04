@@ -826,42 +826,45 @@ void CTFTeamMenu::OnTick()
 
 	bool bRedHasBots = false;
 	bool bBluHasBots = false;
-	for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)
+	if (iCurrentTeam <= LAST_SHARED_TEAM)
 	{
-		if (!g_PR->IsConnected(playerIndex) || !g_PR->IsValid(playerIndex))
+		for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)
 		{
-			continue;
-		}
+			if (!g_PR->IsConnected(playerIndex) || !g_PR->IsValid(playerIndex))
+			{
+				continue;
+			}
 
-		int nTeam = g_PR->GetTeam(playerIndex);
-		if (nTeam <= LAST_SHARED_TEAM)
-		{
-			continue;
-		}
+			int nTeam = g_PR->GetTeam(playerIndex);
+			if (nTeam <= LAST_SHARED_TEAM)
+			{
+				continue;
+			}
 
-		if (!g_PR->IsFakePlayer(playerIndex))
-		{
-			continue;
-		}
+			if (!g_PR->IsFakePlayer(playerIndex))
+			{
+				continue;
+			}
 
-		switch (nTeam)
-		{
-		case TF_TEAM_BLUE:
-		{
-			bBluHasBots = true;
-			break;
-		}
-		case TF_TEAM_RED:
-		{
-			bRedHasBots = true;
-			break;
-		}
-		}
+			switch (nTeam)
+			{
+			case TF_TEAM_BLUE:
+			{
+				bBluHasBots = true;
+				break;
+			}
+			case TF_TEAM_RED:
+			{
+				bRedHasBots = true;
+				break;
+			}
+			}
 
-		// we don't need to check further
-		if (bBluHasBots && bRedHasBots)
-		{
-			break;
+			// we don't need to check further
+			if (bBluHasBots && bRedHasBots)
+			{
+				break;
+			}
 		}
 	}
 
