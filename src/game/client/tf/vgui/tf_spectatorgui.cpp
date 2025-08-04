@@ -1067,7 +1067,16 @@ bool CTFSpectatorGUI::InTournamentGUI( void )
 		bOverride = true;
 	}
 
-	return ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() && !ShouldUseMatchHUD() && ( cl_use_tournament_specgui.GetBool() || bOverride ) );
+	// don't use specgui if we're using match HUD, or if we're in matchmaking
+	const bool bInTournament = TFGameRules()->IsInTournamentMode();
+	const bool bNoConflicts = !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() && !ShouldUseMatchHUD();
+
+	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	const bool bIsSpectator = !pPlayer || pPlayer->IsHLTV() || ( pPlayer->GetTeamNumber() != TF_TEAM_RED && pPlayer->GetTeamNumber() != TF_TEAM_BLUE );
+
+	const bool bWantsTournamentGUI = ( cl_use_tournament_specgui.GetBool() || bOverride );
+
+	return ( bInTournament && ( bNoConflicts || bIsSpectator ) && bWantsTournamentGUI );
 }
 
 //-----------------------------------------------------------------------------
