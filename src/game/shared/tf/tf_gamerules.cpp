@@ -6796,8 +6796,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flMax = flCenter + flRandomDamageSpread;
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
-		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
+		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
@@ -6867,7 +6867,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				if ( flCenter > 0.9f )
 				{
 					// additional rampup based upon old random range val.
-					flRandomRangeVal = flMax - RemapValClamped(flCenter, 0.9f, 1.0f, 0.1f, 0.0f);
+					flRandomRangeVal = flMax - RemapValClamped(flCenter, 0.9f, 1.0f, flRandomDamageSpread, 0.0f);
 				}
 				else
 				{
