@@ -2872,5 +2872,7 @@ enum AttributeMeter_Type_t
 #define TF_GRENADE_PROJECTILE_MINS	Vector( -2.0f, -2.0f, -2.0f )
 #define TF_GRENADE_PROJECTILE_MAXS	Vector( 2.0f, 2.0f, 2.0f )
 
+#define MAX_WEAPON_TRACE 8192.0f
+
 #endif // TF_SHAREDDEFS_H
   

@@ -7016,8 +7016,8 @@ void C_TFPlayer::UpdateIDTarget()
 
 	trace_t tr;
 	Vector vecStart, vecEnd;
-	VectorMA( MainViewOrigin(), MAX_TRACE_LENGTH, MainViewForward(), vecEnd );
-	VectorMA( MainViewOrigin(), 10,   MainViewForward(), vecStart );
+	VectorMA( MainViewOrigin(), MAX_WEAPON_TRACE, MainViewForward(), vecEnd );
+	VectorMA( MainViewOrigin(), 10.0f,   MainViewForward(), vecStart );
 
 	// If we're in observer mode, ignore our observer target. Otherwise, ignore ourselves.
 	if ( IsObserver() )
@@ -7026,6 +7026,8 @@ void C_TFPlayer::UpdateIDTarget()
 	}
 	else
 	{
+		// UNDONE: unused
+#if 0
 		// Add DEBRIS when a medic has revive (for tracing against revive markers)
 		int iReviveMedic = 0;
 		CALL_ATTRIB_HOOK_INT( iReviveMedic, revive );
@@ -7033,6 +7035,7 @@ void C_TFPlayer::UpdateIDTarget()
 		{
 			iReviveMedic = 1;
 		}
+#endif
 
 		int nMask = MASK_SOLID | CONTENTS_DEBRIS;
 		UTIL_TraceLine( vecStart, vecEnd, nMask, this, COLLISION_GROUP_NONE, &tr );
