@@ -5586,7 +5586,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		}
 	}
 
-	if ( IsCompetitiveMode() && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
+	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
 	{
 		// Announcer VO
 		if ( ( TFTeamMgr()->GetTeam( TF_TEAM_BLUE )->GetScore() == ( mp_winlimit.GetInt() - 1 ) ) &&
