@@ -6797,7 +6797,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
-		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
+		const bool bIsNoFalloffWeapon = !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
+		const bool bApplySpreadToRampup = bNoDamageSpread && bIsNoFalloffWeapon;
 		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
@@ -6864,15 +6865,22 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else
 			{
-				if ( flCenter > 0.9f )
+				constexpr float flSpreadRampupRange = 0.9f;
+				constexpr float flSpreadFalloffRange = 0.35f;
+				// TODO(mcoms): probably not doing this for now
+				if ( flCenter > flSpreadRampupRange )
 				{
 					// additional rampup based upon old random range val.
-					flRandomRangeVal = flMax - RemapValClamped(flCenter, 0.9f, 1.0f, flRandomDamageSpread, 0.0f);
+					flRandomRangeVal = flMax - RemapValClamped(flCenter, flSpreadRampupRange, 1.0f, flRandomDamageSpread, 0.0f);
+				}
+				else if ( flCenter >= flSpreadFalloffRange )
+				{
+					flRandomRangeVal = flMin + flRandomDamageSpread;
 				}
 				else
 				{
 					// additional falloff based on old random range val.
-					flRandomRangeVal = flMin + RemapValClamped(flCenter, 0.35f, 0.0f, flRandomDamageSpread, 0.0f);
+					flRandomRangeVal = flMin + RemapValClamped(flCenter, flSpreadFalloffRange, 0.0f, flRandomDamageSpread, 0.0f);
 				}
 			}
 		}
@@ -6896,16 +6904,27 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			case TF_WEAPON_ROCKETLAUNCHER :
 			case TF_WEAPON_ROCKETLAUNCHER_DIRECTHIT :
 			case TF_WEAPON_PARTICLE_CANNON :
-				if ( flRandomRangeVal > 0.5 )
+				if ( flRandomRangeVal > 0.5f )
 				{
 					flRandomDamage *= 0.5f;
 				}
 				break;
-			case TF_WEAPON_PIPEBOMBLAUNCHER :	// Stickies
-			case TF_WEAPON_GRENADELAUNCHER :
+			case TF_WEAPON_PIPEBOMBLAUNCHER : // Stickies 
+			case TF_WEAPON_GRENADELAUNCHER : // Grenades
 			case TF_WEAPON_CANNON :
-				if ( ( !bNoDamageSpread || bApplySpreadToRampup && flRandomRangeVal > 0.5 ) && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) )
+				// This was likely the Smissmas 2014 change "Damage variance on grenades and stickybombs reduced from +/- 10% damage to +/-2%"
+				// However, this changes the distance-based damage ramp accidentally, when it was meant to balance random damage spread (according to the LnL patch notes).
+				// It also labels the distance variance as damage variance. Though distance varied by +/- 10%, damage varied by +/-15%, and was nerfed to +/-3%.
+				// So, only apply this to non-distance modified damage when random damage spread is on, since that was the balance intention.
+				// Also apply this as a ramp up penalty in general. Otherwise, we buff the falloff, and we're keeping this in at all because we probably want to
+				// keep the nerf to ramp up on these weapons.
+				// This also never applied to stickies, as they always have DMG_NOCLOSEDISTANCEMOD, and the check was likely meant to be DMG_USEDISTANCEMOD
+				// However, we're keeping this nerf in to stickies damage ramp up, to keep in line with at least some of the idea behind the original change.
+				//if (!(bitsDamage & DMG_NOCLOSEDISTANCEMOD))
+				if ( ( !bNoDamageSpread && !bHasDistanceMod ) || ( flRandomRangeVal > 0.5 ) /* && !( bitsDamage & DMG_NOCLOSEDISTANCEMOD ) */ )
 				{
+					// apply less damage spread when we have random damage spread on, and we aren't falling off by distance
+					// or apply it when we are ramping up damage and we haven't already reduced our rampup through DMG_NOCLOSEDISTANCEMOD
 					flRandomDamage *= 0.2f;
 				}
 				break;
@@ -6914,7 +6933,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			case TF_WEAPON_PEP_BRAWLER_BLASTER :
 			//case TF_WEAPON_HANDGUN_SCOUT_PRIMARY :		// Shortstop
 				// Scattergun gets 50% bonus at short range
-				if ( flRandomRangeVal > 0.5 )
+				if ( flRandomRangeVal > 0.5f )
 				{
 					flRandomDamage *= 1.5f;
 				}
