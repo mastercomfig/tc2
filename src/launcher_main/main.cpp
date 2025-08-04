@@ -458,11 +458,18 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	bool bLaunchDedicated = false;
+	bool bHasPriorityArg = false;
 	for (std::wstring& arg : pArgs)
 	{
 		if (arg == L"-dedicated")
 		{
 			bLaunchDedicated = true;
+			// we don't use our priority wrapper hack on dedicated.
+			bHasPriorityArg = true;
+		}
+		else if ( !bHasPriorityArg && ( arg == L"-high" || arg == L"-normal" || arg == L"-low" ) )
+		{
+			bHasPriorityArg = true;
 		}
 	}
 
@@ -513,6 +520,11 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 		LocalFree(pszError);
 		return 0;
+	}
+
+	if ( !bHasPriorityArg )
+	{
+		SetPriorityClass( GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS );
 	}
 
 	LauncherMain_t main = (LauncherMain_t)GetProcAddress(launcher, bLaunchDedicated ? "DedicatedMain" : "LauncherMain");
