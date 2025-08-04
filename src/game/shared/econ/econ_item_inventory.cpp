@@ -2049,7 +2049,7 @@ CEconItem	*CPlayerInventory::GetSOCDataForItem( itemid_t iItemID )
 
 	CEconItem soIndex;
 	soIndex.SetItemID( iItemID );
-	return (CEconItem *)m_pSOCache->FindSharedObject( soIndex );
+	return static_cast<CEconItem*>(m_pSOCache->FindSharedObject( soIndex ));
 }
 
 #if defined (_DEBUG) && defined(CLIENT_DLL)
