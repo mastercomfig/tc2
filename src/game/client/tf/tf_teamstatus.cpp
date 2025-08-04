@@ -454,6 +454,8 @@ void CTFTeamStatus::PerformLayout( void )
 	int iTeam1Processed = 0;
 	int iTeam2Processed = 0;
 
+	const bool bClassOrder = IsClassOrder();
+
 	for ( int i = 0; i < m_PlayerPanels.Count(); i++ )
 	{
 		if ( m_PlayerPanels[i]->GetPlayerIndex() <= 0 )
@@ -476,7 +478,7 @@ void CTFTeamStatus::PerformLayout( void )
 
 		// Local player is always the innermost panel, unless we're using class order
 		int nTeamPanelIndex = iProcessed;
-		if ( !IsClassOrder() )
+		if ( !bClassOrder )
 		{
 			if (bIsLocalPlayerPanel)
 			{
@@ -515,7 +517,7 @@ void CTFTeamStatus::PerformLayout( void )
 			}
 		}
 
-		if ( !bIsLocalPlayerPanel )
+		if ( !bIsLocalPlayerPanel || bClassOrder )
 		{
 			++iProcessed;
 		}
@@ -674,10 +676,7 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 		m_PlayerPanels[i]->SetPlayerIndex( 0 );
 	}
 
-	if ( UpdatePlayerPanels() )
-	{
-		bNeedsLayout = true;
-	}
+	UpdatePlayerPanels();
 
 	if ( bNeedsLayout )
 	{
@@ -688,28 +687,21 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFTeamStatus::UpdatePlayerPanels( void )
+void CTFTeamStatus::UpdatePlayerPanels( void )
 {
 	if ( !g_TF_PR )
-		return false;
-
-	bool bNeedsLayout = false;
+		return;
 
 	for ( int i = 0; i < m_PlayerPanels.Count(); i++ )
 	{
-		if ( m_PlayerPanels[i]->Update() )
-		{
-			bNeedsLayout = true;
-		}
+		m_PlayerPanels[i]->Update();
 	}
-
-	return bNeedsLayout;
 }
 
 bool CTFTeamStatus::IsClassOrder()
 {
 	// If we're in a competitive mode, then order the players according to class, like the advanced specgui
-	const bool bCompetitive = TFGameRules()->IsCompetitiveGame();
+	const bool bCompetitive = TFGameRules() && TFGameRules()->IsCompetitiveGame();
 	const bool bClassOrder = bCompetitive;
 	return bClassOrder;
 }
