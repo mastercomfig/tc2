@@ -1,7 +1,7 @@
 <img src="./team-comtress-2.png" align="center">
 
 [![ko-fi](https://img.shields.io/badge/Support%20me%20on-Ko--fi-FF5E5B.svg?logo=ko-fi&style=flat-square)](https://docs.comfig.app/latest/support_me/)
-[![Join the Discord chat](https://img.shields.io/badge/Discord-%23patch--pack-5865F2.svg?style=flat-square&logo=discord)](https://comfig.app/discord)
+[![Join the Discord chat](https://img.shields.io/badge/Discord-%23team--comtress--2-5865F2.svg?style=flat-square&logo=discord)](https://comfig.app/discord)
 
 # Team Comtress 2
 
