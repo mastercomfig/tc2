@@ -2347,7 +2347,6 @@ int CTFGameRules::IsEmulatingMatch() const
 
 ETFMatchGroup CTFGameRules::GetCurrentMatchGroup() const
 {
-
 #ifdef GAME_DLL
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 	return pMatch ? pMatch->m_eMatchGroup : k_eTFMatchGroup_Invalid;
@@ -2398,7 +2397,13 @@ void CTFGameRules::SyncMatchSettings()
 	// These mirror the MatchInfo for the client's sake.
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 
-	m_nMatchGroupType.Set( pMatch ? pMatch->m_eMatchGroup : k_eTFMatchGroup_Invalid );
+	ETFMatchGroup eMatchGroup = pMatch ? pMatch->m_eMatchGroup : k_eTFMatchGroup_Invalid;
+	if (IsEmulatingMatch())
+	{
+		eMatchGroup = GetCurrentMatchGroupWithEmulation();
+	}
+
+	m_nMatchGroupType.Set( eMatchGroup );
 	m_bMatchEnded.Set( IsManagedMatchEnded() );
 }
 
@@ -5596,10 +5601,12 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	}
 
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	if ( pMatch && IsMatchTypeCompetitive() )
+	if ( ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2 )
 	{
+		static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
+		tf_bot_difficulty.SetValue(3);
 		static ConVarRef tf_bot_quota( "tf_bot_quota" );
-		tf_bot_quota.SetValue( (int)pMatch->GetCanonicalMatchSize() );
+		tf_bot_quota.SetValue( pMatch ? (int)pMatch->GetCanonicalMatchSize() : 12 );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
 		tf_bot_quota_mode.SetValue( "fill" );
 	}
@@ -22045,6 +22052,8 @@ void CTFGameRules::MatchSummaryEnd( void )
 	tf_bot_quota.SetValue( tf_bot_quota.GetDefault() );
 	static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
 	tf_bot_quota_mode.SetValue( tf_bot_quota_mode.GetDefault() );
+	static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
+	tf_bot_difficulty.SetValue(tf_bot_difficulty.GetDefault());
 }
 
 //-----------------------------------------------------------------------------
