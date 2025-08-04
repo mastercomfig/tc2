@@ -6796,8 +6796,9 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flMax = flCenter + flRandomDamageSpread;
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
+		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
-		if ( bHasDistanceMod || bNoDamageSpread )
+		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
 			float flOptimalDistance = 512.0f;
@@ -6855,7 +6856,6 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 		//Msg("Range: %.2f - %.2f\n", flMin, flMax );
 		float flRandomRangeVal;
-		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
 		if ( bNoDamageSpread )
 		{
 			if (!bApplySpreadToRampup)
