@@ -111,6 +111,7 @@ ConVar cl_mainmenu_operation_motd_reset( "cl_mainmenu_operation_motd_reset", "0"
 ConVar cl_mainmenu_safemode( "cl_mainmenu_safemode", "0", FCVAR_NONE, "Enable safe mode", cc_tf_safemode_toggle );
 ConVar cl_mainmenu_updateglow( "cl_mainmenu_updateglow", "1", FCVAR_ARCHIVE | FCVAR_HIDDEN );
 ConVar tf_mainmenu_match_panel_type( "tf_mainmenu_match_panel_type", "7", FCVAR_ARCHIVE | FCVAR_HIDDEN, "The match group data to show on the main menu", cc_tf_mainmenu_match_panel_type );
+ConVar tf_mainmenu_class_highlight("tf_mainmenu_class_highlight", "0", FCVAR_ARCHIVE, "The class to display on the main menu. 0: random (default), 1: scout, 2: soldier, 3: pyro, 4: demoman, 5: heavy, 6: engineer, 7: medic, 8: sniper, 9: spy");
 
 void cc_promotional_codes_button_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
@@ -765,6 +766,7 @@ void CHudMainMenuOverride::PlayMainMenuMusic()
 	}
 }
 
+extern int g_ClassDefinesRemap[];
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -902,14 +904,25 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 		}
 
 		m_pCharacterModelPanel->ClearCarriedItems();
-		int iClass = RandomInt(TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS - 1);
+		int iSelectedClass = tf_mainmenu_class_highlight.GetInt();
+		int iClass;
+		if ( iSelectedClass > 0 && iSelectedClass < TF_LAST_NORMAL_CLASS - 1 )
+		{
+			iClass = g_ClassDefinesRemap[iSelectedClass];
+		}
+		else
+		{
+			iClass = RandomInt(TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS - 1);
+		}
 		int iSlot = g_iLegacyClassSelectWeaponSlots[iClass];
 		int iSlotOrig = iSlot;
 
 		bool bCanUseFancyClassSelectAnimation = true;
 		const char* pszVCD = "class_select";
 
-		bool bIsRobot = RandomInt(1, 100) <= 1;
+		// TODO(mcoms): robot
+		//bool bIsRobot = RandomInt(1, 100) <= 1;
+		bool bIsRobot = false;
 
 		if (!bIsRobot)
 		{
@@ -956,8 +969,9 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 
 						if (FindAttribute(pItemData, pAttrDef_PlayerRobot))
 						{
-							bIsRobot = true;
-							break;
+							// TODO(mcoms): robot
+							//bIsRobot = true;
+							//break;
 						}
 					}
 
