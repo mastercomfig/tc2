@@ -19768,8 +19768,7 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 	criteriaSet.AppendCriteria( "RoundsPlayed", UTIL_VarArgs( "%d", TFGameRules()->GetRoundsPlayed() ) );
 
 	// Is this a 6v6 match?
-	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	bool bIsComp6v6 = ( pMatch && pMatch->m_eMatchGroup == k_eTFMatchGroup_Ladder_6v6 );
+	bool bIsComp6v6 = ( TFGameRules() && TFGameRules()->GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Ladder_6v6 );
 	criteriaSet.AppendCriteria( "IsComp6v6", bIsComp6v6 ? "1" : "0" );
 
 	bool bIsCompWinner = m_Shared.InCond( TF_COND_COMPETITIVE_WINNER );
