@@ -2181,16 +2181,23 @@ bool CTFPlayer::CheckStrandedSpawn(void)
 		return false;
 	}
 
-	// just allow players to respawn during first 7 seconds
-#if 1
-	return true;
-#else
 	CBaseEntity* pLastSpawnPoint = GetSpawnPoint();
 	if (!pLastSpawnPoint)
 	{
 		return false;
 	}
 	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
+
+	// tighter check for leaving respawn room
+	if ((GetAbsOrigin() - vLastSpawnPos).Length2DSqr() > 25.0f * 25.0f || abs(GetAbsOrigin().z - vLastSpawnPos.z) > 50.0f)
+	{
+		return false;
+	}
+
+	// just allow players to respawn during first 7 seconds
+#if 1
+	return true;
+#else
 	CFuncRespawnRoom* pLastRespawnRoom;
 	GetMyRespawnRoom(NULL, vLastSpawnPos, pLastRespawnRoom);
 
