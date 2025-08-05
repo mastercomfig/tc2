@@ -2080,8 +2080,10 @@ bool CTFWeaponBase::ReloadSingly( void )
 	case TF_RELOAD_FINISH:
 	default:
 		{
+			// we create a variable that tracks from curtime to the time + the duration of the finish reload activity
 			if ( SendWeaponAnim( ACT_RELOAD_FINISH ) )
 			{
+				m_flTimeFinishReloadSingly = gpGlobals->curtime + SequenceDuration();
 				// We're done, allow primary attack as soon as we like unless we're an energy weapon.
 				// This was commented out, but we're bringing it back for the Cow Mangler charge shot.
 				if ( IsEnergyWeapon() && GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
@@ -2600,6 +2602,24 @@ void CTFWeaponBase::HandleInspect()
 	// first time pressing inspecting key
 	if ( !m_bInspecting && pPlayer->IsInspecting() )
 	{
+		// Don't inspect while reloading or zooming. TF_COND_ZOOMED for the Classic
+		if ( IsReloading() || pPlayer->m_Shared.InCond( TF_COND_AIMING ) || pPlayer->m_Shared.InCond( TF_COND_ZOOMED ) )
+		{
+			return;
+		}
+
+		// Don't inspect if the player has just fired
+		if ( gpGlobals->curtime < m_flNextPrimaryAttack )
+		{
+			return;
+		}
+		
+		// Don't inspect if the weapon isn't idle after reloading the last bullet
+		if ( gpGlobals->curtime < m_flTimeFinishReloadSingly )
+		{
+			return;
+		}
+		
 		m_nInspectStage = INSPECT_INVALID;
 		m_flInspectAnimEndTime = -1.f;
 		if ( SendWeaponAnim( GetInspectActivity( INSPECT_START ) ) )
