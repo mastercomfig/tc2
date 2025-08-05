@@ -1976,10 +1976,13 @@ bool CTFWeaponBase::ReloadSingly( void )
 			if ( SendWeaponAnim( ACT_RELOAD_START ) )
 			{
 				float SeqDuration = SequenceDuration();
+				// TODO(mcoms)
+#if 0
 				if ( GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
 					SeqDuration *= 1.25f;
 				}
+#endif
 				SetReloadTimer( SeqDuration );
 			}
 			else
@@ -2082,12 +2085,15 @@ bool CTFWeaponBase::ReloadSingly( void )
 		{
 			if ( SendWeaponAnim( ACT_RELOAD_FINISH ) )
 			{
+				// TODO(mcoms)
 				// We're done, allow primary attack as soon as we like unless we're an energy weapon.
+#if 0
 				// This was commented out, but we're bringing it back for the Cow Mangler charge shot.
 				if ( IsEnergyWeapon() && GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
 					SetReloadTimer( SequenceDuration() - 0.2f );
 				}
+#endif
 			}
 
 			pPlayer->DoAnimationEvent( PLAYERANIMEVENT_RELOAD_END );

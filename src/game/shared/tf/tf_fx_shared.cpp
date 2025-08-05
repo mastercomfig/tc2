@@ -376,7 +376,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				const float flMinAccuracyCooldown = 0.25f;
 				const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;
 
-				if ( nBulletsPerShot > 1 )
+				if ( nBulletsPerShot > 1 && flTimeSinceLastShot < flMinAccuracyCooldown )
 				{
 					bAccuracyBonus = true;
 				}
