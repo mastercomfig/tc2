@@ -368,6 +368,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 		}
 		else
 		{
+			float curtime = gpGlobals->curtime;
 			float flVariance = 0.5f;
 
 			// two bullets down the crosshair for shotguns, like fixed spread.
@@ -376,7 +377,6 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 			if ( bAccurateBullet && pWpn )
 			{
 				bool bAccuracyBonus = false;
-				float curtime = gpGlobals->curtime;
 				float flTimeSinceLastShot = ( curtime - pWpn->m_flLastFireTime );
 				float flTimeSinceLastAccurateShot = ( curtime - pWpn->m_flLastAccurateFireTime );
 				const float flMinAccuracyCooldown = 0.25f;
