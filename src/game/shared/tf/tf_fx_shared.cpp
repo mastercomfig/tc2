@@ -319,7 +319,8 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 
 	const float flTimeBetweenShots = pWeaponInfo->GetWeaponData(iMode).m_flTimeFireDelay;
 	int nBulletsPerShot = pWeaponInfo->GetWeaponData( iMode ).m_nBulletsPerShot;
-	bool bFixedSpread = ( nDamageType & DMG_BUCKSHOT ) && ( nBulletsPerShot > 1 ) && IsFixedWeaponSpreadEnabled( pWpn );
+	bool bShotgun = nDamageType & DMG_BUCKSHOT;
+	bool bFixedSpread = bShotgun && ( nBulletsPerShot > 1 ) && IsFixedWeaponSpreadEnabled( pWpn );
 	if ( pWeapon )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, nBulletsPerShot, mult_bullets_per_shot );
@@ -369,23 +370,35 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 		{
 			float flVariance = 0.5f;
 
-			if ( iBullet == 0 && pWpn )
+			// two bullets down the crosshair for shotguns, like fixed spread.
+			const bool bAccurateBullet = bShotgun ? iBullet == 0 || iBullet == 1 : iBullet == 0;
+
+			if ( bAccurateBullet && pWpn )
 			{
 				bool bAccuracyBonus = false;
-				float flTimeSinceLastShot = ( gpGlobals->curtime - pWpn->m_flLastFireTime );
+				float curtime = gpGlobals->curtime;
+				float flTimeSinceLastShot = ( curtime - pWpn->m_flLastFireTime );
+				float flTimeSinceLastAccurateShot = ( curtime - pWpn->m_flLastAccurateFireTime );
 				const float flMinAccuracyCooldown = 0.25f;
 				const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;
-
-				if ( nBulletsPerShot > 1 && flTimeSinceLastShot > flMinAccuracyCooldown )
+				if ( nBulletsPerShot > 1 )
 				{
-					bAccuracyBonus = true;
+#if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
+					const bool bAccurateShot = bShotgun ? flTimeSinceLastShot > flMinAccuracyCooldown : flTimeSinceLastAccurateShot > flMinAccuracyCooldown;
+#else
+					const bool bAccurateShot = flTimeSinceLastShot > flMinAccuracyCooldown;
+#endif
+					if (bAccurateShot)
+					{
+						bAccuracyBonus = true;
+					}
 				}
-				else if ( nBulletsPerShot == 1 )
+				else
 				{
 #if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
 					// Give players control over accuracy vs. speed on their revolvers / pistols
-					const float flShotTimeCooldown = 1.0f / 0.6f;
-					const float flAccuracyCooldown = Clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
+					constexpr float flShotTimeCooldown = 1.0f / 0.6f;
+					const float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
 #else
 					const float flAccuracyCooldown = flMaxAccuracyCooldown;
 #endif
@@ -425,6 +438,15 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 					x *= flScalar;
 					y *= flScalar;
 				}
+			}
+			else
+			{
+#if !defined (CLIENT_DLL)
+				if (flVariance != 0.0f)
+				{
+					pWpn->m_flLastAccurateFireTime = curtime;
+				}
+#endif
 			}
 		}
 

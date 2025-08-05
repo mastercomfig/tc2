@@ -52,7 +52,6 @@ static ConVar tf_revolver_dynamic_crosshair("tf_revolver_dynamic_crosshair", "1"
 CTFRevolver::CTFRevolver()
 {
 	m_flLastAccuracyCheck = 0.f;
-	m_flAccuracyCheckTime = 0.f;
 }
 
 //-----------------------------------------------------------------------------
@@ -240,15 +239,49 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 	if ( !pTFPlayer )
 		return;
 
-	if ( CanHeadshot() && tf_revolver_dynamic_crosshair.GetBool() )
+	BaseClass::GetWeaponCrosshairScale(flScale);
+
+	if ( tf_revolver_dynamic_crosshair.GetBool() )
 	{
+		const bool bCanHeadShot = CanHeadshot();
+		const float flHeadShotCooldown = 1.0f;
+		
+#if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
+		constexpr float flShotTimeCooldown = 1.0f / 0.6f;
+		const float flTimeBetweenShots = m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_flTimeFireDelay;
+		const float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );
+#else
+		const float flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
+#endif
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
-		flScale = RemapValClamped(flTimeSinceCheck, 1.0f, 0.5f, 0.75f, 2.5f);
-	}
-	else
-	{
-		BaseClass::GetWeaponCrosshairScale( flScale );
+		// when is it fully accurate?
+		if ( bCanHeadShot )
+		{
+			if ( flAccuracyCooldown == flHeadShotCooldown )
+			{
+				// headshot cooldown is the same as our accuracy cooldown.
+				flScale = RemapValClamped(flTimeSinceCheck, flHeadShotCooldown, 0.5f, 0.75f, 2.5f);
+			}
+			else
+			{
+				if ( flTimeSinceCheck < flAccuracyCooldown )
+				{
+					// show the accuracy time
+					flScale = RemapValClamped(flTimeSinceCheck, 0.5f, flAccuracyCooldown, 2.5f, 1.0f);
+				}
+				else
+				{
+					// headshot time.
+					flScale = RemapValClamped(flTimeSinceCheck, flAccuracyCooldown, flHeadShotCooldown, 1.0f, 0.75f);
+				}
+			}
+		}
+		else
+		{
+			flScale = RemapValClamped( flTimeSinceCheck, 0.5f, flAccuracyCooldown, 2.5f, 1.0f );
+		}
+		
 	}
 }
 #endif

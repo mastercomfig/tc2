@@ -171,12 +171,14 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFWeaponBase, DT_LocalTFWeaponData )
 	RecvPropTime( RECVINFO( m_flLastCritCheckTime ) ),
 	RecvPropTime( RECVINFO( m_flReloadPriorNextFire ) ),
 	RecvPropTime( RECVINFO( m_flLastFireTime ) ),
+	RecvPropTime( RECVINFO( m_flLastAccurateFireTime ) ),
 	RecvPropTime( RECVINFO( m_flEffectBarRegenTime ) ),
 	RecvPropFloat( RECVINFO( m_flObservedCritChance ) ),
 #else
 	SendPropTime( SENDINFO( m_flLastCritCheckTime ) ),
 	SendPropTime( SENDINFO( m_flReloadPriorNextFire ) ),
 	SendPropTime( SENDINFO( m_flLastFireTime ) ),
+	SendPropTime( SENDINFO( m_flLastAccurateFireTime ) ),
 	SendPropTime( SENDINFO( m_flEffectBarRegenTime ) ),
 	SendPropFloat( SENDINFO( m_flObservedCritChance ), 16, SPROP_NOSCALE, 0.0, 100.0 ),
 #endif
@@ -237,6 +239,7 @@ BEGIN_PREDICTION_DATA( CTFWeaponBase )
 	DEFINE_PRED_FIELD_TOL( m_flLastCritCheckTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
 	DEFINE_PRED_FIELD_TOL( m_flReloadPriorNextFire, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
 	DEFINE_PRED_FIELD_TOL( m_flLastFireTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
+	DEFINE_PRED_FIELD_TOL( m_flLastAccurateFireTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
 	DEFINE_PRED_FIELD( m_bCurrentAttackIsCrit, FIELD_BOOLEAN, 0 ),
 	DEFINE_PRED_FIELD( m_iCurrentSeed, FIELD_INTEGER, 0 ),
 	DEFINE_PRED_FIELD( m_flEnergy, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
@@ -306,6 +309,7 @@ CTFWeaponBase::CTFWeaponBase()
 	m_iLastCritCheckFrame = 0;
 	m_flObservedCritChance = 0.f;
 	m_flLastFireTime = 0;
+	m_flLastAccurateFireTime = 0;
 	m_flEffectBarRegenTime = 0;
 	m_bCurrentAttackIsCrit = false;
 	m_bCurrentCritIsRandom = false;

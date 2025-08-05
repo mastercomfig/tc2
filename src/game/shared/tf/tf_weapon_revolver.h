@@ -89,7 +89,6 @@ private:
 	CTFRevolver( const CTFRevolver & ) {}
 
 	float			m_flLastAccuracyCheck;
-	float			m_flAccuracyCheckTime;
 };
 
 
