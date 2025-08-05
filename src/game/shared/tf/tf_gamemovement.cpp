@@ -82,6 +82,10 @@ ConVar tf_movement_lost_footing_restick( "tf_movement_lost_footing_restick", "50
 ConVar tf_movement_lost_footing_friction( "tf_movement_lost_footing_friction", "0.1", FCVAR_REPLICATED | FCVAR_CHEAT,
                                           "Ground friction for players who have lost their footing" );
 
+// Bunnyhopping related
+ConVar tf_restrict_bunnyhopping( "tf_restrict_bunnyhopping", "1", FCVAR_REPLICATED | FCVAR_CHEAT,"Restrict speed gain from bunnyhopping" );
+ConVar tf_automatic_bunnyhopping( "tf_automatic_bunnyhopping", "0", FCVAR_REPLICATED | FCVAR_CHEAT,"Automatically bunnyhop when holding jump" );
+
 extern ConVar cl_forwardspeed;
 extern ConVar cl_backspeed;
 extern ConVar cl_sidespeed;
@@ -1287,7 +1291,8 @@ bool CTFGameMovement::CheckJumpButton()
 		return false;
 
 	// Cannot jump again until the jump button has been released.
-	if ( mv->m_nOldButtons & IN_JUMP )
+	// Unless the automatic bunnyhopping cvar is enabled and the player is on the ground.
+	if ( mv->m_nOldButtons & IN_JUMP && (!tf_automatic_bunnyhopping.GetBool() || !bOnGround) )
 		return false;
 
 	// In air, so ignore jumps 
@@ -1326,7 +1331,12 @@ bool CTFGameMovement::CheckJumpButton()
 		return true;
 	}
 
-	PreventBunnyJumping();
+	// We restrict bunnyhopping by default, the same as base TF2.
+	// But now the cvar can now be used to disable this restriction.
+	if ( tf_restrict_bunnyhopping.GetBool() )
+	{
+		PreventBunnyJumping();
+	}
 
 	// Start jump animation and player sound (specific TF animation and flags).
 	m_pTFPlayer->DoAnimationEvent( PLAYERANIMEVENT_JUMP );
