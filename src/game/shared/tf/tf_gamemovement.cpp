@@ -1136,30 +1136,37 @@ void CTFGameMovement::AirDash( void )
 #endif // GAME_DLL
 }
 
+ConVar sv_enablebunnyhopping("sv_enablebunnyhopping", "0", FCVAR_REPLICATED, "Allow player speed to exceed maximum running speed");
+ConVar sv_autobunnyhopping("sv_autobunnyhopping", "0", FCVAR_REPLICATED, "Players automatically re-jump while holding jump button");
+
 // Only allow bunny jumping up to 1.2x server / player maxspeed setting
-#define BUNNYJUMP_MAX_SPEED_FACTOR 1.2f
+ConVar sv_bunnyhop_max_speed_factor("sv_bunnyhop_max_speed_factor", "1.2", FCVAR_REPLICATED, "If sv_enablebunnyhopping is 0, limit at this factor of max speed");
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFGameMovement::PreventBunnyJumping()
 {
+	if ( sv_enablebunnyhopping.GetBool() )
+		return;
+
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 		return;
 
 	// Speed at which bunny jumping is limited
-	float maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * player->m_flMaxspeed;
+	float maxscaledspeed = sv_bunnyhop_max_speed_factor.GetFloat() * player->m_flMaxspeed;
 	if ( maxscaledspeed <= 0.0f )
 		return;
 
+	float maxscaledspeedsq = maxscaledspeed * maxscaledspeed;
+
 	// Current player speed
 	float spd = mv->m_vecVelocity.LengthSqr();
-	if ( spd <= maxscaledspeed * maxscaledspeed )
+	if ( spd <= maxscaledspeedsq)
 		return;
 
 	// Apply this cropping fraction to velocity
-	float fraction = ( maxscaledspeed / spd );
-
+	float fraction = FastSqrt( maxscaledspeedsq / spd );
 
 	mv->m_vecVelocity *= fraction;
 }
@@ -1287,7 +1294,7 @@ bool CTFGameMovement::CheckJumpButton()
 		return false;
 
 	// Cannot jump again until the jump button has been released.
-	if ( mv->m_nOldButtons & IN_JUMP )
+	if ( ( mv->m_nOldButtons & IN_JUMP ) != 0 && !sv_autobunnyhopping.GetBool() )
 		return false;
 
 	// In air, so ignore jumps 
