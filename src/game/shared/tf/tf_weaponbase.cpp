@@ -1978,7 +1978,7 @@ bool CTFWeaponBase::ReloadSingly( void )
 				float SeqDuration = SequenceDuration();
 				if ( GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
-					SeqDuration *= 1.2f;
+					SeqDuration *= 1.25f;
 				}
 				SetReloadTimer( SeqDuration );
 			}
@@ -2086,7 +2086,7 @@ bool CTFWeaponBase::ReloadSingly( void )
 				// This was commented out, but we're bringing it back for the Cow Mangler charge shot.
 				if ( IsEnergyWeapon() && GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
-					SetReloadTimer( SequenceDuration() );
+					SetReloadTimer( SequenceDuration() - 0.2f );
 				}
 			}
 
