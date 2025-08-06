@@ -75,7 +75,7 @@ public:
 	  {
 		  static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
 		  static const ConVar *pMax = g_pCVar->FindVar( "sv_client_max_interp_ratio" );
-		  const float flBaseValue = roundf(GetBaseFloatValue());
+		  const float flBaseValue = ceilf(GetBaseFloatValue());
 		  if ( pMin && pMax && pMin->GetFloat() != -1 )
 		  {
 			  return clamp( flBaseValue, pMin->GetFloat(), pMax->GetFloat() );

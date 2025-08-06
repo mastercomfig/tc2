@@ -354,7 +354,7 @@ void TE_PlayerAnimEvent( CBasePlayer *pPlayer, PlayerAnimEvent_t event, int nDat
 	if ( !IsCustomPlayerAnimEvent( event ) && ( event != PLAYERANIMEVENT_SNAP_YAW ) && ( event != PLAYERANIMEVENT_VOICE_COMMAND_GESTURE ) )
 	{
 		// if prediction is off, alway send jump
-		if ( !( ( event == PLAYERANIMEVENT_JUMP ) && ( FStrEq(engine->GetClientConVarValue( pPlayer->entindex(), "cl_predict" ), "0" ) ) ) )
+		if ( !( ( event == PLAYERANIMEVENT_JUMP ) && ( !pPlayer->m_bRequestPredict ) ) )
 		{
 			filter.RemoveRecipient( pPlayer );
 		}

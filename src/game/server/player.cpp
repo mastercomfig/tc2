@@ -3493,22 +3493,27 @@ void CBasePlayer::ClientSettingsChanged()
 		this->m_nUpdateRate = clamp( this->m_nUpdateRate, (int) pMinUpdateRate->GetFloat(), (int) pMaxUpdateRate->GetFloat() );
 
 	bool useInterpolation = Q_atoi( QUICKGETCVARVALUE("cl_interpolate") ) != 0;
+	const bool bNoCheats = sv_cheats && !sv_cheats->GetBool();
+	if ( bNoCheats )
+	{
+		useInterpolation = true;
+	}
 	if ( useInterpolation )
 	{
 		float flLerpRatio = Q_atof( QUICKGETCVARVALUE("cl_interp_ratio") );
-		if ( flLerpRatio == 0 )
-			flLerpRatio = 2.0f;
+
+		// enforce integer lerp ratio
+		flLerpRatio = ceilf(flLerpRatio);
 
 		static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
 		static const ConVar *pMax = g_pCVar->FindVar( "sv_client_max_interp_ratio" );
 		if ( pMin && pMax && pMin->GetFloat() != -1 )
 		{
-			flLerpRatio = clamp( flLerpRatio, pMin->GetFloat(), pMax->GetFloat() );
+			flLerpRatio = clamp( flLerpRatio, ceilf(pMin->GetFloat()), ceilf(pMax->GetFloat()) );
 		}
 		else
 		{
-			if ( flLerpRatio == 0 )
-				flLerpRatio = 2.0f;
+			flLerpRatio = clamp(flLerpRatio, 1.0f, 3.0f);
 		}
 		this->m_fLerpTime = flLerpRatio / this->m_nUpdateRate;
 	}
@@ -3519,7 +3524,10 @@ void CBasePlayer::ClientSettingsChanged()
 
 #if !defined( NO_ENTITY_PREDICTION )
 	bool usePrediction = Q_atoi( QUICKGETCVARVALUE("cl_predict")) != 0;
-
+	if ( bNoCheats )
+	{
+		usePrediction = true;
+	}
 	if ( usePrediction )
 	{
 		this->m_bRequestPredict  = true;
