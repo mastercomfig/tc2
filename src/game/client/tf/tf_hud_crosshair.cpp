@@ -45,6 +45,7 @@ CHudTFCrosshair::CHudTFCrosshair( const char *pName ) :
 	m_iCrosshairTextureID = -1;
 	m_flTimeToHideUntil = -1.f;
 	m_pFrameVar = NULL;
+	m_nPrevFrame = -1;
 
 	ListenForGameEvent( "restart_timer_time" );
 }
@@ -180,9 +181,10 @@ void CHudTFCrosshair::Paint()
 		Q_strncpy( m_szPreviousCrosshair, crosshairfile, sizeof(m_szPreviousCrosshair) );
 
 		m_pFrameVar = m_pCrosshairMaterial->FindVarFactory( "$frame", NULL );
-		if ( m_pFrameVar)
+		if ( m_pFrameVar )
 		{
 			m_nNumFrames = m_pCrosshairMaterial->GetNumAnimationFrames() - 1;
+			m_nPrevFrame = -1;
 		}
 	}
 
@@ -213,9 +215,14 @@ void CHudTFCrosshair::Paint()
 #ifdef TF_CLIENT_DLL
 	Color clr( cl_crosshair_red.GetInt(), cl_crosshair_green.GetInt(), cl_crosshair_blue.GetInt(), 255 );
 	flPlayerScale = cl_crosshair_scale.GetFloat() / 32.0f;  // the player can change the scale in the options/multiplayer tab
+	
 	if ( m_pFrameVar )
 	{
-		m_pFrameVar->SetIntValue(clamp(cl_crosshair_gap.GetInt(), 0, m_nNumFrames));
+		int nFrame = clamp(cl_crosshair_gap.GetInt(), 0, m_nNumFrames);
+		if ( nFrame != m_nPrevFrame )
+		{
+			m_pFrameVar->SetIntValue(nFrame);
+		}
 	}
 #else
 	Color clr = m_clrCrosshair;

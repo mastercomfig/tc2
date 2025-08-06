@@ -37,6 +37,7 @@ private:
 	IVguiMatInfo		*m_pCrosshairMaterial;
 	IVguiMatInfoVar		*m_pFrameVar;
 	int					m_nNumFrames;
+	int					m_nPrevFrame;
 
 	char				m_szPreviousCrosshair[256];	// name of the current crosshair
 	float				m_flTimeToHideUntil;
