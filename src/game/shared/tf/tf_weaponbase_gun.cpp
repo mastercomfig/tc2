@@ -714,10 +714,12 @@ CBaseEntity *CTFWeaponBaseGun::FirePipeBomb( CTFPlayer *pPlayer, int iPipeBombTy
 	if ( trace.startsolid )
 		return NULL;
 
+	const bool bFixedGrenades = tf_pipebomb_disable_random_launch.GetBool() || TFGameRules()->IsCompetitiveGame();
+
 	float flLaunchSpeed = GetProjectileSpeed();
 	CALL_ATTRIB_HOOK_FLOAT( flLaunchSpeed, mult_projectile_range );
 	Vector vecVelocity = ( vecForward * flLaunchSpeed ) + ( vecUp * 200.0f );
-	if ( !tf_pipebomb_disable_random_launch.GetBool() && !TFGameRules()->IsCompetitiveGame() )
+	if ( !bFixedGrenades )
 	{
 		vecVelocity += ( random->RandomFloat( -10.0f, 10.0f ) * vecRight ) + ( random->RandomFloat( -10.0f, 10.0f ) * vecUp );
 	}
@@ -726,10 +728,10 @@ CBaseEntity *CTFWeaponBaseGun::FirePipeBomb( CTFPlayer *pPlayer, int iPipeBombTy
 	CALL_ATTRIB_HOOK_FLOAT( flMultDmg, mult_dmg );
 	
 	// no spin for loch-n-load
-	Vector angImpulse = AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 );
+	Vector angImpulse = bFixedGrenades ? AngularImpulse( 600, -1125.89f, 0 ) : AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 );
 	int iNoSpin = 0;
 	CALL_ATTRIB_HOOK_INT( iNoSpin, grenade_no_spin );
-	if ( iNoSpin || tf_pipebomb_disable_random_launch.GetBool() || TFGameRules()->IsCompetitiveGame() )
+	if ( iNoSpin )
 	{
 		angImpulse.Zero();
 	}
