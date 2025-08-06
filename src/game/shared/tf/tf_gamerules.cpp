@@ -20741,7 +20741,7 @@ void CTFGameRules::OnPlayerSpawned( CTFPlayer *pPlayer )
 	}
 
 #ifdef GAME_DLL
-	if ( !IsInTraining() )
+	if ( !IsInTraining() && !IsCompetitiveGame() )
 	{
 		// Birthday beachball ball spawning.
 		if ( IsBirthday() &&
