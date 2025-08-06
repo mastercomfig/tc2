@@ -21037,7 +21037,8 @@ bool CTFGameRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
 		int iPlayerTeam = pTFPlayer->GetTeamNumber();
 		if( ( iPlayerTeam != TF_TEAM_RED ) && ( iPlayerTeam != TF_TEAM_BLUE ) )
 			return true;
-		
+
+		// NOTE: now we're also checking stranded spawn, so we don't allow it unless we're spawning.
 		// We can change if we've respawned/changed classes within the last 2 seconds.
 		// This allows for <classname>.cfg files to change these types of convars
 		float flRespawnTime = 0.f;
@@ -21046,7 +21047,7 @@ bool CTFGameRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
 #else
 		flRespawnTime = pTFPlayer->GetClassChangeTime(); // Called when the player changes class and respawns
 #endif
-		if( ( gpGlobals->curtime - flRespawnTime ) < 2.f )
+		if( ( gpGlobals->curtime - flRespawnTime ) < 2.f && pTFPlayer->m_Shared.IsInStrandedSpawn() )
 			return true;
 
 		// CTFPlayerShared has an option to suppress prediction. If the client is trying to change itself to match that
