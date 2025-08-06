@@ -424,7 +424,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				float flScalar = 1.0f;
 				if (tf_use_circular_weaponspreads.GetBool())
 				{
-					float angle = 2.0 * M_PI * RandomFloat();
+					float angle = M_PI * 2.0f * RandomFloat();
 					float radius = flScalar * FastSqrt(RandomFloat());
 					float s, c;
 					FastSinCos(angle, &s, &c);
@@ -439,15 +439,12 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 					y *= flScalar;
 				}
 			}
-			else
-			{
 #if !defined (CLIENT_DLL)
-				if (flVariance != 0.0f)
-				{
-					pWpn->m_flLastAccurateFireTime = curtime;
-				}
-#endif
+			else if (pWpn && flVariance == 0.0f)
+			{
+				pWpn->m_flLastAccurateFireTime = curtime;
 			}
+#endif
 		}
 
 		// Initialize the variable firing information.

@@ -1154,19 +1154,19 @@ void CTFGameMovement::PreventBunnyJumping()
 		return;
 
 	// Speed at which bunny jumping is limited
-	float maxscaledspeed = sv_bunnyhop_max_speed_factor.GetFloat() * player->m_flMaxspeed;
+	const float maxscaledspeed = sv_bunnyhop_max_speed_factor.GetFloat() * player->m_flMaxspeed;
 	if ( maxscaledspeed <= 0.0f )
 		return;
 
-	float maxscaledspeedsq = maxscaledspeed * maxscaledspeed;
+	const float maxscaledspeedsq = maxscaledspeed * maxscaledspeed;
 
 	// Current player speed
-	float spd = mv->m_vecVelocity.LengthSqr();
+	const float spd = mv->m_vecVelocity.LengthSqr();
 	if ( spd <= maxscaledspeedsq)
 		return;
 
 	// Apply this cropping fraction to velocity
-	float fraction = FastSqrt( maxscaledspeedsq / spd );
+	const float fraction = FastSqrt( maxscaledspeedsq / spd );
 
 	mv->m_vecVelocity *= fraction;
 }
