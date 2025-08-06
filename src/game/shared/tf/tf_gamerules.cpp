@@ -1065,7 +1065,7 @@ bool IsCustomGameMode()
 // This version can be used outside of gameplay, ie., for matchmaking
 bool TF_IsHolidayActive( /*EHoliday*/ int eHoliday )
 {
-	if ( IsX360() || tf_force_holidays_off.GetBool() || IsCompetitiveGame() )
+	if ( IsX360() || tf_force_holidays_off.GetBool() || ( TFGameRules() && TFGameRules()->IsCompetitiveGame() ) )
 		return false;
 
 	if ( BIsCvarIndicatingHolidayIsActive( tf_forced_holiday.GetInt(), eHoliday ) )
