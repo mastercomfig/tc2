@@ -138,10 +138,9 @@ public:
 				m_bFizzling = true;
 				SetAbsVelocity( vec3_origin );
 
-				// Put the projectile to sleep while we wait for the cl_interp window to expire (keeps the dlight effect in sync)
-				CBaseEntity *pOwner = GetOwnerEntity();
-				float flLerpAmount = Q_atof( engine->GetClientConVarValue( pOwner->entindex(), "cl_interp" ) );
-				SetContextThink( &CTFProjectile_BallOfFire::ExpireDelayThink, gpGlobals->curtime + flLerpAmount, "ExpireDelayThink" );
+				// Put the projectile to sleep while we wait for the client interp window to expire (keeps the dlight effect in sync)
+				CTFPlayer* pTFOwner = ToTFPlayer(GetOwnerPlayer());
+				SetContextThink( &CTFProjectile_BallOfFire::ExpireDelayThink, gpGlobals->curtime + pTFOwner->m_fLerpTime, "ExpireDelayThink" );
 			}
 			else
 			{
