@@ -273,6 +273,11 @@ CMultiplayRules::CMultiplayRules()
 
 	RefreshSkillData( true );
 
+	// Set net_maxpacketdrop to the default for the server side.
+	// This is here so server ops can override it in their server.cfg if they want.
+	static ConVarRef net_maxpacketdrop("net_maxpacketdrop");
+	net_maxpacketdrop.SetValue( 5000 );
+
 	// 11/8/98
 	// Modified by YWB:  Server .cfg file is now a cvar, so that 
 	//  server ops can run multiple game servers, with different server .cfg files,
