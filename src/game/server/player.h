@@ -898,7 +898,7 @@ public:
 	bool					m_bPendingClientSettings; // User client settings changed, but we're not importing them
 							                          // until allowed
 	int						m_nUpdateRate;		// user snapshot rate cl_updaterate
-	float					m_fLerpTime;		// users cl_interp
+	float					m_fLerpTime;		// users client interp
 	bool					m_bLagCompensation;	// user wants lag compenstation
 	bool					m_bPredictWeapons; //  user has client side predicted weapons
 	bool					m_bRequestPredict; //  user has client prediction enabled

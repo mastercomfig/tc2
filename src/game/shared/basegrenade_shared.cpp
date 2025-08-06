@@ -139,7 +139,7 @@ void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 		surfacedata_t *pdata = physprops->GetSurfaceData( pTrace->surface.surfaceProps );	
 		CPASFilter filter( vecAbsOrigin );
 
-		te->Explosion( filter, -1.0, // don't apply cl_interp delay
+		te->Explosion( filter, -1.0, // don't apply client interp delay
 			&vecAbsOrigin,
 			!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
 			m_DmgRadius * .03, 
@@ -153,7 +153,7 @@ void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 	else
 	{
 		CPASFilter filter( vecAbsOrigin );
-		te->Explosion( filter, -1.0, // don't apply cl_interp delay
+		te->Explosion( filter, -1.0, // don't apply client interp delay
 			&vecAbsOrigin, 
 			!( contents & MASK_WATER ) ? g_sModelIndexFireball : g_sModelIndexWExplosion,
 			m_DmgRadius * .03, 

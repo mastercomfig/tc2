@@ -603,7 +603,7 @@ CBasePlayer::CBasePlayer( )
 
 	m_bPendingClientSettings = false;
 	m_nUpdateRate = 64;  // cl_updaterate defualt
-	m_fLerpTime = 0.03125f; // cl_interp default
+	m_fLerpTime = 0.03125f; // client interp default
 	m_bPredictWeapons = true;
 	m_bRequestPredict = true;
 	m_bLagCompensation = false;
@@ -3498,7 +3498,6 @@ void CBasePlayer::ClientSettingsChanged()
 		float flLerpRatio = Q_atof( QUICKGETCVARVALUE("cl_interp_ratio") );
 		if ( flLerpRatio == 0 )
 			flLerpRatio = 2.0f;
-		float flLerpAmount = Q_atof( QUICKGETCVARVALUE("cl_interp") );
 
 		static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
 		static const ConVar *pMax = g_pCVar->FindVar( "sv_client_max_interp_ratio" );
@@ -3511,8 +3510,7 @@ void CBasePlayer::ClientSettingsChanged()
 			if ( flLerpRatio == 0 )
 				flLerpRatio = 2.0f;
 		}
-		// #define FIXME_INTERP_RATIO
-		this->m_fLerpTime = MAX( flLerpAmount, flLerpRatio / this->m_nUpdateRate );
+		this->m_fLerpTime = flLerpRatio / this->m_nUpdateRate;
 	}
 	else
 	{
