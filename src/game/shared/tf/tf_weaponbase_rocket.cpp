@@ -192,7 +192,6 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 		// once our data updates settle into velocity sim, we no longer client predict velocity.
 		if ( (GetNetworkOrigin() - m_vecSpawnLoc).LengthSqr() > 20.0f * 20.0f )
 		{
-			SetNextClientThink(CLIENT_THINK_NEVER);
 			m_bPredicting = false;
 		}
 		else
@@ -276,9 +275,13 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 //-----------------------------------------------------------------------------
 void CTFBaseRocket::ClientPredictThink()
 {
+	if (!m_bPredicting)
+	{
+		return;
+	}
 	if ( gpGlobals->curtime - m_flSpawnTime > gpGlobals->interval_per_tick * 5.0f && GetGravity() != 0.0f )
 	{
-		SetNextClientThink(CLIENT_THINK_NEVER);
+		m_bPredicting = false;
 		return;
 	}
 
