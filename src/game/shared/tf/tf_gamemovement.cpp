@@ -2554,19 +2554,19 @@ void CTFGameMovement::CategorizePosition( void )
 		{
 			if ( bMoveToEndPos )
 			{
-				float flDelta = fabsf(mv->GetAbsOrigin().z - trace.endpos.z);
+				float flDelta = fabsf( mv->GetAbsOrigin().z - trace.endpos.z );
 				// HACK HACK:  The real problem is that trace returning that strange value 
 				//  we can't network over based on bit precision of networking origins
-				if (flDelta > 0.5f * COORD_RESOLUTION)
+				if ( flDelta > 0.5f * COORD_RESOLUTION )
 				{
 					Vector org = mv->GetAbsOrigin();
 					org.z = trace.endpos.z;
-					mv->SetAbsOrigin(org);
+					mv->SetAbsOrigin( org );
 				}
 			}
 
 			// check if we're moving up a slope
-			if (trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f)
+			if ( trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f )
 			{
 				// predict what our projected velocity would be if we were to land on this surface
 				Vector vPredictedVel = mv->m_vecVelocity;
