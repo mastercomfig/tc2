@@ -52,6 +52,7 @@ public:
 
 	virtual float	GetDamage();
 	virtual bool	CanHeadshot();
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 
 	virtual void	OnArrowMissAllPlayers( void );
 	virtual void	ArrowTouch( CBaseEntity *pOther );
@@ -127,6 +128,7 @@ public:
 	virtual void ImpactTeamPlayer( CTFPlayer *pOther );
 	
 	virtual float GetCollideWithTeammatesDelay() const { return 0.f; }
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return true; }
 };
 
 class CTFProjectile_GrapplingHook : public CTFProjectile_Arrow
@@ -155,7 +157,6 @@ public:
 
 	virtual float GetDamage() OVERRIDE { return 1.f; }
 	virtual bool CanHeadshot() OVERRIDE { return false; }
-	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 
 	void HookTarget( CBaseEntity *pOther );
 	void HookLatchedThink();

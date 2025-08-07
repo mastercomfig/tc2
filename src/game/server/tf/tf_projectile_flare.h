@@ -42,6 +42,8 @@ public:
 	virtual void	Precache();
 	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_FLAREGUN; }
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	virtual void	Explode( trace_t *pTrace, CBaseEntity *pOther );
 	void			Explode_Air( trace_t *pTrace, int bitsDamageType, bool bSelfOnly = false );
 	void			Detonate( bool bSelfOnly = false );

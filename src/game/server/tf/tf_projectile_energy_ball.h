@@ -31,6 +31,8 @@ public:
 	virtual void	Precache();
 	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_PARTICLE_CANNON; }
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	// IScorer interface
 	virtual CBasePlayer *GetScorer( void );
 	virtual CBasePlayer *GetAssistant( void ) { return NULL; }

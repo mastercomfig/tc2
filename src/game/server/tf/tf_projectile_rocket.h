@@ -30,6 +30,8 @@ public:
 	virtual void Precache();
 	virtual void RocketTouch( CBaseEntity *pOther ) OVERRIDE;
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	// IScorer interface
 	virtual CBasePlayer *GetScorer( void );
 	virtual CBasePlayer *GetAssistant( void ) { return NULL; }

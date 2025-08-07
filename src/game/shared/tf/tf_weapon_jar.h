@@ -230,6 +230,7 @@ public:
 #ifdef GAME_DLL
 	static CTFProjectile_Cleaver *Create( const Vector &position, const QAngle &angles, const Vector &velocity, 
 		const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo, int nSkin );
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 #endif
 
 	CTFProjectile_Cleaver();

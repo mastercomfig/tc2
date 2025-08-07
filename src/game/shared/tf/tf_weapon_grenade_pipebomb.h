@@ -108,7 +108,9 @@ public:
 	// Overrides.
 	virtual void	Spawn();
 	virtual void	Precache();
-	
+
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	virtual void	BounceSound( void );
 	virtual void	Detonate();
 	virtual void	Fizzle();

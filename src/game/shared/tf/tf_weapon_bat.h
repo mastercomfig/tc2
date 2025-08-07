@@ -139,6 +139,8 @@ public:
 #ifdef GAME_DLL
 	CTFStunBall();
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	static CTFStunBall* Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner );
 	virtual void		Precache( void );
 	virtual void		Spawn( void );
