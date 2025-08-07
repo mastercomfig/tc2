@@ -1245,16 +1245,9 @@ void CGameMovement::DecayPunchAngle( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::StartGravity( void )
 {
-	float ent_gravity;
-	
-	if (player->GetGravity())
-		ent_gravity = player->GetGravity();
-	else
-		ent_gravity = 1.0;
-
 	// Add gravity so they'll be in the correct position during movement
 	// yes, this 0.5 looks wrong, but it's not.  
-	mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * 0.5 * gpGlobals->frametime );
+	mv->m_vecVelocity[2] -= ( GetActualGravity( player ) * 0.5f * gpGlobals->frametime );
 	mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
 
 	Vector temp = player->GetBaseVelocity();
@@ -1681,18 +1674,11 @@ void CGameMovement::Friction( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishGravity( void )
 {
-	float ent_gravity;
-
 	if ( player->m_flWaterJumpTime )
 		return;
 
-	if ( player->GetGravity() )
-		ent_gravity = player->GetGravity();
-	else
-		ent_gravity = 1.0;
-
 	// Get the correct velocity for the end of the dt 
-  	mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * gpGlobals->frametime * 0.5);
+  	mv->m_vecVelocity[2] -= (GetActualGravity( player ) * gpGlobals->frametime * 0.5f);
 
 	CheckVelocity();
 }
@@ -2441,7 +2427,7 @@ bool CGameMovement::CheckJumpButton( void )
 	}
 	else
 	{
-		flMul = sqrt(2 * GetCurrentGravity() * GAMEMOVEMENT_JUMP_HEIGHT);
+		flMul = sqrtf(2.0f * GetCurrentGravity() * GAMEMOVEMENT_JUMP_HEIGHT);
 	}
 
 	// Acclerate upward
@@ -3090,18 +3076,11 @@ void CGameMovement::CheckVelocity( void )
 //-----------------------------------------------------------------------------
 void CGameMovement::AddGravity( void )
 {
-	float ent_gravity;
-
 	if ( player->m_flWaterJumpTime )
 		return;
 
-	if (player->GetGravity())
-		ent_gravity = player->GetGravity();
-	else
-		ent_gravity = 1.0;
-
 	// Add gravity incorrectly
-	mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * gpGlobals->frametime);
+	mv->m_vecVelocity[2] -= (GetActualGravity( player ) * gpGlobals->frametime);
 	mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
 	Vector temp = player->GetBaseVelocity();
 	temp[2] = 0;

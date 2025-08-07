@@ -1187,20 +1187,10 @@ int CBaseEntity::PhysicsTryMove( float flTime, trace_t *steptrace )
 void CBaseEntity::PhysicsAddHalfGravity( float timestep )
 {
 	VPROF("CBaseEntity::PhysicsAddHalfGravity");
-	float	ent_gravity;
-
-	if ( GetGravity() )
-	{
-		ent_gravity = GetGravity();
-	}
-	else
-	{
-		ent_gravity = 1.0;
-	}
 
 	// Add 1/2 of the total gravitational effects over this timestep
 	Vector vecAbsVelocity = GetAbsVelocity();
-	vecAbsVelocity[2] -= ( 0.5 * ent_gravity * GetCurrentGravity() * timestep );
+	vecAbsVelocity[2] -= ( 0.5f * GetActualGravity( this ) * timestep );
 	vecAbsVelocity[2] += GetBaseVelocity()[2] * gpGlobals->frametime;
 	SetAbsVelocity( vecAbsVelocity );
 

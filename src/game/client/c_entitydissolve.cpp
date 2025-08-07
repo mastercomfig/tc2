@@ -112,7 +112,7 @@ IMotionEvent::simresult_e C_EntityDissolve::Simulate( IPhysicsMotionController *
 	angular.Init();
 
 	// Make it zero g
-	linear.z -= -1.02 * GetCurrentGravity();
+	linear.z -= -1.02f * GetCurrentGravity();
 
 	Vector vel;
 	AngularImpulse angVel;

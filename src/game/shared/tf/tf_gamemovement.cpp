@@ -131,6 +131,7 @@ public:
 	void			VehicleMove( void );
 	bool			HighMaxSpeedMove( void );
 	virtual float	GetAirSpeedCap( void );
+	float 			GetWallSlideCoeff( void );
 
 	virtual void	TracePlayerBBox( const Vector& start, const Vector& end, unsigned int fMask, int collisionGroup, trace_t& pm );
 	virtual CBaseHandle	TestPlayerPosition( const Vector& pos, int collisionGroup, trace_t& pm );
@@ -2189,6 +2190,22 @@ float CTFGameMovement::GetAirSpeedCap( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+float CTFGameMovement::GetWallSlideCoeff()
+{
+	float flRedirectCoeff = 0.0f;
+
+	if (m_pTFPlayer->m_Shared.InCond(TF_COND_AIR_CURRENT))
+	{
+		flRedirectCoeff = Clamp(1.0f - tf_movement_aircurrent_friction_mult.GetFloat(), 0.0f, 1.0f);
+	}
+
+	return flRedirectCoeff;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFGameMovement::AirMove( void )
 {
 	// check if grappling move should do step move
@@ -2276,7 +2293,7 @@ void CTFGameMovement::AirMove( void )
 	// Add in any base velocity to the current velocity.
 	VectorAdd( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-	int iBlocked = TryPlayerMove( NULL, NULL, flWallSlideCoeff );
+	int iBlocked = TryPlayerMove( NULL, NULL, GetWallSlideCoeff() );
 
 	// TryPlayerMove uses '2' to indictate wall colision wtf
 	if ( iBlocked & 2 )
@@ -2530,33 +2547,37 @@ void CTFGameMovement::CategorizePosition( void )
 	else if ( !bInAir )
 	{
 		// YWB:  This logic block essentially lifted from StayOnGround implementation
-		if ( bMoveToEndPos &&
-			!trace.startsolid &&				// not sure we need this check as fraction would == 0.0f?
-			trace.fraction > 0.0f &&			// must go somewhere
-			trace.fraction < 1.0f ) 			// must hit something
+		const bool bWillMoveInto = !trace.startsolid &&	// not sure we need this check as fraction would == 0.0f?
+			trace.fraction > 0.0f &&	// must go somewhere
+			trace.fraction < 1.0f; // must hit something
+		if ( bWillMoveInto )
 		{
-			float flDelta = fabs( mv->GetAbsOrigin().z - trace.endpos.z );
-			// HACK HACK:  The real problem is that trace returning that strange value 
-			//  we can't network over based on bit precision of networking origins
-			if ( flDelta > 0.5f * COORD_RESOLUTION )
+			if ( bMoveToEndPos )
 			{
-				Vector org = mv->GetAbsOrigin();
-				org.z = trace.endpos.z;
-				mv->SetAbsOrigin( org );
+				float flDelta = fabsf(mv->GetAbsOrigin().z - trace.endpos.z);
+				// HACK HACK:  The real problem is that trace returning that strange value 
+				//  we can't network over based on bit precision of networking origins
+				if (flDelta > 0.5f * COORD_RESOLUTION)
+				{
+					Vector org = mv->GetAbsOrigin();
+					org.z = trace.endpos.z;
+					mv->SetAbsOrigin(org);
+				}
 			}
-		}
-		// check if we're moving up a slope
-		if (trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f)
-		{
-			// predict what our projected velocity would be if we were to land on this surface
-			Vector vPredictedVel = mv->m_vecVelocity;
-			vPredictedVel.z -= (0.5f * GetCurrentGravity() * gpGlobals->frametime);
-			ClipVelocity(vPredictedVel, trace.plane.normal, vPredictedVel, 1);
 
-			if (vPredictedVel.z > flJumpVel)
+			// check if we're moving up a slope
+			if (trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f)
 			{
-				// our projected velocity on this surface is actually going to be high, so we're still in air.
-				bInAir = true;
+				// predict what our projected velocity would be if we were to land on this surface
+				Vector vPredictedVel = mv->m_vecVelocity;
+				vPredictedVel.z -= (0.5f * GetActualGravity(player) * gpGlobals->frametime);
+				ClipVelocity(vPredictedVel, trace.plane.normal, vPredictedVel, 1.0f, GetWallSlideCoeff());
+
+				if (vPredictedVel.z > flJumpVel)
+				{
+					// our projected velocity on this surface is actually going to be high, so we're still in air.
+					bInAir = true;
+				}
 			}
 		}
 	}

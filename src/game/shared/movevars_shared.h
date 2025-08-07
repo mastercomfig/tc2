@@ -14,6 +14,8 @@
 
 float GetCurrentGravity( void );
 
+float GetActualGravity( CBaseEntity* pEnt );
+
 extern ConVar sv_gravity;
 extern ConVar sv_stopspeed;
 extern ConVar sv_noclipaccelerate;

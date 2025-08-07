@@ -34,6 +34,20 @@ float GetCurrentGravity( void )
 	return sv_gravity.GetFloat();
 }
 
+//-----------------------------------------------------------------------------
+// Returns the actual gravity
+//-----------------------------------------------------------------------------
+float GetActualGravity( CBaseEntity* pEnt )
+{
+	float ent_gravity = pEnt->GetGravity();
+	if (ent_gravity == 0.0f)
+	{
+		ent_gravity = 1.0f;
+	}
+
+	return ent_gravity * GetCurrentGravity();
+}
+
 ConVar	sv_gravity		( "sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED, "World gravity." );
 
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
