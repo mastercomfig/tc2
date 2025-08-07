@@ -1295,7 +1295,7 @@ bool CTFGameMovement::CheckJumpButton()
 		return false;
 
 	// Cannot jump again until the jump button has been released.
-	if ( ( mv->m_nOldButtons & IN_JUMP ) != 0 && !sv_autobunnyhopping.GetBool() )
+	if ( ( mv->m_nOldButtons & IN_JUMP ) != 0 && ( !sv_autobunnyhopping.GetBool() || !bOnGround ) )
 		return false;
 
 	// In air, so ignore jumps 
