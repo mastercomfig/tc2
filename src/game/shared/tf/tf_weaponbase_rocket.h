@@ -74,12 +74,17 @@ public:
 	virtual int		DrawModel( int flags );
 	virtual void	PostDataUpdate( DataUpdateType_t type );
 	virtual void	OnDataChanged(DataUpdateType_t updateType);
+	void ClientPredictThink();
+	void ClientThink() OVERRIDE;
 	virtual void	CreateTrails( void ) { }
 
 protected:
 
 	float	 m_flSpawnTime;
 	int		m_iCachedDeflect;
+	Vector m_vecSpawnLoc;
+	Vector m_vecPredLoc;
+	bool m_bPredicting;
 	CNetworkHandle( CBaseEntity, m_hLauncher );
 
 //=============================================================================

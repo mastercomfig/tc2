@@ -6,6 +6,8 @@
 #include "cbase.h"
 #include "tf_weaponbase_rocket.h"
 
+#include "movevars_shared.h"
+
 // Server specific.
 #ifdef GAME_DLL
 #include "soundent.h"
@@ -185,6 +187,21 @@ void CTFBaseRocket::Spawn( void )
 //-----------------------------------------------------------------------------
 void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 {
+	if (type == DATA_UPDATE_DATATABLE_CHANGED && gpGlobals->curtime - m_flSpawnTime <= gpGlobals->interval_per_tick * 5.0f && m_bPredicting)
+	{
+		// once our data updates settle into velocity sim, we no longer client predict velocity.
+		if ( (GetNetworkOrigin() - m_vecSpawnLoc).LengthSqr() > 20.0f * 20.0f )
+		{
+			SetNextClientThink(CLIENT_THINK_NEVER);
+			m_bPredicting = false;
+		}
+		else
+		{
+			// hack: override position update for now.
+			SetNetworkOrigin(m_vecPredLoc);
+		}
+	}
+
 	// Pass through to the base class.
 	BaseClass::PostDataUpdate( type );
 
@@ -221,15 +238,21 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 		Vector vCurOrigin = GetLocalOrigin();
 		interpolator.AddToHead(flChangeTime - flLerp, &vCurOrigin, false);
 
+		m_vecSpawnLoc = vCurOrigin;
+		m_vecPredLoc = vCurOrigin;
+
 		QAngle vCurAngles = GetLocalAngles();
 		rotInterpolator.AddToHead(flChangeTime - flLerp, &vCurAngles, false);
 
 		// Add a sample a tick later. This isn't exactly when we'll get our next update, but it's close enough.
-		const float flTick = gpGlobals->interval_per_tick - 0.001f;
-		vCurOrigin += m_vInitialVelocity * flTick;
-		interpolator.AddToHead(flChangeTime + flTick, &vCurOrigin, false);
+		//const float flTick = gpGlobals->interval_per_tick - 0.001f;
+		//vCurOrigin += m_vInitialVelocity * flTick;
+		//interpolator.AddToHead(flChangeTime + flTick, &vCurOrigin, false);
 
-		rotInterpolator.AddToHead(flChangeTime + flTick, &vCurAngles, false);
+		//rotInterpolator.AddToHead(flChangeTime + flTick, &vCurAngles, false);
+
+		SetNextClientThink(CLIENT_THINK_ALWAYS);
+		m_bPredicting = true;
 #else
 		// Add a sample 1 second back.
 		Vector vCurOrigin = GetLocalOrigin();
@@ -248,6 +271,30 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFBaseRocket::ClientPredictThink()
+{
+	if ( gpGlobals->curtime - m_flSpawnTime > gpGlobals->interval_per_tick * 5.0f && GetGravity() != 0.0f )
+	{
+		SetNextClientThink(CLIENT_THINK_NEVER);
+		return;
+	}
+
+	// sucky position function for now
+	m_vecPredLoc += m_vInitialVelocity * gpGlobals->interval_per_tick * 3.0f * gpGlobals->frametime;
+	m_vecPredLoc.z -= 0.5f * GetActualGravity(this) * gpGlobals->frametime * gpGlobals->frametime;
+	SetLocalOrigin(m_vecPredLoc);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFBaseRocket::ClientThink()
+{
+	ClientPredictThink();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
