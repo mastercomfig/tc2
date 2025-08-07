@@ -2445,8 +2445,10 @@ void CTFGameMovement::CategorizePosition( void )
 		return;
 	}
 
+	constexpr float flJumpVel = 250.0f;
+
 	// Check for a jump.
-	if ( mv->m_vecVelocity.z > 250.0f )
+	if ( mv->m_vecVelocity.z > flJumpVel )
 	{
 #if defined(GAME_DLL)
 		if ( m_pTFPlayer->m_bTakenBlastDamageSinceLastMovement )
@@ -2541,6 +2543,20 @@ void CTFGameMovement::CategorizePosition( void )
 				Vector org = mv->GetAbsOrigin();
 				org.z = trace.endpos.z;
 				mv->SetAbsOrigin( org );
+			}
+		}
+		// check if we're moving up a slope
+		if (trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f)
+		{
+			// predict what our projected velocity would be if we were to land on this surface
+			Vector vPredictedVel = mv->m_vecVelocity;
+			vPredictedVel.z -= (0.5f * GetCurrentGravity() * gpGlobals->frametime);
+			ClipVelocity(vPredictedVel, trace.plane.normal, vPredictedVel, 1);
+
+			if (vPredictedVel.z > flJumpVel)
+			{
+				// our projected velocity on this surface is actually going to be high, so we're still in air.
+				bInAir = true;
 			}
 		}
 	}
