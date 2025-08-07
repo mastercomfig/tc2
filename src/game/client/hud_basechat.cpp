@@ -757,6 +757,8 @@ void CBaseHudChat::Init( void )
 	ListenForGameEvent( "hltv_chat" );
 }
 
+ConVar cl_hud_chat_notification("cl_hud_chat_notification", "0", FCVAR_ARCHIVE);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *pszName - 
@@ -789,8 +791,11 @@ void CBaseHudChat::MsgFunc_SayText( bf_read &msg )
 		Printf( CHAT_FILTER_NONE, "%s", hudtextmessage->LookupString( szString ) );
 	}
 
-	CLocalPlayerFilter filter;
-	C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
+	if ( cl_hud_chat_notification.GetBool() )
+	{
+		CLocalPlayerFilter filter;
+		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
+	}
 
 	// TERROR: color console echo
 	//Msg( "%s", szString );
@@ -856,8 +861,11 @@ void CBaseHudChat::MsgFunc_SayText2( bf_read &msg )
 		// TERROR: color console echo
 		// Msg( "%s\n", RemoveColorMarkup(ansiString) );
 
-		CLocalPlayerFilter filter;
-		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
+		if ( cl_hud_chat_notification.GetBool() )
+		{
+			CLocalPlayerFilter filter;
+			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
+		}
 	}
 	else
 	{
