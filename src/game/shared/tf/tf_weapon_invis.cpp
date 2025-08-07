@@ -187,12 +187,7 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 	if ( pOwner->m_Shared.InCond( TF_COND_STEALTHED ) )
 	{
 		// De-cloak.
-		float flDecloakRate = 0.0f;
-		CALL_ATTRIB_HOOK_FLOAT( flDecloakRate, mult_decloak_rate );
-		if ( flDecloakRate <= 0.0f )
-			flDecloakRate = 1.0f;
-
-		pOwner->m_Shared.FadeInvis( flDecloakRate );
+		pOwner->m_Shared.FadeInvis( 1.0f );
 		bDidAction = true;
 	}
 	else
