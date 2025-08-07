@@ -177,6 +177,12 @@ bool CTFWeaponBuilder::Deploy( void )
 		if (!pPlayer)
 			return false;
 
+		// if we were holding down right click during the deploy of our builder, ignore.
+		if ( ( pPlayer->m_nButtons & IN_ATTACK2 ) )
+		{
+			m_bInAttack2 = true;
+		}
+
 		pPlayer->SetNextAttack( gpGlobals->curtime );
 
 		m_iWorldModelIndex = modelinfo->GetModelIndex( GetWorldModel() );
@@ -447,17 +453,18 @@ void CTFWeaponBuilder::SecondaryAttack( void )
 	if ( m_bInAttack2 )
 		return;
 
-	// require a re-press
-	m_bInAttack2 = true;
-
 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
 	if ( !pOwner )
 		return;
 
 	UpdatePlacementState();
 
-	if ( !pOwner->IsPlayerClass( TF_CLASS_ENGINEER ) && pOwner->DoClassSpecialSkill() )
+	bool bDidAction = false;
+
+	const bool bIsEngi = pOwner->IsPlayerClass( TF_CLASS_ENGINEER );
+	if ( !bIsEngi && pOwner->DoClassSpecialSkill() )
 	{
+		bDidAction = true;
 		// Spies do the special skill first.
 	}
 	else if ( m_iBuildState == BS_PLACING || m_iBuildState == BS_PLACING_INVALID )
@@ -466,14 +473,23 @@ void CTFWeaponBuilder::SecondaryAttack( void )
 		{
 			pOwner->StopHintTimer( HINT_ALTFIRE_ROTATE_BUILDING );
 			m_hObjectBeingBuilt->RotateBuildAngles();
+			bDidAction = true;
 		}
 	}
 	else if ( pOwner->DoClassSpecialSkill() )
 	{
+		bDidAction = true;
 		// Engineers do the special skill last.
 	}
 
-	m_flNextSecondaryAttack = gpGlobals->curtime + 0.2f;
+	if ( bDidAction )
+	{
+		// require a re-press if we did something.
+		m_bInAttack2 = true;
+	}
+
+	// try again soon
+	m_flNextSecondaryAttack = gpGlobals->curtime + ( bIsEngi ? 0.2f : 0.1f );
 }
 
 //-----------------------------------------------------------------------------

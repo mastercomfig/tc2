@@ -303,6 +303,7 @@ CTFWeaponBase::CTFWeaponBase()
 	m_iAltFireHint = 0;
 	m_bInAttack = false;
 	m_bInAttack2 = false;
+	m_flNextBusyCheck = 0.0f;
 	m_flCritTime = 0;
 	m_flLastCritCheckTime = 0;
 	m_flLastRapidFireCritCheckTime = 0;
@@ -2414,14 +2415,20 @@ void CTFWeaponBase::ItemBusyFrame( void )
 		return;
 	}
 
-	if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && /*m_bInReload == false &&*/ m_bInAttack2 == false )
+	if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && /*m_bInReload == false &&*/ m_bInAttack2 == false && m_flNextBusyCheck <= gpGlobals->curtime )
 	{
-		pOwner->DoClassSpecialSkill();
-		m_bInAttack2 = true;
+		if ( pOwner->DoClassSpecialSkill() )
+		{
+			// require a repress if we did something.
+			m_bInAttack2 = true;
+		}
+		// try again soon
+		m_flNextBusyCheck = gpGlobals->curtime + 0.1f;
 	}
 	else if ( !(pOwner->m_nButtons & IN_ATTACK2) && m_bInAttack2 )
 	{
 		m_bInAttack2 = false;
+		m_flNextBusyCheck = 0.0f;
 	}
 
 	// Interrupt a reload on reload singly weapons.
@@ -2494,6 +2501,7 @@ void CTFWeaponBase::ItemPostFrame( void )
 	if ( m_bInAttack2 && !( pOwner->m_nButtons & IN_ATTACK2 ) )
 	{
 		m_bInAttack2 = false;
+		m_flNextBusyCheck = 0.0f;
 	}
 
 #ifdef GAME_DLL

@@ -59,6 +59,7 @@ public:
 	virtual void	ItemBusyFrame( void );
 	virtual void	ItemPostFrame( void );
 	virtual void	SecondaryAttack();
+	bool DetonateAction();
 
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
 	virtual bool	Deploy( void );

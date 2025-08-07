@@ -301,12 +301,17 @@ void CTFKnife::SecondaryAttack( void )
 	if ( !pOwner )
 		return;
 
-	pOwner->DoClassSpecialSkill();
+	if ( pOwner->DoClassSpecialSkill() )
+	{
+		// require a repress if we did something.
+		m_bInAttack2 = true;
+	}
 
-	m_bInAttack2 = true;
-
-
-	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay();
+#if 0
+	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay(); // default: 0.5f
+#else
+	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f; // since this is used for the special skill, make it more responsive.
+#endif
 }
 
 //-----------------------------------------------------------------------------

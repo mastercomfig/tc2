@@ -432,15 +432,20 @@ void CTFPipebombLauncher::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFPipebombLauncher::SecondaryAttack( void )
 {
-	if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
-		return;
+	DetonateAction();
+}
 
-	if ( m_iPipebombCount )
+bool CTFPipebombLauncher::DetonateAction()
+{
+	if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
+		return false;
+
+	if ( m_iPipebombCount > 0 )
 	{
 		// Get a valid player.
 		CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
 		if ( !pPlayer )
-			return;
+			return false;
 
 		//If one or more pipebombs failed to detonate then play a sound.
 		if ( DetonateRemotePipebombs( false ) == true )
@@ -450,8 +455,8 @@ void CTFPipebombLauncher::SecondaryAttack( void )
 				// Deny!
 				m_flLastDenySoundTime = gpGlobals->curtime + 1;
 				WeaponSound( SPECIAL2 );
-				return;
 			}
+			return false;
 		}
 		else
 		{
@@ -469,8 +474,10 @@ void CTFPipebombLauncher::SecondaryAttack( void )
 				gameeventmanager->FireEvent( pDetEvent );
 			}
 #endif
+			return true;
 		}
 	}
+	return false;
 }
 
 //=============================================================================

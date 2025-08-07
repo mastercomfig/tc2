@@ -179,6 +179,7 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 
 	SetCloakRates();
 
+	bool bDidAction = false;
 	bool bDoSkill = false;
 	// If we're in TF_COND_STEALTHED - which means we gave it ourselves - always remove it
 	// If we're in TF_COND_STEALTHED_USER_BUFF and we have Dead Ringer, allow it to be toggled
@@ -191,7 +192,8 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 		if ( flDecloakRate <= 0.0f )
 			flDecloakRate = 1.0f;
 
-		pOwner->m_Shared.FadeInvis( 1.0f );
+		pOwner->m_Shared.FadeInvis( flDecloakRate );
+		bDidAction = true;
 	}
 	else
 	{
@@ -201,11 +203,13 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 			{
 				// Turn it off...
 				SetFeignDeathState( false );
+				bDidAction = true;
 			}
 			else if ( pOwner->m_Shared.GetSpyCloakMeter() == 100.f )
 			{
 				// Turn it on...
 				SetFeignDeathState( true );
+				bDidAction = true;
 			}
 		}
 		else if ( pOwner->CanGoInvisible() && ( pOwner->m_Shared.GetSpyCloakMeter() > 8.0f ) )	// must have over 10% cloak to start
@@ -220,6 +224,7 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 
 	if ( bDoSkill )
 	{
+		bDidAction = true;
 		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.5 );
 	}
 	else
@@ -227,7 +232,7 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.1 );
 	}
 
-	return bDoSkill;
+	return bDidAction;
 }
 
 //-----------------------------------------------------------------------------

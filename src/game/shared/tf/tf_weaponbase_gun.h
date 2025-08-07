@@ -101,6 +101,8 @@ public:
 	virtual bool CanDeploy( void );
 	virtual bool CanBeSelected( void );
 
+	virtual void ItemPostFrame() override;
+
 	virtual bool ShouldRemoveDisguiseOnPrimaryAttack() const;
 
 private:

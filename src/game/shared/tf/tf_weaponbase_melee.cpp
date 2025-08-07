@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "tf_weaponbase_melee.h"
 #include "effect_dispatch_data.h"
+#include "in_buttons.h"
 #include "tf_gamerules.h"
 
 // Server specific.
@@ -254,7 +255,11 @@ void CTFWeaponBaseMelee::SecondaryAttack()
 	m_bInAttack2 = true;
 
 
+#if 0
 	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay(); // default: 0.5f
+#else
+	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f; // since this is used for the special skill, make it more responsive.
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -381,15 +386,46 @@ void CTFWeaponBaseMelee::ItemPreFrame( void )
 //-----------------------------------------------------------------------------
 void CTFWeaponBaseMelee::ItemPostFrame()
 {
+	CTFPlayer *pOwner = GetTFPlayerOwner();
 	// Check for smack.
 	if ( m_flSmackTime > 0.0f && gpGlobals->curtime > m_flSmackTime )
 	{
 		m_flSmackTime = -1.0f;
 		Smack();
-		CTFPlayer *pPlayer = GetTFPlayerOwner();
-		if ( pPlayer )
+		if ( pOwner )
 		{
-			pPlayer->m_Shared.SetNextMeleeCrit( MELEE_NOCRIT );
+			pOwner->m_Shared.SetNextMeleeCrit( MELEE_NOCRIT );
+		}
+	}
+
+	// mcoms: if we're not in a busy frame and we're in a primary attack, then try a special skill.
+	// additional note: busy frames don't run during melee attacks, since they don't update m_flNextAttack
+	// I'm too scared to make that the case, so this also covers the class special skill during melee attacks
+	if ( pOwner && gpGlobals->curtime >= pOwner->m_flNextAttack && gpGlobals->curtime < m_flNextPrimaryAttack )
+	{
+		// Since there's no precedent for a non-SecondaryAttack special skill, replicate those conditions here
+		// We likely have some busy frame logic keeping us safe otherwise.
+		bool bCanAttack = true;
+		if ( pOwner->GetPlayerClass()->GetClassIndex() == TF_CLASS_DEMOMAN )
+		{
+			if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
+				bCanAttack = false;
+		}
+		else
+		{
+			if ( !CanAttack() )
+				bCanAttack = false;
+		}
+
+		if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && !m_bInAttack2 && bCanAttack && m_flNextBusyCheck <= gpGlobals->curtime )
+		{
+			if ( pOwner->DoClassSpecialSkill() )
+			{
+				// require a repress if we did something.
+				m_bInAttack2 = true;
+			}
+			// try again soon
+			m_flNextBusyCheck = gpGlobals->curtime + 0.1f;
 		}
 	}
 

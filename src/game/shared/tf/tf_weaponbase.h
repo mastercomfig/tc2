@@ -695,6 +695,7 @@ protected:
 	CTFWeaponInfo	*m_pWeaponInfo;
 	bool			m_bInAttack;
 	bool			m_bInAttack2;
+	float			m_flNextBusyCheck;
 	bool			m_bCurrentAttackIsCrit;
 	bool			m_bCurrentCritIsRandom;
 	bool			m_bCurrentAttackIsDuringDemoCharge;

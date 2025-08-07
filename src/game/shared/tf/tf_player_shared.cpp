@@ -12467,7 +12467,7 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 					CTFWeaponInvis* pInvisWatch = static_cast<CTFWeaponInvis*>( Weapon_OwnsThisID( TF_WEAPON_INVIS ) );
 					if ( pInvisWatch )
 					{
-						pInvisWatch->ActivateInvisibilityWatch();
+						bDoSkill = pInvisWatch->ActivateInvisibilityWatch();
 					}
 				}
 			}
@@ -12480,19 +12480,19 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 			CTFPipebombLauncher *pPipebombLauncher = static_cast<CTFPipebombLauncher*>( Weapon_OwnsThisID( TF_WEAPON_PIPEBOMBLAUNCHER ) );
 			if ( pPipebombLauncher )
 			{
-				pPipebombLauncher->SecondaryAttack();
+				bDoSkill = pPipebombLauncher->DetonateAction();
 			}
 			else
 			{
 				CTFWearableDemoShield *pWearableShield = GetEquippedDemoShield( this );
-				if ( pWearableShield )
+				if ( pWearableShield && pWearableShield->CanCharge( this ) )
 				{
 					pWearableShield->DoSpecialAction( this );
+					bDoSkill = true;
 					break;
 				}
 			}
 		}
-		bDoSkill = true;
 		break;
 	case TF_CLASS_ENGINEER:
 		if ( !m_Shared.HasPasstimeBall() )

@@ -8,6 +8,7 @@
 #include "tf_weaponbase_gun.h"
 #include "tf_fx_shared.h"
 #include "effect_dispatch_data.h"
+#include "in_buttons.h"
 #include "takedamageinfo.h"
 #include "tf_gamerules.h"
 #include "tf_projectile_nail.h"
@@ -274,10 +275,10 @@ void CTFWeaponBaseGun::SecondaryAttack( void )
 	if ( !pPlayer )
 		return;
 
-	pPlayer->DoClassSpecialSkill();
-
-	m_bInAttack2 = true;
-
+	if ( pPlayer->DoClassSpecialSkill() )
+	{
+		m_bInAttack2 = true;
+	}
 
 	m_flNextSecondaryAttack = gpGlobals->curtime + 0.5;
 }
@@ -1166,4 +1167,44 @@ bool CTFWeaponBaseGun::HasLastShotCritical( void )
 		}
 	}
 	return false;
+}
+
+void CTFWeaponBaseGun::ItemPostFrame()
+{
+	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
+	if (!pOwner)
+	{
+		return;
+	}
+
+	// mcoms: if we're not in a busy frame or secondary attack (which both already handle this), then try a special skill.
+	if ( pOwner && gpGlobals->curtime >= pOwner->m_flNextAttack && m_flNextSecondaryAttack < gpGlobals->curtime )
+	{
+		// Since there's no precedent for a non-SecondaryAttack special skill, replicate those conditions here
+		// We likely have some busy frame logic keeping us safe otherwise.
+		bool bCanAttack = true;
+		if ( pOwner->GetPlayerClass()->GetClassIndex() == TF_CLASS_DEMOMAN )
+		{
+			if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
+				bCanAttack = false;
+		}
+		else
+		{
+			if ( !CanAttack() )
+				bCanAttack = false;
+		}
+
+		if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && !m_bInAttack2 && bCanAttack && m_flNextBusyCheck <= gpGlobals->curtime )
+		{
+			if ( pOwner->DoClassSpecialSkill() )
+			{
+				// require a repress if we did something.
+				m_bInAttack2 = true;
+			}
+			// try again soon
+			m_flNextBusyCheck = gpGlobals->curtime + 0.1f;
+		}
+	}
+
+	BaseClass::ItemPostFrame();
 }
