@@ -513,6 +513,19 @@ void ClientModeTFNormal::Init()
 	BaseClass::Init();
 
 	m_bPendingRichPresenceUpdate = true;
+
+	// client defaults for privacy settings (so map command is Friends Only by default)
+	ConVarRef sv_friends_only("sv_friends_only");
+	if (sv_friends_only.IsValid())
+	{
+		sv_friends_only.SetValue(true);
+	}
+
+	ConVarRef sv_allow_server_adverisement_to_master_server("sv_allow_server_adverisement_to_master_server");
+	if (sv_allow_server_adverisement_to_master_server.IsValid())
+	{
+		sv_allow_server_adverisement_to_master_server.SetValue(false);
+	}
 }
 
 //-----------------------------------------------------------------------------
