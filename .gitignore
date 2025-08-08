@@ -539,6 +539,7 @@ downloadlists
 viewed.res
 server.cfg
 mapcycle.txt
+game/tc2/cfg/mapcycle*.txt
 
 .vscode/settings.json
 
