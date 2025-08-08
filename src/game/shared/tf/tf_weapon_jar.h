@@ -162,6 +162,8 @@ public:
 	virtual float		GetDamage()									{ return 0.f; }
 	virtual bool		ExplodesOnHit()								{ return true; }
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return CBaseProjectile::CanCollideWithTeammates(); }
+
 	virtual void		Precache() OVERRIDE;
 	virtual void		SetCustomPipebombModel() OVERRIDE;
 

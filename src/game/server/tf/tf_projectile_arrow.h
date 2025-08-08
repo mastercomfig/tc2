@@ -157,6 +157,7 @@ public:
 
 	virtual float GetDamage() OVERRIDE { return 1.f; }
 	virtual bool CanHeadshot() OVERRIDE { return false; }
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 
 	void HookTarget( CBaseEntity *pOther );
 	void HookLatchedThink();

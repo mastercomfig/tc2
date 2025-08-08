@@ -237,6 +237,8 @@ public:
 
 	virtual int GetProjectileType() const OVERRIDE { return TF_PROJECTILE_SENTRY_ROCKET; }
 
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+
 	// Creation.
 	static CTFProjectile_SentryRocket *Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, CBaseEntity *pScorer = NULL );	
 

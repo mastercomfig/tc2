@@ -139,8 +139,6 @@ public:
 #ifdef GAME_DLL
 	CTFStunBall();
 
-	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
-
 	static CTFStunBall* Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner );
 	virtual void		Precache( void );
 	virtual void		Spawn( void );
@@ -155,6 +153,8 @@ public:
 	virtual void		ApplyBallImpactEffectOnVictim( CBaseEntity *pOther );
 	virtual void		PipebombTouch( CBaseEntity *pOther );
 	virtual void		VPhysicsCollision( int index, gamevcollisionevent_t *pEvent );
+
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 	
 	virtual float		GetDamage( void );
 	virtual int			GetDamageType( void )				{ return DMG_CLUB; }

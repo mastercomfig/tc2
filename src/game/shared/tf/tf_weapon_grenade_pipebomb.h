@@ -109,7 +109,9 @@ public:
 	virtual void	Spawn();
 	virtual void	Precache();
 
+#ifdef MCOMS_BALANCE_PACK_TEAMMATE_COLLIDE
 	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
+#endif
 
 	virtual void	BounceSound( void );
 	virtual void	Detonate();
