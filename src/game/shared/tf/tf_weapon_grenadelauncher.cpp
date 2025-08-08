@@ -185,6 +185,7 @@ void CTFGrenadeLauncher::PrimaryAttack( void )
 
 	if ( !CanAttack() )
 	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		ResetDetonateTime();
 		return;
 	}

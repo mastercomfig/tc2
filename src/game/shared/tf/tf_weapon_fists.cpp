@@ -52,7 +52,10 @@ void CTFFists::ItemPreFrame( void )
 void CTFFists::PrimaryAttack()
 {
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	// Set the weapon usage mode - primary, secondary.
 	// reversed for 360 because the primary attack is on the right side of the controller
@@ -74,7 +77,10 @@ void CTFFists::PrimaryAttack()
 void CTFFists::SecondaryAttack()
 {
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
 	if ( pPlayer && pPlayer->m_Shared.IsControlStunned() )

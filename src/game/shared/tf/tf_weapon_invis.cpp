@@ -267,7 +267,7 @@ void CTFWeaponInvis::SetFeignDeathState( bool bEnabled )
 	{
 		pOwner->m_Shared.SetFeignDeathReady( true );
 		pOwner->SetOffHandWeapon( this );
-		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.5 );
+		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.5f );
 	}
 	else
 	{

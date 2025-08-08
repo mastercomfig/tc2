@@ -149,7 +149,10 @@ void CTFRevolver::PrimaryAttack( void )
 		return;
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	BaseClass::PrimaryAttack();
 

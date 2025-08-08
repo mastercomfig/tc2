@@ -74,7 +74,10 @@ CTFShotgun::CTFShotgun()
 void CTFShotgun::PrimaryAttack()
 {
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	// Set the weapon mode.
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
@@ -132,7 +135,10 @@ void CTFShotgun_Revenge::Precache()
 void CTFShotgun_Revenge::PrimaryAttack()
 {
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	BaseClass::PrimaryAttack();
 

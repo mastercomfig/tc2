@@ -178,7 +178,10 @@ void CTFKnife::PrimaryAttack( void )
 	CTFPlayer *pPlayer = ToTFPlayer( GetPlayerOwner() );
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	// Set the weapon usage mode - primary, secondary.
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;

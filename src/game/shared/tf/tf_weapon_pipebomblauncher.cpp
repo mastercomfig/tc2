@@ -199,6 +199,7 @@ void CTFPipebombLauncher::PrimaryAttack( void )
 
 	if ( !CanAttack() )
 	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		m_flChargeBeginTime = 0;
 		return;
 	}

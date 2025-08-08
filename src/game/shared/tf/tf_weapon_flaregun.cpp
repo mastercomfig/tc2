@@ -479,7 +479,10 @@ int CTFFlareGun_Revenge::GetCount( void )
 void CTFFlareGun_Revenge::PrimaryAttack()
 {
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	BaseClass::PrimaryAttack();
 

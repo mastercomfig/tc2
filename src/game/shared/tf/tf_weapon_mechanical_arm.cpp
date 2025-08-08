@@ -467,7 +467,10 @@ void CTFMechanicalArm::PrimaryAttack()
 		return;
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 #ifdef GAME_DLL
 	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, false );

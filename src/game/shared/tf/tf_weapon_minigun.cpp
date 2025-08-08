@@ -242,6 +242,7 @@ void CTFMinigun::SharedAttack()
 
 	if ( !CanAttack() )
 	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		WeaponIdle();
 		return;
 	}

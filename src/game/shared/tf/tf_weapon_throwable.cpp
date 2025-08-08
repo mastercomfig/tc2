@@ -153,7 +153,10 @@ void CTFThrowable::PrimaryAttack( void )
 		return;
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	if ( m_flChargeBeginTime <= 0 )
 	{

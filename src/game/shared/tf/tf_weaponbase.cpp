@@ -1493,7 +1493,10 @@ void CTFWeaponBase::PrimaryAttack( void )
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 	BaseClass::PrimaryAttack();
 

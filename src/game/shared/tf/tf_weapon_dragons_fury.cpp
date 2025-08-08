@@ -96,7 +96,10 @@ void CTFWeaponFlameBall::PrimaryAttack( void )
 		return;
 
 	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 		return;
+	}
 
 #ifndef CLIENT_DLL
 	if ( pPlayer->m_Shared.IsStealthed() && ShouldRemoveInvisibilityOnPrimaryAttack() )

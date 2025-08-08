@@ -728,6 +728,7 @@ void CTFFlameThrower::PrimaryAttack()
 
 	if ( !CanAttack() )
 	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
 #if defined ( CLIENT_DLL )
 		StopFlame();
 #endif
