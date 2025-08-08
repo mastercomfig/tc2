@@ -315,6 +315,7 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	virtual bool SendWeaponAnim( int iActivity ) OVERRIDE;
 
 	virtual CBaseEntity	*GetOwnerViaInterface( void ) { return GetOwner(); }
+	virtual bool HasOwnerInterface(void) const { return true; };
 
 	virtual void Equip( CBaseCombatCharacter *pOwner );
 	virtual void Drop( const Vector &vecVelocity );
@@ -837,6 +838,7 @@ public:
 	bool BIsViewModelAttachment() { return m_bIsViewModelAttachment; }
 	
 	virtual CBaseEntity	*GetOwnerViaInterface( void ) OVERRIDE { return m_hWeaponAssociatedWith.Get() ? m_hWeaponAssociatedWith.Get()->GetOwner() : NULL; }
+	virtual bool HasOwnerInterface(void) const { return true; };
 private:
 
 	bool m_bIsViewModelAttachment;

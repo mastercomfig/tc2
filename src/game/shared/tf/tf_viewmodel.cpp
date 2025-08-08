@@ -523,6 +523,30 @@ public:
 	virtual void OnBind( C_BaseEntity *pC_BaseEntity ) OVERRIDE;
 };
 
+CTFPlayer* GetPlayerFromEnt( CBaseEntity* pEnt )
+{
+	if ( pEnt->IsPlayer() )
+	{
+		return static_cast<CTFPlayer*>(pEnt);
+	}
+
+	// Check if we have a move parent and if it's a player
+	CBaseEntity* pMoveParent = pEnt->GetMoveParent();
+	if ( pMoveParent && pMoveParent->IsPlayer() )
+	{
+		return static_cast<CTFPlayer*>(pMoveParent);
+	}
+
+	// Check if our owner is a player
+	IHasOwner* pOwnerInterface = dynamic_cast<IHasOwner*>( pEnt );
+	if (pOwnerInterface)
+	{
+		return ToTFPlayer( pOwnerInterface->GetOwnerViaInterface() );
+	}
+
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -535,6 +559,7 @@ void CInvisProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 
 	CTFPlayer *pPlayer = NULL;
 
+#if 0
 	// Check if we have a move parent and if it's a player
 	C_BaseEntity *pMoveParent = pEnt->GetMoveParent();
 	if ( pMoveParent && pMoveParent->IsPlayer() )
@@ -558,7 +583,7 @@ void CInvisProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 	{
 		if ( pEnt->IsPlayer() )
 		{
-			pPlayer = dynamic_cast<C_TFPlayer*>( pEnt );
+			pPlayer = static_cast<CTFPlayer*>( pEnt );
 		}
 		else
 		{
@@ -569,6 +594,9 @@ void CInvisProxy::OnBind( C_BaseEntity *pC_BaseEntity )
 			}
 		}
 	}
+#else
+	pPlayer = GetPlayerFromEnt(pEnt);
+#endif
 	
 	if ( !pPlayer )
 	{
