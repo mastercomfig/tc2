@@ -1386,7 +1386,7 @@ bool CBaseCombatWeapon::ReloadOrSwitchWeapons( void )
 		// weapon isn't useable, switch.
 		if ( ( (GetWeaponFlags() & ITEM_FLAG_NOAUTOSWITCHEMPTY) == false ) && ( g_pGameRules->SwitchToNextBestWeapon( pOwner, this ) ) )
 		{
-			m_flNextPrimaryAttack = gpGlobals->curtime + 0.3;
+			m_flNextPrimaryAttack = MAX( gpGlobals->curtime + 0.3f, m_flNextPrimaryAttack );
 			return true;
 		}
 	}
