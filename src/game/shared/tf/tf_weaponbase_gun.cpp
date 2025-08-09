@@ -280,6 +280,7 @@ void CTFWeaponBaseGun::SecondaryAttack( void )
 
 	if ( pPlayer->DoClassSpecialSkill() )
 	{
+		// require a repress if we did something.
 		m_bInAttack2 = true;
 	}
 

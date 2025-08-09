@@ -253,10 +253,11 @@ void CTFWeaponBaseMelee::SecondaryAttack()
 			return;
 	}
 
-	pPlayer->DoClassSpecialSkill();
-
-	m_bInAttack2 = true;
-
+	if ( pPlayer->DoClassSpecialSkill() )
+	{
+		// require a repress if we did something.
+		m_bInAttack2 = true;
+	}
 
 #if 0
 	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay(); // default: 0.5f
