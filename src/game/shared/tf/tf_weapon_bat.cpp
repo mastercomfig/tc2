@@ -27,10 +27,6 @@
 #include "tf_projectile_base.h"
 #include "tf_gamerules.h"
 #endif
-
-const float DEFAULT_ORNAMENT_EXPLODE_RADIUS = 50.0f;
-const float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 0.9f;
-
 //=============================================================================
 //
 // Weapon Bat tables.
@@ -104,9 +100,9 @@ PRECACHE_WEAPON_REGISTER( tf_projectile_stun_ball );
 #define TF_WEAPON_STUNBALL_MODEL			"models/weapons/w_models/w_baseball.mdl"
 
 #if defined( GAME_DLL )
-ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "6.0", FCVAR_DEVELOPMENTONLY );
+ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "0.7", FCVAR_DEVELOPMENTONLY );
 ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_DEVELOPMENTONLY );
-ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "15", FCVAR_DEVELOPMENTONLY );
+ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "20", FCVAR_DEVELOPMENTONLY );
 #endif
 // -- TFStunBall
 
@@ -184,6 +180,7 @@ void CTFBat::PlayDeflectionSound( bool bPlayer )
 //-----------------------------------------------------------------------------
 CTFBat_Wood::CTFBat_Wood()
 {
+	m_bNextSwingIsCrit = false;
 	m_iEnemyBallID = 0;
 #ifdef CLIENT_DLL
 	m_hStunBallVM = NULL;
@@ -208,10 +205,10 @@ void CTFBat_Wood::LaunchBallThink( void )
 
 #ifdef GAME_DLL
 	pPlayer->SpeakWeaponFire( MP_CONCEPT_BAT_BALL );
-	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
+	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() || m_bNextSwingIsCrit );
 #endif
 #ifdef CLIENT_DLL
-	C_CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
+	C_CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() || m_bNextSwingIsCrit );
 #endif
 }
 
@@ -241,13 +238,40 @@ void CTFBat_Wood::GetBallDynamics( Vector& vecLoc, QAngle& vecAngles, Vector& ve
 	vecVelocity += vecForward * 10;
 	vecVelocity += vecUp * 1;
 	VectorNormalize( vecVelocity );
-	vecVelocity *= tf_scout_stunball_base_speed.GetInt();
+	vecVelocity *= tf_scout_stunball_base_speed.GetFloat();
 
 	angImpulse = AngularImpulse( 0, random->RandomFloat( 0, 100 ), 0 );
 }
 
 // -- SERVER ONLY
 #endif
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFBat_Wood::PrimaryAttack( void )
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return;
+
+	if (m_bNextSwingIsCrit && CanAttack())
+	{
+		pPlayer->m_Shared.SetNextMeleeCrit(MELEE_CRIT);
+	}
+
+	BaseClass::PrimaryAttack();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFBat_Wood::Smack(void)
+{
+	m_bNextSwingIsCrit = false;
+
+	BaseClass::Smack();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -472,7 +496,7 @@ void CTFBat_Wood::LaunchBall( void )
 	if ( !pBall )
 		return;
 
-	if ( IsCurrentAttackACrit() )
+	if ( IsCurrentAttackACrit() || m_bNextSwingIsCrit )
 	{
 		WeaponSound( BURST );
 	}
@@ -516,11 +540,13 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 	pBall->m_iOriginalOwnerID = m_iEnemyBallID;
 	m_iEnemyBallID = 0;
 
-	pBall->SetCritical( IsCurrentAttackACrit() );
+	pBall->SetCritical( IsCurrentAttackACrit() || m_bNextSwingIsCrit );
 	pBall->InitGrenade( vecVelocity, angImpulse, pPlayer, GetTFWpnData() );
 	pBall->SetLauncher( this );
 	pBall->SetOwnerEntity( pPlayer );
 	pBall->SetInitialSpeed( tf_scout_stunball_base_speed.GetInt() );
+
+	m_bNextSwingIsCrit = false;
 
 	return pBall;
 }
@@ -531,12 +557,13 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 //-----------------------------------------------------------------------------
 // Purpose: Play pickup anim when we grab a new ball.
 //-----------------------------------------------------------------------------
-void CTFBat_Wood::PickedUpBall( void )
+void CTFBat_Wood::PickedUpBall( bool bNextSwingIsCrit )
 {
 	if ( WeaponState() == WEAPON_IS_ACTIVE )
 	{
 		SendWeaponAnim( ACT_VM_PULLBACK_SPECIAL );
 	}
+	m_bNextSwingIsCrit = bNextSwingIsCrit;
 }
 
 //-----------------------------------------------------------------------------
@@ -692,7 +719,7 @@ void CTFStunBall::Explode( trace_t *pTrace, int bitsDamageType )
 //-----------------------------------------------------------------------------
 // Purpose: Stun the person we smashed into.
 //-----------------------------------------------------------------------------
-#define FLIGHT_TIME_TO_MAX_STUN	0.8f
+#define FLIGHT_TIME_TO_MAX_STUN	(0.8f * 0.5f) // halving the distance of a moonshot.
 void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 {
 	if ( !pOther || !pOther->IsPlayer() )
@@ -716,22 +743,24 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	// We have a more intense stun based on our travel time.
 	float flLifeTime = Min( gpGlobals->curtime - m_flCreationTime, FLIGHT_TIME_TO_MAX_STUN );
 	float flLifeTimeRatio = flLifeTime / FLIGHT_TIME_TO_MAX_STUN;
+	const bool bMax = flLifeTimeRatio >= 1.f;
+	int iStunFlags = ( bMax ) ? TF_STUN_SPECIAL_SOUND | TF_STUN_MOVEMENT : TF_STUN_SOUND | TF_STUN_MOVEMENT;
+	float flStunAmount = 0.5f;
+	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped(flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 1.3f);
+	if ( bMax )
+	{
+		flStunDuration += 1.0f;
+		// TODO(mcoms): balance tweak: give ball back to owner on moonshot
+		GiveBall(pOwner, true);
+	}
+
 	if ( flLifeTimeRatio > 0.1f )
 	{
-		bool bMax = flLifeTimeRatio >= 1.f;
-		int iStunFlags = ( bMax ) ? TF_STUN_SPECIAL_SOUND | TF_STUN_MOVEMENT : TF_STUN_SOUND | TF_STUN_MOVEMENT;
-		float flStunAmount = 0.5f;
-		float flStunDuration = Max( 2.f, tf_scout_stunball_base_duration.GetFloat() * flLifeTimeRatio );
-		if ( bMax )
-		{
-			flStunDuration += 1.0;
-		}
-
 		// MvM bots
-		if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() && pPlayer->IsBot() )
+		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
 		{
 			// Distance mod
-			flStunAmount = ( bMax ) ? 1.f : RemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.5f, 0.75 );
+			flStunAmount = ( bMax ) ? 1.f : RemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.5f, 0.75f );
 
 			bool bBoss = TFGameRules() && TFGameRules()->GameModeUsesMiniBosses() && ( pPlayer->IsMiniBoss() || pPlayer->GetModelScale() > 1.0f );
 			if ( bMax && !bBoss )
@@ -739,21 +768,21 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 				iStunFlags |= TF_STUN_CONTROLS; 
 			}
 		}
+	}
 
-		CTF_GameStats.Event_PlayerStunBall( pOwner, ( bMax ) ? true : false );
+	CTF_GameStats.Event_PlayerStunBall( pOwner, ( bMax ) ? true : false );
 
-		if ( pPlayer->GetWaterLevel() != WL_Eyes )
+	if ( pPlayer->GetWaterLevel() != WL_Eyes )
+	{
+		pPlayer->m_Shared.StunPlayer( flStunDuration, flStunAmount, iStunFlags, pOwner );
+
+		if ( pPlayer->GetUserID() == m_iOriginalOwnerID )
 		{
-			pPlayer->m_Shared.StunPlayer( flStunDuration, flStunAmount, iStunFlags, pOwner );
-
-			if ( pPlayer->GetUserID() == m_iOriginalOwnerID )
+			// We just stunned a scout with their own ball.
+			// Give the player an achievement for this.
+			if ( pOwner->IsPlayerClass( TF_CLASS_SCOUT ) )
 			{
-				// We just stunned a scout with their own ball.
-				// Give the player an achievement for this.
-				if ( pOwner->IsPlayerClass( TF_CLASS_SCOUT ) )
-				{
-					pOwner->AwardAchievement( ACHIEVEMENT_TF_SCOUT_STUN_SCOUT_WITH_THEIR_BALL );
-				}
+				pOwner->AwardAchievement( ACHIEVEMENT_TF_SCOUT_STUN_SCOUT_WITH_THEIR_BALL );
 			}
 		}
 	}
@@ -774,7 +803,7 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	int iDamageType = GetDamageType();
 	if ( IsCritical() )
 		iDamageType |= DMG_CRITICAL;
-	info.SetDamageType( iDamageType );
+ 	info.SetDamageType( iDamageType );
 
 	// Hurt 'em.
 	Vector dir;
@@ -813,6 +842,32 @@ Vector CTFStunBall::GetDamageForce( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Shared ball give logic.
+//-----------------------------------------------------------------------------
+bool CTFStunBall::GiveBall( CTFPlayer* pPlayer, bool bNextSwingIsACrit )
+{
+	if (!pPlayer)
+		return false;
+
+	if (!pPlayer->IsPlayerClass(TF_CLASS_SCOUT))
+		return false;
+
+	if ((pPlayer->GetAmmoCount(TF_AMMO_GRENADES1) >= pPlayer->GetMaxAmmo(TF_AMMO_GRENADES1)))
+		return false;
+
+	pPlayer->GiveAmmo(1, TF_AMMO_GRENADES1);
+
+	CTFBat_Wood* pBat = (CTFBat_Wood*)pPlayer->Weapon_OwnsThisID(TF_WEAPON_BAT_WOOD);
+	if (pBat)
+	{
+		// If we have the bat up, we need to play the correct anim.
+		pBat->PickedUpBall(bNextSwingIsACrit);
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: We hit something.
 //-----------------------------------------------------------------------------
 void CTFStunBall::PipebombTouch( CBaseEntity *pOther )
@@ -832,27 +887,22 @@ void CTFStunBall::PipebombTouch( CBaseEntity *pOther )
 	if ( m_bTouched )
 	{
 		CTFPlayer* pPlayer = ToTFPlayer( pOther );
-		if ( pPlayer && pPlayer->IsPlayerClass( TF_CLASS_SCOUT ) &&
-			(pPlayer->GetAmmoCount( TF_AMMO_GRENADES1 ) < pPlayer->GetMaxAmmo( TF_AMMO_GRENADES1 )) )
+		if (GiveBall(pPlayer))
 		{
-			pPlayer->GiveAmmo( 1, TF_AMMO_GRENADES1 );
 			RemoveBallTrail();
 			UTIL_Remove( this );
 
-			CTFBat_Wood *pBat = (CTFBat_Wood *) pPlayer->Weapon_OwnsThisID( TF_WEAPON_BAT_WOOD );
-			if ( pBat )
+			CTFBat_Wood* pBat = (CTFBat_Wood*)pPlayer->Weapon_OwnsThisID(TF_WEAPON_BAT_WOOD);
+			if (pBat)
 			{
 				// If this ball came from an enemy scout, remember who they were...
-				if ( pPlayer->GetTeamNumber() != GetTeamNumber() )
+				if (pPlayer->GetTeamNumber() != GetTeamNumber())
 				{
-					if ( pOwner )
+					if (pOwner)
 					{
 						pBat->m_iEnemyBallID = pOwner->GetUserID();
 					}
 				}
-
-				// If we have the bat up, we need to play the correct anim.
-				pBat->PickedUpBall();
 			}
 
 			// Say something.
@@ -1221,7 +1271,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	info.SetAttacker( GetThrower() );
 	info.SetInflictor( this ); 
 	info.SetWeapon( pInflictor );
-	info.SetDamage( GetDamage() );
+	info.SetDamage( GetDamage() * ( bIsLongRangeHit ? 1.0f : 0.5f ) );
 	info.SetDamageCustom( TF_DMG_CUSTOM_BASEBALL );
 	info.SetDamageForce( GetDamageForce() );
 	info.SetDamagePosition( GetAbsOrigin() );
@@ -1259,10 +1309,15 @@ void CTFBall_Ornament::PipebombTouch( CBaseEntity *pOther )
 	if ( pOther == GetThrower() )
 		return;
 
+	const bool bSameTeam = InSameTeam(pOther);
+
+	if ( bSameTeam && !CanCollideWithTeammates() )
+		return;
+
 	// Explode (does radius damage, triggers particles and sound effects).
 	Explode( &pTrace, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE );
 
-	if ( !InSameTeam( pOther ) && pOther->m_takedamage != DAMAGE_NO )
+	if ( !bSameTeam && pOther->m_takedamage != DAMAGE_NO )
 	{
 		ApplyBallImpactEffectOnVictim( pOther );
 	}
@@ -1319,6 +1374,9 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 		DispatchParticleEffect( "xms_ornament_smash_blue", GetAbsOrigin(), GetAbsAngles() );
 	}
 
+	constexpr float DEFAULT_ORNAMENT_EXPLODE_RADIUS = 50.0f;
+	constexpr float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 1.15f;
+
 	CTFPlayer* pOwner = ToTFPlayer( GetThrower() );
 	Vector vecOrigin = GetAbsOrigin();
 
@@ -1334,7 +1392,7 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	EmitSound( attackerFilter, pOwner->entindex(), params );
 
 	// Explosion damage is some fraction of our base damage
-	float flExplodeDamage = GetDamage() * DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT;
+	const float flExplodeDamage = GetDamage() * DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT;
 
 	// Do radius damage
 	Vector vecBlastForce(0.0f, 0.0f, 0.0f);

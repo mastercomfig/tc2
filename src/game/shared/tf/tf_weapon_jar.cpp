@@ -323,6 +323,7 @@ CTFProjectile_Jar* CTFProjectile_Jar::Create( const Vector &position, const QAng
 		}
 #endif
 		pGrenade->m_flFullDamage = 0;
+		pGrenade->m_bFizzle = true;
 
 		pGrenade->ApplyLocalAngularVelocityImpulse( angVelocity );
 	}

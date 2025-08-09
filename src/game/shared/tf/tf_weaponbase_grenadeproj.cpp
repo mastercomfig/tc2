@@ -306,7 +306,7 @@ void CTFWeaponBaseGrenadeProj::Spawn( void )
 
 	// Setup the think and touch functions (see CBaseEntity).
 	SetThink( &CTFWeaponBaseGrenadeProj::DetonateThink );
-	SetNextThink( gpGlobals->curtime + 0.2 );
+	SetNextThink( gpGlobals->curtime + 0.2f );
 }
 
 //-----------------------------------------------------------------------------
@@ -439,7 +439,7 @@ int CTFWeaponBaseGrenadeProj::OnTakeDamage( const CTakeDamageInfo &info )
 	// Reduce explosion damage so that we don't get knocked too far
 	if ( info.GetDamageType() & DMG_BLAST )
 	{
-		info2.ScaleDamageForce( 0.05 );
+		info2.ScaleDamageForce( 0.05f );
 	}
 
 	// We need to skip back to the base entity take damage, because
@@ -466,7 +466,7 @@ void CTFWeaponBaseGrenadeProj::DetonateThink( void )
 	}
 
 
-	SetNextThink( gpGlobals->curtime + 0.2 );
+	SetNextThink( gpGlobals->curtime + 0.2f );
 }
 
 //-----------------------------------------------------------------------------
@@ -775,7 +775,7 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 		{
 			Touch( tr.m_pEnt );
 		}
-		else if ( !m_bInSolid && bHitFriendly )
+		else if ( !m_bInSolid && bHitFriendly && CanBounceOff() )
 		{
 			BounceOff( pPhysics );
 		}
@@ -790,7 +790,7 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	{
 		Touch( tr.m_pEnt );
 		
-		if ( bHitFriendly || bHitEnemy )
+		if ( CanBounceOff() && ( bHitFriendly || bHitEnemy ) )
 		{
 			// reflect velocity around normal
 			vel = -2.0f * tr.plane.normal * DotProduct(vel,tr.plane.normal) + vel;

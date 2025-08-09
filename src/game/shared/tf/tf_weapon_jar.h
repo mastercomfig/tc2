@@ -69,6 +69,8 @@ public:
 
 	virtual bool		ShouldSpeakWhenFiring( void ){ return true; }
 
+	virtual bool			CanBounceOff() const { return false; }
+
 //	virtual bool		SendWeaponAnim( int iActivity );
 
 	virtual CTFProjectile_Jar	*CreateJarProjectile( const Vector &position, const QAngle &angles, const Vector &velocity, 
@@ -161,6 +163,7 @@ public:
 	virtual int			GetWeaponID( void ) const OVERRIDE			{ return TF_WEAPON_GRENADE_JAR; }
 	virtual float		GetDamage()									{ return 0.f; }
 	virtual bool		ExplodesOnHit()								{ return true; }
+	virtual float		GetDetonationTime(void) { return 5.0f; }
 
 	virtual bool CanCollideWithTeammates() const OVERRIDE { return CBaseProjectile::CanCollideWithTeammates(); }
 

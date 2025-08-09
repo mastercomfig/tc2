@@ -113,6 +113,8 @@ public:
 
 	void					VPhysicsUpdate( IPhysicsObject *pPhysics );
 
+	virtual bool			CanBounceOff() const { return true; }
+
 	virtual bool			IsAllowedToExplode( void ) { return true; }
 	void					Explode( trace_t *pTrace, int bitsDamageType );
 

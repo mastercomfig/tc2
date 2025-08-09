@@ -511,7 +511,6 @@ void CTFGrenadePipebombProjectile::Spawn()
 		{
 			SetModel( TF_WEAPON_PIPEBOMB_MODEL );
 		}
-		SetDetonateTimerLength( FLT_MAX );
 		SetContextThink( &CTFGrenadePipebombProjectile::PreArmThink, gpGlobals->curtime + 0.001f, "PRE_ARM_THINK" ); // Next frame.
 		SetTouch( &CTFGrenadePipebombProjectile::StickybombTouch );
 	}
@@ -525,9 +524,9 @@ void CTFGrenadePipebombProjectile::Spawn()
 		{
 			SetModel( TF_WEAPON_PIPEGRENADE_MODEL );
 		}
-		SetDetonateTimerLength( TF_WEAPON_GRENADE_DETONATE_TIME );
 		SetTouch( &CTFGrenadePipebombProjectile::PipebombTouch );
 	}
+	SetDetonateTimerLength(GetDetonationTime());
 
 	SetCustomPipebombModel();
 
@@ -541,6 +540,19 @@ void CTFGrenadePipebombProjectile::Spawn()
 
 	m_flMinSleepTime = 0;
 	AddFlag( FL_GRENADE );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+float CTFGrenadePipebombProjectile::GetDetonationTime()
+{
+	if ( HasStickyEffects() )
+	{
+		return FLT_MAX;
+	}
+
+	return TF_WEAPON_GRENADE_DETONATE_TIME;
 }
 
 //-----------------------------------------------------------------------------

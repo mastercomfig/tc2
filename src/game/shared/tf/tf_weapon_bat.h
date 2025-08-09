@@ -80,9 +80,12 @@ public:
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_BAT_WOOD; }
 	virtual bool		BatDeflects() { return false; }
 
+	virtual void		PrimaryAttack(void);
 	virtual void		SecondaryAttack( void );
 	void				SecondaryAttackAnim( CTFPlayer *pPlayer );
 	virtual bool		SendWeaponAnim( int iActivity );
+
+	virtual void		Smack(void);
 
 	virtual bool		CanCreateBall( CTFPlayer* pPlayer );
 	virtual void		LaunchBall( void );
@@ -107,7 +110,7 @@ public:
 	void				RemoveBallChild( void );
 #endif
 
-	virtual void		PickedUpBall( void );
+	virtual void		PickedUpBall( bool bNextSwingIsCrit = false );
 
 	float				GetProgress( void ) { return GetEffectBarProgress(); }
 	const char*			GetEffectLabelText( void ) { return "#TF_BALL"; }
@@ -119,6 +122,7 @@ public:
 #endif
 
 	int					m_iEnemyBallID;
+	bool				m_bNextSwingIsCrit;
 
 #ifdef CLIENT_DLL
 	EHANDLE				m_hStunBallVM; // View model ball.
@@ -153,6 +157,7 @@ public:
 	virtual void		ApplyBallImpactEffectOnVictim( CBaseEntity *pOther );
 	virtual void		PipebombTouch( CBaseEntity *pOther );
 	virtual void		VPhysicsCollision( int index, gamevcollisionevent_t *pEvent );
+	bool				GiveBall(CTFPlayer* pPlayer, bool bNextSwingIsACrit = false );
 
 	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 	

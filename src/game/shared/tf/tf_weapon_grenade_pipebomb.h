@@ -114,6 +114,7 @@ public:
 #endif
 
 	virtual void	BounceSound( void );
+	virtual float	GetDetonationTime(void);
 	virtual void	Detonate();
 	virtual void	Fizzle();
 	virtual bool	DetonateStickies( void );
