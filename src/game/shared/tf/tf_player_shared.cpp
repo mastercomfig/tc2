@@ -9948,6 +9948,11 @@ void CTFPlayerShared::StunPlayer( float flTime, float flReductionAmount, int iSt
 		 ( GetActiveStunInfo()->iStunFlags & TF_STUN_LOSER_STATE ) )
 	{
 		m_pOuter->StunSound( pAttacker, GetActiveStunInfo()->iStunFlags, iOldStunFlags );
+		// also play the base stun sound.
+		if (GetActiveStunInfo()->iStunFlags & TF_STUN_SPECIAL_SOUND)
+		{
+			m_pOuter->StunSound(pAttacker, GetActiveStunInfo()->iStunFlags & ~TF_STUN_SPECIAL_SOUND, iOldStunFlags);
+		}
 	}
 
 	// Event for achievements.
