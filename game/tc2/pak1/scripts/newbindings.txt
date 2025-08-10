@@ -63,4 +63,8 @@
 	{
 		"ideal_key"				"p"
 	}
+	"quick_ping"
+	{
+		"ideal_key"				"shift"
+	}
 }

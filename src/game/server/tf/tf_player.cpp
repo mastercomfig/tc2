@@ -873,7 +873,8 @@ enum eCoachCommand
  */
 static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 {
-	if ( pPlayer && pPlayer->IsCoaching() && pPlayer->GetStudent() && command < kNumCoachCommands )
+	// we now let anyone do coach commands (as pings)
+	if ( pPlayer && command < kNumCoachCommands && ( ( pPlayer->IsCoaching() && pPlayer->GetStudent() ) || ( pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules() && TFGameRules()->IsCompetitiveGame() ) ) )
 	{
 		const float kMaxRateCoachCommands = 1.0f;
 		float flLastCoachCommandDelta = gpGlobals->curtime - pPlayer->m_flLastCoachCommand;
@@ -888,11 +889,24 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			Vector vForward;
  			AngleVectors( pPlayer->EyeAngles(), &vForward );
 
-			trace_t	trace;
-			CTraceFilterSimple filter( pPlayer->GetStudent(), COLLISION_GROUP_NONE );
-			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_SOLID, &filter, &trace );
+			const int iTeam = pPlayer->GetTeamNumber();
 
-			CBaseEntity *pHitEntity = trace.m_pEnt && trace.m_pEnt->IsWorld() == false && trace.m_pEnt != pPlayer->GetStudent() ? trace.m_pEnt : NULL;
+			trace_t	trace;
+			// TODO: don't construct both?
+			CTraceFilterSimple filter(pPlayer->GetStudent(), COLLISION_GROUP_NONE);
+			CTraceFilterIgnoreTeammates teamFilter(pPlayer, COLLISION_GROUP_NONE, iTeam);
+			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_SOLID, pPlayer->IsCoaching() ? &filter : &teamFilter, &trace );
+
+			CBaseEntity* pHitEntity = trace.m_pEnt;
+			if (pHitEntity)
+			{
+				if (trace.m_pEnt->IsWorld())
+					pHitEntity = NULL; // don't follow the world
+				else if (trace.m_pEnt == pPlayer->GetStudent())
+					pHitEntity = NULL; // can't follow on top of our student
+				else if (!pPlayer->IsCoaching() && trace.m_pEnt->IsPlayer() && trace.m_pEnt->GetTeamNumber() == iTeam)
+					pHitEntity = NULL; // can't follow our teammates if not coaching
+			}
 			pEvent->SetInt( "id", pPlayer->entindex() );
 			pEvent->SetFloat( "worldPosX", trace.endpos.x );
 			pEvent->SetFloat( "worldPosY", trace.endpos.y );
@@ -903,23 +917,56 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			pEvent->SetFloat( "lifetime", 10.0f );
 			if ( pHitEntity )
 			{
+				if (!pPlayer->IsCoaching())
+				{
+					if (iTeam != pHitEntity->GetTeamNumber())
+					{
+						command = kCoachCommand_Attack;
+					}
+					else
+					{
+						command = kCoachCommand_Defend;
+					}
+					
+				}
 				pEvent->SetInt( "follow_entindex", pHitEntity->entindex() );
 			}
-			pEvent->SetInt( "visibilityBitfield", ( 1 << pPlayer->entindex() | 1 << pPlayer->GetStudent()->entindex() ) );
+			int iVisBits = 0;
+			if (pPlayer->IsCoaching() && pPlayer->GetStudent())
+			{
+				iVisBits = 1 << pPlayer->entindex() | 1 << pPlayer->GetStudent()->entindex();
+			}
+			else
+			{
+				CTFTeam* pTeam = GetGlobalTFTeam(iTeam);
+				if (pTeam)
+				{
+					for (int i = 1; i <= pTeam->GetNumPlayers(); i++)
+					{
+						CTFPlayer* pReceiver = ToTFPlayer(UTIL_PlayerByIndex(i));
+
+						if (!pReceiver)
+							continue;
+
+						iVisBits |= 1 << pReceiver->entindex();
+					}
+				}
+			}
+			pEvent->SetInt( "visibilityBitfield", iVisBits );
 			pEvent->SetBool( "show_distance", true );
 			pEvent->SetBool( "show_effect", true );
 
 			switch ( command )
 			{
-			case kCoachCommand_Attack:	
+			case kCoachCommand_Attack:
 				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_AttackThis" : "#TF_Coach_AttackHere" ); 
 				pEvent->SetString( "play_sound", "coach/coach_attack_here.wav" );
 				break;
-			case kCoachCommand_Defend:	
+			case kCoachCommand_Defend:
 				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_DefendThis" : "#TF_Coach_DefendHere" ); 
 				pEvent->SetString( "play_sound", "coach/coach_defend_here.wav" );
 				break;
-			case kCoachCommand_Look:	
+			case kCoachCommand_Look:
 				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_LookAt" : "#TF_Coach_LookHere" ); 
 				pEvent->SetString( "play_sound", "coach/coach_look_here.wav" );
 				break;
@@ -7673,6 +7720,12 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		}
 		return true;
 	}
+	else if ( FStrEq( pcmd, "quick_ping" ) )
+	{
+		// todo: other commands
+		HandleCoachCommand(this, kCoachCommand_Look);
+		return true;
+	}
 	else if ( FStrEq( pcmd, "stop_taunt" ) )
 	{
 		if( m_Shared.GetTauntIndex() == TAUNT_LONG && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
@@ -11746,11 +11799,11 @@ void CTFPlayer::CheckSpellHalloweenDeathGhosts( const CTakeDamageInfo &info, CTF
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iHalloweenDeathGhosts, halloween_death_ghosts );
 		if ( iHalloweenDeathGhosts > 0 )
 		{
-			if ( pTFVictim->GetTeam()->GetTeamNumber() == TF_TEAM_BLUE )
+			if ( pTFVictim->GetTeamNumber() == TF_TEAM_BLUE )
 			{
 				DispatchParticleEffect( "halloween_player_death_blue", pTFVictim->GetAbsOrigin() + Vector( 0, 0, 32 ), vec3_angle );
 			}
-			else if ( pTFVictim->GetTeam()->GetTeamNumber() == TF_TEAM_RED )
+			else if ( pTFVictim->GetTeamNumber() == TF_TEAM_RED )
 			{
 				DispatchParticleEffect( "halloween_player_death", pTFVictim->GetAbsOrigin() + Vector( 0, 0, 32 ), vec3_angle );
 			}
