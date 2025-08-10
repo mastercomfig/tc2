@@ -1243,7 +1243,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	if ( pPlayer->m_Shared.IsInvulnerable() || pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_WEARINGOFF ) )
 		return;
 
-	float flBleedTime = 5.0f;
+	float flBleedTime = 2.0f;
 	bool bIsLongRangeHit = false;
 
 	// long distance hit is always a crit
@@ -1420,13 +1420,13 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 
 	bitsDamageType |= DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_USE_HITLOCATIONS;
 
-	const float flBleedTime = 5.0f;
+	const float flBleedTime = 4.0f;
 
 	// UNDONE: we use a set damage now
 	// Explosion damage is some fraction of our base damage
-	const float flExplodeDamage = 4.0f;
+	const float flExplodeDamage = 6.0f;
 
-	if (IsCritical())
+	if ( IsCritical() )
 	{
 		bitsDamageType |= DMG_CRITICAL;
 
