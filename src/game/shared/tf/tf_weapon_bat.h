@@ -85,6 +85,9 @@ public:
 	void				SecondaryAttackAnim( CTFPlayer *pPlayer );
 	virtual bool		SendWeaponAnim( int iActivity );
 
+	virtual bool		Holster(CBaseCombatWeapon* pSwitchingTo = NULL);
+	virtual bool		Deploy(void);
+
 	virtual void		Smack(void);
 
 	virtual bool		CanCreateBall( CTFPlayer* pPlayer );
@@ -95,6 +98,7 @@ public:
 	virtual int			GetEffectBarAmmo( void ) { return TF_AMMO_GRENADES1; }
 
 #ifdef GAME_DLL
+	virtual void		Detach();
 	virtual void		GetBallDynamics( Vector& vecLoc, QAngle& vecAngles, Vector& vecVelocity, AngularImpulse& angImpulse, CTFPlayer* pPlayer );
 #endif
 

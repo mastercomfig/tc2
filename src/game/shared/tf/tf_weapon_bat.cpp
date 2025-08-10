@@ -100,7 +100,7 @@ PRECACHE_WEAPON_REGISTER( tf_projectile_stun_ball );
 #define TF_WEAPON_STUNBALL_MODEL			"models/weapons/w_models/w_baseball.mdl"
 
 #if defined( GAME_DLL )
-ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "0.7", FCVAR_DEVELOPMENTONLY );
+ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "1.0", FCVAR_DEVELOPMENTONLY );
 ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_DEVELOPMENTONLY );
 ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "20", FCVAR_DEVELOPMENTONLY );
 #endif
@@ -268,7 +268,12 @@ void CTFBat_Wood::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CTFBat_Wood::Smack(void)
 {
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return;
+
 	m_bNextSwingIsCrit = false;
+	pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_USER_BUFF );
 
 	BaseClass::Smack();
 }
@@ -507,8 +512,55 @@ void CTFBat_Wood::LaunchBall( void )
 	StartEffectBarRegen();
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Reset crits
+//-----------------------------------------------------------------------------
+bool CTFBat_Wood::Holster(CBaseCombatWeapon* pSwitchingTo)
+{
+#ifdef GAME_DLL
+	CTFPlayer* pOwner = ToTFPlayer(GetPlayerOwner());
+	if (pOwner && m_bNextSwingIsCrit)
+	{
+		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+	}
+#endif
+
+	return BaseClass::Holster(pSwitchingTo);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Reset crits
+//-----------------------------------------------------------------------------
+bool CTFBat_Wood::Deploy(void)
+{
+#ifdef GAME_DLL
+	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
+	if (pOwner && m_bNextSwingIsCrit)
+	{
+		pOwner->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+	}
+#endif
+
+	return BaseClass::Deploy();
+}
+
 // SERVER ONLY --
 #ifdef GAME_DLL
+
+//-----------------------------------------------------------------------------
+// Purpose: Reset crits
+//-----------------------------------------------------------------------------
+void CTFBat_Wood::Detach(void)
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (pPlayer && m_bNextSwingIsCrit)
+	{
+		pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+	}
+
+	BaseClass::Detach();
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: The wooden bat creates a baseball that stuns whomever it hits.
@@ -547,6 +599,7 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 	pBall->SetInitialSpeed( tf_scout_stunball_base_speed.GetInt() );
 
 	m_bNextSwingIsCrit = false;
+	pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
 
 	return pBall;
 }
@@ -559,11 +612,19 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 //-----------------------------------------------------------------------------
 void CTFBat_Wood::PickedUpBall( bool bNextSwingIsCrit )
 {
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return;
+
 	if ( WeaponState() == WEAPON_IS_ACTIVE )
 	{
 		SendWeaponAnim( ACT_VM_PULLBACK_SPECIAL );
 	}
-	m_bNextSwingIsCrit = bNextSwingIsCrit;
+	if (bNextSwingIsCrit)
+	{
+		m_bNextSwingIsCrit = true;
+		pPlayer->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -746,12 +807,16 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	const bool bMax = flLifeTimeRatio >= 1.f;
 	int iStunFlags = ( bMax ) ? TF_STUN_SPECIAL_SOUND | TF_STUN_MOVEMENT : TF_STUN_SOUND | TF_STUN_MOVEMENT;
 	float flStunAmount = 0.5f;
-	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped(flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 1.3f);
+	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped(flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 2.0f);
 	if ( bMax )
 	{
 		flStunDuration += 1.0f;
 		// TODO(mcoms): balance tweak: give ball back to owner on moonshot
 		GiveBall(pOwner, true);
+	}
+	if ( bMax || IsCritical() )
+	{
+		pOwner->SpeakConceptIfAllowed(MP_CONCEPT_STUNNED_TARGET);
 	}
 
 	if ( flLifeTimeRatio > 0.1f )
@@ -861,7 +926,7 @@ bool CTFStunBall::GiveBall( CTFPlayer* pPlayer, bool bNextSwingIsACrit )
 	if (pBat)
 	{
 		// If we have the bat up, we need to play the correct anim.
-		pBat->PickedUpBall(bNextSwingIsACrit);
+		pBat->PickedUpBall( bNextSwingIsACrit );
 	}
 
 	return true;
