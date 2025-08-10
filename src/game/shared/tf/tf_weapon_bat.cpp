@@ -818,7 +818,11 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	{
 		flStunDuration += 1.0f;
 		// TODO(mcoms): balance tweak: give ball back to owner on moonshot
-		GiveBall(pOwner, true);
+		// we check for critical so we don't chain gives, leave it as leapfrog. similar to old cleaver combo but weaker.
+		if (!IsCritical())
+		{
+			GiveBall(pOwner, true);
+		}
 	}
 	if ( bMax || IsCritical() )
 	{
