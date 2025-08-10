@@ -163,9 +163,9 @@ public:
 	virtual int			GetWeaponID( void ) const OVERRIDE			{ return TF_WEAPON_GRENADE_JAR; }
 	virtual float		GetDamage()									{ return 0.f; }
 	virtual bool		ExplodesOnHit()								{ return true; }
-	virtual float		GetDetonationTime(void) { return 5.0f; }
+	virtual float		GetDetonationTime(void) { return 10.0f; }
 
-	virtual bool CanCollideWithTeammates() const OVERRIDE { return CBaseProjectile::CanCollideWithTeammates(); }
+	virtual bool CanCollideWithTeammates() const OVERRIDE { return false; }
 
 	virtual void		Precache() OVERRIDE;
 	virtual void		SetCustomPipebombModel() OVERRIDE;
