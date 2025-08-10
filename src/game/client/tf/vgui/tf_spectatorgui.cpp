@@ -913,7 +913,7 @@ void CTFSpectatorGUI::FireGameEvent( IGameEvent *event )
 	{
 		CBaseEntity *pVictim = ClientEntityList().GetEnt( engine->GetPlayerForUserID( event->GetInt("userid") ) );
 		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( pLocalPlayer && ( pVictim == pLocalPlayer->m_hStudent ) )
+		if ( pLocalPlayer && ( pVictim == pLocalPlayer->m_hStudent ) && ( event->GetInt("death_flags") & TF_DEATH_FEIGN_DEATH ) == 0 )
 		{
 			CEconNotification *pNotification = new CEconNotification();
 			pNotification->SetText( "#TF_Coach_StudentHasDied" );
