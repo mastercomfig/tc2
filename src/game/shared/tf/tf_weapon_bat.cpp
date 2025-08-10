@@ -786,7 +786,7 @@ void CTFStunBall::Explode( trace_t *pTrace, int bitsDamageType )
 //-----------------------------------------------------------------------------
 // Purpose: Stun the person we smashed into.
 //-----------------------------------------------------------------------------
-#define FLIGHT_TIME_TO_MAX_STUN	(0.8f * 0.5f) // halving the distance of a moonshot.
+#define FLIGHT_TIME_TO_MAX_STUN	(0.8f * 0.35f) // halving the distance of a moonshot.
 void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 {
 	if ( !pOther || !pOther->IsPlayer() )
