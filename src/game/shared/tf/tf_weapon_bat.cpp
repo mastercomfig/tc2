@@ -1341,7 +1341,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	info.SetAttacker( GetThrower() );
 	info.SetInflictor( this ); 
 	info.SetWeapon( pInflictor );
-	info.SetDamage( GetDamage() );
+	info.SetDamage( 5.0f );
 	info.SetDamageCustom( TF_DMG_CUSTOM_BASEBALL );
 	info.SetDamageForce( GetDamageForce() );
 	info.SetDamagePosition( GetAbsOrigin() );
