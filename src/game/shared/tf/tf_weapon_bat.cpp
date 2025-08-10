@@ -509,6 +509,8 @@ void CTFBat_Wood::LaunchBall( void )
 	pPlayer->RemoveAmmo( 1, TF_AMMO_GRENADES1 );
 #endif
 
+	m_bNextSwingIsCrit = false;
+
 	StartEffectBarRegen();
 }
 
@@ -598,7 +600,6 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 	pBall->SetOwnerEntity( pPlayer );
 	pBall->SetInitialSpeed( tf_scout_stunball_base_speed.GetInt() );
 
-	m_bNextSwingIsCrit = false;
 	pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
 
 	return pBall;
@@ -623,7 +624,12 @@ void CTFBat_Wood::PickedUpBall( bool bNextSwingIsCrit )
 	if (bNextSwingIsCrit)
 	{
 		m_bNextSwingIsCrit = true;
-		pPlayer->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+#ifdef GAME_DLL
+		if ( pPlayer->GetActiveTFWeapon() == this )
+		{
+			pPlayer->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		}
+#endif
 	}
 }
 
