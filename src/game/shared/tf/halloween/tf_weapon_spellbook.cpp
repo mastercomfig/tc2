@@ -419,7 +419,7 @@ void CHudSpellMenu::UpdateSpellText( int iSpellIndex, int iChargeCount )
 		if ( m_iNextRollTime > gpGlobals->curtime )
 			return;
 		m_iNextRollTime = gpGlobals->curtime + m_flRollTickGap;
-		m_flRollTickGap += 0.015f;
+		m_flRollTickGap += TICK_INTERVAL;
 		static int s_iRandSpell = 0;
 		s_iRandSpell = ( s_iRandSpell + 1 ) % GetTotalSpellCount( pLocalPlayer );
 		const spell_data_t *pSpellData = GetSpellData( s_iRandSpell );
