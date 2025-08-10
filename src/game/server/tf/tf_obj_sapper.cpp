@@ -761,7 +761,7 @@ bool CObjectSapper::IsValidRoboSapperTarget( CTFPlayer *pTarget )
 	if ( !pTarget->IsAlive() )
 		return false;
 
-	if ( GetBuilder() && GetBuilder()->GetTeamNumber() == pTarget->GetTeam()->GetTeamNumber() )
+	if ( GetBuilder() && GetBuilder()->GetTeamNumber() == pTarget->GetTeamNumber() )
 		return false;
 
 	if ( pTarget->m_Shared.IsInvulnerable() )
