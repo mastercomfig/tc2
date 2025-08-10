@@ -8527,7 +8527,7 @@ void CTFPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 	CTakeDamageInfo info_modified = info;
 	bool bIsHeadshot = false;
 
-	if ( info_modified.GetDamageType() & DMG_USE_HITLOCATIONS )
+	if ( info_modified.GetDamageType() & DMG_USE_HITLOCATIONS && ( info_modified.GetDamageType() & DMG_BLAST ) == 0 )
 	{
 		if ( !m_Shared.InCond( TF_COND_INVULNERABLE ) && ptr->hitgroup == HITGROUP_HEAD )
 		{

@@ -1243,7 +1243,6 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	if ( pPlayer->m_Shared.IsInvulnerable() || pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_WEARINGOFF ) )
 		return;
 
-	bool bIsCriticalHit = IsCritical();
 	float flBleedTime = 5.0f;
 	bool bIsLongRangeHit = false;
 
@@ -1251,13 +1250,19 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	float flLifeTime = gpGlobals->curtime - m_flCreationTime;
 	if ( flLifeTime >= FLIGHT_TIME_TO_MAX_STUN )
 	{
-		bIsCriticalHit = true;
+		SetCritical( true );
 		bIsLongRangeHit = true;
 	}
 
+	const bool bIsCriticalHit = IsCritical();
+
 	// just do the bleed effect directly since the bleed
 	// attribute comes from the inflictor, which is the bat.
-	pPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
+	if ( !bIsCriticalHit )
+	{
+		// we do aoe bleed on crit, so don't do anything here
+		pPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
+	}
 
 	// Apply particle effect to victim (the remaining effects happen inside Explode)
 	DispatchParticleEffect( "xms_ornament_glitter", PATTACH_POINT_FOLLOW, pPlayer, "head" );
@@ -1271,7 +1276,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	info.SetAttacker( GetThrower() );
 	info.SetInflictor( this ); 
 	info.SetWeapon( pInflictor );
-	info.SetDamage( GetDamage() * ( bIsLongRangeHit ? 1.0f : 0.5f ) );
+	info.SetDamage( GetDamage() );
 	info.SetDamageCustom( TF_DMG_CUSTOM_BASEBALL );
 	info.SetDamageForce( GetDamageForce() );
 	info.SetDamagePosition( GetAbsOrigin() );
@@ -1286,10 +1291,29 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	pPlayer->DispatchTraceAttack( info, dir, pNewTrace );
 	ApplyMultiDamage();
 
-	// the ball shatters
-	UTIL_Remove( this );
-
 	m_bTouched = true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFBall_Ornament::FadeOut(float flTime)
+{
+	SetMoveType( MOVETYPE_NONE );
+	SetAbsVelocity( vec3_origin );
+	AddSolidFlags( FSOLID_NOT_SOLID );
+	AddEffects( EF_NODRAW );
+
+	// Start remove timer.
+	SetContextThink( &CTFBall_Ornament::RemoveThink, gpGlobals->curtime + flTime, "OrnamentRemoveThink" );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFBall_Ornament::RemoveThink(void)
+{
+	UTIL_Remove( this );
 }
 
 //-----------------------------------------------------------------------------
@@ -1314,13 +1338,13 @@ void CTFBall_Ornament::PipebombTouch( CBaseEntity *pOther )
 	if ( bSameTeam && !CanCollideWithTeammates() )
 		return;
 
-	// Explode (does radius damage, triggers particles and sound effects).
-	Explode( &pTrace, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE );
-
 	if ( !bSameTeam && pOther->m_takedamage != DAMAGE_NO )
 	{
 		ApplyBallImpactEffectOnVictim( pOther );
 	}
+
+	// Explode (does radius damage, triggers particles and sound effects).
+	Explode( &pTrace, 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -1356,7 +1380,7 @@ void CTFBall_Ornament::VPhysicsCollisionThink( void )
 	Vector vecSpot = GetAbsOrigin() - velDir * 16;
 	UTIL_TraceLine( vecSpot, vecSpot + velDir * 32, MASK_SOLID, this, COLLISION_GROUP_NONE, &pTrace );
 
-	Explode( &pTrace, DMG_BLAST|DMG_PREVENT_PHYSICS_FORCE );
+	Explode( &pTrace, 0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -1364,6 +1388,10 @@ void CTFBall_Ornament::VPhysicsCollisionThink( void )
 //-----------------------------------------------------------------------------
 void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 {
+	// so that we don't call this more than once.
+	if ( GetMoveType() == MOVETYPE_NONE )
+		return;
+
 	// Create smashed glass particles when we explode
 	if ( GetTeamNumber() == TF_TEAM_RED )
 	{
@@ -1375,7 +1403,6 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	}
 
 	constexpr float DEFAULT_ORNAMENT_EXPLODE_RADIUS = 50.0f;
-	constexpr float DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT = 1.15f;
 
 	CTFPlayer* pOwner = ToTFPlayer( GetThrower() );
 	Vector vecOrigin = GetAbsOrigin();
@@ -1391,17 +1418,80 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	CSingleUserRecipientFilter attackerFilter( pOwner );
 	EmitSound( attackerFilter, pOwner->entindex(), params );
 
+	bitsDamageType |= DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_USE_HITLOCATIONS;
+
+	const float flBleedTime = 5.0f;
+
+	// UNDONE: we use a set damage now
 	// Explosion damage is some fraction of our base damage
-	const float flExplodeDamage = GetDamage() * DEFAULT_ORNAMENT_EXPLODE_DAMAGE_MULT;
+	const float flExplodeDamage = 4.0f;
+
+	if (IsCritical())
+	{
+		bitsDamageType |= DMG_CRITICAL;
+
+		// Do AoE bleed
+		CBaseEntity* pObjects[MAX_PLAYERS_ARRAY_SAFE];
+		int nCount = UTIL_EntitiesInSphere( pObjects, ARRAYSIZE( pObjects ), vecOrigin, DEFAULT_ORNAMENT_EXPLODE_RADIUS, FL_CLIENT );
+		for ( int i = 0; i < nCount; i++ )
+		{
+			if ( !pObjects[i] )
+				continue;
+
+			if ( !pObjects[i]->IsAlive() )
+				continue;
+
+			if ( pOwner->InSameTeam(pObjects[i]) )
+				continue;
+
+			CTFPlayer* pTFPlayer = static_cast<CTFPlayer*>( pObjects[i] );
+			if ( !pTFPlayer )
+				continue;
+
+			if ( pTFPlayer->m_Shared.InCond(TF_COND_PHASE) || pTFPlayer->m_Shared.InCond(TF_COND_PASSTIME_INTERCEPTION) )
+				continue;
+
+			if ( pTFPlayer->m_Shared.IsInvulnerable() )
+				continue;
+
+			// DoT
+			pTFPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
+		}
+	}
 
 	// Do radius damage
-	Vector vecBlastForce(0.0f, 0.0f, 0.0f);
+ 	Vector vecBlastForce(0.0f, 0.0f, 0.0f);
 	CTakeDamageInfo info( this, GetThrower(), GetOriginalLauncher(), vecBlastForce, GetAbsOrigin(), flExplodeDamage, bitsDamageType, TF_DMG_CUSTOM_BASEBALL, &vecOrigin);
 	CTFRadiusDamageInfo radiusinfo( &info, vecOrigin, DEFAULT_ORNAMENT_EXPLODE_RADIUS, nullptr, 0.0f, 0.0f );
 	TFGameRules()->RadiusDamage( radiusinfo );
 
-	UTIL_Remove( this );
+	// the ball shatters, but the entity is kept for a few seconds for a little bit while the trail finishes.
+	FadeOut(1.5f);
 }
+#else
+//-----------------------------------------------------------------------------
+// Purpose: Removes particles as projectile now simply fades out instead of instantly deleting itself 
+//-----------------------------------------------------------------------------
+void CTFBall_Ornament::OnDataChanged(DataUpdateType_t updateType)
+{
+	BaseClass::OnDataChanged(updateType);
 
+	if (updateType == DATA_UPDATE_DATATABLE_CHANGED)
+	{
+		// Remove normal effect if we're inactive
+		if (GetMoveType() == MOVETYPE_NONE && pEffectTrail)
+		{
+			ParticleProp()->StopEmission(pEffectTrail);
+			pEffectTrail = NULL;
+		}
+
+		// Remove crit effect if we're inactive
+		if (GetMoveType() == MOVETYPE_NONE && pEffectCrit)
+		{
+			ParticleProp()->StopEmission(pEffectCrit);
+			pEffectCrit = NULL;
+		}
+	}
+}
 #endif
 

@@ -151,6 +151,7 @@ public:
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_STUNBALL; }
 	virtual const char *GetBallModelName( void ) const;
 	virtual const char *GetBallViewModelName( void ) const;
+	virtual float		GetDetonationTime(void) { return 10.0f; }
 
 	virtual bool		IsAllowedToExplode( void ) OVERRIDE { return false; }
 	virtual void		Explode( trace_t *pTrace, int bitsDamageType );
@@ -230,6 +231,7 @@ public:
 
 	virtual void		Precache( void );
 
+	virtual float		GetDamage(void) { return 15.0f; }
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_GRENADE_ORNAMENT_BALL; }
 	virtual const char *GetBallModelName( void ) const;
 	virtual const char *GetBallViewModelName( void ) const;
@@ -243,8 +245,15 @@ public:
 
 	virtual void		ApplyBallImpactEffectOnVictim( CBaseEntity *pOther );
 
+	virtual bool	    IsDeflectable() OVERRIDE { return GetMoveType() != MOVETYPE_NONE; }
+
+	void			FadeOut(float flTime);
+	void			RemoveThink();
+
 protected:
 		Vector		m_vCollisionVelocity;
+#else
+	virtual void		OnDataChanged(DataUpdateType_t updateType);
 #endif
 };
 

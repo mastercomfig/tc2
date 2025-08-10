@@ -5875,6 +5875,8 @@ void CTFRadiusDamageInfo::CalculateFalloff( void )
 		flFalloff = 0.f;
 	else if ( dmgInfo->GetDamageType() & DMG_HALF_FALLOFF )
 		flFalloff = 0.5f;
+	else if ( dmgInfo->GetDamageType() & DMG_BLAST && dmgInfo->GetDamageType() & DMG_USE_HITLOCATIONS ) // this is unused for blast, so we use it here.
+		flFalloff = 1.0f;
 	else if ( flRadius )
 		flFalloff = dmgInfo->GetDamage() / flRadius;
 	else
