@@ -4628,6 +4628,9 @@ void ApplyGameModSchema( KeyValues *pKVRawDefinition ) {
 		CUtlBuffer bufText( bufModRawData.Base(), bufModRawData.TellPut(), CUtlBuffer::READ_ONLY | CUtlBuffer::TEXT_BUFFER );
 		KeyValues *pKVRawModDefinition = new KeyValues( "CEconItemSchema" );
 		pKVRawModDefinition->LoadFromBuffer( NULL, bufText );
+		// do a swap
+		pKVRawModDefinition->RecursiveMergeKeyValues( pKVRawDefinition );
+		pKVRawDefinition->Clear();
 		pKVRawDefinition->RecursiveMergeKeyValues( pKVRawModDefinition );
 		pKVRawModDefinition->deleteThis();
 	}
