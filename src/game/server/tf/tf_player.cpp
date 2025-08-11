@@ -1017,19 +1017,19 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			switch ( command )
 			{
 			case kCoachCommand_Attack:
-				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_AttackThis" : "#TF_Coach_AttackHere" ); 
+				pEvent->SetString( "text", UTIL_VarArgs("#TF_%s_Attack%s", bIsComp ? "Comp" : "Coach", pHitEntity ? "This" : "Here") );
 				pEvent->SetString( "play_sound", "coach/coach_attack_here.wav" );
 				break;
 			case kCoachCommand_Defend:
-				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_DefendThis" : "#TF_Coach_DefendHere" ); 
+				pEvent->SetString( "text", UTIL_VarArgs("#TF_%s_Defend%s", bIsComp ? "Comp" : "Coach", pHitEntity ? "This" : "Here") );
 				pEvent->SetString( "play_sound", "coach/coach_defend_here.wav" );
 				break;
 			case kCoachCommand_Look:
-				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_LookAt" : "#TF_Coach_LookHere" ); 
+				pEvent->SetString( "text", UTIL_VarArgs("#TF_%s_Look%s", bIsComp ? "Comp" : "Coach", pHitEntity ? "At" : "Here") );
 				pEvent->SetString( "play_sound", "coach/coach_look_here.wav" );
 				break;
 			case kCoachCommand_Go:
-				pEvent->SetString( "text", pHitEntity ? "#TF_Coach_GoToThis" : "#TF_Coach_GoHere" ); 
+				pEvent->SetString( "text", UTIL_VarArgs("#TF_%s_Go%s", bIsComp ? "Comp" : "Coach", pHitEntity ? "ToThis" : "Here") );
 				pEvent->SetString( "play_sound", "coach/coach_go_here.wav" );
 				break;
 			}
