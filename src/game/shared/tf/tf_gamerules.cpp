@@ -7898,7 +7898,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttacker, iHypeOnDamage, hype_on_damage );
 			if ( iHypeOnDamage )
 			{
-				float flHype = RemapValClamped( flRealDamage, 1.f, 75.f, 1.f, 50.f );
+				float flHype = RemapValClamped( flRealDamage, 1.f, 80.f, 1.f, 50.f );
 				float flNewHype = Min(100.f, flHype + pTFAttacker->m_Shared.GetScoutHypeMeter());
 				pTFAttacker->m_Shared.SetScoutHypeMeter(flNewHype);
 			}
