@@ -6774,14 +6774,16 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		{
 			iForceCritDmgFalloff = 1;
 		}
+#endif
 
+#if defined(MCOMS_BALANCE_PACK) || 1
 		// All revolver headshots falloff
-		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER)
+		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER )
 		{
 			iForceCritDmgFalloff = 1;
 			int iMode = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWeapon, iMode, set_weapon_mode);
-			if ( iMode != 1 )
+			if ( iMode != 1 && !pWeapon->CanHaveRevengeCrits() )
 			{
 				// 15% damage penalty on crits
 				flDamage *= 0.85f;
