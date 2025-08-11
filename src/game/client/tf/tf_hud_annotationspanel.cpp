@@ -410,7 +410,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	AngleVectors( angPlayerView, &vView, &vRight, &vUp );
 	const float flPerpDot = vDelta.x * vView.y - vDelta.y * vView.x;
 
-	const bool bIsComp = TFGameRules() && TFGameRules()->IsCompetitiveGame() && false;
+	const bool bIsComp = TFGameRules() && TFGameRules()->IsCompetitiveGame();
 
 	// Calculate the alpha - the more the user looks away from the target, the greater the alpha
 	const float flBaseOpacity = (bIsComp) ? 0.44f : 1.0f; // reduce base alpha for comp
