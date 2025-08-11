@@ -410,21 +410,24 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	AngleVectors( angPlayerView, &vView, &vRight, &vUp );
 	const float flPerpDot = vDelta.x * vView.y - vDelta.y * vView.x;
 
+	const bool bIsComp = TFGameRules() && TFGameRules()->IsCompetitiveGame() && false;
+
 	// Calculate the alpha - the more the user looks away from the target, the greater the alpha
+	const float flBaseOpacity = (bIsComp) ? 0.44f : 1.0f; // reduce base alpha for comp
 	if ( m_DeathTime > 0.0f && m_DeathTime - LIFE_TIME >= gpGlobals->curtime )
 	{
-		m_flAlpha[0] = m_flAlpha[1] = 255 * clamp( ( m_DeathTime - gpGlobals->curtime ) / LIFE_TIME, 0.0f, 1.0f );
+		m_flAlpha[0] = m_flAlpha[1] = flBaseOpacity * 255.0f * clamp( ( m_DeathTime - gpGlobals->curtime ) / LIFE_TIME, 0.0f, 1.0f );
 	}
 	else
 	{
-		m_flAlpha[1] = 255;
-		// BUGBUG: the following lines don't do anything because of the clamp range
-		//const float flDot = DotProduct( vDelta, vView );	// As the player looks away the target to the target, this will go from -1 to 1
-		//m_flAlpha[1] = clamp( -255 * flDot, 255, 255 );	// Set target.
+		//m_flAlpha[1] = 255.0f;
+		const float flDot = DotProduct( vDelta, vView );	// As the player looks away the target to the target, this will go from -1 to 1
+		m_flAlpha[1] = 255.0f - clamp( 255.0f * flDot, 0.0f, 255.0f );	// Set target.
+		m_flAlpha[1] *= flBaseOpacity;
 		m_flAlpha[0] = Lerp( gpGlobals->frametime, m_flAlpha[0], m_flAlpha[1] );	 // Move towards target
 	}
 
-	const int fade_alpha = m_flAlpha[0];
+	const int fade_alpha = RoundFloatToInt(m_flAlpha[0]);
 
 	SetAlpha( fade_alpha );
 	m_pArrow->SetAlpha( fade_alpha );
@@ -483,9 +486,12 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	}
 	SetPos( iX, iY );
 
-	int wide, tall;
-	m_pAnnotationLabel->GetContentSize( wide, tall );
+	int labelWide, labelTall;
+	m_pAnnotationLabel->GetContentSize( labelWide, labelTall );
+	int wide = labelWide;
+	int tall = labelTall;
 
+	int distanceWide, distanceTall;
 	if ( m_bShowDistance )
 	{
 		wchar_t *wzFollowEntityName = NULL;
@@ -513,22 +519,29 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 		wchar_t wzText[256];
 		if ( wzFollowEntityName == NULL )
 		{
-			g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find( "#TR_DistanceTo" ), 1, wzValue );
+			g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find(bIsComp ? "#TC2_Comp_DistanceTo" : "#TC2_TR_DistanceTo" ), 1, wzValue );
 		}
 		else
 		{
-			g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find( "#TR_DistanceToObject" ), 2, wzFollowEntityName, wzValue );
+			g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find(bIsComp ? "#TC2_Comp_DistanceToObject" : "#TC2_TR_DistanceToObject" ), 2, wzFollowEntityName, wzValue );
 		}
 
 		m_pDistanceLabel->SetText( wzText );
-		int distanceWide, distanceTall;
 		m_pDistanceLabel->GetContentSize( distanceWide, distanceTall );
 		wide = MAX( distanceWide, wide );
 		tall += distanceTall;
 	}
+	else
+	{
+		distanceWide = 0;
+		distanceTall = 0;
+	}
 
-	wide += XRES(24);
-	tall += YRES(18);
+	wide += (bIsComp ? XRES(8) : XRES(24));
+	if (!bIsComp)
+	{
+		tall += YRES(18);
+	}
 
 	// Set this panel, the label, and the background to contain the text
 	const int aArrowBuffers[2] = { (int)(XRES( 20 ) * 2), (int)YRES( 20 ) };	// Leave enough room for arrows
@@ -538,6 +551,11 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	{
 		// also adjust the background image
 		m_pBackground->SetSize( wide, tall );
+		m_pAnnotationLabel->SetPos(0, m_bShowDistance ? -labelTall / 4 : 0);
+		if (m_bShowDistance)
+		{
+			m_pDistanceLabel->SetPos(0, distanceTall + (bIsComp ? 0 : distanceTall));
+		}
 		m_pAnnotationLabel->SetSize( m_pBackground->GetWide(), m_pBackground->GetTall() );
 		m_pDistanceLabel->SetSize( m_pBackground->GetWide(), m_pDistanceLabel->GetTall() );
 	}

@@ -328,7 +328,7 @@ void CTFSpectatorGUI::Update()
 		wchar_t wzValue[32];
 		_snwprintf( wzValue, ARRAYSIZE( wzValue ), L"%u", distance );
 		wchar_t wzText[256];
-		g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find( "#TR_DistanceToStudent" ), 1, wzValue );
+		g_pVGuiLocalize->ConstructString_safe( wzText, g_pVGuiLocalize->Find( "#TC2_TR_DistanceToStudent" ), 1, wzValue );
 		SetDialogVariable( "student_distance", wzText );
 	}
 
