@@ -365,6 +365,36 @@ CTFWeaponBase::~CTFWeaponBase()
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTraceFilterIgnoreTeammates::ShouldHitEntity(IHandleEntity* pServerEntity, int contentsMask)
+{
+	CBaseEntity* pEntity = EntityFromEntityHandle(pServerEntity);
+
+	if ( ( pEntity->IsPlayer() || pEntity->IsCombatItem() ) )
+	{
+		if ( ( pEntity->GetTeamNumber() == m_iIgnoreTeam || m_iIgnoreTeam == TEAM_ANY ) )
+		{
+			return false;
+		}
+		if ( m_bIncludeDisguises )
+		{
+			CTFPlayer *pPlayer = dynamic_cast<CTFPlayer*>( pEntity );
+			if ( pPlayer )
+			{
+				if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && pPlayer->m_Shared.GetDisguiseTeam() == m_iIgnoreTeam )
+					return false;
+
+				if ( pPlayer->m_Shared.IsStealthed() )
+					return false;
+			}
+		}
+	}
+
+	return BaseClass::ShouldHitEntity(pServerEntity, contentsMask);
+}
+
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------

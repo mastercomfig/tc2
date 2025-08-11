@@ -278,6 +278,9 @@ void CTFAnnotationsPanel::RemoveAll()
 //-----------------------------------------------------------------------------
 bool CTFAnnotationsPanel::ShouldDraw( void )
 {
+	// never draw on match summary stage
+	if (TFGameRules() && TFGameRules()->PlayersAreOnMatchSummaryStage())
+		return false;
 	return m_bShouldBeVisible;
 }
 

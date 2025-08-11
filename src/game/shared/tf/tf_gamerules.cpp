@@ -2314,6 +2314,12 @@ bool CTFGameRules::IsCompetitiveGame( void )
 		return true;
 	}
 
+	// competitive if emulating
+	if ( IsEmulatingMatch() == 2 )
+	{
+		return true;
+	}
+
 	// if it isn't competitive match type, but still competitive mode, then it's not a true competition.
 	// maybe IsMatchTypeCasual is more explicit, but we're not sure if there will be more "Competitive Modes"
 	// in the future which are/aren't actual competition
@@ -7892,7 +7898,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttacker, iHypeOnDamage, hype_on_damage );
 			if ( iHypeOnDamage )
 			{
-				float flHype = RemapValClamped( flRealDamage, 1.f, 200.f, 1.f, 50.f );
+				float flHype = RemapValClamped( flRealDamage, 1.f, 75.f, 1.f, 50.f );
 				float flNewHype = Min(100.f, flHype + pTFAttacker->m_Shared.GetScoutHypeMeter());
 				pTFAttacker->m_Shared.SetScoutHypeMeter(flNewHype);
 			}

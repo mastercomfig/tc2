@@ -874,7 +874,11 @@ enum eCoachCommand
 static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 {
 	// we now let anyone do coach commands (as pings)
-	if ( pPlayer && command < kNumCoachCommands && ( ( pPlayer->IsCoaching() && pPlayer->GetStudent() ) || ( pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules() && TFGameRules()->IsCompetitiveGame() ) ) )
+	if (!pPlayer || command >= kNumCoachCommands || !TFGameRules())
+		return;
+	const bool bIsCoaching = pPlayer->IsCoaching() && pPlayer->GetStudent();
+	const bool bIsComp = pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules()->IsCompetitiveGame();
+	if ( bIsCoaching || bIsComp )
 	{
 		const float kMaxRateCoachCommands = 1.0f;
 		float flLastCoachCommandDelta = gpGlobals->curtime - pPlayer->m_flLastCoachCommand;
@@ -894,18 +898,60 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			trace_t	trace;
 			// TODO: don't construct both?
 			CTraceFilterSimple filter(pPlayer->GetStudent(), COLLISION_GROUP_NONE);
-			CTraceFilterIgnoreTeammates teamFilter(pPlayer, COLLISION_GROUP_NONE, iTeam);
-			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_SOLID, pPlayer->IsCoaching() ? &filter : &teamFilter, &trace );
+			CTraceFilterIgnoreTeammates teamFilter(pPlayer, COLLISION_GROUP_NONE, iTeam, true);
+			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_SOLID, bIsCoaching ? &filter : &teamFilter, &trace );
 
 			CBaseEntity* pHitEntity = trace.m_pEnt;
+			int iTargetTeam = 0;
 			if (pHitEntity)
 			{
-				if (trace.m_pEnt->IsWorld())
+				iTargetTeam = pHitEntity->GetTeamNumber();
+				if (pHitEntity->IsWorld())
+				{
 					pHitEntity = NULL; // don't follow the world
-				else if (trace.m_pEnt == pPlayer->GetStudent())
-					pHitEntity = NULL; // can't follow on top of our student
-				else if (!pPlayer->IsCoaching() && trace.m_pEnt->IsPlayer() && trace.m_pEnt->GetTeamNumber() == iTeam)
-					pHitEntity = NULL; // can't follow our teammates if not coaching
+				}
+				else if (pHitEntity->IsPlayer())
+				{
+					// fine to target
+				}
+				else if (pHitEntity->IsBaseObject())
+				{
+					// fine to target
+				}
+				else
+				{
+					bool bHandled = false;
+
+					if (!bHandled)
+					{
+						CFuncTrackTrain* pTrackTrain = dynamic_cast<CFuncTrackTrain*>(pHitEntity);
+						if (pTrackTrain)
+						{
+							auto hTrainWatcher = TFGameRules()->GetPayloadToPush(iTeam);
+							if (hTrainWatcher.IsValid() && hTrainWatcher->GetTrainEntity() == pHitEntity)
+							{
+								// this is our pushable entity, so its ours
+								iTargetTeam = iTeam;
+							}
+							bHandled = true;
+						}
+					}
+
+					if (!bHandled)
+					{
+						CTeamControlPoint* pPoint = dynamic_cast<CTeamControlPoint*>(pHitEntity);
+						if (pPoint)
+						{
+							iTargetTeam = pPoint->GetOwner();
+							bHandled = true;
+						}
+					}
+
+					if (!bHandled)
+					{
+						pHitEntity = NULL; // don't follow anything else
+					}
+				}
 			}
 			pEvent->SetInt( "id", pPlayer->entindex() );
 			pEvent->SetFloat( "worldPosX", trace.endpos.x );
@@ -914,25 +960,37 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			pEvent->SetFloat( "worldNormalX", trace.plane.normal.x );
 			pEvent->SetFloat( "worldNormalY", trace.plane.normal.y );
 			pEvent->SetFloat( "worldNormalZ", trace.plane.normal.z );
-			pEvent->SetFloat( "lifetime", 10.0f );
+			pEvent->SetFloat( "lifetime", bIsComp ? 4.0f : 10.0f );
 			if ( pHitEntity )
 			{
-				if (!pPlayer->IsCoaching())
+				if (!bIsCoaching)
 				{
-					if (iTeam != pHitEntity->GetTeamNumber())
+					// probably should not do this but too scared to update the entity to use GetTeamNumber
+					CTeamControlPoint* pPoint = dynamic_cast<CTeamControlPoint*>(trace.m_pEnt);
+					if (pPoint)
 					{
-						command = kCoachCommand_Attack;
+						iTargetTeam = pPoint->GetOwner();
 					}
-					else
+					// if the target is not neutral, then we can attack/defend it
+					if (iTargetTeam > LAST_SHARED_TEAM)
 					{
-						command = kCoachCommand_Defend;
+						if (iTeam != iTargetTeam)
+						{
+							// attack if its not on our team.
+							command = kCoachCommand_Attack;
+						}
+						else
+						{
+							// its ours, so defend.
+							command = kCoachCommand_Defend;
+						}
 					}
 					
 				}
 				pEvent->SetInt( "follow_entindex", pHitEntity->entindex() );
 			}
 			int iVisBits = 0;
-			if (pPlayer->IsCoaching() && pPlayer->GetStudent())
+			if (bIsCoaching)
 			{
 				iVisBits = 1 << pPlayer->entindex() | 1 << pPlayer->GetStudent()->entindex();
 			}
@@ -941,9 +999,9 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 				CTFTeam* pTeam = GetGlobalTFTeam(iTeam);
 				if (pTeam)
 				{
-					for (int i = 1; i <= pTeam->GetNumPlayers(); i++)
+					for (int i = 0; i < pTeam->GetNumPlayers(); i++)
 					{
-						CTFPlayer* pReceiver = ToTFPlayer(UTIL_PlayerByIndex(i));
+						CTFPlayer* pReceiver = ToTFPlayer(pTeam->GetPlayer(i));
 
 						if (!pReceiver)
 							continue;

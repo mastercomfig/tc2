@@ -126,24 +126,15 @@ public:
 	// It does have a base, but we'll never network anything below here..
 	DECLARE_CLASS( CTraceFilterIgnoreTeammates, CTraceFilterSimple );
 
-	CTraceFilterIgnoreTeammates( const IHandleEntity *passentity, int collisionGroup, int iIgnoreTeam )
-		: CTraceFilterSimple( passentity, collisionGroup ), m_iIgnoreTeam( iIgnoreTeam )
+	CTraceFilterIgnoreTeammates( const IHandleEntity *passentity, int collisionGroup, int iIgnoreTeam, bool bIncludeDisguises = false )
+		: CTraceFilterSimple( passentity, collisionGroup ), m_iIgnoreTeam( iIgnoreTeam ), m_bIncludeDisguises( bIncludeDisguises )
 	{
 	}
 
-	virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
-	{
-		CBaseEntity *pEntity = EntityFromEntityHandle( pServerEntity );
-
-		if ( ( pEntity->IsPlayer() || pEntity->IsCombatItem() ) && ( pEntity->GetTeamNumber() == m_iIgnoreTeam || m_iIgnoreTeam == TEAM_ANY ) )
-		{
-			return false;
-		}
-
-		return BaseClass::ShouldHitEntity( pServerEntity, contentsMask );
-	}
+	virtual bool ShouldHitEntity(IHandleEntity* pServerEntity, int contentsMask);
 
 	int m_iIgnoreTeam;
+	bool m_bIncludeDisguises;
 };
 
 class CTraceFilterIgnorePlayers : public CTraceFilterSimple
