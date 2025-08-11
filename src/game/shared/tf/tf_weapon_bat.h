@@ -87,6 +87,7 @@ public:
 
 	virtual bool		Holster(CBaseCombatWeapon* pSwitchingTo = NULL);
 	virtual bool		Deploy(void);
+	virtual void		WeaponReset() OVERRIDE;
 
 	virtual void		Smack(void);
 
@@ -107,7 +108,6 @@ public:
 
 	// Child removal:
 	virtual	void		Drop( const Vector &vecVelocity );
-	virtual void		WeaponReset( void );
 	virtual void		UpdateOnRemove( void );
 	virtual void		OnDataChanged( DataUpdateType_t updateType );
 	void				AddBallChild( void );

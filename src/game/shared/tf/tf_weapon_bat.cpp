@@ -418,16 +418,6 @@ void CTFBat_Wood::Drop( const Vector &vecVelocity )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFBat_Wood::WeaponReset( void )
-{
-	RemoveBallChild();
-
-	BaseClass::WeaponReset();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CTFBat_Wood::UpdateOnRemove( void )
 {
 	RemoveBallChild();
@@ -544,6 +534,25 @@ bool CTFBat_Wood::Deploy(void)
 #endif
 
 	return BaseClass::Deploy();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Reset crits
+//-----------------------------------------------------------------------------
+void CTFBat_Wood::WeaponReset(void)
+{
+#ifdef GAME_DLL
+	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
+	if (pOwner && m_bNextSwingIsCrit)
+	{
+		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		m_bNextSwingIsCrit = false;
+	}
+#else
+	RemoveBallChild();
+#endif
+
+	BaseClass::WeaponReset();
 }
 
 // SERVER ONLY --
