@@ -44,6 +44,7 @@ public:
 	virtual void	ProjectileTouch( CBaseEntity *pOther ) OVERRIDE;
 	virtual void	ResolveFlyCollisionCustom( trace_t &trace, Vector &vecVelocity ) OVERRIDE;
 	virtual bool	CanCollideWithTeammates() const OVERRIDE { return false; }
+	virtual void    BisonThink();
 #else
 	virtual void	OnDataChanged( DataUpdateType_t updateType ) OVERRIDE;
 #endif

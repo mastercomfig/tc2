@@ -65,6 +65,7 @@ PRECACHE_REGISTER_FN(PrecacheRing);
 
 #ifdef GAME_DLL
 ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.025", FCVAR_CHEAT );
+ConVar tf_bison_in_enemy_slow("tf_bison_in_enemy_slow", "0.1", FCVAR_CHEAT);
 #endif
 
 
@@ -188,6 +189,13 @@ void CTFProjectile_EnergyRing::Spawn()
 	SetRenderMode( kRenderNone	);
 	SetSolidFlags( FSOLID_TRIGGER | FSOLID_NOT_SOLID );
 	SetCollisionGroup( TFCOLLISION_GROUP_ROCKETS );
+
+#ifdef GAME_DLL
+	if (ShouldPenetrate())
+	{
+		SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + tf_bison_tick_time.GetFloat(), "BisonThink");
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -288,7 +296,12 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 		PlayImpactEffects( vecNewPos, pOther->IsPlayer() );
 
 		if ( ShouldPenetrate() )
+		{
+			Vector dir;
+			AngleVectors(GetAbsAngles(), &dir);
+			SetAbsVelocity(dir * GetInitialVelocity() * tf_bison_in_enemy_slow.GetFloat());
 			return;
+		}
 		
 		UTIL_Remove( this );
 		return;
@@ -305,6 +318,22 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 	// Remove by default.  Fixes this entity living forever on things like doors.
 	UTIL_Remove( this );
 }
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFProjectile_EnergyRing::BisonThink()
+{
+	if (gpGlobals->curtime - m_flLastHitTime > tf_bison_tick_time.GetFloat())
+	{
+		Vector dir;
+		AngleVectors(GetAbsAngles(), &dir);
+		SetAbsVelocity(dir * GetInitialVelocity());
+	}
+
+	SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + tf_bison_tick_time.GetFloat(), "BisonThink");
+}
+
 
 void CTFProjectile_EnergyRing::ResolveFlyCollisionCustom( trace_t &trace, Vector &vecVelocity )
 {
