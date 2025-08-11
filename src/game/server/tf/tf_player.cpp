@@ -10078,6 +10078,20 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			float flInverseRageGainScale = TFGameRules()->IsMannVsMachineMode() ? 12.f : 3.f;
 			HandleRageGain( pTFAttacker, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage() * flRageScale, flInverseRageGainScale );
 		}
+
+		if ( pTFAttacker && info.GetDamageCustom() == TF_DMG_CUSTOM_BLEEDING )
+		{
+			CTFWeaponBase* pGiftWrapBat = pTFAttacker->Weapon_OwnsThisID(TF_WEAPON_BAT_GIFTWRAP);
+			if ( pGiftWrapBat )
+			{
+				// 0.0625 seconds per damage of bleed.
+				// -> 0.125 seconds per 4 damage (bleed tick)
+				// -> 0.25 seconds per 2 bleed ticks (1 second)
+				// -> 0.5 second per default duration (2 seconds)
+				// -> 1 second per max duration (4 seconds)
+				pGiftWrapBat->DecrementBarRegenTime(info.GetDamage() * 0.0625f);
+			}
+		}
 	}
 
 	if ( pWeapon && ( ( pWeapon->GetWeaponID() == TF_WEAPON_BAT_FISH ) || ( pWeapon->GetWeaponID() == TF_WEAPON_SLAP ) ) )

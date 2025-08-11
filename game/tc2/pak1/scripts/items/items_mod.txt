@@ -1,0 +1,28 @@
+"items_game"
+{
+  "items"
+  {
+    "44" // The Sandman
+    {
+      "static_attrs"
+			{
+        "crit mod disabled"						"0"
+      }
+    }
+    "648" // The Wrap Assassin
+    {
+      "attributes"
+      {
+        "effect bar recharge rate increased"
+				{
+					"attribute_class"	"effectbar_recharge_rate"
+					"value" "1.0"
+				}
+      }
+      "static_attrs"
+			{
+        "crit mod disabled"						"0"
+      }
+    }
+  }
+}
