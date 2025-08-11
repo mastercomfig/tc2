@@ -786,6 +786,7 @@ void CTFStunBall::Explode( trace_t *pTrace, int bitsDamageType )
 //-----------------------------------------------------------------------------
 // Purpose: Stun the person we smashed into.
 //-----------------------------------------------------------------------------
+#define FLIGHT_TIME_TO_MAX_STUN_OLD	1.0f
 #define FLIGHT_TIME_TO_MAX_STUN	(0.8f * 0.35f) // halving the distance of a moonshot.
 void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 {
@@ -809,17 +810,37 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 
 	// We have a more intense stun based on our travel time.
 	float flLifeTime = Min( gpGlobals->curtime - m_flCreationTime, FLIGHT_TIME_TO_MAX_STUN );
-	float flLifeTimeRatio = flLifeTime / FLIGHT_TIME_TO_MAX_STUN;
+
+	// we use the old sandman in MvM. This used to only be against bots, but now players can get stunned.
+	const bool bUseOldBehavior = TFGameRules() && TFGameRules()->IsMannVsMachineMode();
+	bool bActuallyUseOldBehavior = bUseOldBehavior;
+
+	float flLifeTimeRatio;
+	// we calculate the ratio here. but we actually allow the new behavior within the first 0.1 ratio.
+	if ( bUseOldBehavior )
+	{
+		flLifeTimeRatio = flLifeTime / FLIGHT_TIME_TO_MAX_STUN_OLD;
+		if ( flLifeTimeRatio <= 0.1f )
+		{
+			flLifeTimeRatio = flLifeTime / FLIGHT_TIME_TO_MAX_STUN;
+			bActuallyUseOldBehavior = false;
+		}
+	}
+	else
+	{
+		flLifeTimeRatio = flLifeTime / FLIGHT_TIME_TO_MAX_STUN;
+	}
+
 	const bool bMax = flLifeTimeRatio >= 1.f;
 	int iStunFlags = ( bMax ) ? TF_STUN_SPECIAL_SOUND | TF_STUN_MOVEMENT : TF_STUN_SOUND | TF_STUN_MOVEMENT;
 	float flStunAmount = 0.5f;
-	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped(flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 2.0f);
+	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 2.0f );
 	if ( bMax )
 	{
 		flStunDuration += 1.0f;
 		// TODO(mcoms): balance tweak: give ball back to owner on moonshot
 		// we check for critical so we don't chain gives, leave it as leapfrog. similar to old cleaver combo but weaker.
-		if (!IsCritical())
+		if ( !IsCritical() )
 		{
 			GiveBall(pOwner, true);
 		}
@@ -829,19 +850,22 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 		pOwner->SpeakConceptIfAllowed(MP_CONCEPT_STUNNED_TARGET);
 	}
 
-	if ( flLifeTimeRatio > 0.1f )
+	// do the old behavior if we should
+	if ( bActuallyUseOldBehavior )
 	{
-		// MvM bots
-		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
-		{
-			// Distance mod
-			flStunAmount = ( bMax ) ? 1.f : RemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.5f, 0.75f );
+		const bool bBoss = TFGameRules() && TFGameRules()->GameModeUsesMiniBosses() && ( pPlayer->IsMiniBoss() || pPlayer->GetModelScale() > 1.0f );
 
-			bool bBoss = TFGameRules() && TFGameRules()->GameModeUsesMiniBosses() && ( pPlayer->IsMiniBoss() || pPlayer->GetModelScale() > 1.0f );
-			if ( bMax && !bBoss )
-			{
-				iStunFlags |= TF_STUN_CONTROLS; 
-			}
+		// don't stun bosses.
+		if ( !bBoss )
+		{
+			// stunned taunt
+			iStunFlags |= TF_STUN_CONTROLS;
+		}
+
+		if ( bMax )
+		{
+			// full movement stun
+			flStunAmount = bBoss ? 0.75f : 1.0f;
 		}
 	}
 
