@@ -33,7 +33,9 @@
 			//
 			// Note that this folder is scanned only when the game is booted.
 			game+mod+custom_mod	|gameinfo_path|custom/*
-			// Adding custom folder for tc2 specifically
+			// Enable this if you want to load your TF custom content.
+			//game+mod	|appid_440|tf/custom/*
+			// Adding pak folder for tc2 specifically
 			game+mod+custom_mod |gameinfo_path|pak1
 
 			// Now search loose files.  We'll set the directory containing the gameinfo.txt file
@@ -76,7 +78,7 @@
 			// packed up in the .bsp file so that it will be mounted as a map search pack.
 			// The map search pack is mounted at the top of the search path list,
 			// but only while you are connected that server and on that map.
-			game+download		tc2/download
+			game+download		|gameinfo_path|/download
 		}
 	}
 }
