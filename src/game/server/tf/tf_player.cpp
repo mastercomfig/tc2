@@ -3768,6 +3768,14 @@ void CTFPlayer::SetupVisibility( CBaseEntity *pViewEntity, unsigned char *pvs, i
 
 		engine->AddOriginToPVS( org );
 	}
+	else if (TFGameRules() && TFGameRules()->IsCompetitiveGame() && GetObserverTarget() && (GetObserverMode() == OBS_MODE_CHASE || GetObserverMode() == OBS_MODE_IN_EYE) && IsObserver() && GetTeamNumber() > LAST_SHARED_TEAM)
+	{
+		// TODO: ideally should check BAllowSpectatorModeChange
+		Vector org;
+		org = GetObserverTarget()->EyePosition();
+
+		engine->AddOriginToPVS( org );
+	}
 	else
 	{
 		BaseClass::SetupVisibility( pViewEntity, pvs, pvssize );
@@ -14162,7 +14170,11 @@ bool CTFPlayer::SetObserverMode(int mode)
 		{
 			if ( IsValidObserverTarget( GetObserverTarget() ) )
 			{
-				m_iObserverMode.Set( OBS_MODE_IN_EYE );
+				if (m_iObserverMode != OBS_MODE_IN_EYE || m_iObserverMode != OBS_MODE_CHASE)
+				{
+					//m_iObserverMode.Set(OBS_MODE_IN_EYE);
+					m_iObserverMode.Set(OBS_MODE_CHASE);
+				}
 			}
 			else
 			{
