@@ -1728,6 +1728,11 @@ void ClientModeTFNormal::AskFavoriteOrBlacklist() const
 				if ( !netAdr.IsValid() || netAdr.IsReservedAdr() )
 					return;
 
+				// TODO(steam networking): Don't offer for Steam Networking at this time.
+				// is this a hack?
+				if (SteamNetworkingUtils()->IsFakeIPv4(netAdr.GetIPHostByteOrder()))
+					return;
+
 				// Don't offer this for Valve servers, either
 				if ( GTFGCClientSystem()->BIsIPRecentMatchServer( netAdr ) )
 				{
