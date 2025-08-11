@@ -111,7 +111,7 @@ ConVar tf_halloween_kart_boost_duration( "tf_halloween_kart_boost_duration", "1.
 
 ConVar tf_scout_air_dash_count( "tf_scout_air_dash_count", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 #define DEFAULT_SPY_INVIS_TIME "0.7"
 #else
 #define DEFAULT_SPY_INVIS_TIME "1.0"
@@ -172,7 +172,7 @@ ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONL
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
 
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 #define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "1.4"
 #else
 #define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "2.0"
@@ -11303,7 +11303,7 @@ void CTFPlayer::SetItem( CTFItem *pItem )
 
 	if ( pItem && pItem->GetItemID() == TF_ITEM_CAPTURE_FLAG )
 	{
-		RemoveInvisibility();
+		RemoveInvisibility(false);
 	}
 #endif
 }
@@ -12323,7 +12323,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 	// L'Etranger can always attack while cloaked
 	int iAddCloakOnHit = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveWeapon(), iAddCloakOnHit, add_cloak_on_hit);
@@ -12336,7 +12336,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
 	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF);
 	float flCurTime = gpGlobals->curtime;
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 	// Can use the knife earlier in decloak than gun and sapper
 	// TODO: maybe let sapper do this too?
 	if (GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_KNIFE)

@@ -16406,20 +16406,23 @@ void CTFPlayer::OnMyWeaponFired( CBaseCombatWeapon *weapon )
 //-----------------------------------------------------------------------------
 // Purpose: Remove invisibility, called when player attacks
 //-----------------------------------------------------------------------------
-void CTFPlayer::RemoveInvisibility( void )
+void CTFPlayer::RemoveInvisibility( bool bOnAttack )
 {
 	if ( !m_Shared.IsStealthed() )
 		return;
 
 
-#ifdef MCOMS_BALANCE_PACK
-	// L'Etranger can attack while invis but flash a little
-	int iAddCloakOnHit = 0;
-	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-	if (iAddCloakOnHit != 0)
+#if defined(MCOMS_BALANCE_PACK) || 1
+	if (bOnAttack && GetActiveTFWeapon())
 	{
-		m_Shared.OnSpyTouchedByEnemy();
-		return;
+		// L'Etranger can attack while invis but flash a little
+		int iAddCloakOnHit = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveTFWeapon(), iAddCloakOnHit, add_cloak_on_hit);
+		if (iAddCloakOnHit != 0)
+		{
+			m_Shared.OnSpyTouchedByEnemy();
+			return;
+		}
 	}
 #endif
 

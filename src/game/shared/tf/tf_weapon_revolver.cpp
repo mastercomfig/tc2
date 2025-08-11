@@ -73,7 +73,7 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 	// L'Etranger can always attack
 	int iAddCloakOnHit = 0;
 	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);

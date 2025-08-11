@@ -920,7 +920,7 @@ void CTFFlameThrower::PrimaryAttack()
 		// Pyros can become invis in some game modes.  Hitting fire normally handles this,
 		// but in the case of flamethrowers it's likely that stealth will be applied while
 		// the fire button is down, so we have to call into RemoveInvisibility here, too.
-		if ( pOwner->m_Shared.IsStealthed() )
+		if ( pOwner->m_Shared.IsStealthed() && ShouldRemoveInvisibilityOnPrimaryAttack() )
 		{
 			pOwner->RemoveInvisibility();
 		}

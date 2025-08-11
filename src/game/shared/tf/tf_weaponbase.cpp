@@ -5098,7 +5098,7 @@ void CTFWeaponBase::ApplyOnHitAttributes( CBaseEntity *pVictimBaseEntity, CTFPla
 			CALL_ATTRIB_HOOK_INT( iRevealCloakedSpyOnHit, reveal_cloaked_victim_on_hit );
 			if ( iRevealCloakedSpyOnHit > 0 )
 			{
-				pVictim->RemoveInvisibility();
+				pVictim->RemoveInvisibility(false);
 				bIsSpyRevealed = true;
 			}
 		}

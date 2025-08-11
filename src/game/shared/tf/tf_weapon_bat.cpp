@@ -309,7 +309,7 @@ void CTFBat_Wood::SecondaryAttack( void )
 		m_flNextPrimaryAttack = gpGlobals->curtime + fLaunchDelay + 0.15f;
 
 #ifdef GAME_DLL
-		if ( pPlayer->m_Shared.IsStealthed() )
+		if ( pPlayer->m_Shared.IsStealthed() && ShouldRemoveInvisibilityOnPrimaryAttack() )
 		{
 			pPlayer->RemoveInvisibility();
 		}

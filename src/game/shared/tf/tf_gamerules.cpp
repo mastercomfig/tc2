@@ -16359,7 +16359,7 @@ void CTFGameRules::InternalHandleTeamWin( int iWinningTeam )
 			{
 				if ( pPlayer->GetTeamNumber() != iWinningTeam )
 				{
-					pPlayer->RemoveInvisibility();
+					pPlayer->RemoveInvisibility(false);
 //					pPlayer->RemoveDisguise();
 
 					if ( pPlayer->HasTheFlag() )

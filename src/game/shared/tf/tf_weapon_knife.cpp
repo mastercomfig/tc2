@@ -224,7 +224,10 @@ void CTFKnife::PrimaryAttack( void )
 #endif
 
 #ifndef CLIENT_DLL
-	pPlayer->RemoveInvisibility();
+	if ( ShouldRemoveInvisibilityOnPrimaryAttack() )
+	{
+		pPlayer->RemoveInvisibility();
+	}
 	lagcompensation->FinishLagCompensation( pPlayer );
 #endif
 

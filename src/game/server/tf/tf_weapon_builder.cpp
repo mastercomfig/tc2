@@ -1129,7 +1129,7 @@ void CTFWeaponBuilder::StartBuilding( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
 	if ( pOwner )
 	{
-		pOwner->RemoveInvisibility();
+		pOwner->RemoveInvisibility(false);
 		pOwner->m_Shared.SetCarriedObject( NULL );
 
 		if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )

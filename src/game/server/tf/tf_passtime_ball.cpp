@@ -667,7 +667,7 @@ void CPasstimeBall::SetStateCarried( CTFPlayer *pCarrier )
 	// FIXME move all of the event handling for ball events into CTFPasstimeLogic
 	//
 	Assert( !pCarrier->m_Shared.HasPasstimeBall() );
-	pCarrier->RemoveInvisibility();
+	pCarrier->RemoveInvisibility(false);
 	pCarrier->RemoveDisguise();
 	pCarrier->EndClassSpecialSkill(); // abort demo charge
 	pCarrier->m_Shared.SetHasPasstimeBall( true );

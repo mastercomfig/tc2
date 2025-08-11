@@ -457,7 +457,7 @@ public:
 	bool CanDisguise( void );
 	bool CanDisguise_OnKill( void );
 	bool CanGoInvisible( bool bAllowWhileCarryingFlag = false );
-	void RemoveInvisibility( void );
+	void RemoveInvisibility( bool bOnAttack = true );
 
 	bool CanStartPhase( void );
 
