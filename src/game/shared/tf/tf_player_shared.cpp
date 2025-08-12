@@ -12336,7 +12336,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
 	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF);
 	float flCurTime = gpGlobals->curtime;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK) && 0
 	// Can use the knife earlier in decloak than gun and sapper
 	// TODO: maybe let sapper do this too?
 	if (GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_KNIFE)
