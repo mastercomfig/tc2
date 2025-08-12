@@ -7288,9 +7288,11 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 	}
 
 	// in games with competitive integrity, we block respawn room respawns from happening
+	bool bWarnForResupply = false;
 	if ( TFGameRules()->IsCompetitiveGame() && !m_Shared.IsInStrandedSpawn() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
 	{
 		bShouldNotRespawn = true;
+		bWarnForResupply = true;
 	}
 
 	if ( TFGameRules()->IsMannVsMachineMode() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
@@ -7326,6 +7328,11 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		}
 	}
 
+	if ( bWarnForResupply )
+	{
+		ClientPrint(this, HUD_PRINTTALK, "#TF_MustResupplyRespawnAs_Comp" );
+	}
+
 	if ( IsAlive() && ( GetHudClassAutoKill() == true ) && bShouldNotRespawn == false )
 	{
 		CommitSuicide( false, true );
@@ -7337,15 +7344,11 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 // Purpose: The GC has told us this player wants to respawn now that their loadout has changed.
 //-----------------------------------------------------------------------------
 void CTFPlayer::CheckInstantLoadoutRespawn( void )
-{
+{	
 	// Must be alive
 	if ( !IsAlive() )
 		return;
 
-	// In a respawn room of your own team
-	if ( !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
-		return;
-	
 	// Not in stalemate (beyond the change class period)
 	if ( TFGameRules()->InStalemate() && !TFGameRules()->CanChangeClassInStalemate() )
 		return;
@@ -7354,13 +7357,35 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 	if ( TFGameRules()->IsInArenaMode() == true )
 		return;
 
-	// Not in competitive games
-	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !m_Shared.IsInStrandedSpawn() )
-		return;
-
 	// Not if we're on the losing team
 	if ( TFGameRules()->State_Get() == GR_STATE_TEAM_WIN && TFGameRules()->GetWinningTeam() != GetTeamNumber() ) 
 		return;
+
+	bool bNotify = false;
+
+	// In a respawn room of your own team
+	if ( !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
+	{
+		bNotify = true;
+	}
+
+	// Not in competitive games
+	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !m_Shared.IsInStrandedSpawn() )
+	{
+		if ( !bNotify )
+		{
+			// if we are in a respawn room, do a special notification for comp.
+			ClientPrint(this, HUD_PRINTTALK, "#TF_LoadoutChangeReady_Comp" );
+			return;
+		}
+	}
+
+	if ( bNotify )
+	{		
+		// We print here because this is where the player can take action.
+		ClientPrint(this, HUD_PRINTTALK, "#TF_LoadoutChangeReady" );
+		return;
+	}
 
 	// Not if our current class's loadout hasn't changed
 	int iClass = GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED;
