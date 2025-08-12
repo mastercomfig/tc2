@@ -64,7 +64,7 @@ void PrecacheRing(void *pUser)
 PRECACHE_REGISTER_FN(PrecacheRing);
 
 #ifdef GAME_DLL
-ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.1", FCVAR_CHEAT );
+ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.05", FCVAR_CHEAT );
 ConVar tf_bison_in_enemy_slow("tf_bison_in_enemy_slow", "0.1", FCVAR_CHEAT);
 #endif
 

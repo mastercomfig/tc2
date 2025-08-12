@@ -413,7 +413,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	const bool bIsComp = TFGameRules() && TFGameRules()->IsCompetitiveGame();
 
 	// Calculate the alpha - the more the user looks away from the target, the greater the alpha
-	const float flBaseOpacity = (bIsComp) ? 0.44f : 1.0f; // reduce base alpha for comp
+	const float flBaseOpacity = (bIsComp) ? 0.86f : 1.0f; // reduce base alpha for comp
 	if ( m_DeathTime > 0.0f && m_DeathTime - LIFE_TIME >= gpGlobals->curtime )
 	{
 		m_flAlpha[0] = m_flAlpha[1] = flBaseOpacity * 255.0f * clamp( ( m_DeathTime - gpGlobals->curtime ) / LIFE_TIME, 0.0f, 1.0f );
