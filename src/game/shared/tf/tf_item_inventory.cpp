@@ -2107,9 +2107,10 @@ CON_COMMAND( load_itempreset, "Equip all items for a given preset on the player.
 	if ( TFInventoryManager()->LoadPreset( unClass, unPreset ) )
 	{
 #ifndef INVENTORY_VIA_WEBAPI
+		// UNDONE: we always do this to notify players of their loadout change. respawn is now checked server-side.
 		// Tell the GC to tell server that we should respawn if we're in a respawn room
-		extern ConVar tf_respawn_on_loadoutchanges;
-		if ( tf_respawn_on_loadoutchanges.GetBool() )
+		//extern ConVar tf_respawn_on_loadoutchanges;
+		//if ( tf_respawn_on_loadoutchanges.GetBool() )
 		{
 			GCSDK::CGCMsg< ::MsgGCEmpty_t > msg( k_EMsgGCRespawnPostLoadoutChange );
 			GCClientSystem()->BSendMessage( msg );

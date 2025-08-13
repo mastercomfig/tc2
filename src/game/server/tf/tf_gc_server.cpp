@@ -4425,7 +4425,7 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 		if ( !pPlayer->GetSteamID( &tmpID ) )
 			continue;
 
-		if ( tmpID == playerSteamID && pPlayer->GetRespawnOnLoadoutChanges() )
+		if ( tmpID == playerSteamID )
 		{
 			pPlayer->CheckInstantLoadoutRespawn();
 			break;

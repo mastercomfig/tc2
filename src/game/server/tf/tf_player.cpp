@@ -7364,8 +7364,9 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 	bool bNotify = false;
 
 	// In a respawn room of your own team
-	if ( !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
+	if ( !GetRespawnOnLoadoutChanges() || !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
 	{
+		// Notify if we don't respawn in respawn rooms, or we aren't in a respawn room.
 		bNotify = true;
 	}
 
@@ -7386,6 +7387,10 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 		ClientPrint(this, HUD_PRINTTALK, "#TF_LoadoutChangeReady" );
 		return;
 	}
+
+	// don't actually do the respawn/reset if we don't do this
+	if ( !GetRespawnOnLoadoutChanges() )
+		return;
 
 	// Not if our current class's loadout hasn't changed
 	int iClass = GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED;

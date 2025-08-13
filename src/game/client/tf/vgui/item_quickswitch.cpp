@@ -32,10 +32,7 @@
 
 #define MAX_QUICKSWITCH_SLOTS 11
 
-// UNDONE: unused
-#if 0
-extern ConVar tf_respawn_on_loadoutchanges;
-#endif
+//extern ConVar tf_respawn_on_loadoutchanges;
 
 extern const char *g_szEquipSlotHeader[CLASS_LOADOUT_POSITION_COUNT];
 int g_SlotsToLoadoutSlotsPerClass[TF_LAST_NORMAL_CLASS][MAX_QUICKSWITCH_SLOTS] =
@@ -430,16 +427,17 @@ void CItemQuickSwitchPanel::CloseQS( void )
 
 	if ( m_bLoadoutHasChanged )
 	{
-		// UNDONE: unused
-#if 0
-		if ( tf_respawn_on_loadoutchanges.GetBool() )
-		{
-			// Tell the GC to tell server that we should respawn if we're in a respawn room
-		}
-#endif
 
 #ifdef INVENTORY_VIA_WEBAPI
 		TFInventoryManager()->QueueGCInventoryChangeNotification();
+#else
+		// UNDONE: we always do this to notify players of their loadout change. respawn is now checked server-side.
+		//if ( tf_respawn_on_loadoutchanges.GetBool() )
+		{
+			// Tell the GC to tell server that we should respawn if we're in a respawn room
+			GCSDK::CGCMsg< MsgGCEmpty_t > msg(k_EMsgGCRespawnPostLoadoutChange);
+			GCClientSystem()->BSendMessage(msg);
+		}
 #endif
 
 		// Send the preset panel a msg so it can save the change
