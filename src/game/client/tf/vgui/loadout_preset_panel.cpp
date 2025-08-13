@@ -154,7 +154,7 @@ void CLoadoutPresetPanel::LoadPreset( int iPresetIndex )
 
 	if (m_pClassLoadoutPanel)
 	{
-		m_pClassLoadoutPanel->UpdateModelPanels();
+		m_pClassLoadoutPanel->OnLoadoutUpdate();
 	}
 }
 

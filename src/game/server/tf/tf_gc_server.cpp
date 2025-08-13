@@ -4162,6 +4162,7 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		SteamAPICall_t callResult;
 		if ( !SteamGameServerHTTP()->SendHTTPRequest( state.m_hEquipmentRequest, &callResult ) )
 		{
+			DevWarning("Equipment request failed.\n");
 			state.Backoff();
 			return;
 		}
@@ -4186,6 +4187,7 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		// Don't allow spamming this api -- wait 20 seconds before we ask gc for items again
 		state.RequestSucceeded();
 		state.Backoff();
+		DevWarning("Inventory received: backing off before another request.\n");
 		state.m_eState = kWebapiEquipmentState_WaitingForClientRequest;
 		break;
 
@@ -4230,7 +4232,10 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	state.m_eState = kWebapiEquipmentState_RequestInventory;
 
 	if ( !SteamGameServerHTTP() )
+	{
+		DevWarning("Could not access HTTP API.\n");
 		return;
+	}
 
 	if( bIOFailure || !pInfo || state.m_hEquipmentRequest != pInfo->m_hRequest )
 	{
@@ -4239,6 +4244,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 		{
 			SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 		}
+		DevWarning("Equipment state request invalid.\n");
 		return;
 	}
 
@@ -4246,6 +4252,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	if ( !pInfo->m_bRequestSuccessful || pInfo->m_eStatusCode != k_EHTTPStatusCode200OK )
 	{
 		SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+		DevWarning("Equipment state request failed.\n");
 		return;
 	}
 
@@ -4275,17 +4282,26 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 		break;
 
 	case k_EResultFail:
+	{
+		DevWarning("Equipment response failed.\n");
 		return; // will retry after backoff timer expires
+	}
 
 	case k_EResultValueOutOfRange:
+	{
 		// client gave us garbage?  Let's give them the benefit of the doubt and try again.
+		DevWarning("Equipment request from client failed.\n");
 		state.m_eState = kWebapiEquipmentState_NotifyClientOfFailure;
 		return;
+	}
 
 	case k_EResultNotLoggedOn:
+	{
 		// Ticket didn't authenticate successfully, ask them to send us a new one
+		DevWarning("Equipment request authentication failed.\n");
 		state.m_eState = kWebapiEquipmentState_NotifyClientOfFailure;
 		return;
+	}
 
 	default:
 	{
@@ -4395,6 +4411,24 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 			else {
 				Warning("Failed to find item %llu in shared object, but client says it should be equipped by [%i] in slot [%i].\n", uItemId, iClass, iSlot);
 			}
+		}
+	}
+
+	// Copied from CGC_RespawnPostLoadoutChange
+	// Find the player with this steamID
+	CSteamID tmpID;
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+		if ( !pPlayer )
+			continue;
+		if ( !pPlayer->GetSteamID( &tmpID ) )
+			continue;
+
+		if ( tmpID == playerSteamID && pPlayer->GetRespawnOnLoadoutChanges() )
+		{
+			pPlayer->CheckInstantLoadoutRespawn();
+			break;
 		}
 	}
 }

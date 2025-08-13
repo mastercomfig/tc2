@@ -210,8 +210,10 @@ CTFInventoryManager *TFInventoryManager( void )
 // Purpose: 
 //-----------------------------------------------------------------------------
 CTFInventoryManager::CTFInventoryManager( void )
-
 {
+#ifdef CLIENT_DLL
+	m_flQueuedGCNotificationTime = 0.0f;
+#endif
 }
 
 CTFInventoryManager::~CTFInventoryManager( void )
@@ -583,7 +585,22 @@ void CTFInventoryManager::Update( float frametime )
 	TM_ZONE_DEFAULT( TELEMETRY_LEVEL0 );
 	m_LocalInventory.UpdateWeaponSkinRequest();
 
+	if ( m_flQueuedGCNotificationTime > 0.0f && m_flQueuedGCNotificationTime <= gpGlobals->realtime )
+	{
+		GTFGCClientSystem()->LocalInventoryChanged();
+		m_flQueuedGCNotificationTime = 0.0f;
+	}
+
 	BaseClass::Update( frametime );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFInventoryManager::QueueGCInventoryChangeNotification()
+{
+	// queue an inventory change notification after 0.5 seconds, to prevent some systems from spamming it over a few frames
+	m_flQueuedGCNotificationTime = gpGlobals->realtime + 0.5f;
 }
 
 //-----------------------------------------------------------------------------
@@ -1042,7 +1059,8 @@ void CTFPlayerInventory::LoadLocalLoadout()
 
 	pLoadoutKV->deleteThis();
 
-	GTFGCClientSystem()->LocalInventoryChanged();
+	//GTFGCClientSystem()->LocalInventoryChanged();
+	TFInventoryManager()->QueueGCInventoryChangeNotification();
 }
 
 //-----------------------------------------------------------------------------
@@ -1152,7 +1170,8 @@ void CTFPlayerInventory::EquipLocal(uint64 ulItemID, equipped_class_t unClass, e
 	int activePreset = m_ActivePreset[unClass];
 	m_PresetItems[activePreset][unClass][unSlot] = ulItemID;
 
-	GTFGCClientSystem()->LocalInventoryChanged();
+	//GTFGCClientSystem()->LocalInventoryChanged();
+	//TFInventoryManager()->QueueGCInventoryChangeNotification();
 #endif
 }
 
@@ -1237,6 +1256,7 @@ void CTFPlayerInventory::ValidateInventoryPositions( void )
 
 #ifdef CLIENT_DLL
 	bool bHasNewItems = false;
+	bool bUpdatedEquips = false;
 	const int iMaxItems = GetMaxItemCount();
 	// First, check for duplicate positions
 	int iCount = m_aInventoryItems.Count();
@@ -1284,7 +1304,7 @@ void CTFPlayerInventory::ValidateInventoryPositions( void )
 			bInvalidSlot = (TFInventoryManager()->GetBackpackPositionFromBackend(iPosition) > iMaxItems);
 		}
 
-		if ( bInvalidSlot  )
+		if ( bInvalidSlot )
 		{
 			// The item is NOT hidden and is in an invalid slot. Move it back to the backpack.
 			if ( pEconItemView->GetItemDefinition() && !pEconItemView->GetItemDefinition()->IsHidden() && !TFInventoryManager()->SetItemBackpackPosition( pEconItemView, 0, true ) )
@@ -1303,6 +1323,7 @@ void CTFPlayerInventory::ValidateInventoryPositions( void )
 			{
 				// Unequip this item from this class.
 				InventoryManager()->UpdateInventoryEquippedState( this, INVALID_ITEM_ID, j, pEconItemView->GetEquippedPositionForClass( j ) );
+				TFInventoryManager()->QueueGCInventoryChangeNotification();
 			}
 		}
 	}
@@ -1922,6 +1943,7 @@ void CTFPlayerInventory::VerifyLoadoutItemsAreValid( int iClass )
 			// Unequip this item. This will wind up calling into ::ItemHasBeenUpdated() once the
 			// unequip makes it to the GC and back.
 			InventoryManager()->UpdateInventoryEquippedState( this, INVALID_ITEM_ID, iClass, pEquippedItemView->GetEquippedPositionForClass( iClass ) );
+			TFInventoryManager()->QueueGCInventoryChangeNotification();
 		}
 		else
 		{
@@ -2084,6 +2106,7 @@ CON_COMMAND( load_itempreset, "Equip all items for a given preset on the player.
 	equipped_preset_t unPreset = atoi( args[1] );
 	if ( TFInventoryManager()->LoadPreset( unClass, unPreset ) )
 	{
+#ifndef INVENTORY_VIA_WEBAPI
 		// Tell the GC to tell server that we should respawn if we're in a respawn room
 		extern ConVar tf_respawn_on_loadoutchanges;
 		if ( tf_respawn_on_loadoutchanges.GetBool() )
@@ -2091,6 +2114,9 @@ CON_COMMAND( load_itempreset, "Equip all items for a given preset on the player.
 			GCSDK::CGCMsg< ::MsgGCEmpty_t > msg( k_EMsgGCRespawnPostLoadoutChange );
 			GCClientSystem()->BSendMessage( msg );
 		}
+#else
+		TFInventoryManager()->QueueGCInventoryChangeNotification();
+#endif
 	}
 }
 #endif	// TF_CLIENT_DLL

@@ -354,6 +354,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		state.m_hSteamAuthTicket = SteamUser()->GetAuthTicketForWebApi( "tf2sdk" );
 		if ( state.m_hSteamAuthTicket == k_HAuthTicketInvalid )
 		{
+			DevWarning("Steam auth ticket request invalid.\n");
 			state.Backoff();
 			return;
 		}
@@ -417,6 +418,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		SteamAPICall_t callResult;
 		if ( !SteamHTTP()->SendHTTPRequest( state.m_hInventoryRequest, &callResult ) )
 		{
+			DevWarning("Steam inventory request failed.\n");
 			state.Backoff();
 			return;
 		}
@@ -631,11 +633,17 @@ void CTFGCClientSystem::OnWebapiAuthTicketReceived( GetTicketForWebApiResponse_t
 
 	// Check that the request succeeded
 	if ( pInfo->m_eResult != k_EResultOK )
+	{
+		DevWarning("Steam auth ticket failed.\n");
 		return;
+	}
 
 	// Validate the token makes sense
 	if ( pInfo->m_cubTicket < 0 || pInfo->m_cubTicket > pInfo->k_nCubTicketMaxLength )
+	{
+		DevWarning("Steam auth ticket invalid.\n");
 		return;
+	}
 
 	// Copy the token
 	state.m_bufAuthToken.SetCount( pInfo->m_cubTicket );
@@ -662,11 +670,17 @@ void CTFGCClientSystem::OnWebapiServerAuthTicketReceived( GetTicketForWebApiResp
 
 	// Check that the request succeeded
 	if ( pInfo->m_eResult != k_EResultOK )
+	{
+		DevWarning("Steam server auth ticket failed.\n");
 		return;
+	}
 
 	// Validate the token makes sense
 	if ( pInfo->m_cubTicket < 0 || pInfo->m_cubTicket > pInfo->k_nCubTicketMaxLength )
+	{
+		DevWarning("Steam server auth ticket invalid.\n");
 		return;
+	}
 
 	// Copy the token
 	state.m_bufServerAuthToken.SetCount( pInfo->m_cubTicket );
@@ -715,6 +729,7 @@ void CTFGCClientSystem::OnWebapiInventoryReceived( HTTPRequestCompleted_t* pInfo
 
 	if ( !pInfo->m_bRequestSuccessful || pInfo->m_eStatusCode != k_EHTTPStatusCode200OK )
 	{
+		DevWarning("Steam inventory request failed.\n");
 		SteamHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
 		return;
 	}
@@ -745,12 +760,18 @@ void CTFGCClientSystem::OnWebapiInventoryReceived( HTTPRequestCompleted_t* pInfo
 		break;
 
 	case k_EResultFail:
+	{
+		DevWarning("Steam inventory response failed.\n");
 		return; // will retry after backoff timer expires
+	}
 
 	case k_EResultNotLoggedOn:
+	{
 		// re-request authentication after backoff time
+		DevWarning("Steam inventory authentication failed.\n");
 		state.m_eState = kWebapiInventoryState_RequestAuthToken;
 		return;
+	}
 
 	default:
 	{

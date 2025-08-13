@@ -438,6 +438,10 @@ void CItemQuickSwitchPanel::CloseQS( void )
 		}
 #endif
 
+#ifdef INVENTORY_VIA_WEBAPI
+		TFInventoryManager()->QueueGCInventoryChangeNotification();
+#endif
+
 		// Send the preset panel a msg so it can save the change
 		CEconItemView *pCurItemData = TFInventoryManager()->GetItemInLoadoutForClass( m_iClass, m_iSlot );
 		if ( pCurItemData )
