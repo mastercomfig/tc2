@@ -458,6 +458,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	bool bLaunchDedicated = false;
+	bool bForceNoSteamClient = false;
 	bool bHasPriorityArg = false;
 	for (std::wstring& arg : pArgs)
 	{
@@ -466,6 +467,10 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 			bLaunchDedicated = true;
 			// we don't use our priority wrapper hack on dedicated.
 			bHasPriorityArg = true;
+		}
+		else if (arg == L"-nosteamclient")
+		{
+			bForceNoSteamClient = true;
 		}
 		else if ( !bHasPriorityArg && ( arg == L"-high" || arg == L"-normal" || arg == L"-low" ) )
 		{
@@ -477,7 +482,7 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	char* pRootDir = GetBaseDir( moduleName );
 	const char *pBinaryGameDir = pRootDir;
 	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
+	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated && !bForceNoSteamClient ) )
 	{
 		return 1;
 	}
@@ -659,11 +664,16 @@ int main( int argc, char *argv[] )
 	}
 
 	bool bLaunchDedicated = false;
+	bool bForceNoSteamClient = false;
 	for (int i = 1; i < argc; i++)
 	{
 		if (!strcmp(argv[i], "-dedicated"))
 		{
 			bLaunchDedicated = true;
+		}
+		else if (!strcmp(argv[i], "-nosteamclient"))
+		{
+			bForceNoSteamClient = true;
 		}
 	}
 
@@ -672,7 +682,7 @@ int main( int argc, char *argv[] )
 	const char *pBinaryGameDir = pRootDir;
 
 	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
+	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated && !bForceNoSteamClient) )
 	{
 		return 1;
 	}
