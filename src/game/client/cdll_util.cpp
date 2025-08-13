@@ -1114,46 +1114,59 @@ unsigned char UTIL_ComputeEntityFade( C_BaseEntity *pEntity, float flMinDist, fl
 	{
 		nAlpha = ComputeDistanceFade( pEntity, flMinDist, flMaxDist );
 
-		// NOTE: This computation for the center + radius is invalid!
-		// The center of the sphere is at the center of the OBB, which is not necessarily
-		// at the render origin. But it should be close enough.
-		Vector vecMins, vecMaxs;
-		pEntity->GetRenderBounds( vecMins, vecMaxs );
-		float flRadius = vecMins.DistTo( vecMaxs ) * 0.5f;
+		// only compute if needed
+		if ( flFadeScale > 0.0f )
+		{
+			float flScreenFadeMinSize, flScreenFadeMaxSize;
+			view->GetScreenFadeDistances( &flScreenFadeMinSize, &flScreenFadeMaxSize );
+			float flLevelFadeMinSize, flLevelFadeMaxSize;
+			modelinfo->GetLevelScreenFadeRange( &flLevelFadeMinSize, &flLevelFadeMaxSize );
 
-		Vector vecAbsCenter;
-		if ( modelinfo->GetModelType( pEntity->GetModel() ) == mod_brush )
-		{
-			Vector vecRenderMins, vecRenderMaxs;
-			pEntity->GetRenderBoundsWorldspace( vecRenderMins, vecRenderMaxs );
-			VectorAdd( vecRenderMins, vecRenderMaxs, vecAbsCenter );
-			vecAbsCenter *= 0.5f;
-		}
-		else
-		{
-			vecAbsCenter = pEntity->GetRenderOrigin();
-		}
+			// only compute if needed
+			if ( flScreenFadeMinSize > 0.0f || flLevelFadeMinSize > 0.0f )
+			{
+				// NOTE: This computation for the center + radius is invalid!
+				// The center of the sphere is at the center of the OBB, which is not necessarily
+				// at the render origin. But it should be close enough.
+				Vector vecMins, vecMaxs;
+				pEntity->GetRenderBounds( vecMins, vecMaxs );
+				float flRadius = vecMins.DistTo( vecMaxs ) * 0.5f;
 
-		unsigned char nGlobalAlpha = IsXbox() ? 255 : modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
-		unsigned char nDistAlpha;
+				Vector vecAbsCenter;
+				if ( modelinfo->GetModelType( pEntity->GetModel() ) == mod_brush )
+				{
+					Vector vecRenderMins, vecRenderMaxs;
+					pEntity->GetRenderBoundsWorldspace( vecRenderMins, vecRenderMaxs );
+					VectorAdd( vecRenderMins, vecRenderMaxs, vecAbsCenter );
+					vecAbsCenter *= 0.5f;
+				}
+				else
+				{
+					vecAbsCenter = pEntity->GetRenderOrigin();
+				}
 
-		if ( !engine->IsLevelMainMenuBackground() )
-		{
-			nDistAlpha = modelinfo->ComputeViewScreenFade( vecAbsCenter, flRadius, flFadeScale );
-		}
-		else
-		{
-			nDistAlpha = 255;
-		}
+				unsigned char nGlobalAlpha = IsXbox() ? 255 : modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
+				unsigned char nDistAlpha;
 
-		if ( nDistAlpha < nGlobalAlpha )
-		{
-			nGlobalAlpha = nDistAlpha;
-		}
+				if ( !engine->IsLevelMainMenuBackground() )
+				{
+					nDistAlpha = modelinfo->ComputeViewScreenFade( vecAbsCenter, flRadius, flFadeScale );
+				}
+				else
+				{
+					nDistAlpha = 255;
+				}
 
-		if ( nGlobalAlpha < nAlpha )
-		{
-			nAlpha = nGlobalAlpha;
+				if ( nDistAlpha < nGlobalAlpha )
+				{
+					nGlobalAlpha = nDistAlpha;
+				}
+
+				if ( nGlobalAlpha < nAlpha )
+				{
+					nAlpha = nGlobalAlpha;
+				}
+			}
 		}
 	}
 
