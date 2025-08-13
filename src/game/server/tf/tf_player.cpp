@@ -1233,6 +1233,8 @@ CTFPlayer::CTFPlayer()
 	m_bRespawning = false;
 
 	m_bAlreadyUsedExtendFreezeThisDeath = false;
+
+	m_flNextHurtSpeakTime = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -15578,7 +15580,7 @@ float CTFPlayer::PlayCritReceivedSound( void )
 	params.m_pflSoundDuration = 0;
 	EmitSound( receiverfilter, entindex(), params );
 
-	return 0.0f;
+	return 0.25f;
 }
 
 //-----------------------------------------------------------------------------
@@ -15630,7 +15632,7 @@ void CTFPlayer::PainSound( const CTakeDamageInfo &info )
 		return;
 	}
 
-	float flPainLength = 0;
+	float flPainLength = 0.25f;
 
 	bool bAttackerIsPlayer = ( info.GetAttacker() && info.GetAttacker()->IsPlayer() );
 
@@ -20356,6 +20358,15 @@ bool CTFPlayer::SpeakConceptIfAllowed( int iConcept, const char *modifiers, char
 	{
 		if ( !SayAskForBall() ) 
 			return false;
+	}
+
+	if ( iConcept == MP_CONCEPT_HURT )
+	{
+		if (gpGlobals->curtime < m_flNextHurtSpeakTime)
+		{
+			return false;
+		}
+		m_flNextHurtSpeakTime = gpGlobals->curtime + 0.25f;
 	}
 
 	// Save the current concept.

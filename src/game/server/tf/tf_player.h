@@ -525,6 +525,8 @@ public:
 	float m_flNextVoiceCommandTime;
 	int m_iVoiceSpamCounter;
 
+	float m_flNextHurtSpeakTime;
+
 	CRateLimitingTokenBucket<CVoiceCommandBucketSizer> m_RateLimitedVoiceCommandTokenBucket;
 
 	float m_flNextSpeakWeaponFire;
