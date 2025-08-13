@@ -558,6 +558,8 @@ private:
 	int					m_iIDEntIndex;
 	int					m_iForcedIDTarget;
 
+	float				m_IDTargetLastUpdateTime;
+
 	CNewParticleEffect	*m_pTeleporterEffect;
 	bool				m_bToolRecordingVisibility;
 

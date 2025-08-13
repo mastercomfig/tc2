@@ -6193,10 +6193,12 @@ void C_TFPlayer::UpdateLookAt( void )
 
 			Vector vDir = pEnt->GetAbsOrigin() - vMyOrigin;
 
-			if ( vDir.Length() > 300 ) 
+			const float flDistSq = vDir.LengthSqr();
+
+			if ( flDistSq > 300 * 300 )
 				continue;
 
-			VectorNormalize( vDir );
+			vDir /= FastSqrt(flDistSq);
 
 			if ( DotProduct( vForward, vDir ) < 0.0f )
 				continue;
@@ -6996,6 +6998,8 @@ void C_TFPlayer::SetForcedIDTarget( int iTarget )
 	m_iForcedIDTarget = iTarget;
 }
 
+ConVar tf_hud_target_id_update_time("tf_hud_target_id_update_time", "0.007", FCVAR_ARCHIVE, "At most how often to update the target ID");
+
 //-----------------------------------------------------------------------------
 // Purpose: Update this client's targetid entity
 //-----------------------------------------------------------------------------
@@ -7024,6 +7028,11 @@ void C_TFPlayer::UpdateIDTarget()
 		m_iIDEntIndex = GetObserverTarget()->entindex();
 		return;
 	}
+
+	if (gpGlobals->curtime - m_IDTargetLastUpdateTime <= tf_hud_target_id_update_time.GetFloat())
+		return;
+
+	m_IDTargetLastUpdateTime = gpGlobals->curtime;
 
 	// Clear old target and find a new one
 	m_iIDEntIndex = 0;
