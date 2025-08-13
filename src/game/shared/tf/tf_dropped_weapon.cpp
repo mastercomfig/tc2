@@ -405,10 +405,16 @@ void CTFDroppedWeapon::SetupParticleEffect()
 	}
 }
 
+ConVar tf_dropped_weapon_glows("tf_dropped_weapon_glows", "1", FCVAR_ARCHIVE, "True to render weapon glows for dropped weapons.");
+
 //-----------------------------------------------------------------------------
 void CTFDroppedWeapon::ClientThink()
 {
+	if (!tf_dropped_weapon_glows.GetBool())
+		return;
+
 	C_TFPlayer *pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
+	// TODO: optimize IsLineOfSightClear
 	bool bShouldGlowForLocalPlayer = pTFPlayer && pTFPlayer->IsAlive() && pTFPlayer->CanPickupDroppedWeapon( this ) && pTFPlayer->IsLineOfSightClear( this );
 	if ( bShouldGlowForLocalPlayer )
 	{
