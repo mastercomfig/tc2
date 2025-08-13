@@ -1256,7 +1256,6 @@ void CTFPlayerInventory::ValidateInventoryPositions( void )
 
 #ifdef CLIENT_DLL
 	bool bHasNewItems = false;
-	bool bUpdatedEquips = false;
 	const int iMaxItems = GetMaxItemCount();
 	// First, check for duplicate positions
 	int iCount = m_aInventoryItems.Count();
