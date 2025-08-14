@@ -7335,9 +7335,16 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		ClientPrint(this, HUD_PRINTTALK, "#TF_MustResupplyRespawnAs_Comp" );
 	}
 
-	if ( IsAlive() && ( GetHudClassAutoKill() == true ) && bShouldNotRespawn == false )
+	if ( IsAlive() && bShouldNotRespawn == false && !bWarnForResupply )
 	{
-		CommitSuicide( false, true );
+		if ( GetHudClassAutoKill() == true )
+		{
+			CommitSuicide( false, true );
+		}
+		else
+		{
+			ClientPrint(this, HUD_PRINTTALK, "#TF_MustResupplyRespawnAs" );
+		}
 	}
 
 }
