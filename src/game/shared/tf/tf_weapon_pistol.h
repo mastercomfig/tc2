@@ -78,9 +78,12 @@ public:
 	virtual int		GetWeaponID( void ) const	{ return TF_WEAPON_HANDGUN_SCOUT_PRIMARY; }
 	virtual void	PlayWeaponShootSound( void );
 	virtual void	SecondaryAttack( void );
+	virtual void	ItemPreFrame() OVERRIDE;
 	virtual void	ItemPostFrame();
 	virtual bool	Holster( CBaseCombatWeapon *pSwitchingTo );
 	virtual void	Precache( void );
+
+	virtual Activity TranslateViewmodelHandActivityInternal(Activity actBase) OVERRIDE;
 
 	void			Push( void );
 
@@ -90,6 +93,7 @@ public:
 
 private:
 	float			m_flPushTime;
+	bool			m_bReadyToPush;
 };
 
 class CTFPistol_ScoutSecondary : public CTFPistol_Scout
