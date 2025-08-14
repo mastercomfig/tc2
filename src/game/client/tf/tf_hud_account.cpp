@@ -571,7 +571,9 @@ public:
 				}
 			}
 
-			if ( pAttacker == pLocalPlayer )
+			const bool bIsAttacker = pAttacker == pLocalPlayer;
+			// UNDONE: testing medic with damage sounds
+			//if ( bIsAttacker )
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "DamagedPlayer" );
 
@@ -604,7 +606,7 @@ public:
 						{
 							EmitSound_t es( params );
 							es.m_nPitch = pHitSound->GetPitchFromDamage( iDamage, bLastHit );
-							es.m_flVolume = tf_dingaling_lasthit_volume.GetFloat();
+							es.m_flVolume = tf_dingaling_lasthit_volume.GetFloat() * (bIsAttacker ? 1.0f : 0.5f);
 							pLocalPlayer->EmitSound( filter, pLocalPlayer->entindex(), es );
 						}
 					}
@@ -617,29 +619,28 @@ public:
 						{
 							EmitSound_t es( params );
 							es.m_nPitch = pHitSound->GetPitchFromDamage( iDamage, false );
-							es.m_flVolume = tf_dingaling_volume.GetFloat();
+							es.m_flVolume = tf_dingaling_volume.GetFloat() * (bIsAttacker ? 1.0f : 0.5f);
 							pLocalPlayer->EmitSound( filter, pLocalPlayer->entindex(), es );
 						}
 					}
 				}
 
 				// play squasher for bullets, unless we already played it as the hitsound.
-				if (bIsBullet && tf_dingalingaling_effect.GetInt() != 8)
+				if ( bIsBullet && tf_dingalingaling_effect.GetInt() != 8 )
 				{
-					CTFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-					if (pLocalPlayer)
+					CSoundParameters params;
+					CLocalPlayerFilter filter;
+					const char* pszSound = g_HitSounds[8].m_pszName;
+					const hitsound_params_t* pHitSound = &g_HitSounds[8];
+					if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
 					{
-						CSoundParameters params;
-						CLocalPlayerFilter filter;
-						const char* pszSound = g_HitSounds[8].m_pszName;
-						const hitsound_params_t* pHitSound = &g_HitSounds[8];
-						if (pszSound && pHitSound && CBaseEntity::GetParametersForSound(pszSound, params, NULL))
-						{
-							EmitSound_t es(params);
-							es.m_nPitch = 100.0f;
-							es.m_flVolume = tf_dingaling_volume.GetFloat();
-							pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
-						}
+						EmitSound_t es(params);
+						es.m_nPitch = 100.0f;
+						Vector vecPos = pVictim->GetAbsOrigin();
+						Vector vecDistance = vecPos - pLocalPlayer->GetAbsOrigin();
+						// fall off with distance
+						es.m_flVolume = RemapValClamped(vecDistance.LengthSqr(), 0.0f, (1024.0f * 1024.0f), tf_dingaling_volume.GetFloat(), tf_dingaling_volume.GetFloat() * 0.15f) * (bIsAttacker ? 1.0f : 0.5f);
+						pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
 					}
 				}
 			}
@@ -662,7 +663,7 @@ public:
 					{
 						Vector vecPos = pVictim->GetAbsOrigin();
 						Vector vecDistance = vecPos - pLocalPlayer->GetAbsOrigin();
-						int nHeightoffset = RemapValClamped( vecDistance.LengthSqr(), 0.0f, (200.0f * 200.0f), 1, 16 );
+						int nHeightoffset = RemapValClamped( vecDistance.LengthSqr(), 0.0f, (200.0f * 200.0f), 1.0f, 16.0f );
 						vecPos.z += (VEC_HULL_MAX_SCALED( pVictim ).z + nHeightoffset);
 						pNewAccount->m_nX = vecPos.x;
 						pNewAccount->m_nXEnd = pNewAccount->m_nX;
