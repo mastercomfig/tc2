@@ -2156,9 +2156,9 @@ void CTFWeaponBase::IncrementAmmo( void )
 		else
 		{
 			const bool bMisfired = CheckReloadMisfire();
-			if ( !bMisfired && pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 )
+			if ( pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 )
 			{
-				if ( m_iClip1 < GetMaxClip1() )
+				if ( m_iClip1 < GetMaxClip1() || bMisfired )
 				{
 					m_iClip1 = MIN( ( m_iClip1 + 1 ), GetMaxClip1() );
 					pPlayer->RemoveAmmo( 1, m_iPrimaryAmmoType );
