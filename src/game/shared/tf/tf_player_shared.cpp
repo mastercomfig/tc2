@@ -11115,7 +11115,15 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 					bool bCharge = ( pMedigun->GetMedigunType() == MEDIGUN_QUICKFIX && pHealTarget->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) );
 
 					const float flHealTargetMaxSpeed = ( bCharge ) ? tf_max_charge_speed.GetFloat() : pHealTarget->TeamFortress_CalculateMaxSpeed( true );
-					maxfbspeed = Max( maxfbspeed, flHealTargetMaxSpeed );
+					if (flHealTargetMaxSpeed >= maxfbspeed)
+					{
+						maxfbspeed = flHealTargetMaxSpeed;
+					}
+					else
+					{
+						// slower. let the healer get a bit of a boost.
+						maxfbspeed += flHealTargetMaxSpeed * 0.2f;
+					}
 				}
 			}
 		}

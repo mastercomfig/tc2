@@ -180,7 +180,7 @@ BEGIN_PREDICTION_DATA( CWeaponMedigun  )
 	DEFINE_FIELD( m_bCanChangeTarget, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flHealEffectLifetime, FIELD_FLOAT ),
 
-	DEFINE_PRED_FIELD( m_flChargeLevel, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
+	DEFINE_FIELD( m_flChargeLevel, FIELD_FLOAT ),
 	DEFINE_PRED_FIELD( m_bChargeRelease, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 
 //	DEFINE_PRED_FIELD( m_bPlayingSound, FIELD_BOOLEAN ),
@@ -200,7 +200,7 @@ extern ConVar tf_max_health_boost;
 // Purpose: For HUD auto medic callers
 //-----------------------------------------------------------------------------
 #ifdef CLIENT_DLL
-ConVar hud_medicautocallers( "hud_medicautocallers", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar hud_medicautocallers( "hud_medicautocallers", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_medicautocallersthreshold( "hud_medicautocallersthreshold", "75", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_medichealtargetmarker ( "hud_medichealtargetmarker", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 #endif
@@ -330,6 +330,7 @@ void CWeaponMedigun::WeaponReset( void )
 	m_pDisruptSound = NULL;
 	m_flDenySecondary = 0.f;
 	m_pHealSound = NULL;
+	m_flStartModulatingSound = 0.f;
 	m_pDetachSound = NULL;
 #endif
 
@@ -2300,9 +2301,10 @@ void CWeaponMedigun::ClientThink()
 		// Setup whether we were last healed by the local player or by someone else (used by replay system)
 		// since GetHealer() gets cleared out every frame before player_death events get fired.  See tf_replay.cpp.
 		C_BaseEntity *pHealingTargetEnt = m_hHealingTarget;
+		C_TFPlayer* pHealingTargetPlayer = NULL;
 		if ( pHealingTargetEnt && pHealingTargetEnt->IsPlayer() )
 		{
-			C_TFPlayer *pHealingTargetPlayer = ToTFPlayer( pHealingTargetEnt );
+			pHealingTargetPlayer = ToTFPlayer( pHealingTargetEnt );
 			pHealingTargetPlayer->SetWasHealedByLocalPlayer( pFiringPlayer == pLocalPlayer );
 		}
 
@@ -2322,7 +2324,48 @@ void CWeaponMedigun::ClientThink()
 
 			StopHealSound( false, false, true );
 			m_pHealSound = controller.SoundCreate( filter, iIndex, GetHealSound() );
+			m_flStartModulatingSound = gpGlobals->curtime + 0.5f;
 			controller.Play( m_pHealSound, 1.f, 100.f );
+		}
+		else if (pHealingTargetPlayer)
+		{
+			const bool bModulate = gpGlobals->curtime >= m_flStartModulatingSound;
+			CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
+			float flCurOverheal = (float)pHealingTargetPlayer->GetHealth() / (float)pHealingTargetPlayer->GetMaxHealth();
+			if (flCurOverheal > 1.0f)
+			{
+				float flMaxHealthForBuffing = pHealingTargetPlayer->GetMaxHealthForBuffing();
+				float flBuffableRangeHealth = pHealingTargetPlayer->GetHealth() - (pHealingTargetPlayer->GetMaxHealth() - flMaxHealthForBuffing);
+				flCurOverheal = flBuffableRangeHealth / flMaxHealthForBuffing;
+				if (flCurOverheal >= (1.5f * 0.95f))
+				{
+					if (bModulate)
+					{
+						// if we're past modulation time, then keep at level
+						controller.SoundChangePitch(m_pHealSound, 100.0f, 1.0f);
+					}
+					else if (gpGlobals->curtime >= m_flStartModulatingSound - 0.1f)
+					{
+						// give a little hint that we're full buffed
+						controller.SoundChangePitch(m_pHealSound, 165.0f, 0.1f);
+					}
+					else
+					{
+						// we're at the beginning, so modulate slower
+						controller.SoundChangePitch(m_pHealSound, 165.0f, 0.5f);
+					}
+				}
+				else
+				{
+					float flPitch = RemapValClamped(flCurOverheal, 1.0f, 1.5f, 1.2f, 1.6f) * 100.0f;
+					controller.SoundChangePitch(m_pHealSound, flPitch, bModulate ? 0.1f : 0.5f);
+				}
+			}
+			else
+			{
+				float flPitch = RemapValClamped(flCurOverheal, 0.1f, 0.9f, 0.9f, 1.05f) * 100.0f;
+				controller.SoundChangePitch(m_pHealSound, flPitch, bModulate ? 0.1f : 0.5f);
+			}
 		}
 	}
 

@@ -235,6 +235,7 @@ protected:
 	CSoundPatch			*m_pChargedSound;
 	CSoundPatch			*m_pDisruptSound;
 	CSoundPatch			*m_pHealSound;
+	float				m_flStartModulatingSound;
 	CSoundPatch			*m_pDetachSound;
 
 	CUtlVector< int >	m_iAutoCallers;
