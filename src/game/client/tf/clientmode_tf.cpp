@@ -602,7 +602,7 @@ bool ClientModeTFNormal::ShouldDrawViewModel()
 	return true;
 }
 
-ConVar tf_hud_no_crosshair_on_scope_zoom( "tf_hud_no_crosshair_on_scope_zoom", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
+ConVar tf_hud_no_crosshair_on_scope_zoom( "tf_hud_no_crosshair_on_scope_zoom", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE );
 
 bool ClientModeTFNormal::ShouldDrawCrosshair()
 {
