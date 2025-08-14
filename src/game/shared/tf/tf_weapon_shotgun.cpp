@@ -430,8 +430,13 @@ void CTFScatterGun::FinishReload( void )
 		int primary	= MIN( GetMaxClip1() - m_iClip1, pOwner->GetAmmoCount(m_iPrimaryAmmoType));	
 		m_iClip1 += primary;
 
+#if 0
 		// Takes a whole clip worth of ammo to reload, causing us to lose whatever was chambered.
 		pOwner->RemoveAmmo( GetMaxClip1(), m_iPrimaryAmmoType);
+#else
+		// UNDONE: we don't do special reload logic for this gun. auto-reload is the default and this just ends up being frustrating.
+		pOwner->RemoveAmmo( primary, m_iPrimaryAmmoType);
+#endif
 	}
 }
 
