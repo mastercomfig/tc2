@@ -241,6 +241,19 @@ void CTFSpectatorGUI::ApplySchemeSettings( vgui::IScheme *pScheme )
 			m_pBottomBarBlank->SetVisible( false );
 		}
 	}
+	else
+	{
+		if ( m_pTopBar )
+		{
+			const Color col = m_pTopBar->GetBgColor();
+			m_pTopBar->SetBgColor( Color( col.r(), col.g(), col.b(), MIN( col.a(), 100 ) ) );
+		}
+		if ( m_pBottomBarBlank )
+		{
+			const Color col = m_pBottomBarBlank->GetBgColor();
+			m_pBottomBarBlank->SetBgColor( Color( col.r(), col.g(), col.b(), MIN( col.a(), 100 ) ) );
+		}
+	}
 
 	if ( m_bCoaching )
 	{
