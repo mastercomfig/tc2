@@ -529,6 +529,8 @@ inline void NextBotPlayer< PlayerType >::Spawn( void )
 {
 	engine->SetFakeClientConVarValue( this->edict(), "cl_autohelp", "0" );
 
+	engine->SetFakeClientConVarValue(this->edict(), "tf_respawn_on_loadoutchanges", "1");
+
 	m_prevInputButtons = m_inputButtons = 0;
 	m_fireButtonTimer.Invalidate();
 	m_meleeButtonTimer.Invalidate();
