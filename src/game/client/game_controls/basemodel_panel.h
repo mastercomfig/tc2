@@ -247,6 +247,11 @@ protected:
 		void UpdateControlPoints( CStudioHdr *pStudioHdr, matrix3x4_t *pWorldMatrix, const CUtlVector< int >& vecAttachments, int iDefaultBone = 0, const Vector& vecParticleOffset = vec3_origin );
 
 		bool				m_bIsUpdateToDate;
+		bool				m_bDataCached; // kind of a hack for cosmetics in TF
+		uint64				m_iDataIdCached;
+		CUtlVector< int >	m_vecCachedAttachments;
+		int					m_iCachedBone;
+		Vector				m_vecCachedOffset;
 		CParticleCollection	*m_pParticleSystem;
 	};
 	CUtlVector< particle_data_t* > m_particleList;

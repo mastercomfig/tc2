@@ -1655,6 +1655,23 @@ bool CTFPlayerModelPanel::UpdateCosmeticParticles(
 	if ( m_aParticleSystems[ iSystem ] && m_aParticleSystems[ iSystem ]->m_bIsUpdateToDate )
 		return false;
 
+	if ( m_aParticleSystems[ iSystem ] && m_aParticleSystems[ iSystem ]->m_bDataCached )
+	{
+		// TODO(mcoms): check attrib changes
+		const bool bChanged = m_aParticleSystems[iSystem]->m_iDataIdCached != pEconItem->GetID();
+		if (!bChanged)
+		{
+			m_aParticleSystems[iSystem]->UpdateControlPoints(
+				pStudioHdr,
+				pWorldMatrix,
+				m_aParticleSystems[iSystem]->m_vecCachedAttachments,
+				m_aParticleSystems[iSystem]->m_iCachedBone,
+				m_aParticleSystems[iSystem]->m_vecCachedOffset
+			);
+			return true;
+		}
+	}
+
 	CEconItemViewDataCacher dataCacher(pEconItem);
 
 	attachedparticlesystem_t *pParticleSystem = NULL;
@@ -1772,6 +1789,12 @@ bool CTFPlayerModelPanel::UpdateCosmeticParticles(
 	{
 		vecParticleOffset.z = (float&)iOffset;
 	}
+
+	m_aParticleSystems[iSystem]->m_bDataCached = true;
+	m_aParticleSystems[iSystem]->m_iDataIdCached = pEconItem->GetID();
+	m_aParticleSystems[iSystem]->m_vecCachedAttachments = vecAttachments;
+	m_aParticleSystems[iSystem]->m_iCachedBone = iBone;
+	m_aParticleSystems[iSystem]->m_vecCachedOffset = vecParticleOffset;
 
 	m_aParticleSystems[ iSystem ]->UpdateControlPoints( pStudioHdr, pWorldMatrix, vecAttachments, iBone, vecParticleOffset );
 	return true;
