@@ -12333,6 +12333,9 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 
 	Assert( pRules );
 
+	if ( engine->IsPaused() )
+		return false;
+
 	if ( IsViewingCYOAPDA() )
 		return false;
 
