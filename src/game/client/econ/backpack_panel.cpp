@@ -368,7 +368,7 @@ bool RemovableAttributes_DoAnyAttributesApply( const CEconItemView *pEconItemVie
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-ConVar cl_showbackpackrarities( "cl_showbackpackrarities", "0", FCVAR_ARCHIVE, "0 = Show no backpack icon border colors. 1 = Show item rarities within the backpack. 2 = Show item rarities only for Market-listable items." );
+ConVar cl_showbackpackrarities( "cl_showbackpackrarities", "1", FCVAR_ARCHIVE, "0 = Show no backpack icon border colors. 1 = Show item rarities within the backpack. 2 = Show item rarities only for Market-listable items." );
 ConVar cl_show_market_data_on_items( "cl_show_market_data_on_items", "1", FCVAR_ARCHIVE, "0 = Never. 1 = Only when showing borders for Market-listable items. 2 = Always." );
 
 ConVar tf_explanations_backpackpanel( "tf_explanations_backpackpanel", "0", FCVAR_ARCHIVE, "Whether the user has seen explanations for this panel." );
