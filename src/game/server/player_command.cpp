@@ -315,8 +315,11 @@ void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
 //-----------------------------------------------------------------------------
 void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper )
 {
-	const int nTicksAllowedForProcessing = player->ConsumeMovementTicksForUserCmdProcessing( 1 );
-	if ( !player->IsBot() && !player->IsHLTV() && ( nTicksAllowedForProcessing < 1 ) )
+	const float playerCurTime = player->m_nTickBase * TICK_INTERVAL;
+	const float playerFrameTime = player->m_bGamePaused ? 0 : TICK_INTERVAL;
+	const int iRemainingTicks = player->m_bGamePaused ? 0 : 1;
+	const int nTicksAllowedForProcessing = player->ConsumeMovementTicksForUserCmdProcessing( iRemainingTicks );
+	if ( !player->IsBot() && !player->IsHLTV() && ( nTicksAllowedForProcessing < iRemainingTicks ) )
 	{
 		// Make sure that the activity in command is erased because player cheated or dropped too many packets
 		double dblWarningFrequencyThrottle = sv_maxusrcmdprocessticks_warning.GetFloat();
@@ -332,9 +335,6 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 		return; // Don't process this command
 	}
-
-	const float playerCurTime = player->m_nTickBase * TICK_INTERVAL;
-	const float playerFrameTime = TICK_INTERVAL;
 
 	StartCommand( player, ucmd );
 
