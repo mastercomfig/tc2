@@ -28,7 +28,7 @@
 
 using namespace vgui;
 
-ConVar tf_simple_disguise_menu( "tf_simple_disguise_menu", NULL, FCVAR_ARCHIVE, "Use a more concise disguise selection menu." );
+ConVar tf_simple_disguise_menu( "tf_simple_disguise_menu", "0", FCVAR_ARCHIVE, "Use a more concise disguise selection menu." );
 
 //======================================
 

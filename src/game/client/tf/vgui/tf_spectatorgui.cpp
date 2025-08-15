@@ -78,7 +78,7 @@ void HUDTournamentSpecChangedCallBack( IConVar *var, const char *pOldString, flo
 		pPanel->InvalidateLayout( true, true );
 	}
 }
-ConVar cl_use_tournament_specgui( "cl_use_tournament_specgui", "0", FCVAR_ARCHIVE, "When in tournament mode, use the advanced tournament spectator UI.", HUDTournamentSpecChangedCallBack );
+ConVar cl_use_tournament_specgui( "cl_use_tournament_specgui", "1", FCVAR_ARCHIVE, "When in tournament mode, use the advanced tournament spectator UI.", HUDTournamentSpecChangedCallBack );
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor

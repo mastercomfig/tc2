@@ -45,7 +45,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_EnableVoiceChat"
 		"#Tooltip_EnableVoiceChat"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"cl_enable_text_chat"
@@ -53,7 +53,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_EnableTextChat"
 		"#Tooltip_EnableTextChat"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"chat_filter_settings"
@@ -70,14 +70,6 @@ DESCRIPTION INFO_OPTIONS
 		{ CATEGORY }
 	}
 	
-	"cl_autoreload"
-	{
-		"#TF_autoreload"
-		"#Tooltip_autoreload"
-		{ BOOL }
-		{ "0" }
-	}
-	
 	"hud_fastswitch"
 	{
 		"#GameUI_FastSwitchCheck"
@@ -91,7 +83,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Hitbeeps"
 		"#Tooltip_Hitbeeps"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"tf_dingaling_volume"
@@ -106,13 +98,13 @@ DESCRIPTION INFO_OPTIONS
 	{
 		"#tf_dingalingaling_effect"
 		{ LIST
+			"#tf_dingalingaling_Beepo"					"6"
 			"#tf_dingalingaling_Default"                "0"
 			"#tf_dingalingaling_Electro"                "1"
 			"#tf_dingalingaling_Notes"	            	"2"
 			"#tf_dingalingaling_Percussion"             "3"
 			"#tf_dingalingaling_Retro"                  "4"
 			"#tf_dingalingaling_Space"					"5"
-			"#tf_dingalingaling_Beepo"					"6"
 			"#tf_dingalingaling_Vortex"					"7"
 			"#tf_dingalingaling_Squasher"				"8"
 		}
@@ -124,7 +116,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Dingaling_PitchLowDmg"
 		"#Tooltip_Dingaling_PitchLowDmg"
 		{ SLIDER 1 255 }
-		{ "100" }
+		{ "154.64" }
 	}
 	
 	"tf_dingaling_pitchmaxdmg"
@@ -132,7 +124,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Dingaling_PitchHighDmg"
 		"#Tooltip_Dingaling_PitchHighDmg"
 		{ SLIDER 1 255 }
-		{ "100" }
+		{ "51.4" }
 	}
 	
 	"tf_dingalingaling_lasthit"
@@ -140,7 +132,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_LastHitbeeps"
 		"#Tooltip_Hitbeeps"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"tf_dingaling_lasthit_volume"
@@ -148,24 +140,24 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Dingaling_LastHit_Volume"
 		"#Tooltip_Dingaling_Volume"
 		{ SLIDER 0 1 }
-		{ "0.75" }
+		{ "0.82" }
 	}
 
 	"tf_dingalingaling_last_effect"
 	{
 		"#tf_dingalingaling_last_effect"
 		{ LIST
+			"#tf_dingalingaling_Beepo"					"6"
 			"#tf_dingalingaling_Default"                "0"
 			"#tf_dingalingaling_Electro"                "1"
 			"#tf_dingalingaling_Notes"	            	"2"
 			"#tf_dingalingaling_Percussion"             "3"
 			"#tf_dingalingaling_Retro"                  "4"
 			"#tf_dingalingaling_Space"					"5"
-			"#tf_dingalingaling_Beepo"					"6"
 			"#tf_dingalingaling_Vortex"					"7"
 			"#tf_dingalingaling_Squasher"				"8"
 		}
-		{ "0" }
+		{ "6" }
 	}
 
 	"tf_dingaling_lasthit_pitchmindmg"
@@ -173,7 +165,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Dingaling_LastHit_PitchLowDmg"
 		"#Tooltip_Dingaling_PitchLowDmg"
 		{ SLIDER 1 255 }
-		{ "100" }
+		{ "153" }
 	}
 	
 	"tf_dingaling_lasthit_pitchmaxdmg"
@@ -181,7 +173,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Dingaling_LastHit_PitchHighDmg"
 		"#Tooltip_Dingaling_PitchHighDmg"
 		{ SLIDER 1 255 }
-		{ "100" }
+		{ "50.1" }
 	}
 	
 	"hud_combattext"
@@ -189,7 +181,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_CombatText"
 		"#Tooltip_CombatText"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"hud_combattext_batching"
@@ -197,7 +189,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_CombatTextBatching"
 		"#Tooltip_CombatTextBatching"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"hud_combattext_doesnt_block_overhead_text"
@@ -245,7 +237,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_rememberlastweapon"
 		"#Tooltip_rememberlastweapon"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 	
 	"tf_sniper_fullcharge_bell"
@@ -253,7 +245,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_sniperbell"
 		"#Tooltip_sniperbell"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 	 	
 	"category3"
@@ -283,7 +275,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_nocrosshaironscopezoom"
 		"#Tooltip_nocrosshaironscopezoomn"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 	
 	"tf_medigun_autoheal"
@@ -291,7 +283,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_medigun_autoheal"
 		"#Tooltip_medigun_autoheal"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"hud_medichealtargetmarker"
@@ -299,7 +291,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_HealTargetMarker"
 		"#Tooltip_HealTargetMarker"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"hud_medicautocallers"
@@ -307,7 +299,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_AutoMedicCallers"
 		"#Tooltip_AutoMedicCallers"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"hud_medicautocallersthreshold"
@@ -337,7 +329,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_colorblindassist"
 		"#Tooltip_colorblindassist"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 	
 	"cl_use_tournament_specgui"
@@ -345,7 +337,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_UseAdvancedTourneyGUI"
 		"#Tooltip_UseAdvancedTourneyGUI"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 
 	"cl_spec_carrieditems"
@@ -384,7 +376,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_viewmodelfov_option"
 		"#Tooltip_viewmodelfov_option"
 		{ SLIDER 54 70 }
-		{ "1" }
+		{ "54" }
 	}
 	
 	"tf_spectator_target_location"
@@ -491,14 +483,14 @@ DESCRIPTION INFO_OPTIONS
 			"#TF_Contract_Progress_All"		"1"
 			"#TF_Contract_Progress_Active"	"2"
 		}
-		{ "1" }
+		{ "2" }
 	}
 
 	"tf_scoreboard_mouse_mode"
 	{
 		"#TF_ScoreBoard_MouseMode"
 		{ BOOL }
-		{ "0" }
+		{ "2" }
 	}
 
 	"tf_scoreboard_ping_as_text"
@@ -603,7 +595,7 @@ DESCRIPTION INFO_OPTIONS
 		"#Valve_DisableHTMLMOTD"
 		"#Tooltip_DisableHTMLMOTD"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}	
 
 	"mp_decals"
@@ -633,7 +625,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_classautokill"
 		"#Tooltip_classautokill"
 		{ BOOL }
-		{ "1" }
+		{ "0" }
 	}
 	
 	"tf_respawn_on_loadoutchanges"
