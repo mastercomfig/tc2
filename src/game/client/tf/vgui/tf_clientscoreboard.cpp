@@ -76,7 +76,7 @@ void cc_scoreboard_convar_changed( IConVar *pConVar, const char *pOldString, flo
 		pScoreboard->Reset();
 	}
 }
-ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "1", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
+ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "0", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
 ConVar tf_scoreboard_alt_class_icons( "tf_scoreboard_alt_class_icons", "0", FCVAR_ARCHIVE, "Show alternate class icons in the scoreboard." );
 
 extern bool IsInCommentaryMode( void );
@@ -914,7 +914,7 @@ void CTFClientScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerList 
 	pPlayerList->AddColumnToSection( 0, "score", "#TF_Scoreboard_Score", SectionedListPanel::COLUMN_RIGHT, m_iScoreWidth );
 	pPlayerList->AddColumnToSection( 0, "class", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_RIGHT, m_iClassWidth );
 
-	if ( tf_scoreboard_ping_as_text.GetBool() && false )
+	if ( tf_scoreboard_ping_as_text.GetBool() )
 	{
 		pPlayerList->AddColumnToSection( 0, "ping", "#TF_Scoreboard_Ping", SectionedListPanel::COLUMN_RIGHT, m_iPingWidth );
 	}
@@ -1397,7 +1397,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList()
 			// check for bots first, so malicious server operators can't fake a ping and stuff their server with bots that look like players
 			if ( g_PR->IsFakePlayer( playerIndex ) )
 			{
-				if ( tf_scoreboard_ping_as_text.GetBool() && false )
+				if ( tf_scoreboard_ping_as_text.GetBool() )
 				{
 					pKeyValues->SetString( "ping", "#TF_Scoreboard_Bot" );
 				}
@@ -1413,7 +1413,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList()
 
  				if ( nPing < 1 )
  				{
-					if ( tf_scoreboard_ping_as_text.GetBool() && false )
+					if ( tf_scoreboard_ping_as_text.GetBool() )
 					{
 						pKeyValues->SetString( "ping", "" );
 					}
@@ -1424,7 +1424,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerList()
  				}
  				else
 				{
-					if ( tf_scoreboard_ping_as_text.GetBool() && false )
+					if ( tf_scoreboard_ping_as_text.GetBool() )
 					{
 						pKeyValues->SetInt( "ping", nPing );
 					}
