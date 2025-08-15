@@ -88,7 +88,8 @@ void CSteamFriendPanel::OnCommand( const char *command )
 		{
 			if ( gameInfo.m_gameID.AppID() == (uint32)engine->GetAppID() )
 			{
-				bool bTheyAreInACommunityServer = false;
+				// TODO(mcoms): figure this out
+				bool bTheyAreInACommunityServer = true;
 				if ( bTheyAreInACommunityServer )
 				{
 					contextMenuBuilder.AddMenuItem( "#TF_Friends_JoinServer", new KeyValues( "Context_JoinServer" ), "server" );
@@ -165,8 +166,10 @@ void CSteamFriendPanel::UpdateControls()
 		FriendGameInfo_t gameInfo;
 		if ( pSteamFriends->GetFriendGamePlayed( m_steamID, &gameInfo ) )
 		{
+			// TODO(mcoms): we can't distinguish between TC2 and other mods at this time...
 			// If the friend is playing TF2, say so.  Other games we'll show as "Playing other game"
-			if ( gameInfo.m_gameID.AppID() == (uint32)engine->GetAppID() )
+			const bool bPlayingMain = gameInfo.m_gameID.AppID() == UTIL_GetEmulatedAppID();
+			if ( gameInfo.m_gameID.AppID() == (uint32)engine->GetAppID() || bPlayingMain )
 			{
 				const char *pszRichState = pSteamFriends->GetFriendRichPresence( m_steamID, "state" );
 				const char *pszRichMatchGroupLoc = pSteamFriends->GetFriendRichPresence( m_steamID, "matchgrouploc" );
@@ -181,7 +184,7 @@ void CSteamFriendPanel::UpdateControls()
 				else
 				{
 					// Show generic
-					pwzStatus = g_pVGuiLocalize->Find( "#TF_Friends_PlayingTF2" );
+					pwzStatus = bPlayingMain ? g_pVGuiLocalize->Find( "#TF_Friends_PlayingTF2" ) : g_pVGuiLocalize->Find( "#TC2_Friends_PlayingTC2" );
 				}
 				m_pStatusLabel->SetFgColor( colorInTF2 );
 				m_pInteractButton->SetVisible( true );

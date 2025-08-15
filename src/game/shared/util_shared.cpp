@@ -1672,3 +1672,18 @@ const char *GetCleanMapName( const char *pszUnCleanMapName, char (&pszTmp)[256])
 
 	return pszUnCleanMapName;
 }
+
+const char* COM_GetModDirectory();
+
+uint32 UTIL_GetEmulatedAppID()
+{
+	const char* pGameDir = COM_GetModDirectory();
+
+	// We emulate 440 for some usages
+	if (FStrEq(pGameDir, "tc2"))
+	{
+		return 440;
+	}
+
+	return engine->GetAppID();
+}

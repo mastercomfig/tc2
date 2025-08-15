@@ -161,7 +161,7 @@ bool CPublishedFiles::EnumerateUserPublishedFiles( uint32 unPage )
 		                                                              k_EUserUGCList_Published,
 		                                                              k_EUGCMatchingUGCType_Items,
 		                                                              k_EUserUGCListSortOrder_CreationOrderDesc,
-		                                                              engine->GetAppID(), engine->GetAppID(), unPage );
+		                                                              UTIL_GetEmulatedAppID(), UTIL_GetEmulatedAppID(), unPage );
 
 		// make sure we get the entire description and not a truncated version
 		pUGC->SetReturnLongDescription( ugcHandle, true );
@@ -408,7 +408,7 @@ public:
 
 		BaseClass::OnFilePrepared( eResult );
 	}
-	virtual AppId_t	GetTargetAppID( void ) { return engine->GetAppID(); }
+	virtual AppId_t	GetTargetAppID( void ) { return UTIL_GetEmulatedAppID(); }
 	virtual unsigned int DesiredPreviewHeight( void ) { return TF2_PREVIEW_IMAGE_HEIGHT; }
 	virtual unsigned int DesiredPreviewWidth( void ) { return TF2_PREVIEW_IMAGE_WIDTH; }
 	virtual bool BForceSquarePreviewImage( void ) { return true; }
@@ -1188,13 +1188,13 @@ public:
 			switch ( universe )
 			{
 			case k_EUniversePublic:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://steamcommunity.com/workshop/workshoplegalagreement/?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://steamcommunity.com/workshop/workshoplegalagreement/?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			case k_EUniverseBeta:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://beta.steamcommunity.com/workshop/workshoplegalagreement/?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://beta.steamcommunity.com/workshop/workshoplegalagreement/?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			case k_EUniverseDev:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( COMMUNITY_DEV_HOST "workshop/workshoplegalagreement/?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( COMMUNITY_DEV_HOST "workshop/workshoplegalagreement/?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			}
 		}
@@ -1204,13 +1204,13 @@ public:
 			switch ( universe )
 			{
 			case k_EUniversePublic:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://steamcommunity.com/workshop/browse?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://steamcommunity.com/workshop/browse?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			case k_EUniverseBeta:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://beta.steamcommunity.com/workshop/browse?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://beta.steamcommunity.com/workshop/browse?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			case k_EUniverseDev:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( COMMUNITY_DEV_HOST "workshop/browse?appid=%d", engine->GetAppID() ) );
+				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( COMMUNITY_DEV_HOST "workshop/browse?appid=%d", UTIL_GetEmulatedAppID() ) );
 				break;
 			}
 		}

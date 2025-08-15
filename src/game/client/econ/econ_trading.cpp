@@ -570,6 +570,8 @@ void Trading_SendGift( const CSteamID& steamID, const CEconItemView& giftItem )
 		return;
 	}
 
+	// TODO(mcoms): does gifting work at all anymore? how to initiate a trade instead?
+
 #ifdef TF_CLIENT_DLL
 	C_CTF_GameStats.Event_Trading( IE_TRADING_ITEM_GIFTED, steamID.ConvertToUint64(), iGiftsGiven );
 #endif
@@ -580,7 +582,7 @@ void Trading_SendGift( const CSteamID& steamID, const CEconItemView& giftItem )
 	steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( 
 		CFmtStrMax( "%s/trade/1/sendgift/?appid=%d&contextid=%d&assetid=%llu&steamid_target=%llu",
 					GetCommunityURL(), 
-					engine->GetAppID(),
+					UTIL_GetEmulatedAppID(),
 					2, // k_EEconContextBackpack
 					giftItem.GetItemID(),
 					steamID.ConvertToUint64()
