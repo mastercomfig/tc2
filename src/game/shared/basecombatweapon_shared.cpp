@@ -1699,7 +1699,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 
 	//Track the duration of the fire
 	//FIXME: Check for IN_ATTACK2 as well?
-	//FIXME: What if we're calling ItemBusyFrame?
+	//FIXME: What if we're calling ItemBusyFrame? FIXED
 	m_fFireDuration = ( pOwner->m_nButtons & IN_ATTACK ) ? ( m_fFireDuration + gpGlobals->frametime ) : 0.0f;
 
 	if ( UsesClipsForAmmo1() )
@@ -1717,7 +1717,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 			if (m_flNextEmptySoundTime < gpGlobals->curtime)
 			{
 				WeaponSound( EMPTY );
-				m_flNextSecondaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
+				m_flNextSecondaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.5f;
 			}
 		}
 		else if ( pOwner->GetWaterLevel() == 3 && !m_bAltFiresUnderwater )
@@ -1767,7 +1767,7 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		{
 			// This weapon doesn't fire underwater
 			WeaponSound(EMPTY);
-			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
+			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2f;
 			return;
 		}
 		else
@@ -1779,7 +1779,8 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 			//			first shot.  Right now that's too much of an architecture change -- jdw
 			
 			// If the firing button was just pressed, or the alt-fire just released, reset the firing time
-			if ( ( pOwner->m_afButtonPressed & IN_ATTACK ) || ( pOwner->m_afButtonReleased & IN_ATTACK2 ) )
+			// fFireDuration is another way of tracking if we just pressed the firing button.
+			if ( ( pOwner->m_afButtonPressed & IN_ATTACK ) || ( pOwner->m_afButtonReleased & IN_ATTACK2 ) || ( m_fFireDuration <= gpGlobals->frametime ) )
 			{
 				 m_flNextPrimaryAttack = gpGlobals->curtime;
 			}
@@ -1845,6 +1846,8 @@ void CBaseCombatWeapon::HandleFireOnEmpty()
 void CBaseCombatWeapon::ItemBusyFrame( void )
 {
 	UpdateAutoFire();
+
+	m_fFireDuration = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
