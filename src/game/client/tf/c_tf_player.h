@@ -292,7 +292,7 @@ public:
 
 	bool			GetMedigunAutoHeal( void ){ return tf_medigun_autoheal.GetBool(); }
 	bool			ShouldAutoRezoom( void ){ return cl_autorezoom.GetBool(); }
-	bool			ShouldAutoReload( void ){ return cl_autoreload.GetBool(); }
+	bool			ShouldAutoReload( void ){ return true; }
 
 	void			GetTargetIDDataString( bool bIsDisguised, OUT_Z_BYTECAP(iMaxLenInBytes) wchar_t *sDataString, int iMaxLenInBytes, bool &bIsAmmoData, bool &bIsKillStreakData );
 
