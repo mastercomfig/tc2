@@ -212,9 +212,12 @@ void CBaseToggle::LinearMove( const Vector &vecDest, float flSpeed )
 		
 	// set destdelta to the vector needed to move
 	Vector vecDestDelta = vecDest - GetLocalOrigin();
-	
+
+	// maps were made with 0.015 tick interval in mind. fix it.
+	const float flAdjust = gpGlobals->frametime / OLD_TICK_INTERVAL;
+
 	// divide vector length by speed to get time to reach dest
-	float flTravelTime = vecDestDelta.Length() / flSpeed;
+	float flTravelTime = vecDestDelta.Length() / flSpeed * flAdjust;
 
 	// set m_flNextThink to trigger a call to LinearMoveDone when dest is reached
 	SetMoveDoneTime( flTravelTime );
@@ -281,9 +284,12 @@ void CBaseToggle::AngularMove( const QAngle &vecDestAngle, float flSpeed )
 	
 	// set destdelta to the vector needed to move
 	QAngle vecDestDelta = vecDestAngle - GetLocalAngles();
+
+	// maps were made with 0.015 tick interval in mind. fix it.
+	const float flAdjust = gpGlobals->frametime / OLD_TICK_INTERVAL;
 	
 	// divide by speed to get time to reach dest
-	float flTravelTime = vecDestDelta.Length() / flSpeed;
+	float flTravelTime = vecDestDelta.Length() / flSpeed * flAdjust;
 
 	const float MinTravelTime = 0.01f;
 	if ( flTravelTime < MinTravelTime )

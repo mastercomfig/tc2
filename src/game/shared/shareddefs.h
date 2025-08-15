@@ -11,6 +11,7 @@
 #pragma once
 #endif
 
+#define OLD_TICK_INTERVAL		(0.015f)
 #define TICK_INTERVAL			(gpGlobals->interval_per_tick)
 
 

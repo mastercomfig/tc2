@@ -5188,9 +5188,12 @@ void CPropDoorRotating::AngularMove(const QAngle &vecDestAngle, float flSpeed)
 	
 	// Set destdelta to the vector needed to move.
 	QAngle vecDestDelta = vecDestAngle - GetLocalAngles();
+
+	// maps were made with 0.015 tick interval in mind. fix it.
+	const float flAdjust = gpGlobals->frametime / OLD_TICK_INTERVAL;
 	
 	// Divide by speed to get time to reach dest
-	float flTravelTime = vecDestDelta.Length() / flSpeed;
+	float flTravelTime = vecDestDelta.Length() / flSpeed * flAdjust;
 
 	// Call MoveDone when destination angles are reached.
 	SetMoveDoneTime(flTravelTime);
