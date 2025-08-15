@@ -17,7 +17,7 @@ struct Language_t
 	const char *m_pchName;
 	const char *m_pchShortName;
 	const char *m_pchVGUILocalizationName;
-	const char *m_pchICUName;				// used by osx; ISO-639-1 + ISO-3166-1 alpha-2. http://userguide.icu-project.org/locale/examples
+	const char *m_pchICUName;				// used by osx; ISO-639-1 + ISO-3166-1 alpha-2. https://unicode-org.github.io/icu/userguide/locale/examples.html
 	ELanguage m_ELanguage;
 	int  m_LanguageCodeID;
 };

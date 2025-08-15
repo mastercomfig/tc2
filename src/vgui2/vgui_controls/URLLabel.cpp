@@ -72,7 +72,7 @@ bool URLLabel::IsValidURL( const char *pszURL )
 	if ( !pszURL || !pszURL[ 0 ] )
 		return false;
 
-	if ( ( Q_strncmp( pszURL, "http://", 7 ) != 0 ) && ( Q_strncmp( pszURL, "https://", 8 ) != 0 ) )
+	if ( Q_strncmp( pszURL, "https://", 8 ) != 0 )
 		return false;
 
 	return true;
@@ -109,7 +109,7 @@ void URLLabel::OnMousePressed(MouseCode code)
         if (m_pszURL)
 		{
 			// URL should have already been validated in SetURL()
-			if ( Q_strncmp( m_pszURL, "http://", 7 ) != 0 && Q_strncmp( m_pszURL, "https://", 8 ) != 0 )
+			if ( Q_strncmp( m_pszURL, "https://", 8 ) != 0 )
 			{
 				Warning( "Invalid URL '%s'\n", m_pszURL );
 			}

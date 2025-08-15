@@ -211,7 +211,7 @@ void CLadderLobbyLeaderboard::OnCommand( const char *command )
 		if ( V_strlen( command ) > 7 )
 		{
 			const char *pszURL = command + 7;
-			if ( Q_strncmp( pszURL, "http://", 7 ) != 0 && Q_strncmp( pszURL, "https://", 8 ) != 0 )
+			if ( Q_strncmp( pszURL, "https://", 8 ) != 0 )
 			{
 				Warning( "Invalid URL '%s'\n", pszURL );
 			}

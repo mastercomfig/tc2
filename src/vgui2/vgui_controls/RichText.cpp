@@ -2582,7 +2582,7 @@ int RichText::ParseTextStringForUrls( const char *text, int startPos, char *pchU
 				bURLFound = true;
 			}
 		}
-		else if (!Q_strnicmp(text + i, "http://", 7))
+		else if (!Q_strnicmp(text + i, "https://", 7))
 		{
 			bURLFound = true;
 		}
@@ -2674,7 +2674,7 @@ void RichText::OnTextClicked(const wchar_t *wszText)
 	}
 	else
 	{
-		if ( Q_strncmp( ansi, "http://", 7 ) != 0 && Q_strncmp( ansi, "https://", 8 ) != 0 )
+		if ( Q_strncmp( ansi, "https://", 8 ) != 0 )
 		{
 			Warning( "Invalid URL '%s'\n", ansi );
 		}

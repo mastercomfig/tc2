@@ -30,6 +30,7 @@ struct PublishedFileDetails_t
 };
 
 #define APPID_PORTAL2	852
+#define APPID_TF2		440
 
 using namespace vgui;
 
@@ -122,7 +123,14 @@ protected:
 
 	// Override these functions to publish files for different app types
 	virtual ErrorCode_t ValidateFile( const char *lpszFilename );
-	virtual AppId_t	GetTargetAppID( void ) { return APPID_PORTAL2; }
+	virtual AppId_t	GetTargetAppID( void )
+	{
+#ifdef TF_CLIENT_DLL
+		return APPID_TF2;
+#else
+		return APPID_PORTAL2;
+#endif
+	}
 	virtual unsigned int DesiredPreviewHeight( void ) { return PREVIEW_HEIGHT; }
 	virtual unsigned int DesiredPreviewWidth( void ) { return PREVIEW_WIDTH; }
 	// Decides which type to use for publishing this file

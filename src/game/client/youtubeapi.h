@@ -92,7 +92,7 @@ bool YouTube_GetProfileURL( CUtlString &strProfileURL );
  * @param pMimeType i.e. "video/mp4" 
  * @param pTitle (must be less than 60 characters)
  * @param pDescription
- * @param pCategory - usually "Games" (see category terms in http://gdata.youtube.com/schemas/2007/categories.cat)
+ * @param pCategory - usually "Games" (see category terms in https://gdata.youtube.com/schemas/2007/categories.cat)
  * @param pKeywords
  * @param access
  * @param pURLToVideo if the upload was successful, this string will be a URL to the video on YouTube

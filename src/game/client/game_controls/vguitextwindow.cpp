@@ -212,9 +212,15 @@ void CTextWindow::ShowIndex( const char *entry )
 		return; // nothing to show
 
 	// is this a web URL ?
-	if ( !Q_strncmp( data, "http://", 7 ) || !Q_strncmp( data, "https://", 8 ) )
+	if ( !Q_strncmp( data, "https://", 8 ) )
 	{
 		ShowURL( data );
+		return;
+	}
+
+	// we block http now for security
+	if ( !Q_strncmp( data, "http://", 7 ) )
+	{
 		return;
 	}
 
@@ -291,9 +297,13 @@ void CTextWindow::Update( void )
 	}
 	else if ( m_nContentType == TYPE_URL )
 	{
-		if ( !Q_strncmp( m_szMessage, "http://", 7 ) || !Q_strncmp( m_szMessage, "https://", 8 ) || !Q_stricmp( m_szMessage, "about:blank" ) )
+		if ( !Q_strncmp( m_szMessage, "https://", 8 ) || !Q_stricmp( m_szMessage, "about:blank" ) )
 		{
 			ShowURL( m_szMessage );
+		}
+		else if ( !Q_strncmp( m_szMessage, "http://", 7 ) )
+		{
+			Warning("Insecure http protocol blocked\n");
 		}
 		else
 		{

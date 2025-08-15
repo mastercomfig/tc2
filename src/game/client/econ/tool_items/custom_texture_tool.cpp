@@ -244,7 +244,7 @@ inline float ApproxColorDist( const Color &a, const Color &b )
 Vector LinearRGBToXYZ( const Vector &rgb )
 {
 
-	// http://en.wikipedia.org/wiki/SRGB
+	// https://en.wikipedia.org/wiki/SRGB
 	Vector xyz;
 	xyz.x = rgb.x * 0.4124 + rgb.y*0.3576 + rgb.z*0.1805;
 	xyz.y = rgb.x * 0.2126 + rgb.y*0.7152 + rgb.z*0.0722;
@@ -265,7 +265,7 @@ inline float lab_f( float t )
 Vector XYZToLab( const Vector &xyz )
 {
 
-	// http://en.wikipedia.org/wiki/Lab_color_space
+	// https://en.wikipedia.org/wiki/Lab_color_space
 	const float X_n = 0.9505;
 	const float Y_n = 1.0000;
 	const float Z_n = 1.0890;
@@ -2229,7 +2229,7 @@ struct CheesyRand
 
 	uint32 RandInt()
 	{
-		// http://en.wikipedia.org/wiki/Random_number_generation#Computational_methods
+		// https://en.wikipedia.org/wiki/Random_number_generation#Computational_methods
 		z = 36969 * (z & 65535) + (z >> 16);
 		w = 18000 * (w & 65535) + (w >> 16);
 		return (z << 16) + w;

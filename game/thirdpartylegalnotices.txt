@@ -69,7 +69,7 @@ JPEG image support:
 	The Source engine and SDK also make use of library functions for working with .jpg 
 	files.  Specifically, the Source engine jpeg library is based in part on the work of 
 	the Independent JPEG Group (IJG).  The original source code and project files for the IJG's 
-	JPEG libraries may be found at:  http://www.ijg.org/files/jpegsrc.v6b.tar.gz
+	JPEG libraries may be found at:  https://www.ijg.org/files/jpegsrc.v6b.tar.gz
 
 	The following is the README. File from that archive and is produced in accordance with the legal 
 	notices required by the library:
@@ -522,7 +522,7 @@ SPEEX Codes:
 google-perftools:
 ************************************************************************************
 
-	http://code.google.com/p/gperftools/ 
+	https://code.google.com/p/gperftools/ 
 
 	Copyright (c) 2012, Google Inc.
 	All rights reserved.
@@ -553,7 +553,7 @@ google-perftools:
 	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	For Google libjingle:
-	http://sourceforge.net/projects/libjingle/
+	https://sourceforge.net/projects/libjingle/
 	Copyright (c) 2004--2005, Google Inc.
 	All rights reserved.
 
@@ -585,7 +585,7 @@ google-perftools:
 CakePHP:
 ************************************************************************************
 
-	CakePHP(tm) :  Rapid Development Framework <http://www.cakephp.org/>
+	CakePHP(tm) :  Rapid Development Framework <https://www.cakephp.org/>
 	Copyright 2005-2007,	Cake Software Foundation, Inc.
 				1785 E. Sahara Avenue, Suite 490-204
 				Las Vegas, Nevada 89104
@@ -613,7 +613,7 @@ LZMA
 ************************************************************************************
 
 	LZMA SDK 4.40 Copyright (c) 1999-2006 Igor Pavlov (2006-05-01)
-	http://www.7-zip.org/
+	https://www.7-zip.org/
 	LZMA SDK is licensed under two licenses:
 	1) GNU Lesser General Public License (GNU LGPL)
 	2) Common Public License (CPL)
@@ -643,8 +643,7 @@ Fast Pow Function
 	For libantlr3c:
 	// [The "BSD licence"]
 	// Copyright (c) 2005-2009 Jim Idle, Temporal Wave LLC
-	// http://www.temporal-wave.com
-	// http://www.linkedin.com/in/jimidle
+	// https://www.linkedin.com/in/jimidle
 	//
 	// All rights reserved.
 	//
@@ -688,7 +687,7 @@ OpenSSL:
 ************************************************************************************
 
 	 * This product includes software developed by the OpenSSL Project
-	 * for use in the OpenSSL Toolkit. (http://www.openssl.org/)
+	 * for use in the OpenSSL Toolkit. (https://www.openssl.org/)
 	 * This product includes cryptographic software written by Eric Young
 	 * (eay@cryptsoft.com).  This product includes software written by Tim
 	 * Hudson (tjh@cryptsoft.com).
@@ -710,7 +709,7 @@ OpenSSL:
 	 * 3. All advertising materials mentioning features or use of this
 	 *    software must display the following acknowledgment:
 	 *    "This product includes software developed by the OpenSSL Project
-	 *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+	 *    for use in the OpenSSL Toolkit. (https://www.openssl.org/)"
 	 *
 	 * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be 
 	used to
@@ -725,7 +724,7 @@ OpenSSL:
 	 * 6. Redistributions of any form whatsoever must retain the following
 	 *    acknowledgment:
 	 *    "This product includes software developed by the OpenSSL Project
-	 *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+	 *    for use in the OpenSSL Toolkit (https://www.openssl.org/)"
 	 *
 	 * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
 	 * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -810,7 +809,7 @@ Google protocol buffers
 
 	// Protocol Buffers - Google's data interchange format
 	// Copyright 2008 Google Inc.  All rights reserved.
-	// http://code.google.com/p/protobuf/
+	// https://code.google.com/p/protobuf/
 	//
 	// Redistribution and use in source and binary forms, with or without
 	// modification, are permitted provided that the following conditions are

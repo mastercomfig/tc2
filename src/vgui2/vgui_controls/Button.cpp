@@ -774,7 +774,7 @@ void Button::FireActionSignal()
 			const char* pszURL = _actionMessage->GetString("command", "      ") + 4;
 			// XXX ShellExecuting random URLs is questionable at any point, but lets at least make sure it's an expected
 			//     protocol.
-			if ( Q_strncmp( pszURL, "http://", 7 ) != 0 && Q_strncmp( pszURL, "https://", 8 ) != 0 )
+			if ( Q_strncmp( pszURL, "https://", 8 ) != 0 )
 			{
 				Warning( "Invalid URL in FireActionSignal '%s'\n", pszURL );
 			}
