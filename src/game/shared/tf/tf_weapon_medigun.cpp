@@ -2327,8 +2327,9 @@ void CWeaponMedigun::ClientThink()
 			m_flStartModulatingSound = gpGlobals->curtime + 0.5f;
 			controller.Play( m_pHealSound, 1.f, 100.f );
 		}
-		else if (pHealingTargetPlayer)
+		else if (pHealingTargetPlayer && pFiringPlayer == pLocalPlayer)
 		{
+			// let the medic know how the beam is doing.
 			const bool bModulate = gpGlobals->curtime >= m_flStartModulatingSound;
 			CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
 			float flCurOverheal = (float)pHealingTargetPlayer->GetHealth() / (float)pHealingTargetPlayer->GetMaxHealth();
