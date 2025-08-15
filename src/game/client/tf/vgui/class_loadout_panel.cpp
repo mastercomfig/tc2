@@ -696,6 +696,18 @@ void CClassLoadoutPanel::OnKeyCodePressed( vgui::KeyCode code )
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CClassLoadoutPanel::OnKeyCodeTyped(vgui::KeyCode code)
+{
+	if ( code == KEY_ESCAPE )
+	{
+		OnClosing();
+	}
+	BaseClass::OnKeyCodeTyped(code);
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
