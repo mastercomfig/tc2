@@ -11115,14 +11115,15 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 					bool bCharge = ( pMedigun->GetMedigunType() == MEDIGUN_QUICKFIX && pHealTarget->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) );
 
 					const float flHealTargetMaxSpeed = ( bCharge ) ? tf_max_charge_speed.GetFloat() : pHealTarget->TeamFortress_CalculateMaxSpeed( true );
-					if (flHealTargetMaxSpeed >= maxfbspeed)
+					const float flFlatHealSpeedBonus = maxfbspeed + 40.0f;
+					if (flHealTargetMaxSpeed > flFlatHealSpeedBonus)
 					{
 						maxfbspeed = flHealTargetMaxSpeed;
 					}
 					else
 					{
-						// slower. let the healer get a bit of a boost.
-						maxfbspeed += flHealTargetMaxSpeed * 0.2f;
+						// boost to at least this flat heal speed bonus.
+						maxfbspeed = flFlatHealSpeedBonus;
 					}
 				}
 			}
@@ -11141,6 +11142,17 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			}
 		}
 	}
+#ifndef TF2_OG
+	else
+	{
+		// Not Medic
+		if ( m_Shared.m_nNumHealers > 0 )
+		{
+			// if we're being healed, we get a 10% speed boost to catch up with our buddy.
+			maxfbspeed = MIN( 320.0f, maxfbspeed * 1.1f );
+		}
+	}
+#endif
 
 	float flClassResourceLevelMod = 1.f;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flClassResourceLevelMod, mult_player_movespeed_resource_level );
