@@ -526,19 +526,26 @@ void CSteamFriendsListPanel::PruneKnownFriends()
 		m_mapKnownFriends[ i ].bShow = true;
 	}
 
+	// all showing
+	uint32 iCurrentFriends = m_mapKnownFriends.Count();
+
 	// Some people have A LOT of friends (>1000), but we don't want to have A LOT of panels.
 	// Go through and prune friends who are offline, snooze, away, busy until we've
 	// got a reasonable amount of friends to show.  We always show your online friends.
 	auto lambdaPruneIfState = [ & ]( EPersonaState eState )
 	{
-		if ( m_mapKnownFriends.Count() <= knMaxFriendPanels )
+		if ( iCurrentFriends <= knMaxFriendPanels )
 			return;
 
 		FOR_EACH_MAP_FAST( m_mapKnownFriends, i )
 		{
+			if ( iCurrentFriends <= knMaxFriendPanels )
+				break;
+
 			if ( m_mapKnownFriends[ i ].eState == eState )
 			{
 				m_mapKnownFriends[ i ].bShow = false;
+				iCurrentFriends--; // one less shown
 			}
 		}
 	};
@@ -549,13 +556,17 @@ void CSteamFriendsListPanel::PruneKnownFriends()
 	lambdaPruneIfState( EPersonaState::k_EPersonaStateBusy );
 
 	// STILL too many friends? Prune everyone who isn't playing TF2
-	if ( m_mapKnownFriends.Count() > knMaxFriendPanels )
+	if ( iCurrentFriends > knMaxFriendPanels )
 	{
 		FOR_EACH_MAP_FAST( m_mapKnownFriends, i )
 		{
+			if ( iCurrentFriends <= knMaxFriendPanels )
+				break;
+
 			if ( !BSteamIDIsPlayingTF2( m_mapKnownFriends[ i ].m_steamID ) )
 			{
 				m_mapKnownFriends[ i ].bShow = false;
+				iCurrentFriends--; // one less shown
 			}
 		}
 	}
