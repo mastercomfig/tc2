@@ -16,6 +16,7 @@
 #include "c_tf_player.h"
 #include "c_tf_gamestats.h"
 #include "bone_setup.h"
+#include "prediction.h"
 
 // Server specific.
 #else
@@ -639,6 +640,11 @@ void CTFGrenadeLauncher::OnDataChanged( DataUpdateType_t type )
 //-----------------------------------------------------------------------------
 void CTFGrenadeLauncher::UpdateBarrelMovement( void )
 {
+	if ( !prediction->IsFirstTimePredicted() )
+	{
+		return;
+	}
+
 	if ( m_iGoalTube != m_iCurrentTube )
 	{
 		float flPartialRotationDeg = 0.0f;
