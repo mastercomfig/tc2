@@ -4414,21 +4414,24 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 		}
 	}
 
-	// Copied from CGC_RespawnPostLoadoutChange
-	// Find the player with this steamID
-	CSteamID tmpID;
-	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	if ( pKVRequest->GetBool("changed", true) )
 	{
-		CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
-		if ( !pPlayer )
-			continue;
-		if ( !pPlayer->GetSteamID( &tmpID ) )
-			continue;
-
-		if ( tmpID == playerSteamID )
+		// Copied from CGC_RespawnPostLoadoutChange
+		// Find the player with this steamID
+		CSteamID tmpID;
+		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 		{
-			pPlayer->CheckInstantLoadoutRespawn();
-			break;
+			CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+			if ( !pPlayer )
+				continue;
+			if ( !pPlayer->GetSteamID( &tmpID ) )
+				continue;
+
+			if ( tmpID == playerSteamID )
+			{
+				pPlayer->CheckInstantLoadoutRespawn();
+				break;
+			}
 		}
 	}
 }

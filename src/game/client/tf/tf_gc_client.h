@@ -354,6 +354,7 @@ private:
 
 		// Did we make any changes that we need to communicate to a server?
 		bool m_bLocalChangesApplied = false;
+		bool m_bDidApplyLocalChanges = false;
 
 		// Backoff
 		RTime32 m_rtNextRequest = 0;

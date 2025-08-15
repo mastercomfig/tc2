@@ -599,6 +599,10 @@ void CTFInventoryManager::Update( float frametime )
 //-----------------------------------------------------------------------------
 void CTFInventoryManager::QueueGCInventoryChangeNotification()
 {
+	// don't mark any "changes" when we haven't initialized our inventory to the server yet.
+	if ( !engine->IsConnected() || !engine->IsInGame() )
+		return;
+
 	// queue an inventory change notification after 0.5 seconds, to prevent some systems from spamming it over a few frames
 	m_flQueuedGCNotificationTime = gpGlobals->realtime + 0.5f;
 }

@@ -488,6 +488,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 
 		// We now have encoded the latest state of the SO cache into our message -- if that changes, we need to re-build
 		// our message to the server.
+		state.m_bDidApplyLocalChanges = state.m_bLocalChangesApplied;
 		state.m_bLocalChangesApplied = false;
 
 		state.m_eState = kWebapiInventoryState_RequestServerAuthToken;
@@ -562,6 +563,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		KeyValues *kv = new KeyValues( "sdk_inventory" );
 		kv->SetString( "msg", state.m_strMsgItems.Base() );
 		kv->SetString( "ticket", strHexToken.Base() );
+		kv->SetBool( "changed", state.m_bDidApplyLocalChanges );
 
 		// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
 		SDK_AddServerInventoryInfo( kv, GetSOCache( SteamUser()->GetSteamID() ) );
