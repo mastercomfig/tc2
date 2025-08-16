@@ -5611,12 +5611,16 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 	if ( ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2 )
 	{
+		// Highest difficulty bots for comp
 		static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
 		tf_bot_difficulty.SetValue(3);
 		static ConVarRef tf_bot_quota( "tf_bot_quota" );
 		tf_bot_quota.SetValue( pMatch ? (int)pMatch->GetCanonicalMatchSize() : 12 );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
 		tf_bot_quota_mode.SetValue( "fill" );
+		// Bots don't taunt on kill in comp
+		static ConVarRef tf_bot_taunt_victim_chance( "tf_bot_taunt_victim_chance" );
+		tf_bot_taunt_victim_chance.SetValue( 0.0f );
 	}
 
 	if ( m_hGamerulesProxy )
@@ -22092,6 +22096,8 @@ void CTFGameRules::MatchSummaryEnd( void )
 	tf_bot_quota_mode.SetValue( tf_bot_quota_mode.GetDefault() );
 	static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
 	tf_bot_difficulty.SetValue(tf_bot_difficulty.GetDefault());
+	static ConVarRef tf_bot_taunt_victim_chance("tf_bot_taunt_victim_chance");
+	tf_bot_taunt_victim_chance.SetValue(tf_bot_taunt_victim_chance.GetDefault());
 }
 
 //-----------------------------------------------------------------------------

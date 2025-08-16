@@ -571,7 +571,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnOtherKilled( CTFBot *me, CBaseC
 
 		if ( !ToTFPlayer( victim )->IsBot() && me->IsEnemy( victim ) && me->IsSelf( info.GetAttacker() ) )
 		{
-			bool isTaunting = !me->HasTheFlag() && RandomFloat( 0.0f, 100.0f ) <= tf_bot_taunt_victim_chance.GetFloat();
+			bool isTaunting = !me->HasTheFlag() && tf_bot_taunt_victim_chance.GetFloat() > 0.0f && RandomFloat( 0.0f, 100.0f ) <= tf_bot_taunt_victim_chance.GetFloat();
 
 			if ( TFGameRules()->IsMannVsMachineMode() && me->IsMiniBoss() )
 			{
