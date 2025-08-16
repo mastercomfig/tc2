@@ -2552,6 +2552,9 @@ void ReloadSoundEntriesInList( IFileList *pFilesToReload );
 void CHLClient::ReloadFilesInList( IFileList *pFilesToReload )
 {
 	ReloadSoundEntriesInList( pFilesToReload );
+	// also need to re-init sound system to make sure things get read from the reloaded files
+	// bit of a hack, this should be in engine.
+	engine->ClientCmd("snd_restart");
 }
 
 bool CHLClient::HandleUiToggle()
