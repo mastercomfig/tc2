@@ -211,7 +211,7 @@ ActionResult< CTFBot >	CTFBotTacticalMonitor::Update( CTFBot *me, float interval
 		return SuspendFor( result, "Opportunistically using buff item" );
 	}
 
-	if ( TFGameRules()->InSetup() )
+	if ( TFGameRules()->InSetup() && !TFGameRules()->IsCompetitiveGame() )
 	{
 		// if a human is staring at us, face them and taunt
 		if ( m_acknowledgeRetryTimer.IsElapsed() )
