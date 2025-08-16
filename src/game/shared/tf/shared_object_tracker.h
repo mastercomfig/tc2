@@ -27,7 +27,7 @@
 using namespace GCSDK;
 class CSOTrackerManager;
 
-extern short g_nQuestSpewFlags;
+extern unsigned int g_nQuestSpewFlags;
 #define SO_TRACKER_SPEW_OBJECTIVES 1<<0
 #define SO_TRACKER_SPEW_ITEM_TRACKER_MANAGEMENT 1<<1
 #define SO_TRACKER_SPEW_GC_COMMITS 1<<2

@@ -17,7 +17,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-short g_nQuestSpewFlags = 0;
+unsigned int g_nQuestSpewFlags = 0;
 
 void SOTrackerSpew( const char* pszBuff, int nType )
 {
@@ -77,7 +77,7 @@ void SOTrackerSpewTypeToggle( const CCommand &args )
 		return;
 	}
 
-	g_nQuestSpewFlags ^=  nBitMask;
+	g_nQuestSpewFlags ^= nBitMask;
 
 	DevMsg( "%s %s\n", strType.Get(), g_nQuestSpewFlags & nBitMask ? "ENABLED" : "DISABLED" );
 }
