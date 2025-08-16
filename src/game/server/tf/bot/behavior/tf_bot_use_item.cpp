@@ -45,7 +45,7 @@ ActionResult< CTFBot >	CTFBotUseItem::Update( CTFBot *me, float interval )
 
 	if ( m_cooldownTimer.HasStarted() )
 	{
-		if ( m_cooldownTimer.IsElapsed() )
+		if ( m_cooldownTimer.IsElapsed() && myCurrentWeapon->GetLastDeployTime() <= gpGlobals->curtime )
 		{
 			// use it
 			me->PressFireButton();
