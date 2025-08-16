@@ -14017,13 +14017,13 @@ void CTFPlayerShared::SetRageMeter( float val )
 	if ( InCond( TF_COND_SNIPERCHARGE_RAGE_BUFF ) )
 	{	
 		Assert( k_RageBuffType_Sniper > 0 && k_RageBuffType_Sniper < ARRAYSIZE( g_RageBuffTypes ) );	// 0 is valid in the array, but an invalid buff
-		if ( k_RageBuffType_Sniper < 0 || k_RageBuffType_Sniper >= ARRAYSIZE( g_RageBuffTypes ) )
+		if ( k_RageBuffType_Sniper <= 0 || k_RageBuffType_Sniper >= ARRAYSIZE( g_RageBuffTypes ) )
 			return;
 
 		int nBuffPulses = g_RageBuffTypes[k_RageBuffType_Sniper].m_nMaxPulses;
 		m_bRageDraining = true;
 
-		nBuffPulses *= (m_flRageMeter / 100);
+		nBuffPulses *= RoundFloatToInt(m_flRageMeter / 100);
 
 		m_RageBuffSlots[kBuffSlot_Rage].m_iBuffPulseCount = nBuffPulses;
 	}
