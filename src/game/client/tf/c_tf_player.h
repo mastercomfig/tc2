@@ -1134,6 +1134,7 @@ private:
 	float m_flHeadScale;
 	float m_flTorsoScale;
 	float m_flHandScale;
+	int m_iKillerTeam;
 
 	CMaterialReference		m_MaterialOverride;
 
