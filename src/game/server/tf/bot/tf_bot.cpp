@@ -238,6 +238,9 @@ const char *GetRandomBotName( void )
 		"No Man",
 		"That Thing",
 		"Freak",
+		"Dreams of Cruelty",
+		
+		"ROBOT!"
 
 		"6th Witness",
 		"Fried Chicken Tramp",
@@ -247,7 +250,7 @@ const char *GetRandomBotName( void )
 
 		"Please Let There Be Pants",
 		"The Deadliest Animal on Earth",
-		"YETI PUNCH!",
+		"The Last Yeti",
 		"Lunatic",
 
 		"The Bomb",
