@@ -56,6 +56,7 @@ typedef struct
 
 	// die time
 	float m_flDieTime;
+	float m_flRealDieTime = -1.0f;
 
 	// position
 	int m_nX;				// X Pos in screen space & world space
@@ -69,6 +70,8 @@ typedef struct
 	Color m_color;
 	bool m_bShadows;
 
+	bool m_bSimulate = false;
+
 	// append a bit of extra text to the end
 	wchar_t m_wzText[8];
 
@@ -79,11 +82,11 @@ typedef struct
 ConVar hud_combattext( "hud_combattext", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_healing( "hud_combattext_healing", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Shows health restored per-second over heal targets." );
 ConVar hud_combattext_batching( "hud_combattext_batching", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set to 1, numbers that are too close together are merged." );
-ConVar hud_combattext_batching_window( "hud_combattext_batching_window", "0.2", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Maximum delay between damage events in order to batch numbers.", true, 0.1, true, 2.0 );
+ConVar hud_combattext_batching_window( "hud_combattext_batching_window", "2", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Maximum delay between damage events in order to batch numbers.", true, 0.1, true, 2.0 );
 ConVar hud_combattext_doesnt_block_overhead_text( "hud_combattext_doesnt_block_overhead_text", "1", FCVAR_USERINFO | FCVAR_ARCHIVE, "If set to 1, allow text like \"CRIT\" to still show over a victim's head." );
 ConVar hud_combattext_red( "hud_combattext_red", "255", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
-ConVar hud_combattext_green( "hud_combattext_green", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
-ConVar hud_combattext_blue( "hud_combattext_blue", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar hud_combattext_green( "hud_combattext_green", "40", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar hud_combattext_blue( "hud_combattext_blue", "25", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 
 ConVar tf_dingalingaling( "tf_dingalingaling", "1", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
 ConVar tf_dingaling_volume( "tf_dingaling_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the hit sound.", true, 0.0, true, 1.0 );
@@ -100,7 +103,7 @@ ConVar tf_dingaling_lasthit_pitch_override( "tf_dingaling_lasthit_pitch_override
 ConVar tf_dingalingaling_repeat_delay( "tf_dingalingaling_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the hit sound.  Set to 0 to play a sound for every instance of damage dealt.", true, 0.f, false, 0.f );
 ConVar tf_dingaling_lasthit_repeat_delay( "tf_dingaling_lasthit_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the last hit sound.  Set to 0 to play a sound for every last hit.", true, 0.f, false, 0.f );
 
-#define TF_DAMAGEFEEDBACK_VERSION 1
+#define TF_DAMAGEFEEDBACK_VERSION 2
 
 ConVar tf_damagefeedback_version("tf_damagefeedback_version", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN);
 
@@ -206,6 +209,7 @@ protected:
 	virtual Color GetColor( const account_delta_t::eAccountDeltaType_t& type );
 
 	CUtlVector <account_delta_t> m_AccountDeltaItems;
+	CUtlVector <account_delta_t> m_AccountDeltaItemsSmall;
 
 	int m_nBGTexture;
 	bool m_bNegativeFlipDir;
@@ -449,7 +453,7 @@ public:
 			if ( pNewAccount )
 			{
 				pNewAccount->m_bShadows = true;
-				pNewAccount->m_flBatchWindow = pNewAccount->m_flDieTime;
+				pNewAccount->m_flBatchWindow = pNewAccount->m_flDieTime - gpGlobals->curtime;
 				pNewAccount->m_nSourceID = (( nPoints > 0 ) ? 0 : 1 ) + (nTeam * 2);
 
 				if ( ( GetLocalPlayerTeam() == nTeam && nPoints > 0 ) || ( GetLocalPlayerTeam() != nTeam && nPoints < 0 ) )
@@ -666,7 +670,7 @@ public:
 						int nHeightoffset = RemapValClamped( vecDistance.LengthSqr(), 0.0f, (200.0f * 200.0f), 1.0f, 16.0f );
 						vecPos.z += (VEC_HULL_MAX_SCALED( pVictim ).z + nHeightoffset);
 						pNewAccount->m_nX = vecPos.x;
-						pNewAccount->m_nXEnd = pNewAccount->m_nX;
+						pNewAccount->m_nXEnd = pNewAccount->m_nX + RandomFloat(-32.0f, 32.0f);
 						pNewAccount->m_nY = vecPos.y;
 						pNewAccount->m_nHStart = vecPos.z;
 						pNewAccount->m_nHEnd = pNewAccount->m_nHStart + 32;	// How many units to float up
@@ -913,6 +917,13 @@ public:
 				tf_dingalingaling_effect.SetValue(tf_dingalingaling_effect.GetDefault());
 				tf_dingalingaling_last_effect.SetValue(tf_dingalingaling_last_effect.GetDefault());
 			}
+			if (iUserVer < 2)
+			{
+				hud_combattext_batching_window.SetValue(hud_combattext_batching_window.GetDefault());
+				hud_combattext_red.SetValue(hud_combattext_red.GetDefault());
+				hud_combattext_green.SetValue(hud_combattext_green.GetDefault());
+				hud_combattext_blue.SetValue(hud_combattext_blue.GetDefault());
+			}
 		}
 
 		ResetDamageVars();
@@ -1144,7 +1155,7 @@ void CAccountPanel::Paint( void )
 {
 	BaseClass::Paint();
 
-	FOR_EACH_VEC_BACK( m_AccountDeltaItems, i )
+	FOR_EACH_VEC( m_AccountDeltaItems, i )
 	{
 		// Reduce lifetime when count grows too high
 		float flTimeMod = m_AccountDeltaItems.Count() > NUM_ACCOUNT_DELTA_ITEMS ? RemapValClamped( m_AccountDeltaItems.Count(), 10.f, 15.f, 0.5f, 1.5f ) : 0.f;
@@ -1155,44 +1166,69 @@ void CAccountPanel::Paint( void )
 			// position and alpha are determined from the lifetime
 			Color c = m_AccountDeltaItems[i].m_color;
 
-			float flLifetimePercent = ( m_flDeltaLifetime - ( m_AccountDeltaItems[i].m_flDieTime - gpGlobals->curtime ) ) / m_flDeltaLifetime;
+			float flLifeTime = m_flDeltaLifetime - ( m_AccountDeltaItems[i].m_flDieTime - gpGlobals->curtime );
+			float flLifetimePercent = flLifeTime / m_flDeltaLifetime;
 			// fade out after half our lifetime
-			int nAlpha = flLifetimePercent > 0.5 ? (int)( 255.0f * ( ( 0.5f - flLifetimePercent ) / 0.5f ) ) : 255;
+			int nAlpha = flLifetimePercent > 0.5f ? (int)( 255.0f * ( ( 0.5f - flLifetimePercent ) / 0.5f ) ) : 255;
 			c[3] = nAlpha;
-			
 
+			if ( m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f )
+			{
+				flLifeTime = clamp(m_flDeltaLifetime - (m_AccountDeltaItems[i].m_flRealDieTime - gpGlobals->curtime), 0.0f, m_flDeltaLifetime);
+				flLifetimePercent = flLifeTime / m_flDeltaLifetime;
+			}
 
 			// Some items want to be batched together as they're super frequent (i.e. damage events from a flamethrower, or minigun)
-			if ( m_AccountDeltaItems[i].m_flBatchWindow > 0.f && m_AccountDeltaItems[i].m_nSourceID != -1 && m_AccountDeltaItems.IsValidIndex( i - 1 ) )
+			if ( m_AccountDeltaItems[i].m_flBatchWindow > 0.f && m_AccountDeltaItems[i].m_nSourceID != -1 && m_AccountDeltaItems.IsValidIndex( i + 1 ) )
 			{
 				// If next item is from the same source and too close, merge
 				float flDelay = m_AccountDeltaItems[i].m_flBatchWindow;
-				if ( m_AccountDeltaItems[i].m_flDieTime - m_AccountDeltaItems[i-1].m_flDieTime <= flDelay &&
-					 m_AccountDeltaItems[i-1].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
+				if ( fabsf( m_AccountDeltaItems[i].m_flDieTime - m_AccountDeltaItems[i+1].m_flDieTime ) <= flDelay &&
+					 m_AccountDeltaItems[i+1].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
 				{
-					m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[i-1].m_iAmount;
-					m_AccountDeltaItems.Remove( i - 1 );
-					continue;
+					m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[i + 1].m_iAmount;
+					m_AccountDeltaItemsSmall.AddToTail(m_AccountDeltaItems[i + 1]);
+					// update our pos
+					m_AccountDeltaItems[i].m_nHStart = m_AccountDeltaItems[i + 1].m_nHStart;
+					m_AccountDeltaItems[i].m_nHEnd = m_AccountDeltaItems[i + 1].m_nHEnd;
+					m_AccountDeltaItems[i].m_nX = m_AccountDeltaItems[i + 1].m_nX;
+					m_AccountDeltaItems[i].m_nY = m_AccountDeltaItems[i + 1].m_nY;
+					m_AccountDeltaItems.Remove( i + 1 );
+					if (m_AccountDeltaItems[i].m_flRealDieTime < 0.0f)
+					{
+						// keep track of our position progress
+						m_AccountDeltaItems[i].m_flRealDieTime = m_AccountDeltaItems[i].m_flDieTime;
+					}
+					m_AccountDeltaItems[i].m_flDieTime = gpGlobals->curtime + m_flDeltaLifetime; // refresh
+					m_AccountDeltaItems[i].m_bLargeFont = true;
 				}
 			}
 
 			float flHeight = m_AccountDeltaItems[i].m_nHEnd - m_AccountDeltaItems[i].m_nHStart;
-			float flWidth = m_AccountDeltaItems[i].m_nXEnd - m_AccountDeltaItems[i].m_nX;
 
 			// We can be told to go the opposite direction if we're negative
 			if ( m_bNegativeFlipDir && m_AccountDeltaItems[i].m_iAmount < 0 )
 			{
 				flHeight = -flHeight;
-				flWidth = -flWidth;
 			}
 
-			float flYPos = m_AccountDeltaItems[i].m_nHStart + ( flLifetimePercent * flHeight );
-			float flXPos = m_AccountDeltaItems[i].m_nX + ( flLifetimePercent * flWidth );
-			if ( m_AccountDeltaItems[i].m_bWorldSpace )
+			float flYOffset = flLifetimePercent * flHeight;
+
+			float flYPos = m_AccountDeltaItems[i].m_nHStart;
+			if (m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f)
 			{
-				Vector vecWorld( m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, flYPos );
-				int iX,iY;
-				if ( !GetVectorInHudSpace( vecWorld, iX, iY ) )				// Tested - NOT GetVectorInScreenSpace
+				flYPos += 16.0f + flYOffset / 4.0f;
+			}
+			else
+			{
+				flYPos += flYOffset;
+			}
+			float flXPos = m_AccountDeltaItems[i].m_nX;
+			if (m_AccountDeltaItems[i].m_bWorldSpace)
+			{
+				Vector vecWorld(flXPos, m_AccountDeltaItems[i].m_nY, flYPos);
+				int iX, iY;
+				if (!GetVectorInHudSpace(vecWorld, iX, iY))				// Tested - NOT GetVectorInScreenSpace
 					continue;
 
 				flXPos = iX;
@@ -1252,6 +1288,122 @@ void CAccountPanel::Paint( void )
 		else
 		{
 			m_AccountDeltaItems.Remove( i );
+		}
+	}
+
+	FOR_EACH_VEC_BACK( m_AccountDeltaItemsSmall, i )
+	{
+		// Reduce lifetime when count grows too high
+		float flTimeMod = m_AccountDeltaItemsSmall.Count() > NUM_ACCOUNT_DELTA_ITEMS ? RemapValClamped( m_AccountDeltaItemsSmall.Count(), 10.f, 15.f, 0.5f, 1.5f ) : 0.f;
+
+		float flMaxLifeTime = m_flDeltaLifetime - flTimeMod;
+
+		// update all the valid delta items
+		if ( ( m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod ) > gpGlobals->curtime )
+		{
+			// position and alpha are determined from the lifetime
+			Color c = m_AccountDeltaItemsSmall[i].m_color;
+
+			float flLifeTime = m_flDeltaLifetime - ( m_AccountDeltaItemsSmall[i].m_flDieTime - gpGlobals->curtime );
+			float flLifetimePercent = flLifeTime / m_flDeltaLifetime;
+			// fade out after half our lifetime
+			float flLifetimePctAlpha = flLifetimePercent;
+			if (flTimeMod > 0.0f)
+			{
+				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
+				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
+			}
+			int nAlpha = flLifetimePctAlpha > 0.5f ? (int)( 150.0f * ( ( 0.5f - flLifetimePctAlpha) / 0.5f ) ) : 150;
+			c[3] = nAlpha;
+
+			float flHeight = m_AccountDeltaItemsSmall[i].m_nHEnd - m_AccountDeltaItemsSmall[i].m_nHStart;
+			float flWidth = m_AccountDeltaItemsSmall[i].m_nXEnd - m_AccountDeltaItemsSmall[i].m_nX;
+
+			// We can be told to go the opposite direction if we're negative
+			if ( m_bNegativeFlipDir && m_AccountDeltaItemsSmall[i].m_iAmount < 0 )
+			{
+				flHeight = -flHeight;
+				flWidth = -flWidth;
+			}
+
+			float flYOffset;
+			float flXOffset = flLifetimePercent * flWidth;
+
+			if ( true || m_AccountDeltaItemsSmall[i].m_bSimulate )
+			{
+				flYOffset = flLifetimePercent * flHeight - 0.5f * 64.0f * flLifeTime * flLifeTime;
+			}
+			else
+			{
+				flYOffset = flLifetimePercent * flHeight;
+			}
+
+			float flYPos = m_AccountDeltaItemsSmall[i].m_nHStart + flYOffset;
+			float flXPos = m_AccountDeltaItemsSmall[i].m_nX + flXOffset;
+			float flSidePos = m_AccountDeltaItemsSmall[i].m_nY - flXOffset;
+			if ( m_AccountDeltaItemsSmall[i].m_bWorldSpace )
+			{
+				Vector vecWorld( flXPos, flSidePos, flYPos );
+				int iX,iY;
+				if ( !GetVectorInHudSpace( vecWorld, iX, iY ) )				// Tested - NOT GetVectorInScreenSpace
+					continue;
+
+				flXPos = iX;
+				flYPos = iY;
+			}
+
+			// If we have a background texture, then draw it!
+			if ( m_nBGTexture != -1 )
+			{
+				vgui::surface()->DrawSetColor(255,255,255,nAlpha);
+				vgui::surface()->DrawSetTexture(m_nBGTexture);
+				vgui::surface()->DrawTexturedRect( flXPos + m_flBGImageX, flYPos + m_flBGImageY, flXPos + m_flBGImageX + m_flBGImageWide, flYPos + m_flBGImageY + m_flBGImageTall );
+			}
+
+			wchar_t wBuf[20];
+
+			if ( m_AccountDeltaItemsSmall[i].m_iAmount > 0 )
+			{
+				V_swprintf_safe( wBuf, L"+%d", m_AccountDeltaItemsSmall[i].m_iAmount );
+			}
+			else
+			{
+				V_swprintf_safe( wBuf, L"%d", m_AccountDeltaItemsSmall[i].m_iAmount );
+			}
+
+			// Append?
+			if ( m_AccountDeltaItemsSmall[i].m_wzText[0] )
+			{
+				wchar_t wAppend[8] = { 0 };
+				V_swprintf_safe( wAppend, L"%ls", m_AccountDeltaItemsSmall[i].m_wzText );
+				V_wcscat_safe( wBuf, wAppend );
+			}
+
+			if ( m_AccountDeltaItemsSmall[i].m_bLargeFont )
+			{
+				vgui::surface()->DrawSetTextFont( m_hDeltaItemFontBig );
+			}
+			else
+			{
+				vgui::surface()->DrawSetTextFont( m_hDeltaItemFont );
+			}
+
+			// If we're supposed to have shadows, then draw the text as black and offset a bit first.
+			// Things get ugly as we approach 0 alpha, so stop drawing the shadow a bit early.
+			if ( m_AccountDeltaItemsSmall[i].m_bShadows && c[3] > 10 )
+			{
+				vgui::surface()->DrawSetTextPos( (int)flXPos + XRES(1), (int)flYPos + YRES(1) );
+				vgui::surface()->DrawSetTextColor( COLOR_BLACK );
+				vgui::surface()->DrawPrintText( wBuf, wcslen(wBuf), FONT_DRAW_NONADDITIVE );
+			}
+
+			vgui::surface()->DrawSetTextPos( (int)flXPos, (int)flYPos );
+			vgui::surface()->DrawSetTextColor( c );
+			vgui::surface()->DrawPrintText( wBuf, wcslen(wBuf), FONT_DRAW_NONADDITIVE );
+		}
+		else
+		{
+			m_AccountDeltaItemsSmall.Remove( i );
 		}
 	}
 }

@@ -31,6 +31,7 @@ public:
 protected:
 	virtual void Paint() OVERRIDE;
 	virtual void FireGameEvent( IGameEvent * event ) OVERRIDE;
+	void HandleDamageEvent(CTFPlayer* pAttacker, CBaseCombatCharacter* pVictim, int iDamage, int iHealth);
 
 private:
 	int					m_iCrosshairTextureID;
@@ -38,6 +39,11 @@ private:
 	IVguiMatInfoVar		*m_pFrameVar;
 	int					m_nNumFrames;
 	int					m_nPrevFrame;
+
+	int					m_iDmgCrosshairTextureID;
+	IVguiMatInfo*		m_pDmgCrosshairMaterial;
+	int					m_iDamaged;
+	float				m_flDamageOffTime;
 
 	char				m_szPreviousCrosshair[256];	// name of the current crosshair
 	float				m_flTimeToHideUntil;

@@ -18,6 +18,7 @@
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "tf_logic_halloween_2014.h"
 #include "tf_gamerules.h"
+#include "tf_weapon_invis.h"
 #include "mathlib/mathlib.h"
 
 ConVar cl_crosshair_red( "cl_crosshair_red", "200", FCVAR_ARCHIVE );
@@ -46,8 +47,13 @@ CHudTFCrosshair::CHudTFCrosshair( const char *pName ) :
 	m_flTimeToHideUntil = -1.f;
 	m_pFrameVar = NULL;
 	m_nPrevFrame = -1;
+	m_iDmgCrosshairTextureID = -1;
+	m_iDamaged = 0;
+	m_flDamageOffTime = 0.0f;
 
 	ListenForGameEvent( "restart_timer_time" );
+	ListenForGameEvent("player_hurt");
+	ListenForGameEvent("npc_hurt");
 }
 
 //-----------------------------------------------------------------------------
@@ -59,6 +65,11 @@ CHudTFCrosshair::~CHudTFCrosshair( void )
 	{
 		vgui::surface()->DestroyTextureID( m_iCrosshairTextureID );
 		m_iCrosshairTextureID = -1;
+	}
+	if (vgui::surface() && m_iDmgCrosshairTextureID != -1)
+	{
+		vgui::surface()->DestroyTextureID(m_iDmgCrosshairTextureID);
+		m_iDmgCrosshairTextureID = -1;
 	}
 	if ( m_pFrameVar )
 	{
@@ -108,6 +119,12 @@ void CHudTFCrosshair::LevelShutdown( void )
 		delete m_pCrosshairMaterial;
 		m_pCrosshairMaterial = NULL;
 	}
+
+	if (m_pDmgCrosshairMaterial)
+	{
+		delete m_pDmgCrosshairMaterial;
+		m_pDmgCrosshairMaterial = NULL;
+	}
 	
 	m_flTimeToHideUntil = -1.f;
 }
@@ -120,6 +137,11 @@ void CHudTFCrosshair::Init()
 	if ( m_iCrosshairTextureID == -1 )
 	{
 		m_iCrosshairTextureID = vgui::surface()->CreateNewTextureID();
+	}
+
+	if (m_iDmgCrosshairTextureID == -1)
+	{
+		m_iDmgCrosshairTextureID = vgui::surface()->CreateNewTextureID();
 	}
 
 	m_flTimeToHideUntil = -1.f;
@@ -142,8 +164,87 @@ void CHudTFCrosshair::FireGameEvent( IGameEvent * event )
 			}
 		}
 	}
+	else if ( FStrEq(event->GetName(), "player_hurt") )
+	{
+		const int iDamage = event->GetInt("damageamount");
+		const int iHealth = event->GetInt("health");
+
+		const int iAttacker = engine->GetPlayerForUserID(event->GetInt("attacker"));
+		C_TFPlayer* pAttacker = ToTFPlayer(UTIL_PlayerByIndex(iAttacker));
+
+		const int iVictim = engine->GetPlayerForUserID(event->GetInt("userid"));
+		C_TFPlayer* pVictim = ToTFPlayer(UTIL_PlayerByIndex(iVictim));
+
+		HandleDamageEvent(pAttacker, pVictim, iDamage, iHealth);
+	}
+	else if ( FStrEq(event->GetName(), "npc_hurt") )
+	{
+		const int iDamage = event->GetInt("damageamount");
+		const int iHealth = event->GetInt("health");
+
+		const int iAttacker = engine->GetPlayerForUserID(event->GetInt("attacker_player"));
+		C_TFPlayer* pAttacker = ToTFPlayer(UTIL_PlayerByIndex(iAttacker));
+
+		C_BaseCombatCharacter* pVictim = (C_BaseCombatCharacter*)ClientEntityList().GetClientEntity(event->GetInt("entindex"));
+
+		HandleDamageEvent(pAttacker, pVictim, iDamage, iHealth);
+	}
 
 	m_flTimeToHideUntil = -1.f;
+}
+
+void CHudTFCrosshair::HandleDamageEvent(C_TFPlayer* pAttacker, C_BaseCombatCharacter* pVictim,
+	int iDamage, int iHealth)
+{
+	if (iDamage <= 0) // zero value (invuln?)
+		return;
+
+	CTFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if (!pLocalPlayer)
+		return;
+
+	if (!pAttacker || !pVictim)
+		return;
+
+	if ((pAttacker == pLocalPlayer) ||
+		(pLocalPlayer->IsPlayerClass(TF_CLASS_MEDIC) && (pLocalPlayer->MedicGetHealTarget() == pAttacker)))
+	{
+		bool bDeadRingerSpy = false;
+		C_TFPlayer* pVictimPlayer = ToTFPlayer(pVictim);
+		if (pVictimPlayer)
+		{
+			// Player hurt self
+			if (pAttacker == pVictimPlayer)
+				return;
+
+			// Don't show damage on stealthed and/or disguised enemy spies
+			if (pVictimPlayer->IsPlayerClass(TF_CLASS_SPY) && pVictimPlayer->GetTeamNumber() != pLocalPlayer->GetTeamNumber())
+			{
+				CTFWeaponInvis* pWpn = (CTFWeaponInvis*)pVictimPlayer->Weapon_OwnsThisID(TF_WEAPON_INVIS);
+				if (pWpn && pWpn->HasFeignDeath())
+				{
+					if (pVictimPlayer->m_Shared.IsFeignDeathReady())
+					{
+						bDeadRingerSpy = true;
+					}
+				}
+
+				if (!bDeadRingerSpy)
+				{
+					if (pVictimPlayer->m_Shared.GetDisguiseTeam() == pLocalPlayer->GetTeamNumber() || pVictimPlayer->m_Shared.IsStealthed())
+						return;
+				}
+			}
+		}
+
+		bool bLastHit = (iHealth <= 0) || bDeadRingerSpy;
+		m_iDamaged = bLastHit ? 2 : 1;
+		float flNewDmgTime = gpGlobals->curtime + (bLastHit ? 0.2f : 0.1f);
+		if (flNewDmgTime > m_flDamageOffTime)
+		{
+			m_flDamageOffTime = flNewDmgTime;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -167,14 +268,29 @@ void CHudTFCrosshair::Paint()
 			vgui::surface()->DrawSetTextureFile( m_iCrosshairTextureID, buf, true, false );
 		}
 
+		if ( m_iDmgCrosshairTextureID != -1 )
+		{
+			vgui::surface()->DrawSetTextureFile( m_iDmgCrosshairTextureID, "vgui/crosshairs/crosshair4", true, false );
+		}
+
 		if ( m_pCrosshairMaterial )
 		{
 			delete m_pCrosshairMaterial;
 		}
 
+		if ( m_pDmgCrosshairMaterial )
+		{
+			delete m_pDmgCrosshairMaterial;
+		}
+
 		m_pCrosshairMaterial = vgui::surface()->DrawGetTextureMatInfoFactory( m_iCrosshairTextureID );
 
-		if ( !m_pCrosshairMaterial )
+		if (!m_pCrosshairMaterial)
+			return;
+
+		m_pDmgCrosshairMaterial = vgui::surface()->DrawGetTextureMatInfoFactory( m_iDmgCrosshairTextureID );
+
+		if ( !m_pDmgCrosshairMaterial )
 			return;
 
 		// save the name to compare with the cvar in the future
@@ -187,12 +303,6 @@ void CHudTFCrosshair::Paint()
 			m_nPrevFrame = -1;
 		}
 	}
-
-	if ( m_szPreviousCrosshair[0] == '\0' )
-	{
-		return BaseClass::Paint();
-	}
-
 
 	// This is somewhat cut'n'paste from CHudCrosshair::Paint(). Would be nice to unify them some more.
 	float x, y;
@@ -234,7 +344,33 @@ void CHudTFCrosshair::Paint()
 	int iX = (int)( x + 0.5f );
 	int iY = (int)( y + 0.5f );
 
-	vgui::ISurface *pSurf = vgui::surface();
+	vgui::ISurface* pSurf = vgui::surface();
+
+	if (m_iDamaged)
+	{
+		Color dmgClr(255, 40, 20, 255);
+		float flScaleFactor = m_iDamaged == 1 ? 1.2f : 2.3f;
+		float flDmgWidth = flWidth * flScaleFactor;
+		float flDmgHeight = flHeight * flScaleFactor;
+		int iDmgWidth = (int)(flDmgWidth + 0.5f);
+		int iDmgHeight = (int)(flDmgHeight + 0.5f);
+
+		pSurf->DrawSetColor(dmgClr);
+		pSurf->DrawSetTexture(m_iDmgCrosshairTextureID);
+		pSurf->DrawTexturedRect(iX - iDmgWidth, iY - iDmgHeight, iX + iDmgWidth, iY + iDmgHeight);
+		pSurf->DrawSetTexture(0);
+
+		if (m_flDamageOffTime <= gpGlobals->curtime)
+		{
+			m_iDamaged = 0;
+		}
+	}
+
+	if (m_szPreviousCrosshair[0] == '\0')
+	{
+		return BaseClass::Paint();
+	}
+
 	pSurf->DrawSetColor( clr );
 	pSurf->DrawSetTexture( m_iCrosshairTextureID );
 	pSurf->DrawTexturedRect( iX-iWidth, iY-iHeight, iX+iWidth, iY+iHeight );
