@@ -81,12 +81,13 @@ typedef struct
 
 ConVar hud_combattext( "hud_combattext", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_healing( "hud_combattext_healing", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Shows health restored per-second over heal targets." );
-ConVar hud_combattext_batching( "hud_combattext_batching", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set to 1, numbers that are too close together are merged." );
+ConVar hud_combattext_batching( "hud_combattext_batching", "1", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "If set to 2, numbers that are too close together are merged. Setting to 1 will also keep individual numbers." );
 ConVar hud_combattext_batching_window( "hud_combattext_batching_window", "2", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Maximum delay between damage events in order to batch numbers.", true, 0.1, true, 2.0 );
 ConVar hud_combattext_doesnt_block_overhead_text( "hud_combattext_doesnt_block_overhead_text", "1", FCVAR_USERINFO | FCVAR_ARCHIVE, "If set to 1, allow text like \"CRIT\" to still show over a victim's head." );
 ConVar hud_combattext_red( "hud_combattext_red", "255", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_green( "hud_combattext_green", "40", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_blue( "hud_combattext_blue", "25", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar hud_combattext_large("hud_combattext_large", "1", FCVAR_ARCHIVE );
 
 ConVar tf_dingalingaling( "tf_dingalingaling", "1", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
 ConVar tf_dingaling_volume( "tf_dingaling_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the hit sound.", true, 0.0, true, 1.0 );
