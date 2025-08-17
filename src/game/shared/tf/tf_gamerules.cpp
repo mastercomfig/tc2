@@ -13829,9 +13829,13 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 #define TF_PLAYER_MAX_SAFE_FALL_SPEED	650		
 
 ConVar tf_fall_damage_disablespread( "tf_fall_damage_disablespread", "1", FCVAR_NONE );
+ConVar tf_fall_damage( "tf_fall_damage", "0", FCVAR_NONE );
 
 float CTFGameRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 {
+	if (!tf_fall_damage.GetBool())
+		return 0;
+
 	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 	if ( !pTFPlayer )
 		return 0;
@@ -13860,11 +13864,11 @@ float CTFGameRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 
 		// Fall damage needs to scale according to the player's max health, or
 		// it's always going to be much more dangerous to weaker classes than larger.
-		float flRatio = (float)pPlayer->GetMaxHealth() / 100.0;
+		float flRatio = (float)pPlayer->GetMaxHealth() / 100.0f;
 		flFallDamage *= flRatio;
 
 		if ( !tf_fall_damage_disablespread.GetBool() )
-			flFallDamage *= random->RandomFloat( 0.8, 1.2 );
+			flFallDamage *= random->RandomFloat( 0.8f, 1.2f );
 
 		int iCancelFallingDamage = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, iCancelFallingDamage, cancel_falling_damage );
