@@ -122,7 +122,7 @@ void CTFViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& ori
 ConVar cl_gunlowerangle( "cl_gunlowerangle", "90", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar cl_gunlowerspeed( "cl_gunlowerspeed", "2", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
-ConVar tf_use_min_viewmodels( "tf_use_min_viewmodels", "0", FCVAR_ARCHIVE, "Use minimized viewmodels." );
+ConVar tf_use_min_viewmodels( "tf_use_min_viewmodels", "1", FCVAR_ARCHIVE, "Use minimized viewmodels." );
 
 ConVar tf_viewmodels_offset_override( "tf_viewmodels_offset_override", "", 0, "If set, this will override the position of all viewmodels. Usage 'x y z'" );
 #endif
