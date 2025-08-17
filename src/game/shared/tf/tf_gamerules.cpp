@@ -6780,7 +6780,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
-#if defined(MCOMS_BALANCE_PACK) || 0
+#if defined(MCOMS_BALANCE_PACK) || 1
 		// SMG headshots falloff
 		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
 		{
@@ -7119,13 +7119,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			flDamage *= flDmgMult;
 		}
 
-		#ifdef MCOMS_BALANCE_PACK
+		#if defined(MCOMS_BALANCE_PACK) || 1
 		float fBaseDamage = flDamage;
 		#endif
 
 		flDamage += flCritDamage;
 
-		#ifdef MCOMS_BALANCE_PACK
+		#if defined(MCOMS_BALANCE_PACK) || 1
 		if (flCritDamage > 0 && pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID()) && IsHeadshot(info.GetDamageCustom()))
 		{
 			// Check for headshot damage modifiers
