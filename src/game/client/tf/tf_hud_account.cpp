@@ -1221,7 +1221,7 @@ void CAccountPanel::Paint( void )
 			}
 			else
 			{
-				flYPos += flYPos;
+				flYPos += flYOffset;
 			}
 			float flXPos = m_AccountDeltaItems[i].m_nX;
 			if (m_AccountDeltaItems[i].m_bWorldSpace)
