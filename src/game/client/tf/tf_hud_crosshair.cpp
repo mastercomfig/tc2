@@ -126,6 +126,8 @@ void CHudTFCrosshair::LevelShutdown( void )
 		delete m_pDmgCrosshairMaterial;
 		m_pDmgCrosshairMaterial = NULL;
 	}
+
+	m_flDamageOffTime = 0.0f;
 	
 	m_flTimeToHideUntil = -1.f;
 }
@@ -144,6 +146,8 @@ void CHudTFCrosshair::Init()
 	{
 		m_iDmgCrosshairTextureID = vgui::surface()->CreateNewTextureID();
 	}
+
+	m_flDamageOffTime = 0.0f;
 
 	m_flTimeToHideUntil = -1.f;
 }
