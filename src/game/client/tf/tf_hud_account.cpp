@@ -1217,11 +1217,11 @@ void CAccountPanel::Paint( void )
 			float flYPos = m_AccountDeltaItems[i].m_nHStart;
 			if (m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f)
 			{
-				flYPos += 16.0f + flYOffset / 4.0f;
+				flYOffset = 16.0f + flYOffset / 4.0f;
 			}
 			else
 			{
-				flYPos += flYOffset;
+				flYPos += flYPos;
 			}
 			float flXPos = m_AccountDeltaItems[i].m_nX;
 			if (m_AccountDeltaItems[i].m_bWorldSpace)
@@ -1233,6 +1233,11 @@ void CAccountPanel::Paint( void )
 
 				flXPos = iX;
 				flYPos = iY;
+			}
+
+			if (m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f)
+			{
+				flYPos -= YRES(flYOffset);
 			}
 
 			// If we have a background texture, then draw it!

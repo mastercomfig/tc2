@@ -50,6 +50,7 @@ CHudTFCrosshair::CHudTFCrosshair( const char *pName ) :
 	m_iDmgCrosshairTextureID = -1;
 	m_iDamaged = 0;
 	m_flDamageOffTime = 0.0f;
+	m_pDmgCrosshairMaterial = NULL;
 
 	ListenForGameEvent( "restart_timer_time" );
 	ListenForGameEvent("player_hurt");
@@ -257,6 +258,19 @@ void CHudTFCrosshair::Paint()
 	if( !pPlayer )
 		return;
 
+	if ( !m_pDmgCrosshairMaterial )
+	{
+		if (m_iDmgCrosshairTextureID != -1)
+		{
+			vgui::surface()->DrawSetTextureFile( m_iDmgCrosshairTextureID, "vgui/crosshairs/crosshair4", true, false);
+		}
+
+		m_pDmgCrosshairMaterial = vgui::surface()->DrawGetTextureMatInfoFactory( m_iDmgCrosshairTextureID );
+
+		if ( !m_pDmgCrosshairMaterial )
+			return;
+	}
+
 	const char *crosshairfile = cl_crosshair_file.GetString();
 	if ( ( crosshairfile == NULL ) || ( Q_stricmp( m_szPreviousCrosshair, crosshairfile ) != 0 ) )
 	{
@@ -268,29 +282,14 @@ void CHudTFCrosshair::Paint()
 			vgui::surface()->DrawSetTextureFile( m_iCrosshairTextureID, buf, true, false );
 		}
 
-		if ( m_iDmgCrosshairTextureID != -1 )
-		{
-			vgui::surface()->DrawSetTextureFile( m_iDmgCrosshairTextureID, "vgui/crosshairs/crosshair4", true, false );
-		}
-
 		if ( m_pCrosshairMaterial )
 		{
 			delete m_pCrosshairMaterial;
 		}
 
-		if ( m_pDmgCrosshairMaterial )
-		{
-			delete m_pDmgCrosshairMaterial;
-		}
-
 		m_pCrosshairMaterial = vgui::surface()->DrawGetTextureMatInfoFactory( m_iCrosshairTextureID );
 
 		if (!m_pCrosshairMaterial)
-			return;
-
-		m_pDmgCrosshairMaterial = vgui::surface()->DrawGetTextureMatInfoFactory( m_iDmgCrosshairTextureID );
-
-		if ( !m_pDmgCrosshairMaterial )
 			return;
 
 		// save the name to compare with the cvar in the future
@@ -349,7 +348,7 @@ void CHudTFCrosshair::Paint()
 	if (m_iDamaged)
 	{
 		Color dmgClr(255, 40, 20, 255);
-		float flScaleFactor = m_iDamaged == 1 ? 1.2f : 2.3f;
+		float flScaleFactor = m_iDamaged == 1 ? 1.5f : 2.3f;
 		float flDmgWidth = flWidth * flScaleFactor;
 		float flDmgHeight = flHeight * flScaleFactor;
 		int iDmgWidth = (int)(flDmgWidth + 0.5f);
