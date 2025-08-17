@@ -10,7 +10,7 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/cfg,tf2_og/cfg}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/cfg,tf2_og/cfg,tc2/custom}
 mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR}
 
 declare -a DLLS=(
@@ -31,6 +31,8 @@ declare -a FILES_REP=(
   #
   tc2/steam.inf
   tf2_og/steam.inf
+  #
+  tc2/custom/readme.txt
 )
 
 declare -a FILES=(
