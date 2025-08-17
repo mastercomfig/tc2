@@ -186,9 +186,13 @@ DESCRIPTION INFO_OPTIONS
 	
 	"hud_combattext_batching"
 	{
-		"#TF_CombatTextBatching"
+		"#TC2_CombatTextBatching"
 		"#Tooltip_CombatTextBatching"
-		{ BOOL }
+		{ LIST
+			"#TF_CombatTextBatching_Individual"					"0"
+			"#TF_CombatTextBatching_Combined"						"2"
+			"#TF_CombatTextBatching_Both"								"1"
+		}
 		{ "1" }
 	}
 

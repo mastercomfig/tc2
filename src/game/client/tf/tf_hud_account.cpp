@@ -1155,6 +1155,8 @@ void CAccountPanel::Paint( void )
 {
 	BaseClass::Paint();
 
+	const bool bNewDamageStyle = hud_combattext_batching.GetInt() == 1;
+
 	FOR_EACH_VEC( m_AccountDeltaItems, i )
 	{
 		// Reduce lifetime when count grows too high
@@ -1172,35 +1174,57 @@ void CAccountPanel::Paint( void )
 			int nAlpha = flLifetimePercent > 0.5f ? (int)( 255.0f * ( ( 0.5f - flLifetimePercent ) / 0.5f ) ) : 255;
 			c[3] = nAlpha;
 
-			if ( m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f )
+			if ( m_AccountDeltaItems[i].m_flRealDieTime >= 0.0f && false )
 			{
 				flLifeTime = clamp(m_flDeltaLifetime - (m_AccountDeltaItems[i].m_flRealDieTime - gpGlobals->curtime), 0.0f, m_flDeltaLifetime);
 				flLifetimePercent = flLifeTime / m_flDeltaLifetime;
 			}
 
 			// Some items want to be batched together as they're super frequent (i.e. damage events from a flamethrower, or minigun)
-			if ( m_AccountDeltaItems[i].m_flBatchWindow > 0.f && m_AccountDeltaItems[i].m_nSourceID != -1 && m_AccountDeltaItems.IsValidIndex( i + 1 ) )
+			if ( m_AccountDeltaItems[i].m_flBatchWindow > 0.f && m_AccountDeltaItems[i].m_nSourceID != -1 )
 			{
-				// If next item is from the same source and too close, merge
 				float flDelay = m_AccountDeltaItems[i].m_flBatchWindow;
-				if ( fabsf( m_AccountDeltaItems[i].m_flDieTime - m_AccountDeltaItems[i+1].m_flDieTime ) <= flDelay &&
-					 m_AccountDeltaItems[i+1].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
+				int iNext = i + 1;
+				while (m_AccountDeltaItems.IsValidIndex(iNext))
 				{
-					m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[i + 1].m_iAmount;
-					m_AccountDeltaItemsSmall.AddToTail(m_AccountDeltaItems[i + 1]);
-					// update our pos
-					m_AccountDeltaItems[i].m_nHStart = m_AccountDeltaItems[i + 1].m_nHStart;
-					m_AccountDeltaItems[i].m_nHEnd = m_AccountDeltaItems[i + 1].m_nHEnd;
-					m_AccountDeltaItems[i].m_nX = m_AccountDeltaItems[i + 1].m_nX;
-					m_AccountDeltaItems[i].m_nY = m_AccountDeltaItems[i + 1].m_nY;
-					m_AccountDeltaItems.Remove( i + 1 );
-					if (m_AccountDeltaItems[i].m_flRealDieTime < 0.0f)
+					// If next item is from the same source and too close, merge
+					if ( fabsf( m_AccountDeltaItems[i].m_flDieTime - m_AccountDeltaItems[iNext].m_flDieTime ) <= flDelay &&
+						m_AccountDeltaItems[iNext].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
 					{
-						// keep track of our position progress
-						m_AccountDeltaItems[i].m_flRealDieTime = m_AccountDeltaItems[i].m_flDieTime;
+						m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[iNext].m_iAmount;
+						if ( bNewDamageStyle )
+						{
+							m_AccountDeltaItemsSmall.AddToTail(m_AccountDeltaItems[iNext]);
+						}
+						if (!IsInFreezeCam())
+						{
+							// update our pos
+							m_AccountDeltaItems[i].m_nHStart = m_AccountDeltaItems[iNext].m_nHStart;
+							m_AccountDeltaItems[i].m_nHEnd = m_AccountDeltaItems[iNext].m_nHEnd;
+							m_AccountDeltaItems[i].m_nX = m_AccountDeltaItems[iNext].m_nX;
+							m_AccountDeltaItems[i].m_nY = m_AccountDeltaItems[iNext].m_nY;
+						}
+						m_AccountDeltaItems.Remove(iNext);
+						if ( bNewDamageStyle )
+						{
+							if (m_AccountDeltaItems[i].m_flRealDieTime < 0.0f)
+							{
+								// keep track of our position progress
+								m_AccountDeltaItems[i].m_flRealDieTime = m_AccountDeltaItems[i].m_flDieTime;
+							}
+						}
+						m_AccountDeltaItems[i].m_flDieTime = gpGlobals->curtime + m_flDeltaLifetime; // refresh
 					}
-					m_AccountDeltaItems[i].m_flDieTime = gpGlobals->curtime + m_flDeltaLifetime; // refresh
+					else
+					{
+						iNext++;
+					}
+				}
+
+				if ( bNewDamageStyle )
+				{
 					m_AccountDeltaItems[i].m_bLargeFont = true;
+					m_AccountDeltaItems[i].m_bShadows = true;
 				}
 			}
 
@@ -1308,6 +1332,15 @@ void CAccountPanel::Paint( void )
 		{
 			// position and alpha are determined from the lifetime
 			Color c = m_AccountDeltaItemsSmall[i].m_color;
+			Vector rgb((float)c.r(), (float)c.g(), (float)c.b());
+			Vector hsv;
+			RGBtoHSV(rgb, hsv);
+			const float flSatMult = m_AccountDeltaItems[i].m_bLargeFont ? 0.87f : 0.65f;
+			hsv.y *= flSatMult;
+			HSVtoRGB(hsv, rgb);
+			c[0] = RoundFloatToByte(rgb.x);
+			c[1] = RoundFloatToByte(rgb.y);
+			c[2] = RoundFloatToByte(rgb.z);
 
 			float flLifeTime = m_flDeltaLifetime - ( m_AccountDeltaItemsSmall[i].m_flDieTime - gpGlobals->curtime );
 			float flLifetimePercent = flLifeTime / m_flDeltaLifetime;
@@ -1318,7 +1351,8 @@ void CAccountPanel::Paint( void )
 				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
 				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
 			}
-			int nAlpha = flLifetimePctAlpha > 0.5f ? (int)( 150.0f * ( ( 0.5f - flLifetimePctAlpha) / 0.5f ) ) : 150;
+			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 120.0f : 80.0f;
+			unsigned char nAlpha = RoundFloatToByte( 80.0f * ( 1.0f - flLifetimePctAlpha) );
 			c[3] = nAlpha;
 
 			float flHeight = m_AccountDeltaItemsSmall[i].m_nHEnd - m_AccountDeltaItemsSmall[i].m_nHStart;
@@ -1384,14 +1418,7 @@ void CAccountPanel::Paint( void )
 				V_wcscat_safe( wBuf, wAppend );
 			}
 
-			if ( m_AccountDeltaItemsSmall[i].m_bLargeFont )
-			{
-				vgui::surface()->DrawSetTextFont( m_hDeltaItemFontBig );
-			}
-			else
-			{
-				vgui::surface()->DrawSetTextFont( m_hDeltaItemFont );
-			}
+			vgui::surface()->DrawSetTextFont( m_hDeltaItemFont );
 
 			// If we're supposed to have shadows, then draw the text as black and offset a bit first.
 			// Things get ugly as we approach 0 alpha, so stop drawing the shadow a bit early.
