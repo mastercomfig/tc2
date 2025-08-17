@@ -163,7 +163,7 @@ ConVar tf_damage_events_track_for( "tf_damage_events_track_for", "30",  FCVAR_DE
 
 extern ConVar tf_halloween_giant_health_scale;
 
-ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", FCVAR_NONE, "1 - Allow player to slide for a bit after taunting" );
+ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "1", FCVAR_NONE, "1 - Allow player to slide for a bit after taunting" );
 
 #endif // GAME_DLL
 
@@ -195,7 +195,7 @@ ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVA
 ConVar tf_feign_death_duration( "tf_feign_death_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death buffs last." );
 ConVar tf_feign_death_speed_duration( "tf_feign_death_speed_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death speed boost last." );
 
-ConVar tf_allow_taunt_switch( "tf_allow_taunt_switch", "0", FCVAR_REPLICATED, "0 - players are not allowed to switch weapons while taunting, 1 - players can switch weapons at the start of a taunt (old bug behavior), 2 - players can switch weapons at any time during a taunt." );
+ConVar tf_allow_taunt_switch( "tf_allow_taunt_switch", "2", FCVAR_REPLICATED, "0 - players are not allowed to switch weapons while taunting, 1 - players can switch weapons at the start of a taunt (old bug behavior), 2 - players can switch weapons at any time during a taunt." );
 
 ConVar tf_allow_all_team_partner_taunt( "tf_allow_all_team_partner_taunt", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
@@ -720,7 +720,7 @@ bool CTFPlayer::IsAllowedToTaunt( void )
 		return false;
 
 	// Check to see if we are on the ground.
-	if ( GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
+	if ( false && GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 		return false;
 
 	CTFWeaponBase *pActiveWeapon = m_Shared.GetActiveTFWeapon();
@@ -12398,7 +12398,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		return false;
 	}
 
-#ifdef TF2_OG
+#if defined(TF2_OG) || defined(MCOMS_BALANCE_PACK) || 1
 	const bool bCanAttackWhileTaunting = iCanAttackFlags & TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY;
 #else
 	const bool bCanAttackWhileTaunting = false;
@@ -13256,6 +13256,9 @@ bool CTFPlayer::CanMoveDuringTaunt()
 
 	if ( m_Shared.InCond( TF_COND_TAUNTING ) || m_Shared.InCond( TF_COND_HALLOWEEN_THRILLER ) )
 	{
+#if defined(MCOMS_BALANCE_PACK) || 1
+		return true;
+#endif
 #ifdef GAME_DLL
 		if ( tf_allow_sliding_taunt.GetBool() )
 		{

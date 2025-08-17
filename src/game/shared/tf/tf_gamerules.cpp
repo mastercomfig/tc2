@@ -6037,10 +6037,12 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(dmgInfo->GetWeapon());
 	
 	// Grenades & Pipebombs do less damage to ourselves.
-	if ( pEntity == dmgInfo->GetAttacker() && pWeapon )
+	if ( pEntity == dmgInfo->GetAttacker() )
 	{
-		switch( pWeapon->GetWeaponID() )
+		if ( pWeapon )
 		{
+			switch ( pWeapon->GetWeaponID() )
+			{
 			case TF_WEAPON_PIPEBOMBLAUNCHER:
 			case TF_WEAPON_GRENADELAUNCHER:
 			case TF_WEAPON_CANNON:
@@ -6054,6 +6056,12 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
 				break;
 #endif
+			}
+		}
+
+		if ( dmgInfo->GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_GRENADE )
+		{
+			flAdjustedDamage *= 1.5f; // lethal damage to ourselves
 		}
 	}
 
