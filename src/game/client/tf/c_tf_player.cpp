@@ -3573,11 +3573,25 @@ public:
 
 		// Start the composite. 
 		KeyValues* rootKV = NULL;
-		float flWear = 0;
-		if ( !GetPaintKitWear( pItem, flWear ) )
+		float flWear = pItem->GetCachedWear();
+		if ( flWear == -2.0f )
 		{
+			// means we know there's no wear
 			return;
 		}
+		// means we need to cache
+		if (flWear == -1.0f )
+		{
+			if ( !GetPaintKitWear(pItem, flWear) )
+			{
+				// mark as no wear
+				pItem->SetCachedWear(-2.0f);
+				return;
+			}
+			// cache the wear
+			pItem->SetCachedWear(flWear);
+		}
+
 		int nWear = EconWear_ToIntCategory( flWear );
 
 		uint32 unPaintKitDefIndex = uint32(-1);

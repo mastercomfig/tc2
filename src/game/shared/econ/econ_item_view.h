@@ -342,6 +342,9 @@ public:
 	inline void					SetWeaponSkinUseHighRes( bool bUseHighRes ) { m_bWeaponSkinUseHighRes = bUseHighRes; }
 	inline void					SetWeaponSkinUseLowRes( bool bUseLowRes ) { m_bWeaponSkinUseLowRes = bUseLowRes; }
 
+	void						SetCachedWear(float flWear) { m_flCachedWear = flWear; }
+	float						GetCachedWear() const { return m_flCachedWear; }
+
 	inline ITexture				*GetWeaponSkinBase() const { return m_pWeaponSkinBase; }
 	inline ITextureCompositor	*GetWeaponSkinBaseCompositor() const { return m_pWeaponSkinBaseCompositor; }
 	inline uint32				GetWeaponSkinBaseCreateFlags() const { return m_unWeaponSkinBaseCreateFlags; }
@@ -414,6 +417,8 @@ protected:
 	int		m_iLastGeneratedTeamSkin;
 	bool	m_bWeaponSkinUseHighRes;
 	bool	m_bWeaponSkinUseLowRes;
+	//
+	float	m_flCachedWear;
 #endif // CLIENT_DLL
 
 	CNetworkVar( int,		m_iTeamNumber );

@@ -455,8 +455,7 @@ KeyValues *IEconItemInterface::GetDefinitionKey( const char *pszKeyName ) const
 
 
 bool GetPaintKitWear( const IEconItemInterface *pItem, float &flWear )
-{	
-
+{
 	static CSchemaAttributeDefHandle pAttrDef_PaintKitWear( "set_item_texture_wear" );
 	float flPaintKitWear = 0;
 	if ( pAttrDef_PaintKitWear && FindAttribute_UnsafeBitwiseCast<attrib_value_t>( pItem, pAttrDef_PaintKitWear, &flPaintKitWear ) )
@@ -473,6 +472,8 @@ bool GetPaintKitWear( const IEconItemInterface *pItem, float &flWear )
 	}
 
 	bool bHasPaintkit = GetPaintKitDefIndex( pItem );
+
+	flWear = 0.0f;
 
 	// If you have no wear, you also should not have a paint kit
 	AssertMsg( !bHasPaintkit, "No Wear Found on Item [%llu - %s] that has a Paintkit!", pItem->GetID(), pItem->GetItemDefinition()->GetDefinitionName() );

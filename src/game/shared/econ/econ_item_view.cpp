@@ -259,6 +259,7 @@ CEconItemView::CEconItemView( void )
 	m_iLastGeneratedTeamSkin = TF_TEAM_RED;
 	m_bWeaponSkinUseHighRes = false;
 	m_bWeaponSkinUseLowRes = false;
+	m_flCachedWear = -1.0f;
 #endif // CLIENT_DLL
 
 	m_iTeamNumber = TF_TEAM_RED;
