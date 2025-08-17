@@ -39,7 +39,11 @@
 #define DEFAULT_TF_MINIGUN_SPINUP_TIME "1.0f"
 #endif
 #else
+#if 1
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.9f"
+#else
 #define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.75f"
+#endif
 #endif
 ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
 
@@ -1022,7 +1026,9 @@ float CTFMinigun::GetProjectileDamage( void )
 	if ( flSpinTime < TF_MINIGUN_PENALTY_PERIOD )
 	{
 		float flMod = 1.f;
+#if !defined(MCOMS_BALANCE_PACK) && 0
 		flMod = RemapValClamped( flSpinTime, 0.2f, TF_MINIGUN_PENALTY_PERIOD, 0.5f, 1.f );
+#endif
 		flDamage *= flMod;
 		//DevMsg( "DmgMod: %.2f\n", flMod );
 	}
@@ -1046,8 +1052,12 @@ float CTFMinigun::GetWeaponSpread( void )
 
 	if ( flSpinTime < TF_MINIGUN_PENALTY_PERIOD )
 	{
+#if !defined(MCOMS_BALANCE_PACK) && 0
 		const float flMaxSpread = 1.5f;
 		float flMod = RemapValClamped( flSpinTime, 0.f, TF_MINIGUN_PENALTY_PERIOD, flMaxSpread, 1.f );
+#else
+		float flMod = 1.0f;
+#endif
 		//DevMsg( "SpreadMod: %.2f\n", flMod );
 
 		flSpread *= flMod;
