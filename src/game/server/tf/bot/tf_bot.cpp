@@ -240,7 +240,7 @@ const char *GetRandomBotName( void )
 		"Freak",
 		"Dreams of Cruelty",
 		
-		"ROBOT!"
+		"ROBOT!",
 
 		"6th Witness",
 		"Fried Chicken Tramp",
