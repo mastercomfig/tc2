@@ -2618,10 +2618,30 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 								}
 								HandleRageGain( pHealScorer, kRageBuffFlag_OnHeal, flRage, 1.0f );
 
-								// If it's been one second, or we know healing beyond this point will be overheal, generate an event
-								if ( ( m_flHealedPerSecondTimer <= gpGlobals->curtime || m_pOuter->GetHealth() >= m_pOuter->GetMaxHealth() ) 
-									   && m_aHealers[i].flHealedLastSecond > 1 )
+								// If it's been one second, generate an event
+								if ( m_flHealedPerSecondTimer <= gpGlobals->curtime && m_aHealers[i].flHealedLastSecond > 1 )
 								{
+									IGameEvent * event = gameeventmanager->CreateEvent( "player_healed" );
+									if ( event )
+									{
+										// HLTV event priority, not transmitted
+										event->SetInt( "priority", 1 );	
+
+										// Healed by another player.
+										event->SetInt( "patient", m_pOuter->GetUserID() );
+										event->SetInt( "healer", pHealScorer->GetUserID() );
+										event->SetInt( "amount", m_aHealers[i].flHealedLastSecond );
+										gameeventmanager->FireEvent( event );
+									}
+								// UNDONE: testing not instantly giving the event if we reached overheal.
+#if 0
+								}
+
+								// If it's been one second, or we know healing beyond this point will be overheal, generate an event
+								if ( ( m_flHealedPerSecondTimer <= gpGlobals->curtime || m_pOuter->GetHealth() >= m_pOuter->GetMaxHealth() )
+									&& m_aHealers[i].flHealedLastSecond > 1 )
+								{
+#endif
 									// Make sure this isn't pure overheal
 									if ( m_pOuter->GetHealth() - m_aHealers[i].flHealedLastSecond < m_pOuter->GetMaxHealth() )
 									{
@@ -2644,19 +2664,6 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 												// Default heal rate is 24per second, we scale based on that and frametime
 												pMedigun->AddCharge( ( m_aHealers[i].flHealedLastSecond / 24.0f ) * gpGlobals->frametime * 0.33f );
 											}
-										}
-
-										IGameEvent * event = gameeventmanager->CreateEvent( "player_healed" );
-										if ( event )
-										{
-											// HLTV event priority, not transmitted
-											event->SetInt( "priority", 1 );	
-
-											// Healed by another player.
-											event->SetInt( "patient", m_pOuter->GetUserID() );
-											event->SetInt( "healer", pHealScorer->GetUserID() );
-											event->SetInt( "amount", m_aHealers[i].flHealedLastSecond );
-											gameeventmanager->FireEvent( event );
 										}
 
 										// Can we figure out which item is doing this healing?
