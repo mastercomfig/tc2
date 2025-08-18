@@ -53,6 +53,7 @@ ConVar tf_bot_always_full_reload( "tf_bot_always_full_reload", "0", FCVAR_CHEAT 
 ConVar tf_bot_fire_weapon_allowed( "tf_bot_fire_weapon_allowed", "1", FCVAR_CHEAT, "If zero, TFBots will not pull the trigger of their weapons (but will act like they did)" );
 ConVar tf_bot_reevaluate_class_in_spawnroom( "tf_bot_reevaluate_class_in_spawnroom", "1", FCVAR_CHEAT, "If set, bots will opportunisticly switch class while in spawnrooms if their current class is no longer their first choice." );
 
+ConVar tf_bot_random_items("tf_bot_random_items", "0", FCVAR_NONE, "Bots will equip random loadout");
 
 //---------------------------------------------------------------------------------------------
 Action< CTFBot > *CTFBotMainAction::InitialContainedAction( CTFBot *me )
@@ -89,7 +90,16 @@ ActionResult< CTFBot >	CTFBotMainAction::OnStart( CTFBot *me, Action< CTFBot > *
 	}
 #endif // TF_CREEP_MODE
 
+	if (tf_bot_random_items.GetBool())
+	{
+		me->GiveRandomItem(LOADOUT_POSITION_PRIMARY);
+		me->GiveRandomItem(LOADOUT_POSITION_SECONDARY);
+		me->GiveRandomItem(LOADOUT_POSITION_MELEE);
 
+		me->GiveRandomItem(LOADOUT_POSITION_HEAD);
+		me->GiveRandomItem(LOADOUT_POSITION_MISC);
+		me->GiveRandomItem(LOADOUT_POSITION_MISC2);
+	}
 
 	return Continue();
 }
