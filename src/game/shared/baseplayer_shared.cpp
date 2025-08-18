@@ -179,9 +179,6 @@ void CBasePlayer::ItemPreFrame()
 		pWeapon->ItemHolsterFrame();
 	}
 
-    if ( gpGlobals->curtime < m_flNextAttack )
-		return;
-
 	if (!pActive)
 		return;
 
@@ -191,7 +188,14 @@ void CBasePlayer::ItemPreFrame()
 		return;
 #endif
 
-	pActive->ItemPreFrame();
+	if (gpGlobals->curtime < m_flNextAttack)
+	{
+		pActive->ItemBusyPreFrame();
+	}
+	else
+	{
+		pActive->ItemPreFrame();
+	}
 }
 
 //-----------------------------------------------------------------------------

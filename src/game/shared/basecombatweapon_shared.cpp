@@ -1681,6 +1681,13 @@ void CBaseCombatWeapon::ItemPreFrame( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CBaseCombatWeapon::ItemBusyPreFrame(void)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::CanPerformSecondaryAttack() const
 {
 	return m_flNextSecondaryAttack <= gpGlobals->curtime;

@@ -380,7 +380,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_viewmodelfov_option"
 		"#Tooltip_viewmodelfov_option"
 		{ SLIDER 54 70 }
-		{ "54" }
+		{ "61" }
 	}
 	
 	"tf_spectator_target_location"

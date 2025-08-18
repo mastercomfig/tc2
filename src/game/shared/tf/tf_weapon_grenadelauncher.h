@@ -116,7 +116,9 @@ private:
 	virtual void		ViewModelAttachmentBlending( CStudioHdr *hdr, Vector pos[], Quaternion q[], float currentTime, int boneMask );
 #endif // CLIENT_DLL
 
+	virtual void		ItemBusyPreFrame(void);
 	virtual void		ItemPreFrame( void );
+	virtual void		UpdateBarrelFrame(void);
 
 	struct Donks_t
 	{

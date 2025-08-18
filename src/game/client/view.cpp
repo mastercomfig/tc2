@@ -108,7 +108,9 @@ static ConVar v_centerspeed( "v_centerspeed","500" );
 #ifdef TF_CLIENT_DLL
 // 54 degrees approximates a 35mm camera - we determined that this makes the viewmodels
 // and motions look the most natural.
-ConVar v_viewmodel_fov( "viewmodel_fov", "54", FCVAR_ARCHIVE, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9, true, 54, true, 70, NULL );
+// unfortunately, players aren't appreciating this, so we enabled min viewmodels and
+// raised the FOV up from 54 to 61, to better frame and position the weapons
+ConVar v_viewmodel_fov( "viewmodel_fov", "61", FCVAR_ARCHIVE, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9, true, 54, true, 70, NULL );
 #else
 ConVar v_viewmodel_fov( "viewmodel_fov", "54", FCVAR_CHEAT, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9 );
 #endif

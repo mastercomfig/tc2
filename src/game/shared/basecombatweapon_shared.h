@@ -241,6 +241,7 @@ public:
 
 	// Weapon behaviour
 	virtual void			ItemPreFrame( void );					// called each frame by the player PreThink
+	virtual void			ItemBusyPreFrame(void);					// called each frame by the player PreThink, if the player's not ready to attack yet
 	virtual void			ItemPostFrame( void );					// called each frame by the player PostThink
 	virtual void			ItemBusyFrame( void );					// called each frame by the player PostThink, if the player's not ready to attack yet
 	virtual void			ItemHolsterFrame( void ) {};			// called each frame by the player PreThink, if the weapon is holstered
