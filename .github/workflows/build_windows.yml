@@ -1,0 +1,110 @@
+name: Build - Windows
+
+on: [push]
+# https://github.com/SoopMod/source-sdk-tf-soop/commit/d244e93b5888074e53e1f2f6daba3f14383b575e
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      # checkout the github actions / workflow
+      - name: Checkout actions
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+          fetch-depth: 0
+
+      # Support incremental builds by caching (almost) the entire workspace.
+      #
+      # Caching the build outputs alone won't do since missing files will be created with current
+      # mtimes.
+      - name: Setup msbuild cache
+        id: setup-msbuild-cache
+        uses: actions/cache@v4
+        with:
+          # we ignore all git / project stuff that isn't a build input
+          # we also ignore build outputs. technically these should be cached
+          # but it's just a simply bin copy in this case, so it isn't really needed
+          # and just bloats the cache
+          # also ignore archives from releases
+          path: |
+            ${{ github.workspace }}
+            !${{ github.workspace }}/.git
+            !${{ github.workspace }}/.github
+            !${{ github.workspace }}/.vscode
+            !${{ github.workspace }}/game_clean
+            !${{ github.workspace }}/game_dist
+            !${{ github.workspace }}/game_dist_debug
+            !${{ github.workspace }}/team-comtress-2.png
+            !${{ github.workspace }}/.gitattributes
+            !${{ github.workspace }}/.gitignore
+            !${{ github.workspace }}/CONTRIBUTING
+            !${{ github.workspace }}/LICENSE
+            !${{ github.workspace }}/README.md
+            !${{ github.workspace }}/thirdpartylegalnotices.txt
+            !${{ github.workspace }}/src/.vscode
+            !${{ github.workspace }}/game
+            !${{ github.workspace }}/game.zip
+            !${{ github.workspace }}/game-debug-info.zip
+          key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-mscache-${{ github.ref_name }}-
+            ${{ runner.os }}-mscache-${{ github.base_ref }}-
+            ${{ runner.os }}-mscache-tc2-mod-
+
+      # Replace changed files with those from the current ref.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          clean: false
+          fetch-depth: 0
+
+      - name: Add msbuild
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup Butler
+        id: setup-butler
+        run: |
+          New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
+          Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
+          Expand-Archive -Path butler.zip -DestinationPath ~/.bin -Force
+          Remove-Item butler.zip
+          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";%USERPROFILE%\.bin", "Machine")
+          butler -V
+
+      - name: Prepare project solution
+        shell: cmd
+        working-directory: "${{ github.workspace }}/src"
+        run: '.\createallprojects.bat'
+
+      - name: Build solution
+        shell: cmd
+        working-directory: "${{ github.workspace }}/src"
+        run: msbuild everything.sln /p:Platform="win64" /p:Configuration="Release"
+
+      - name: Copy dist
+        id: copy-dist
+        run: ./game_clean/copy.sh
+        shell: bash
+
+      - name: Push to Itch
+        id: itch
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        run: ./game_clean/push.sh
+        shell: bash
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: game
+          path: |
+            game_dist
+
+      - name: Archive debug info
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-debug-info
+          path: |
+            game_dist_debug

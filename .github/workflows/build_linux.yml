@@ -8,22 +8,45 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup ccache
         id: setup-ccache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
-          key: ${{ runner.os }}-ccache-${{ github.sha }}
+          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-ccache-
+            ${{ runner.os }}-ccache-${{ github.ref_name }}-
+            ${{ runner.os }}-ccache-${{ github.base_ref }}-
+            ${{ runner.os }}-ccache-tc2-mod-
+
       - name: Setup Butler
         id: setup-butler
         run: |
-          sudo apt-get install unzip
+          sudo apt-get install p7zip-full
           mkdir -p ~/.local/bin
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
-          unzip -d ~/.local/bin/ butler.zip
+          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          7z x -y butler.zip -o ~/.local/bin/
+          rm butler.zip
           chmod +x ~/.local/bin/butler
+          butler -V
+
+      # - name: Build dist
+      #   id: build-dist
+      #   env:
+      #     CCACHE_DIR: ${{ github.workspace }}/.ccache
+      #     CCACHE_COMPRESSLEVEL: 6
+      #   run: |
+      #     mkdir -p $CCACHE_DIR
+      #     ./src/buildallprojects_tf2_og
+      #     mkdir -p ./game_tmp
+      #     mv ./game/tf2_og ./game_tmp/tf2_og
+      #     ./src/buildallprojects
+      #     mv ./game_tmp/tf2_og ./game/tf2_og
+      #     ./game_clean/copy.sh
+
       - name: Build dist
         id: build-dist
         env:
@@ -31,24 +54,23 @@ jobs:
           CCACHE_COMPRESSLEVEL: 6
         run: |
           mkdir -p $CCACHE_DIR
-          ./src/buildallprojects_tf2_og
-          mkdir -p ./game_tmp
-          mv ./game/tf2_og ./game_tmp/tf2_og
           ./src/buildallprojects
-          mv ./game_tmp/tf2_og ./game/tf2_og
           ./game_clean/copy.sh
+
       - name: Push to Itch
         id: itch
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: ./game_clean/push.sh
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
           name: game
           path: |
             game_dist
+
       - name: Archive debug info
         uses: actions/upload-artifact@v4
         with:
