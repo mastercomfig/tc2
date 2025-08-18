@@ -840,7 +840,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 		float tickrate = CommandLine()->ParmValue( "-tickrate", 0 );
 		if ( tickrate > 10 )
 		{
-			if (66.0f < tickrate && tickrate < 66.67f)
+			if (66.0f <= tickrate && tickrate < 66.67f)
 			{
 				// handling for the exact legacy tick rate
 				tickinterval = OLD_TICK_INTERVAL;
