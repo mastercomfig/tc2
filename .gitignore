@@ -555,4 +555,6 @@ enc_temp_folder
 
 notes.txt
 *.nav
+
+/game/tc2/custom/*.vpk
 # END TC2 MOD
