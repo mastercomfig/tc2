@@ -101,7 +101,9 @@ jobs:
       - name: Push to Itch
         id: itch
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
-        run: ./game_clean/push.sh
+        run: |
+          PATH="${PATH};${USERPROFILE}\.bin;"
+          ./game_clean/push.sh
         shell: bash
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
