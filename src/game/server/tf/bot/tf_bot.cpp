@@ -250,15 +250,14 @@ const char *GetRandomBotName( void )
 
 		"Please Let There Be Pants",
 		"The Deadliest Animal on Earth",
-		"The Last Yeti",
+		"YETI PUNCH!",
 		"Lunatic",
 
 		"The Bomb",
 
-		"Arnold",
+		"BOT Arnold",
 		"Gabe",
 		"Leroy",
-		"John",
 
 		"Rattletrap",
 		"An Enigma",
