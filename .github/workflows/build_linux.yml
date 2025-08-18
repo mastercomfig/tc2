@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install p7zip-full
           mkdir -p ~/.local/bin
           curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
-          7z x -y butler.zip -o ~/.local/bin/
+          7z x -y butler.zip -o~/.local/bin/
           rm butler.zip
           chmod +x ~/.local/bin/butler
           butler -V

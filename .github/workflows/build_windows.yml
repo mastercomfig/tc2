@@ -69,7 +69,8 @@ jobs:
           Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
           Expand-Archive -Path butler.zip -DestinationPath ~/.bin -Force
           Remove-Item butler.zip
-          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + ";%USERPROFILE%\.bin", "Machine")
+          $Env:Path += ";%USERPROFILE%\.bin"
+          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "Machine")
           butler -V
 
       - name: Prepare project solution
