@@ -208,7 +208,7 @@ char const *GetImpactDecal( C_BaseEntity *pEntity, int iMaterial, int iDamageTyp
 //-----------------------------------------------------------------------------
 // Purpose: Perform custom effects based on the Decal index
 //-----------------------------------------------------------------------------
-static ConVar cl_new_impact_effects( "cl_new_impact_effects", "0" );
+static ConVar cl_new_impact_effects( "cl_new_impact_effects", "1" );
 
 struct ImpactEffect_t
 {
@@ -257,7 +257,7 @@ static void SetImpactControlPoint( CNewParticleEffect *pEffect, int nPoint, cons
 	pEffect->SetControlPointEntity( nPoint, pEntity );
 }
 
-static void PerformNewCustomEffects( const Vector &vecOrigin, trace_t &tr, const Vector &shotDir, int iMaterial, int iScale, int nFlags )
+static bool PerformNewCustomEffects( const Vector &vecOrigin, trace_t &tr, const Vector &shotDir, int iMaterial, int iScale, int nFlags )
 {
 	bool bNoFlecks = !r_drawflecks.GetBool();
 	if ( !bNoFlecks )
@@ -273,11 +273,25 @@ static void PerformNewCustomEffects( const Vector &vecOrigin, trace_t &tr, const
 		pImpactName = effect.m_pNameNoFlecks;
 	}
 	if ( !pImpactName )
-		return;
+		return false;
 
 	CSmartPtr<CNewParticleEffect> pEffect = CNewParticleEffect::Create( NULL, pImpactName );
 	if ( !pEffect->IsValid() )
-		return;
+	{
+		// if no flecks version doesn't exist, try the base version
+		if ( bNoFlecks )
+		{
+			pEffect = CNewParticleEffect::Create( NULL, effect.m_pName );
+			if ( !pEffect->IsValid() )
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	Vector	vecReflect;
 	float	flDot = DotProduct( shotDir, tr.plane.normal );
@@ -299,6 +313,8 @@ static void PerformNewCustomEffects( const Vector &vecOrigin, trace_t &tr, const
 		GetColorForSurface( &tr, &vecColor );
 		pEffect->SetControlPoint( 4, vecColor );
 	}
+
+	return true;
 }
 
 void PerformCustomEffects( const Vector &vecOrigin, trace_t &tr, const Vector &shotDir, int iMaterial, int iScale, int nFlags )
@@ -309,8 +325,8 @@ void PerformCustomEffects( const Vector &vecOrigin, trace_t &tr, const Vector &s
 
 	if ( cl_new_impact_effects.GetInt() )
 	{
-		PerformNewCustomEffects( vecOrigin, tr, shotDir, iMaterial, iScale, nFlags );
-		return;
+		if ( PerformNewCustomEffects( vecOrigin, tr, shotDir, iMaterial, iScale, nFlags ) )
+			return;
 	}
 
 	bool bNoFlecks = !r_drawflecks.GetBool();
