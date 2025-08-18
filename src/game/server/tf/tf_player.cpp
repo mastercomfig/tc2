@@ -901,7 +901,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			// TODO: don't construct both?
 			CTraceFilterSimple filter(pPlayer->GetStudent(), COLLISION_GROUP_NONE);
 			CTraceFilterIgnoreTeammates teamFilter(pPlayer, COLLISION_GROUP_NONE, iTeam, true);
-			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_SOLID, bIsCoaching ? &filter : &teamFilter, &trace );
+			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_OPAQUE, bIsCoaching ? &filter : &teamFilter, &trace );
 
 			CBaseEntity* pHitEntity = trace.m_pEnt;
 			int iTargetTeam = 0;

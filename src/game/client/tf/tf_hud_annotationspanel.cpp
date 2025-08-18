@@ -433,6 +433,26 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 	m_pArrow->SetAlpha( fade_alpha );
 	m_pBackground->SetAlpha( fade_alpha );
 
+	bool bIsEnemy = false;
+	if (m_FollowEntity.Get() &&
+		m_FollowEntity->GetTeamNumber() != TEAM_UNASSIGNED && m_FollowEntity->GetTeamNumber() != TEAM_INVALID &&
+		m_FollowEntity->GetTeamNumber() != pLocalTFPlayer->GetTeamNumber() &&
+		pLocalTFPlayer->GetTeamNumber() != TEAM_SPECTATOR)
+	{
+		bIsEnemy = true;
+	}
+
+	if ( bIsEnemy && m_FollowEntity->IsPlayer() )
+	{
+		CTFPlayer* pTFPlayer = ToTFPlayer(m_FollowEntity);
+		if ( ( pTFPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && pTFPlayer->m_Shared.GetDisguiseTeam() == pLocalTFPlayer->GetTeamNumber() ) || pTFPlayer->m_Shared.IsStealthed() )
+		{
+			// Don't follow spies
+			SetAlpha(0);
+			m_pArrow->SetAlpha(0);
+		}
+	}
+
 	const int halfWidth = m_pBackground->GetWide() / 2;
 	bool bOffscreen = !bOnscreen || iX < halfWidth || iX > ScreenWidth()-halfWidth;
 	if ( bOffscreen )
@@ -454,10 +474,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 		{
 			// Not visible ie obstructed by some objects in the world.
 			// Do *not* show entities that are not the same team
-			if ( m_FollowEntity.Get() &&
-				 m_FollowEntity->GetTeamNumber() != TEAM_UNASSIGNED && m_FollowEntity->GetTeamNumber() != TEAM_INVALID &&
-				 m_FollowEntity->GetTeamNumber() != pLocalTFPlayer->GetTeamNumber() && 
-				 pLocalTFPlayer->GetTeamNumber() != TEAM_SPECTATOR )
+			if ( bIsEnemy )
 			{
 				SetAlpha( 0 );
 				m_pArrow->SetAlpha( 0 );
