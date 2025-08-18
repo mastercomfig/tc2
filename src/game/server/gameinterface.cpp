@@ -828,14 +828,28 @@ bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
 //-----------------------------------------------------------------------------
 float CServerGameDLL::GetTickInterval( void ) const
 {
+#ifdef TF_DLL
 	float tickinterval = DEFAULT_TICK_INTERVAL;
+#else
+	float tickinterval = OLD_TICK_INTERVAL;
+#endif
 
 	// override if tick rate specified in command line
 	if ( CommandLine()->CheckParm( "-tickrate" ) )
 	{
 		float tickrate = CommandLine()->ParmValue( "-tickrate", 0 );
 		if ( tickrate > 10 )
-			tickinterval = 1.0f / tickrate;
+		{
+			if (66.0f < tickrate && tickrate < 66.67f)
+			{
+				// handling for the exact legacy tick rate
+				tickinterval = OLD_TICK_INTERVAL;
+			}
+			else
+			{
+				tickinterval = 1.0f / tickrate;
+			}
+		}
 	}
 
 	return tickinterval;

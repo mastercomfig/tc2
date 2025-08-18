@@ -91,7 +91,7 @@ extern ConVar mp_tournament_readymode_countdown;
 
 #define TF_WATERJUMP_FORWARD	30
 #define TF_WATERJUMP_UP			300
-#define TF_TIME_TO_DUCK			DEFAULT_TICK_INTERVAL * 2.0f // TODO HACK(mastercoms): testing a fix
+#define TF_TIME_TO_DUCK			(TICK_INTERVAL * 2.0f) // TODO HACK(mastercoms): testing a fix
 #define TF_AIRDUCKED_COUNT		2
 //ConVar	tf_waterjump_up( "tf_waterjump_up", "300", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 //ConVar	tf_waterjump_forward( "tf_waterjump_forward", "30", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
