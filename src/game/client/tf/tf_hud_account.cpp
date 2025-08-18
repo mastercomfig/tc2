@@ -1193,12 +1193,12 @@ void CAccountPanel::Paint( void )
 						m_AccountDeltaItems[iNext].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
 					{
 						m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[iNext].m_iAmount;
-						if ( bNewDamageStyle )
+						if ( !IsInFreezeCam() )
 						{
-							m_AccountDeltaItemsSmall.AddToTail(m_AccountDeltaItems[iNext]);
-						}
-						if (!IsInFreezeCam())
-						{
+							if ( bNewDamageStyle )
+							{
+								m_AccountDeltaItemsSmall.AddToTail(m_AccountDeltaItems[iNext]);
+							}
 							// update our pos
 							m_AccountDeltaItems[i].m_nHStart = m_AccountDeltaItems[iNext].m_nHStart;
 							m_AccountDeltaItems[i].m_nHEnd = m_AccountDeltaItems[iNext].m_nHEnd;
