@@ -344,7 +344,7 @@ void CSteamFriendsListPanel::UpdateFriendsList()
 	
 	const double flStart = Plat_FloatTime();
 	while( m_nLastProcessedPotentialFriend < m_mapKnownFriends.Count() &&
-		   Plat_FloatTime() - flStart < 0.0016 )
+		   Plat_FloatTime() - flStart < 0.0005 )
 	{
 		PotentialFriend_t potentialFriend = m_mapKnownFriends[ m_nLastProcessedPotentialFriend ];
 
