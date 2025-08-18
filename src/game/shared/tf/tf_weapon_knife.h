@@ -50,6 +50,8 @@ public:
 	virtual bool		Deploy( void ) OVERRIDE;
 	void				BackstabVMThink( void );
 
+	CTFPlayer*			TraceBackstab(CTFPlayer* pOwner);
+
 	bool				SendWeaponAnim( int iActivity );
 
 	bool				CanPerformBackstabAgainstTarget( CTFPlayer *pTarget );		// "backstab" sometimes means "frontstab"

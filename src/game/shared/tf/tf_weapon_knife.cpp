@@ -170,6 +170,33 @@ bool CTFKnife::DecreaseRegenerationTime( float value, bool bForce )
 #endif
 
 
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CTFPlayer* CTFKnife::TraceBackstab(CTFPlayer* pOwner)
+{
+	trace_t trace;
+	if ( DoSwingTrace(trace) )
+	{
+		// we will hit something with the attack
+		if ( trace.m_pEnt && trace.m_pEnt->IsPlayer() )
+		{
+			CTFPlayer* pTarget = ToTFPlayer( trace.m_pEnt );
+
+			if ( pTarget && pTarget->GetTeamNumber() != pOwner->GetTeamNumber() )
+			{
+				// Deal extra damage to players when stabbing them from behind
+				if ( CanPerformBackstabAgainstTarget( pTarget ) )
+				{
+					return pTarget;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Set stealth attack bool
 //-----------------------------------------------------------------------------
@@ -475,7 +502,11 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 
 	// Get target forward view vector
 	Vector vecTargetForward;
+#ifdef CLIENT_DLL
+	AngleVectors( pTarget->EyeAngles(), &vecTargetForward, NULL, NULL );
+#else
 	AngleVectors( pTarget->GetAbsAngles(), &vecTargetForward, NULL, NULL );
+#endif
 	vecTargetForward.z = 0.0f;
 	vecTargetForward.NormalizeInPlace();
 
@@ -609,6 +640,7 @@ void CTFKnife::ItemPostFrame( void )
 //-----------------------------------------------------------------------------
 void CTFKnife::ItemBusyFrame( void )
 {
+	BackstabVMThink();
 	BaseClass::ItemBusyFrame();
 	ProcessDisguiseImpulse();
 }
@@ -618,6 +650,7 @@ void CTFKnife::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFKnife::ItemHolsterFrame( void )
 {
+	BackstabVMThink();
 	BaseClass::ItemHolsterFrame();
 	ProcessDisguiseImpulse();
 }
@@ -664,41 +697,24 @@ void CTFKnife::BackstabVMThink( void )
 		 (iActivity != ACT_ITEM2_VM_IDLE) && (iActivity != ACT_ITEM2_BACKSTAB_VM_IDLE) )
 		return;
 
-
 	// Are we in backstab range and not cloaked?
-	trace_t trace;
-	if ( DoSwingTrace( trace ) == true && CanAttack() )
+	bool bBackstab = false;
+	if ( CanAttack() && TraceBackstab(pPlayer) )
 	{
-		// We will hit something if we attack.
-		if( trace.m_pEnt && trace.m_pEnt->IsPlayer() )
-		{
-			CTFPlayer *pTarget = ToTFPlayer( trace.m_pEnt );
-
-			if ( pTarget && pTarget->GetTeamNumber() != pPlayer->GetTeamNumber() )
-			{
-				if ( CanPerformBackstabAgainstTarget( pTarget ) )
-				{
-					if ( !m_bReadyToBackstab )
-					{
-						SendWeaponAnim( ACT_BACKSTAB_VM_UP );
-
-						m_bReadyToBackstab = true;
-					}
-				}
-				else if ( m_bReadyToBackstab )
-				{
-
-					SendWeaponAnim( ACT_BACKSTAB_VM_DOWN );
-
-					m_bReadyToBackstab = false;
-				}
-			}
-		} 
+		bBackstab = true;
 	}
-	else if ( m_bReadyToBackstab )
+
+	if ( m_bReadyToBackstab != bBackstab )
 	{
-		SendWeaponAnim( ACT_BACKSTAB_VM_DOWN );
-		m_bReadyToBackstab = false;
+		if (bBackstab)
+		{
+			SendWeaponAnim(ACT_BACKSTAB_VM_UP);
+		}
+		else
+		{
+			SendWeaponAnim(ACT_BACKSTAB_VM_DOWN);
+		}
+		m_bReadyToBackstab = bBackstab;
 	}
 }
 
