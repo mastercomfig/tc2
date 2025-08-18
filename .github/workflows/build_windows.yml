@@ -73,6 +73,16 @@ jobs:
           [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
           butler -V
 
+      - name: Prepare OG project solution
+        shell: cmd
+        working-directory: "${{ github.workspace }}/src"
+        run: '.\createallprojects_tf2_og.bat'
+
+      - name: Build OG solution
+        shell: cmd
+        working-directory: "${{ github.workspace }}/src"
+        run: msbuild everything_tf2_og.sln /p:Platform="win64" /p:Configuration="Release"
+
       - name: Prepare project solution
         shell: cmd
         working-directory: "${{ github.workspace }}/src"

@@ -33,20 +33,6 @@ jobs:
           chmod +x ~/.local/bin/butler
           butler -V
 
-      # - name: Build dist
-      #   id: build-dist
-      #   env:
-      #     CCACHE_DIR: ${{ github.workspace }}/.ccache
-      #     CCACHE_COMPRESSLEVEL: 6
-      #   run: |
-      #     mkdir -p $CCACHE_DIR
-      #     ./src/buildallprojects_tf2_og
-      #     mkdir -p ./game_tmp
-      #     mv ./game/tf2_og ./game_tmp/tf2_og
-      #     ./src/buildallprojects
-      #     mv ./game_tmp/tf2_og ./game/tf2_og
-      #     ./game_clean/copy.sh
-
       - name: Build dist
         id: build-dist
         env:
@@ -54,7 +40,11 @@ jobs:
           CCACHE_COMPRESSLEVEL: 6
         run: |
           mkdir -p $CCACHE_DIR
+          ./src/buildallprojects_tf2_og
+          mkdir -p ./game_tmp
+          mv ./game/tf2_og ./game_tmp/tf2_og
           ./src/buildallprojects
+          mv ./game_tmp/tf2_og ./game/tf2_og
           ./game_clean/copy.sh
 
       - name: Push to Itch
