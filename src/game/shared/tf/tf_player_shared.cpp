@@ -2700,6 +2700,11 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			float flReduction = 2;	 // ( flReduction + 1 ) x faster reduction
 			FOR_EACH_VEC( m_PlayerBleeds, i )
 			{
+#if defined(MCOMS_BALANCE_PACK) || 1
+				// sniper rifle bleeds cannot be healed away.
+				if ( m_PlayerBleeds[i].hBleedingWeapon && WeaponID_IsSniperRifle(m_PlayerBleeds[i].hBleedingWeapon->GetWeaponID()) )
+					continue;
+#endif
 				m_PlayerBleeds[i].flBleedingRemoveTime -= flReduction * gpGlobals->frametime;
 			}
 		}
@@ -8855,6 +8860,8 @@ void CTFPlayerShared::Heal( CBaseEntity *pHealer, float flAmount, float flOverhe
 		Assert(pPlayer);
 		pPlayer->m_AchievementData.AddTargetToHistory( m_pOuter );
 		pPlayer->TeamFortress_SetSpeed();
+		// recalculate our speed too.
+		m_pOuter->TeamFortress_SetSpeed();
 	}
 }
 
@@ -11691,7 +11698,25 @@ void CTFPlayerShared::HealthKitPickupEffects( int iHealthGiven /*= 0*/ )
 	// and sutures
 	if ( InCond( TF_COND_BLEEDING ) )
 	{
-		RemoveCond( TF_COND_BLEEDING );
+#if defined(MCOMS_BALANCE_PACK) || 1
+#ifdef GAME_DLL
+		FOR_EACH_VEC_BACK(m_PlayerBleeds, i)
+		{
+			// sniper rifles apply a critical bleed which cannot be removed. health kit will heal us, but won't completely patch us up.
+			const bleed_struct_t& bleed = m_PlayerBleeds[i];
+			if (bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID()))
+				continue;
+
+			m_PlayerBleeds.FastRemove(i);
+		}
+		if ( !m_PlayerBleeds.Count() )
+		{
+			RemoveCond(TF_COND_BLEEDING);
+		}
+#endif
+#else
+		RemoveCond(TF_COND_BLEEDING);
+#endif
 	}
 	// and cures plague
 	if ( InCond( TF_COND_PLAGUE ) )
