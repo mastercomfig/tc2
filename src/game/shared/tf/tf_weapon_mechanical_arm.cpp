@@ -873,6 +873,11 @@ void CTFProjectile_MechanicalArmOrb::CheckForProjectiles( void )
 			{
 #if defined(MCOMS_BALANCE_PACK) || 1
 				pProjectile->SetDamage(pProjectile->GetDamage() * 0.65f);
+				CTFGrenadePipebombProjectile* pGrenade = dynamic_cast<CTFGrenadePipebombProjectile*>(pProjectile);
+				if (pGrenade)
+				{
+					pGrenade->SetFullDamage(pGrenade->m_flFullDamage * 0.65f);
+				}
 #else
 				pProjectile->Destroy( true, false );
 #endif
