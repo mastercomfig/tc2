@@ -287,6 +287,7 @@ public:
 		if ( !pPlayer || !pPlayer->IsAlive() || !pPlayer->IsPlayerClass( TF_CLASS_ENGINEER ) )
 		{
 			m_AccountDeltaItems.RemoveAll();
+			m_AccountDeltaItemsSmall.RemoveAll();
 			return false;
 		}
 
@@ -402,6 +403,7 @@ public:
 		if ( !pPlayer )
 		{
 			m_AccountDeltaItems.RemoveAll();
+			m_AccountDeltaItemsSmall.RemoveAll();
 		}
 
 		if ( !m_AccountDeltaItems.Count() )
@@ -884,6 +886,7 @@ public:
 		if ( !pPlayer )
 		{
 			m_AccountDeltaItems.RemoveAll();
+			m_AccountDeltaItemsSmall.RemoveAll();
 		}
 
 		if ( ShouldDrawDPSMeter() )
@@ -1157,6 +1160,11 @@ void CAccountPanel::Paint( void )
 	BaseClass::Paint();
 
 	const bool bNewDamageStyle = hud_combattext_batching.GetInt() == 1;
+
+	if ( !bNewDamageStyle && IsInFreezeCam() )
+	{
+		return;
+	}
 
 	FOR_EACH_VEC( m_AccountDeltaItems, i )
 	{
