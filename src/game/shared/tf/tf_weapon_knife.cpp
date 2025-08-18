@@ -500,7 +500,7 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 	vecOwnerForward.z = 0.0f;
 	vecOwnerForward.NormalizeInPlace();
 
-	// Get target forward view vector
+	// Get target forward view vector, lag compensated for the owner.
 	Vector vecTargetForward;
 #ifdef CLIENT_DLL
 	AngleVectors( pTarget->EyeAngles(), &vecTargetForward, NULL, NULL );
@@ -515,12 +515,38 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 	float flPosVsOwnerViewDot = DotProduct( vecToTarget, vecOwnerForward );		// Facing?
 	float flViewAnglesDot = DotProduct( vecTargetForward, vecOwnerForward );	// Facestab?
 
-	// Debug
-	// 	NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
-	// 	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
-	// 	DevMsg( "PosDot: %3.2f FacingDot: %3.2f AnglesDot: %3.2f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
+	// do an additional check to see if our victim reacted in time and faced the spy.
+#ifdef GAME_DLL
+	Vector vecTargetSight;
+	AngleVectors(pTarget->EyeAngles(), &vecTargetSight, NULL, NULL);
+	vecTargetSight.z = 0.0f;
+	vecTargetSight.NormalizeInPlace();
+	float flSightAnglesDot = DotProduct(-vecToTarget, vecTargetSight);	// Looking at spy?
+#endif
 
-	return ( flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5 && flViewAnglesDot > -0.3f );
+	// Debug
+#if 0
+	NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pTarget->WorldSpaceCenter(), 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+#ifdef GAME_DLL
+	NDebugOverlay::HorzArrow(pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER);
+	DevMsg( "[server] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f SightDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot, flSightAnglesDot );
+#else
+	DevMsg("[client] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot);
+#endif
+#endif
+
+	// must get a backstab on the owner's view.
+	if ( flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5 && flViewAnglesDot > -0.3f )
+	{
+#ifdef CLIENT_DLL
+		return true;
+#else
+		return flSightAnglesDot <= 0.5f;
+#endif
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
