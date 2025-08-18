@@ -2746,6 +2746,12 @@ void CTFGameStats::SW_GameStats_WriteKill( CTFPlayer* pKiller, CTFPlayer* pVicti
 		pKVData->SetInt( "IsKillerInvulnerable", bTest );
 	}
 
+	bTest = pKiller->m_Shared.InCond( TF_COND_CRITBOOSTED_SELF );
+	if ( bTest )
+	{
+		pKVData->SetInt( "IsKillerSelfCritBoosted", bTest );
+	}
+
 	int16 victim_health = clamp( pVictim->GetHealthBefore(), 32767, -32767 );
 	pKVData->SetInt( "VictimHealth", victim_health );
 

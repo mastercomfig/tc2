@@ -418,7 +418,7 @@ bool CTFFlareGun_Revenge::Holster( CBaseCombatWeapon *pSwitchingTo )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner && pOwner->m_Shared.GetRevengeCrits() )
 	{
-		pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+		pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 	}
 #endif
 
@@ -436,7 +436,7 @@ bool CTFFlareGun_Revenge::Deploy( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
 	if ( pOwner && pOwner->m_Shared.GetRevengeCrits() )
 	{
-		pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED );
+		pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 	}
 #endif
 
@@ -455,7 +455,7 @@ void CTFFlareGun_Revenge::Detach( void )
 	if ( pPlayer )
 	{
 		pPlayer->m_Shared.SetRevengeCrits( 0 );
-		pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+		pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 	}
 
 	BaseClass::Detach();
@@ -486,12 +486,15 @@ void CTFFlareGun_Revenge::PrimaryAttack()
 
 	BaseClass::PrimaryAttack();
 
-	// Lower the reveng crit count
+	// Lower the revenge crit count
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-		int iNewRevengeCrits = MAX( pOwner->m_Shared.GetRevengeCrits() - 1, 0 );
-		pOwner->m_Shared.SetRevengeCrits( iNewRevengeCrits );
+		int iRevengeCrits = pOwner->m_Shared.GetRevengeCrits();
+		if ( iRevengeCrits > 0 && !pOwner->m_Shared.ConditionConflictsWithRevenge() )
+		{
+			pOwner->m_Shared.SetRevengeCrits( iRevengeCrits - 1 );
+		}
 	}
 }
 

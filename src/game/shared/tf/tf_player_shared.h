@@ -667,6 +667,7 @@ public:
 	void SetRevengeCrits( int iVal );
 	int GetRevengeCrits( void ) const { return m_iRevengeCrits; }
 	void IncrementRevengeCrits( void );
+	bool ConditionConflictsWithRevenge( void );
 
 	int GetSequenceForDeath( CBaseAnimating* pRagdoll, bool bBurning, int nCustomDeath );
 

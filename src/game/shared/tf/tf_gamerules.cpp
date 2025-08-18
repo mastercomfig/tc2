@@ -5197,6 +5197,7 @@ void CTFGameRules::RestartTournament( void )
 		pTFPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED, true );
 		pTFPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_BONUS_TIME, true );
 		pTFPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_CTF_CAPTURE, true );
+		pTFPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF, true );
 	}
 
 	ItemSystem()->ReloadWhitelist();

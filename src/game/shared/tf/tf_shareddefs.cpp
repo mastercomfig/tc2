@@ -305,7 +305,7 @@ static const char *g_aConditionNames[] =
 	"TF_COND_INVULNERABLE_WEARINGOFF",          // = 8
 	"TF_COND_STEALTHED_BLINK",                  // = 9
 	"TF_COND_SELECTED_TO_TELEPORT",             // = 10
-	"TF_COND_CRITBOOSTED",                      // = 11 - DO NOT RE-USE THIS -- THIS IS FOR KRITZKRIEG AND REVENGE CRITS ONLY
+	"TF_COND_CRITBOOSTED",                      // = 11 - DO NOT RE-USE THIS -- THIS IS FOR KRITZKRIEG ONLY
 	"TF_COND_TMPDAMAGEBONUS",                   // = 12
 	"TF_COND_FEIGN_DEATH",                      // = 13
 	"TF_COND_PHASE",                            // = 14
@@ -425,6 +425,8 @@ static const char *g_aConditionNames[] =
 	"TF_COND_HALLOWEEN_HELL_HEAL",              // = 128
 	"TF_COND_POWERUPMODE_DOMINANT",             // = 129
 	"TF_COND_IMMUNE_TO_PUSHBACK",				// = 130
+	"TF_COND_CRITBOOSTED_SELF",					// = 131
+	"TF_COND_COLA_BUFF",						// = 132
 
 	//
 	// ADD NEW ITEMS HERE TO AVOID BREAKING DEMOS

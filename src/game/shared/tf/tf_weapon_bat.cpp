@@ -272,8 +272,11 @@ void CTFBat_Wood::Smack(void)
 	if (!pPlayer)
 		return;
 
-	m_bNextSwingIsCrit = false;
-	pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_USER_BUFF );
+	if (!pPlayer->m_Shared.ConditionConflictsWithRevenge())
+	{
+		m_bNextSwingIsCrit = false;
+		pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_SELF);
+	}
 
 	BaseClass::Smack();
 }
@@ -513,7 +516,7 @@ bool CTFBat_Wood::Holster(CBaseCombatWeapon* pSwitchingTo)
 	CTFPlayer* pOwner = ToTFPlayer(GetPlayerOwner());
 	if (pOwner && m_bNextSwingIsCrit)
 	{
-		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_SELF);
 	}
 #endif
 
@@ -529,7 +532,7 @@ bool CTFBat_Wood::Deploy(void)
 	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
 	if (pOwner && m_bNextSwingIsCrit)
 	{
-		pOwner->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		pOwner->m_Shared.AddCond(TF_COND_CRITBOOSTED_SELF);
 	}
 #endif
 
@@ -545,7 +548,7 @@ void CTFBat_Wood::WeaponReset(void)
 	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
 	if (pOwner && m_bNextSwingIsCrit)
 	{
-		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		pOwner->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_SELF);
 		m_bNextSwingIsCrit = false;
 	}
 #else
@@ -566,7 +569,7 @@ void CTFBat_Wood::Detach(void)
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (pPlayer && m_bNextSwingIsCrit)
 	{
-		pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+		pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_SELF);
 	}
 
 	BaseClass::Detach();
@@ -607,9 +610,12 @@ CBaseEntity* CTFBat_Wood::CreateBall( void )
 	pBall->InitGrenade( vecVelocity, angImpulse, pPlayer, GetTFWpnData() );
 	pBall->SetLauncher( this );
 	pBall->SetOwnerEntity( pPlayer );
-	pBall->SetInitialSpeed( tf_scout_stunball_base_speed.GetInt() );
+	pBall->SetInitialSpeed( tf_scout_stunball_base_speed.GetFloat() );
 
-	pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_USER_BUFF);
+	if (!pPlayer->m_Shared.ConditionConflictsWithRevenge())
+	{
+		pPlayer->m_Shared.RemoveCond(TF_COND_CRITBOOSTED_SELF);
+	}
 
 	return pBall;
 }
@@ -636,7 +642,7 @@ void CTFBat_Wood::PickedUpBall( bool bNextSwingIsCrit )
 #ifdef GAME_DLL
 		if ( pPlayer->GetActiveTFWeapon() == this )
 		{
-			pPlayer->m_Shared.AddCond(TF_COND_CRITBOOSTED_USER_BUFF);
+			pPlayer->m_Shared.AddCond(TF_COND_CRITBOOSTED_SELF);
 		}
 #endif
 	}

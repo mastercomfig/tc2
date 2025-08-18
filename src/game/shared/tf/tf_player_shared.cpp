@@ -1639,6 +1639,7 @@ void CTFPlayerShared::OnConditionAdded( ETFCond eCond )
 	case TF_COND_SNIPERCHARGE_RAGE_BUFF:
 	case TF_COND_CRITBOOSTED_CARD_EFFECT:
 	case TF_COND_CRITBOOSTED_RUNE_TEMP:
+	case TF_COND_CRITBOOSTED_SELF:
 		OnAddCritBoost();
 		break;
 
@@ -1929,6 +1930,7 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond eCond )
 	case TF_COND_SNIPERCHARGE_RAGE_BUFF:
 	case TF_COND_CRITBOOSTED_CARD_EFFECT:
 	case TF_COND_CRITBOOSTED_RUNE_TEMP:
+	case TF_COND_CRITBOOSTED_SELF:
 		OnRemoveCritBoost();
 		break;
 
@@ -8159,7 +8161,8 @@ bool CTFPlayerShared::IsCritBoosted( void ) const
 								  InCond( TF_COND_CRITBOOSTED_CTF_CAPTURE ) || 
 								  InCond( TF_COND_CRITBOOSTED_ON_KILL ) ||
 								  InCond( TF_COND_CRITBOOSTED_CARD_EFFECT ) ||
-								  InCond( TF_COND_CRITBOOSTED_RUNE_TEMP ) );
+								  InCond( TF_COND_CRITBOOSTED_RUNE_TEMP ) ||
+								  InCond( TF_COND_CRITBOOSTED_SELF ) );
 
 	if ( bAllWeaponCritActive )
 		return true;
@@ -8986,13 +8989,6 @@ void CTFPlayerShared::TestAndExpireChargeEffect( medigun_charge_types iCharge )
 				bRemoveEffect = false;
 				m_flChargeEffectOffTime[iCharge] = 0;
 			}
-			if ( GetRevengeCrits() > 0 && effects.eCondition == TF_COND_CRITBOOSTED )
-			{
-				// Don't remove while we have a weapon deployed that can consume revenge crits
-				CTFWeaponBase *pWeapon = m_pOuter->GetActiveTFWeapon();
-				if ( pWeapon && pWeapon->CanHaveRevengeCrits() )
-					bRemoveEffect = false;
-			}
 		}
 
 		// Check healers for possible usercommand invuln exploit
@@ -9068,24 +9064,6 @@ void CTFPlayerShared::SendNewInvulnGameEvent( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::SetChargeEffect( medigun_charge_types iCharge, bool bState, bool bInstant, const MedigunEffects_t& effects, float flWearOffTime, CTFPlayer *pProvider /*= NULL*/ )
 {
-	if ( effects.eCondition == TF_COND_CRITBOOSTED )
-	{
-		// Don't remove while we have a weapon deployed that can consume revenge crits
-		CTFWeaponBase *pWeapon = m_pOuter->GetActiveTFWeapon();
-		if ( pWeapon )
-		{
-			if ( pWeapon->CanHaveRevengeCrits() && GetRevengeCrits() > 0 )
-			{
-				return;
-			}
-
-			if ( pWeapon->HasLastShotCritical() )
-			{
-				return;
-			}
-		}
-	}
-
 	bool bCurrentState = InCond( effects.eCondition );
 	if ( bCurrentState == bState )
 	{
@@ -14644,21 +14622,25 @@ void CTFPlayerShared::SetRevengeCrits( int iVal )
 	if (!pWeapon)
 		return;
 
+	// if we increase the revenge crits, check up against our weapon max
 	int iMaxRevengeCrits = 35;
-	// find the revenge weapons
-	for (int i = FIRST_LOADOUT_SLOT_WITH_CHARGE_METER; i <= LAST_LOADOUT_SLOT_WITH_CHARGE_METER; ++i)
+	if ( iVal > m_iRevengeCrits )
 	{
-		CBaseCombatWeapon* pSlotWeapon = m_pOuter->GetWeapon(i);
-		if (!pSlotWeapon)
-			continue;
-
-		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(pSlotWeapon);
-		if (!pSlotWeapon)
-			continue;
-
-		if (pTFWeapon->GetMaxRevengeCrits() < iMaxRevengeCrits )
+		// find the revenge weapons
+		for (int i = LOADOUT_POSITION_PRIMARY; i <= LOADOUT_POSITION_MELEE; ++i)
 		{
-			iMaxRevengeCrits = pTFWeapon->GetMaxRevengeCrits();
+			CBaseCombatWeapon* pSlotWeapon = m_pOuter->GetWeapon(i);
+			if (!pSlotWeapon)
+				continue;
+
+			CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(pSlotWeapon);
+			if (!pSlotWeapon)
+				continue;
+
+			if (pTFWeapon->GetMaxRevengeCrits() < iMaxRevengeCrits )
+			{
+				iMaxRevengeCrits = pTFWeapon->GetMaxRevengeCrits();
+			}
 		}
 	}
 
@@ -14666,15 +14648,36 @@ void CTFPlayerShared::SetRevengeCrits( int iVal )
 	
 	if ( pWeapon->CanHaveRevengeCrits() )
 	{
-		if ( m_iRevengeCrits > 0 && !InCond( TF_COND_CRITBOOSTED ) )
+		if ( m_iRevengeCrits > 0 && !InCond( TF_COND_CRITBOOSTED_SELF ) )
 		{
-			AddCond( TF_COND_CRITBOOSTED );
+			AddCond( TF_COND_CRITBOOSTED_SELF );
 		}
-		else if ( m_iRevengeCrits == 0 && InCond( TF_COND_CRITBOOSTED ) )
+		else if ( m_iRevengeCrits == 0 && InCond( TF_COND_CRITBOOSTED_SELF ) )
 		{
-			RemoveCond( TF_COND_CRITBOOSTED );
+			RemoveCond( TF_COND_CRITBOOSTED_SELF );
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayerShared::ConditionConflictsWithRevenge( void )
+{
+	if ( InCond( TF_COND_CRITBOOSTED )
+		|| InCond( TF_COND_CRITBOOSTED_PUMPKIN )
+		|| InCond( TF_COND_CRITBOOSTED_USER_BUFF )
+		|| InCond( TF_COND_CRITBOOSTED_FIRST_BLOOD )
+		|| InCond( TF_COND_CRITBOOSTED_BONUS_TIME )
+		|| InCond( TF_COND_CRITBOOSTED_CTF_CAPTURE )
+		|| InCond( TF_COND_CRITBOOSTED_ON_KILL )
+		|| InCond( TF_COND_CRITBOOSTED_CARD_EFFECT )
+		|| InCond( TF_COND_CRITBOOSTED_RUNE_TEMP )
+	)
+	{
+		return true;
+	}
+	return false;
 }
 
 #ifdef GAME_DLL

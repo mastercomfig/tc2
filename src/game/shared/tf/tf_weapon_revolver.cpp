@@ -158,7 +158,7 @@ void CTFRevolver::PrimaryAttack( void )
 
 	if ( HasLastShotCritical() )
 	{
-		pPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED );
+		pPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 	}
 	else
 	{
@@ -166,7 +166,7 @@ void CTFRevolver::PrimaryAttack( void )
 		CALL_ATTRIB_HOOK_INT( iAttr, last_shot_crits );
 		if ( iAttr )
 		{
-			pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+			pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 		}
 	}
 
@@ -181,7 +181,7 @@ void CTFRevolver::PrimaryAttack( void )
 		if ( pOwner )
 		{
 			int iRevengeCrits = pOwner->m_Shared.GetRevengeCrits();
-			if ( iRevengeCrits > 0 )
+			if ( iRevengeCrits > 0 && !pOwner->m_Shared.ConditionConflictsWithRevenge() )
 			{
 				pOwner->m_Shared.SetRevengeCrits( iRevengeCrits-1 );
 			}
@@ -342,14 +342,14 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 		{	
 			if ( pOwner->m_Shared.GetRevengeCrits() )
 			{
-				pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+				pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 			}
 		}
 #endif
 
 		if ( HasLastShotCritical() )
 		{
-			pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+			pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 		}
 	}
 #endif
@@ -371,14 +371,14 @@ bool CTFRevolver::Deploy( void )
 		{
 			if ( pOwner->m_Shared.GetRevengeCrits() )
 			{
-				pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED );
+				pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 			}
 		}
 #endif
 
 		if ( HasLastShotCritical() )
 		{
-			pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED );
+			pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 		}
 	}
 #endif
@@ -398,7 +398,7 @@ void CTFRevolver::Detach( void )
 		if ( pPlayer )
 		{
 			pPlayer->m_Shared.SetRevengeCrits( 0 );
-			pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+			pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 		}
 	}
 

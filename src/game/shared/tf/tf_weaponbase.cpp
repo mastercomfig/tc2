@@ -6450,11 +6450,11 @@ void CTFWeaponBase::FinishReload( void )
 		{
 			if ( m_iClip1 == 1 )
 			{
-				pPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED );
+				pPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 			}
 			else
 			{
-				pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED );
+				pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 			}
 		}
 	}
