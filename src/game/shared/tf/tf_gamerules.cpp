@@ -5964,7 +5964,7 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	}
 
 	// If we don't trace the whole way to the target, and we didn't hit the target entity, we're blocked, so do a more robust check
-	if ( tr.fraction != 1.f && tr.m_pEnt != pEntity )
+	if ( tr.fraction < 1.f && tr.m_pEnt != pEntity )
 	{
 		for (int x = -1; x <= 1; x += 2)
 		{
@@ -5977,6 +5977,33 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 					vecOffset.z = z * flInnerRadiusPct;
 					for (auto& vecSpot : vecSpots)
 					{
+						// first trace a line from offset to origin
+						trace_t trOffset;
+						UTIL_TraceLine( vecSrc + vecOffset, vecSrc, MASK_RADIUS_DAMAGE, &filter, &trOffset );
+
+						if ( trOffset.startsolid )
+						{
+							// we're embedded, don't bother
+							continue;
+						}
+
+						// if we have clear LOS, then we can skip this next check.
+						if ( tr.DidHit() )
+						{
+							// trace another line from origin to offset
+							trace_t trSrc;
+							UTIL_TraceLine( vecSrc, vecSrc + vecOffset, MASK_RADIUS_DAMAGE, &filter, &trOffset );
+
+							if ( DotProduct( trSrc.plane.normal, trOffset.plane.normal ) > -0.999f )
+							{
+								// two sides of the same plane -- means we're probably on the other side of a wall. don't bother.
+								continue;
+							}
+
+							// otherwise, we DO want to trace even if we don't have LOS -- to expand the explosion check.
+							// if we didn't trace here, we wouldn't expand the leniency enough
+						}
+
 						UTIL_TraceLine(vecSrc + vecOffset, vecSpot, MASK_RADIUS_DAMAGE, &filter, &tr);
 						
 						if (tr.startsolid && tr.m_pEnt)
