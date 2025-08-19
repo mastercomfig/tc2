@@ -102,9 +102,7 @@ jobs:
         id: itch
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
-          echo $PATH
-          PATH="${PATH};${USERPROFILE}\.bin;"
-          echo $PATH
+          PATH="${PATH}:${USERPROFILE}\.bin;"
           ./game_clean/push.sh
         shell: bash
         env:
