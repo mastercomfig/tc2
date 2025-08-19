@@ -755,6 +755,17 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	bool bHitEnemy = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetEnemyTeam( GetTeamNumber() );
 	bool bHitFriendly = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetTeamNumber() && CanCollideWithTeammates();
 
+	// radius bbox filter
+	if ( tr.DidHit() && tr.m_pEnt && tr.m_pEnt->IsPlayer() )
+	{
+		const float flDistSq = ( tr.m_pEnt->WorldSpaceCenter() - WorldSpaceCenter() ).LengthSqr();
+		const float flRadius = tr.m_pEnt->WorldAlignSize().x;
+		if ( flDistSq > flRadius * flRadius )
+		{
+			return;
+		}
+	}
+
 	// Combat items are solid to enemy projectiles and bullets
 	if ( bHitEnemy && tr.m_pEnt->IsCombatItem() )
 	{

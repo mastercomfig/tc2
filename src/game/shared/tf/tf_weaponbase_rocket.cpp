@@ -418,6 +418,17 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 	if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS ) && !bShield )
 		return;
 
+	// radius bbox filter
+	if ( pOther->IsPlayer() )
+	{
+		const float flDistSq = (pOther->WorldSpaceCenter() - WorldSpaceCenter()).LengthSqr();
+		const float flRadius = pOther->WorldAlignSize().x;
+		if (flDistSq > flRadius * flRadius)
+		{
+			return;
+		}
+	}
+
 	// Handle hitting skybox (disappear).
 	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 	if( pTrace->surface.flags & SURF_SKY )
