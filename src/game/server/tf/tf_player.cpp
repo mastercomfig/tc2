@@ -14184,7 +14184,7 @@ bool CTFPlayer::SetObserverMode(int mode)
 		{
 			mode = OBS_MODE_CHASE;
 		}
-		else if ( mode == OBS_MODE_ROAMING )
+		else if ( mode == OBS_MODE_ROAMING && !TFGameRules()->IsCompetitiveGame() )
 		{
 			mode = OBS_MODE_IN_EYE;
 		}
@@ -14213,7 +14213,8 @@ bool CTFPlayer::SetObserverMode(int mode)
 		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
 	}
 
-	if ( TFGameRules()->IsEmulatingMatch() == 1 )
+	// competitive games now allow spec mode changes due to visibility checks
+	if ( TFGameRules()->IsEmulatingMatch() == 1 || TFGameRules()->IsCompetitiveGame() )
 	{
 		bAllowSpecModeChange = true;
 	}
@@ -14224,10 +14225,9 @@ bool CTFPlayer::SetObserverMode(int mode)
 		{
 			if ( IsValidObserverTarget( GetObserverTarget() ) )
 			{
-				if (m_iObserverMode != OBS_MODE_IN_EYE || m_iObserverMode != OBS_MODE_CHASE)
+				if (m_iObserverMode != OBS_MODE_IN_EYE)
 				{
-					//m_iObserverMode.Set(OBS_MODE_IN_EYE);
-					m_iObserverMode.Set(OBS_MODE_CHASE);
+					m_iObserverMode.Set(OBS_MODE_IN_EYE);
 				}
 			}
 			else
@@ -16870,6 +16870,12 @@ bool CTFPlayer::IsValidObserverTarget( CBaseEntity * target )
 		else
 		{
 			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() );
+		}
+
+		if ( TFGameRules()->IsCompetitiveGame() )
+		{
+			// no longer need strict rules in competitive
+			bStrictRules = false;
 		}
 
 		if ( bStrictRules )

@@ -6822,6 +6822,11 @@ Vector C_TFPlayer::GetObserverCamOrigin( void )
 //-----------------------------------------------------------------------------
 float C_TFPlayer::GetEffectiveInvisibilityLevel( void )
 {
+	if ( !GetCompetitiveVisibility() )
+	{
+		return 1.0f;
+	}
+
 	float flPercentInvisible = GetPercentInvisible();
 
 	// Crude way to limit Halloween spell
@@ -6874,6 +6879,110 @@ float C_TFPlayer::GetEffectiveInvisibilityLevel( void )
 	}
 
 	return flPercentInvisible;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Compute visibility on competitive integrity
+//-----------------------------------------------------------------------------
+bool C_TFPlayer::GetCompetitiveVisibility( void )
+{
+	// hack in a visibility check.
+	if ( !TFGameRules()->IsCompetitiveGame() )
+	{
+		// only active for competitive
+		return true;
+	}
+
+	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+
+	if (pPlayer->IsAlive())
+	{
+		// while alive, this is not active atm.
+		return true;
+	}
+
+	if ( !IsEnemyPlayer() )
+	{
+		// team-mates not invisible
+		return true;
+	}
+
+	const int iLocalTeam = pPlayer->GetTeamNumber();
+	if ( m_Shared.GetDisguiseTeam() == iLocalTeam )
+	{
+		// disguised enemies not invisible -- pretending to be friendly
+		return true;
+	}
+
+	const bool bObserver = pPlayer->IsObserver();
+
+	if ( bObserver && ( pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM || pPlayer->GetObserverMode() == OBS_MODE_DEATHCAM ) )
+	{
+		// let players see enemies
+		return true;
+	}
+
+	const bool bIsPlaying = !bObserver && pPlayer->IsAlive();
+	const bool bObserveHasVision = bObserver && pPlayer->GetObserverTarget() && pPlayer->GetObserverTarget()->IsPlayer();
+	const bool bHasVision = bIsPlaying || bObserveHasVision;
+	if ( bHasVision )
+	{
+		Vector vecEyes;
+		// single perspective vision
+		if ( bIsPlaying )
+		{
+			vecEyes = pPlayer->EyePosition();
+		}
+		else
+		{
+			vecEyes = pPlayer->GetObserverTarget()->EyePosition();
+		}
+		return TraceCompetitiveVision(vecEyes);
+	}
+	else
+	{
+		// team-wide vision -- can anyone on the local team see this player?
+		C_TFTeam* pTeam = GetGlobalTFTeam(iLocalTeam);
+		for ( int i = 0; i < pTeam->GetNumPlayers(); i++ )
+		{
+			C_TFPlayer *pPlayerLooker = static_cast< C_TFPlayer * >( pTeam->GetPlayer( i ) );
+			if (pPlayerLooker == NULL)
+				continue;
+			// Is the player me?
+			if (pPlayerLooker == pPlayer)
+				continue;
+			// needs to have their own vision
+			if (!pPlayerLooker->IsAlive() || pPlayerLooker->IsObserver())
+				continue;
+			if (TraceCompetitiveVision(pPlayerLooker->EyePosition()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool C_TFPlayer::TraceCompetitiveVision( const Vector& vecEyes )
+{
+	Vector mins;
+	Vector maxs;
+	GetShadowRenderBounds(mins, maxs, SHADOWS_RENDER_TO_TEXTURE);
+
+	Vector center = EyePosition();
+
+	// TODO: do occlusion trace for full bbox
+	trace_t tr;
+	UTIL_TraceLine(vecEyes, center, MASK_VISIBLE, nullptr, COLLISION_GROUP_PLAYER_MOVEMENT, &tr);
+
+	if ( !tr.DidHit() )
+	{
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -9256,7 +9365,12 @@ ShadowType_t C_TFPlayer::ShadowCastType( void )
 	return SHADOWS_RENDER_TO_TEXTURE_DYNAMIC;
 }
 
-float g_flFattenAmt = 24.0;		// Roughly how far out the Heavy's minigun pokes out.
+// We do this because the normal bbox calculations don't take pose params into account, and 
+// the rotation of the guy's upper torso can place his gun a ways out of his bbox, and 
+// the shadow will get cut off as he rotates.
+//
+// Thus, we give it some padding here.
+constexpr float g_flFattenAmt = 36.0f;		// Roughly how far out the Heavy's minigun pokes out.
 void C_TFPlayer::GetShadowRenderBounds( Vector &mins, Vector &maxs, ShadowType_t shadowType )
 {
 	if ( shadowType == SHADOWS_SIMPLE )
@@ -9270,14 +9384,27 @@ void C_TFPlayer::GetShadowRenderBounds( Vector &mins, Vector &maxs, ShadowType_t
 	{
 		GetRenderBounds( mins, maxs );
 
-		// We do this because the normal bbox calculations don't take pose params into account, and 
-		// the rotation of the guy's upper torso can place his gun a ways out of his bbox, and 
-		// the shadow will get cut off as he rotates.
-		//
-		// Thus, we give it some padding here.
-		g_flFattenAmt = 36.0f;
-		mins -= Vector( g_flFattenAmt, g_flFattenAmt, 0 );
-		maxs += Vector( g_flFattenAmt, g_flFattenAmt, 0 );
+		// HACK: this constrains the fatten to collision range
+		// this is really the best we can do without a more
+		// advanced depth based / occlusion algorithm
+		Vector vecOrigin = WorldSpaceCenter(); // using "center of mass"
+
+		CTraceFilterWorldAndPropsOnly traceFilter;
+
+		trace_t minx_tr;
+		UTIL_TraceLine(vecOrigin, vecOrigin + Vector(-g_flFattenAmt + mins.x, 0, 0), MASK_OPAQUE, &traceFilter, &minx_tr);
+
+		trace_t miny_tr;
+		UTIL_TraceLine(vecOrigin, vecOrigin + Vector(0, -g_flFattenAmt + mins.y, 0), MASK_OPAQUE, &traceFilter, &miny_tr);
+
+		trace_t maxx_tr;
+		UTIL_TraceLine(vecOrigin, vecOrigin + Vector(g_flFattenAmt + maxs.x, 0, 0), MASK_OPAQUE, &traceFilter, &maxx_tr);
+
+		trace_t maxy_tr;
+		UTIL_TraceLine(vecOrigin, vecOrigin + Vector(0, g_flFattenAmt + maxs.y, 0), MASK_OPAQUE, &traceFilter, &maxy_tr);
+
+		mins -= Vector(g_flFattenAmt * minx_tr.fraction, g_flFattenAmt * miny_tr.fraction, 0);
+		maxs += Vector(g_flFattenAmt * maxx_tr.fraction, g_flFattenAmt * maxy_tr.fraction, 0);
 	}
 }
 

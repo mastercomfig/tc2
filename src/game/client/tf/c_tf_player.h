@@ -211,6 +211,8 @@ public:
 
 	float GetPercentInvisible( void );
 	float GetEffectiveInvisibilityLevel( void );	// takes viewer into account
+	bool GetCompetitiveVisibility( void );
+	bool TraceCompetitiveVision( const Vector& vecEyes );
 	virtual bool IsTransparent( void ) OVERRIDE { return GetPercentInvisible() > 0.f; }
 
 	virtual void AddDecal( const Vector& rayStart, const Vector& rayEnd,
