@@ -1288,7 +1288,7 @@ bool CClientShadowMgr::Init()
 	SetShadowDirection(dir);
 	SetShadowDistance( 50 );
 
-	SetShadowBlobbyCutoffArea( 0.005 );
+	SetShadowBlobbyCutoffArea( 0.005f );
 
 	bool bTools = CommandLine()->CheckParm( "-tools" ) != NULL;
 	m_nMaxDepthTextureShadows = bTools ? 4 : 1;	// Just one shadow depth texture in games, more in tools
@@ -2076,7 +2076,7 @@ float CClientShadowMgr::ComputeLocalShadowOrigin( IClientRenderable* pRenderable
 //-----------------------------------------------------------------------------
 static inline void SortAbsVectorComponents( const Vector& src, int* pVecIdx )
 {
-	Vector absVec( fabs(src[0]), fabs(src[1]), fabs(src[2]) );
+	Vector absVec(fabsf(src[0]), fabsf(src[1]), fabsf(src[2]) );
 
 	int maxIdx = (absVec[0] > absVec[1]) ? 0 : 1;
 	if (absVec[2] > absVec[maxIdx])
@@ -2321,12 +2321,12 @@ void CClientShadowMgr::BuildOrthoShadow( IClientRenderable* pRenderable,
 	// We project the two longest sides into the vectors perpendicular
 	// to the projection direction, then add in the projection of the perp direction
 	Vector2D size( boxSize[vecIdx[0]], boxSize[vecIdx[1]] );
-	size.x *= fabs( DotProduct( vec[vecIdx[0]], xvec ) );
-	size.y *= fabs( DotProduct( vec[vecIdx[1]], yvec ) );
+	size.x *= fabsf( DotProduct( vec[vecIdx[0]], xvec ) );
+	size.y *= fabsf( DotProduct( vec[vecIdx[1]], yvec ) );
 
 	// Add the third component into x and y
-	size.x += boxSize[vecIdx[2]] * fabs( DotProduct( vec[vecIdx[2]], xvec ) );
-	size.y += boxSize[vecIdx[2]] * fabs( DotProduct( vec[vecIdx[2]], yvec ) );
+	size.x += boxSize[vecIdx[2]] * fabsf( DotProduct( vec[vecIdx[2]], xvec ) );
+	size.y += boxSize[vecIdx[2]] * fabsf( DotProduct( vec[vecIdx[2]], yvec ) );
 
 	// Bloat a bit, since the shadow wants to extend outside the model a bit
 	size.x += 10.0f;
@@ -2514,12 +2514,12 @@ void CClientShadowMgr::BuildRenderToTextureShadow( IClientRenderable* pRenderabl
 	// We project the two longest sides into the vectors perpendicular
 	// to the projection direction, then add in the projection of the perp direction
 	Vector2D size;
-	size.x = boxSize.x * fabs( DotProduct( vec[0], xvec ) ) + 
-		boxSize.y * fabs( DotProduct( vec[1], xvec ) ) + 
-		boxSize.z * fabs( DotProduct( vec[2], xvec ) );
-	size.y = boxSize.x * fabs( DotProduct( vec[0], yvec ) ) + 
-		boxSize.y * fabs( DotProduct( vec[1], yvec ) ) + 
-		boxSize.z * fabs( DotProduct( vec[2], yvec ) );
+	size.x = boxSize.x * fabsf( DotProduct( vec[0], xvec ) ) +
+		boxSize.y * fabsf( DotProduct( vec[1], xvec ) ) +
+		boxSize.z * fabsf( DotProduct( vec[2], xvec ) );
+	size.y = boxSize.x * fabsf( DotProduct( vec[0], yvec ) ) +
+		boxSize.y * fabsf( DotProduct( vec[1], yvec ) ) +
+		boxSize.z * fabsf( DotProduct( vec[2], yvec ) );
 
 	size.x += 2.0f * TEXEL_SIZE_PER_CASTER_SIZE;
 	size.y += 2.0f * TEXEL_SIZE_PER_CASTER_SIZE;
