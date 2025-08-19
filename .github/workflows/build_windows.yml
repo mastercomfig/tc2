@@ -67,7 +67,7 @@ jobs:
         run: |
           New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
           Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
-          Expand-Archive -Path butler.zip -DestinationPath ~/.bin -Force
+          Expand-Archive -Path butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
           Remove-Item butler.zip
           $Env:Path += ";$Env:USERPROFILE\.bin;"
           [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
@@ -102,7 +102,9 @@ jobs:
         id: itch
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
+          echo $PATH
           PATH="${PATH};${USERPROFILE}\.bin;"
+          echo $PATH
           ./game_clean/push.sh
         shell: bash
         env:
