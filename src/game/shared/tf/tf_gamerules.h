@@ -543,9 +543,9 @@ public:
 
 	void			CreateSoldierStatue();
 
-	virtual void	BroadcastSound( int iTeam, const char *sound, int iAdditionalSoundFlags = 0, CBasePlayer *pPlayer = NULL ) override;
+	virtual void	BroadcastSound( int iTeam, const char *sound, int iAdditionalSoundFlags = 0, CBasePlayer *pPlayer = NULL ) OVERRIDE;
 
-	void			RegisterScriptFunctions() override;
+	void			RegisterScriptFunctions() OVERRIDE;
 
 	int				GetRoundState() { return (int)State_Get(); }
 
