@@ -418,17 +418,6 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 	if ( pOther->IsSolidFlagSet( FSOLID_TRIGGER | FSOLID_VOLUME_CONTENTS ) && !bShield )
 		return;
 
-	// radius bbox filter
-	if ( pOther->IsPlayer() )
-	{
-		const float flDistSq = (pOther->WorldSpaceCenter() - WorldSpaceCenter()).LengthSqr();
-		const float flRadius = pOther->WorldAlignSize().x;
-		if (flDistSq > flRadius * flRadius)
-		{
-			return;
-		}
-	}
-
 	// Handle hitting skybox (disappear).
 	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 	if( pTrace->surface.flags & SURF_SKY )
@@ -442,11 +431,26 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 	Explode( &trace, pOther );
 }
 
+bool CTFBaseRocket::ShouldIgnoreTrace(trace_t* pTrace)
+{
+	// radius bbox filter
+	if (pTrace->m_pEnt && pTrace->m_pEnt->IsPlayer())
+	{
+		const float flDistSq = (pTrace->m_pEnt->WorldSpaceCenter() - pTrace->endpos).Length2DSqr();
+		const float flRadius = pTrace->m_pEnt->WorldAlignSize().x * 0.5f;
+		if (flDistSq > flRadius * flRadius)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 unsigned int CTFBaseRocket::PhysicsSolidMaskForEntity( void ) const
-{ 
+{
 	int teamContents = 0;
 
 	if ( !CanCollideWithTeammates() )

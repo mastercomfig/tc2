@@ -756,10 +756,10 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	bool bHitFriendly = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetTeamNumber() && CanCollideWithTeammates();
 
 	// radius bbox filter
-	if ( tr.DidHit() && tr.m_pEnt && tr.m_pEnt->IsPlayer() )
+	if ( tr.m_pEnt && tr.m_pEnt->IsPlayer() )
 	{
-		const float flDistSq = ( tr.m_pEnt->WorldSpaceCenter() - WorldSpaceCenter() ).LengthSqr();
-		const float flRadius = tr.m_pEnt->WorldAlignSize().x;
+		const float flDistSq = ( tr.m_pEnt->WorldSpaceCenter() - tr.endpos ).Length2DSqr();
+		const float flRadius = tr.m_pEnt->WorldAlignSize().x * 0.5f;
 		if ( flDistSq > flRadius * flRadius )
 		{
 			return;

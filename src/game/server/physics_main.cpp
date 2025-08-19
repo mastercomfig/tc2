@@ -1224,6 +1224,15 @@ void CBaseEntity::PhysicsPushEntity( const Vector& push, trace_t *pTrace )
 
 	::PhysicsCheckSweep( this, prevOrigin, push, pTrace );
 
+	if ( ShouldIgnoreTrace( pTrace ) )
+	{
+		Vector endOrigin;
+		VectorAdd( prevOrigin, push, endOrigin );
+		UTIL_ClearTrace( *pTrace );
+		pTrace->startpos = prevOrigin;
+		pTrace->endpos = endOrigin;
+	}
+
 	if ( pTrace->fraction )
 	{
 		SetAbsOrigin( pTrace->endpos );

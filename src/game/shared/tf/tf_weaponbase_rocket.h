@@ -57,6 +57,10 @@ public:
 	void			ResetDeflected( void ) { m_iDeflected = 0; }
 	int				GetDeflected( void ) { return m_iDeflected; }
 
+#ifdef GAME_DLL
+	bool ShouldIgnoreTrace(trace_t* pTrace) OVERRIDE;
+#endif
+
 protected:
 
 	// Networked.
