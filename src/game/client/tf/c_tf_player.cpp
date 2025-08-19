@@ -3903,6 +3903,8 @@ C_TFPlayer::C_TFPlayer() :
 
 	m_bCigaretteSmokeActive = false;
 
+	m_bCompetitiveVisible = true;
+
 	m_hRagdoll.Set( NULL );
 
 	m_iPreviousMetal = 0;
@@ -5929,6 +5931,8 @@ void C_TFPlayer::ClientThink()
 	// Pass on through to the base class.
 	BaseClass::ClientThink();
 
+	m_bCompetitiveVisible = GetCompetitiveVisibility();
+
 	UpdateIDTarget();
 
 	UpdateLookAt();
@@ -6822,7 +6826,7 @@ Vector C_TFPlayer::GetObserverCamOrigin( void )
 //-----------------------------------------------------------------------------
 float C_TFPlayer::GetEffectiveInvisibilityLevel( void )
 {
-	if ( !GetCompetitiveVisibility() )
+	if ( !m_bCompetitiveVisible )
 	{
 		return 1.0f;
 	}
@@ -9346,6 +9350,9 @@ ShadowType_t C_TFPlayer::ShadowCastType( void )
 	if ( !IsVisible() /*|| GetPercentInvisible() > 0.0f*/ )
 		return SHADOWS_NONE;
 
+	if ( !m_bCompetitiveVisible )
+		return SHADOWS_NONE;
+
 	if ( IsEffectActive(EF_NODRAW | EF_NOSHADOW) )
 		return SHADOWS_NONE;
 
@@ -9689,14 +9696,14 @@ void C_TFPlayer::ComputeFxBlend( void )
 {
 	BaseClass::ComputeFxBlend();
 
-	float flInvisible = GetPercentInvisible();
+	float flInvisible = GetEffectiveInvisibilityLevel();
 	if ( flInvisible != 0.0f )
 	{
 		// Tell our shadow
 		ClientShadowHandle_t hShadow = GetShadowHandle();
 		if ( hShadow != CLIENTSHADOW_INVALID_HANDLE )
 		{
-			g_pClientShadowMgr->SetFalloffBias( hShadow, flInvisible * 255 );
+			g_pClientShadowMgr->SetFalloffBias( hShadow, RoundFloatToByte(flInvisible * 255) );
 		}
 	}
 }

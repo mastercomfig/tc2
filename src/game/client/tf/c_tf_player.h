@@ -599,6 +599,8 @@ private:
 	// Spy cigarette smoke
 	bool m_bCigaretteSmokeActive;
 
+	bool m_bCompetitiveVisible;
+
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;
 	CNewParticleEffect	*m_pTauntWithMeEffect;
