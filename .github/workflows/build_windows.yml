@@ -12,7 +12,6 @@ jobs:
         with:
           sparse-checkout: |
             .github
-          fetch-depth: 0
 
       # Support incremental builds by caching (almost) the entire workspace.
       #
@@ -57,7 +56,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           clean: false
-          fetch-depth: 0
 
       - name: Add msbuild
         uses: microsoft/setup-msbuild@v1.0.2
