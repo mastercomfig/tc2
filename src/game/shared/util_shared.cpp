@@ -671,10 +671,13 @@ void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Ve
 	// because one day, rotated collideables will work!
 	Assert( pCollision->GetCollisionAngles() == vec3_angle );
 
+	CTraceFilterEntity traceFilter( pEntity, pCollision->GetCollisionGroup() );
+	CTraceFilterChain filterChain( &traceFilter, pFilter );
+
 #ifdef PORTAL
 	UTIL_Portal_TraceEntity( pEntity, vecAbsStart, vecAbsEnd, mask, pFilter, ptr );
 #else
-	enginetrace->SweepCollideable( pCollision, vecAbsStart, vecAbsEnd, pCollision->GetCollisionAngles(), mask, pFilter, ptr );
+	enginetrace->SweepCollideable( pCollision, vecAbsStart, vecAbsEnd, pCollision->GetCollisionAngles(), mask, &filterChain, ptr );
 #endif
 }
 
