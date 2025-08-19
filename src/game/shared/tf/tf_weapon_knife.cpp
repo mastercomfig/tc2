@@ -530,10 +530,10 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pTarget->WorldSpaceCenter(), 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 #ifdef GAME_DLL
-	NDebugOverlay::HorzArrow(pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER);
+	NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 	DevMsg( "[server] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f SightDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot, flSightAnglesDot );
 #else
-	DevMsg("[client] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot);
+	DevMsg( "[client] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
 #endif
 #endif
 
