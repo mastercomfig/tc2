@@ -826,7 +826,7 @@ void CTFTeamMenu::OnTick()
 
 	bool bRedHasBots = false;
 	bool bBluHasBots = false;
-	if (iCurrentTeam <= LAST_SHARED_TEAM)
+	if ( iTeamSizeRestriction > 0 && iCurrentTeam <= LAST_SHARED_TEAM )
 	{
 		for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)
 		{
