@@ -343,8 +343,10 @@ void CSteamFriendsListPanel::UpdateFriendsList()
 	bool bDone = false;
 	
 	const double flStart = Plat_FloatTime();
+	// only use 0.5ms per second and chunk at 10 friends per second since that's what we can see
+	int iNumProcessed = 0;
 	while( m_nLastProcessedPotentialFriend < m_mapKnownFriends.Count() &&
-		   Plat_FloatTime() - flStart < 0.0005 )
+		   Plat_FloatTime() - flStart < 0.0005 && iNumProcessed <= 10 )
 	{
 		PotentialFriend_t potentialFriend = m_mapKnownFriends[ m_nLastProcessedPotentialFriend ];
 
@@ -355,6 +357,7 @@ void CSteamFriendsListPanel::UpdateFriendsList()
 		}
 
 		++m_nLastProcessedPotentialFriend;
+		++iNumProcessed;
 			
 		CSteamID steamIDFriend = potentialFriend.m_steamID;
 
