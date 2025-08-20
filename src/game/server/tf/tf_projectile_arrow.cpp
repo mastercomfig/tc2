@@ -821,6 +821,8 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 		float closest_dist = 99999;
 		mstudiobbox_t *aligned_box = NULL;
 		float closest_dir = -1.0f;
+		Vector closest_pos;
+		Vector aligned_pos;
 
 		// Intense, but extremely accurate:
 		AngleVectors( GetAbsAngles(), &forward );
@@ -841,6 +843,7 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 			{
 				closest_dist = dist;
 				closest_box = pbox;
+				closest_pos = position;
 			}
 
 			// we do an abs here. while technically incorrect, we should always be assuming we are entering the bounding box into the model in a positive direction.
@@ -851,13 +854,19 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 			{
 				closest_dir = dot;
 				aligned_box = pbox;
+				aligned_pos = position;
 			}
 		}
 
-		if ( aligned_box && aligned_box->group == HITGROUP_HEAD )
+		if (aligned_box && aligned_box->group == HITGROUP_HEAD)
 		{
 			// if not a headshot by dist check, we need a direction check as well.
-			closest_box = aligned_box;
+			const bool bShouldRealign = !closest_box || (aligned_pos - closest_pos).LengthSqr() < 10.0f * 10.0f;
+			if (bShouldRealign)
+			{
+				// only realign if close enough. this should fix cases when aiming up at the feet
+				closest_box = aligned_box;
+			}
 		}
 	}
 
