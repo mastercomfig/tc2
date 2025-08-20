@@ -3434,7 +3434,7 @@ void CNavMesh::BeginGeneration( bool incremental )
 		}
 	}
 #else
-	engine->ServerCommand( "bot_kick\n" );
+	engine->ServerCommand( "bot_kick all\n" );
 #endif
 
 	// Right now, incrementally-generated areas won't connect to existing areas automatically.
