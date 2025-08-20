@@ -4969,7 +4969,7 @@ void SpawnRunes( void )
 
 void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 {
-	if ( !bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && m_flMatchSummaryTeleportTime > 0 )
+	if ( !bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && m_flMatchSummaryTeleportTime < 0 )
 	{
 		bool bShouldSkipRespawn = false;
 		// Skip the respawn at the beginning of a round in casual/comp mode since we already
