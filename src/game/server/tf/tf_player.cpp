@@ -7687,7 +7687,11 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 				if ( ShouldForceAutoTeam() )
 				{
 					ChangeTeam( GetAutoTeam(), true, false );
-					ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_BLUE ) ? PANEL_CLASS_BLUE : PANEL_CLASS_RED );
+					if ( GetTeamNumber() > LAST_SHARED_TEAM )
+					{
+						// sometimes autoteam can fail to put us on a team due to team size restrictions.
+						ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_BLUE ) ? PANEL_CLASS_BLUE : PANEL_CLASS_RED );
+					}
 				}
 				else
 				{
