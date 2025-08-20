@@ -7652,9 +7652,9 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				}
 			}
 
-			if ( pVictim->GetActiveWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SHOVEL )
+			if ( pVictim->GetActiveWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SHOVEL && gpGlobals->curtime >= pVictim->GetActiveTFWeapon()->GetLastReadyTime() )
 			{
-				CTFShovel* pShovel = static_cast<CTFShovel*>(pVictim->GetActiveTFWeapon());
+				CTFShovel* pShovel = static_cast<CTFShovel*>( pVictim->GetActiveTFWeapon() );
 				if ( pShovel->HasDamageBoost() )
 				{
 					float flOriginalDamage = flDamageBase;
