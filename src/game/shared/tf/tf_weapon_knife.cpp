@@ -491,8 +491,11 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 	// Get a vector from owner origin to target origin
 	Vector vecToTarget;
 	vecToTarget = pTarget->WorldSpaceCenter() - pOwner->WorldSpaceCenter();
+#ifdef GAME_DLL
+	Vector vecToTarget3D = vecToTarget;
+#endif
 	vecToTarget.z = 0.0f;
-	vecToTarget.NormalizeInPlace();
+	float flDist = vecToTarget.NormalizeInPlace();
 
 	// Get owner forward view vector
 	Vector vecOwnerForward;
@@ -517,11 +520,23 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 
 	// do an additional check to see if our victim reacted in time and faced the spy.
 #ifdef GAME_DLL
-	Vector vecTargetSight;
-	AngleVectors(pTarget->EyeAngles(), &vecTargetSight, NULL, NULL);
+	Vector vecTargetSight3D;
+	AngleVectors( pTarget->EyeAngles(), &vecTargetSight3D, NULL, NULL );
+	Vector vecTargetSight = vecTargetSight3D;
 	vecTargetSight.z = 0.0f;
 	vecTargetSight.NormalizeInPlace();
-	float flSightAnglesDot = DotProduct(-vecToTarget, vecTargetSight);	// Looking at spy?
+	// Looking at spy?
+	float flSightAnglesDot;
+	// If the spy is too close, our 2D angles are not going to be accurate. consider a full 3D check
+	float flMax = pTarget->WorldAlignSize().x;
+	if ( flDist < flMax )
+	{
+		flSightAnglesDot = DotProduct(-vecToTarget3D, vecTargetSight3D);
+	}
+	else
+	{
+		flSightAnglesDot = DotProduct( -vecToTarget, vecTargetSight );
+	}
 #endif
 
 	// Debug
