@@ -480,7 +480,8 @@ void CTFWeaponBaseGrenadeProj::Detonate( void )
 	SetThink( NULL );
 
 	vecSpot = GetAbsOrigin() + Vector ( 0 , 0 , 8 );
-	UTIL_TraceLine ( vecSpot, vecSpot + Vector ( 0, 0, -32 ), MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, & tr);
+	Vector dir = UseImpactNormal() ? -GetImpactNormal() : Vector(0, 0, -1);
+	UTIL_TraceLine ( vecSpot, vecSpot + dir * 32, MASK_SHOT_HULL, this, COLLISION_GROUP_NONE, & tr);
 
 	Explode( &tr, GetDamageType() );
 

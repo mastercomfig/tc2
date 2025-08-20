@@ -553,9 +553,12 @@ bool CTFPipebombLauncher::DetonateRemotePipebombs( bool bFizzle )
 			if ( pTemp->IsEffectActive( EF_NODRAW ) )
 				continue;
 #ifdef GAME_DLL
-			if ( bFizzle )
 			{
-				pTemp->Fizzle();
+				CDisablePredictionFiltering disabler;
+				if (bFizzle)
+				{
+					pTemp->Fizzle();
+				}
 			}
 #endif
 
@@ -572,11 +575,14 @@ bool CTFPipebombLauncher::DetonateRemotePipebombs( bool bFizzle )
 				}
 			}
 #ifdef GAME_DLL
-			if ( CanDestroyStickies() )
 			{
-				pTemp->DetonateStickies();
+				CDisablePredictionFiltering disabler;
+				if (CanDestroyStickies())
+				{
+					pTemp->DetonateStickies();
+				}
+				pTemp->Detonate();
 			}
-			pTemp->Detonate();
 #endif
 		}
 	}
