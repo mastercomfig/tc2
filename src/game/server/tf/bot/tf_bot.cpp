@@ -912,7 +912,6 @@ bool CTFBot::GetWeightDesiredClassToSpawn( CUtlVector< ETFClass > &vecClassToSpa
 	// assume offense
 	ClassSelectionInfo *desiredRoster = offenseRoster;
 
-	// TODO(mcoms): detect community competitive: highlander and 6s
 	if ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsCompetitiveGame() )
 	{
 		desiredRoster = compRoster;
@@ -1114,8 +1113,7 @@ ETFClass CTFBot::GetPresetClassToSpawn() const
 	// assume offense
 	ETFClass *desiredRoster = offenseRoster;
 
-	// TODO(mcoms): detect community competitive: highlander and 6s
-	if ( TFGameRules()->IsMatchTypeCompetitive() )
+	if ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsCompetitiveGame() )
 	{
 		desiredRoster = compRoster;
 	}
