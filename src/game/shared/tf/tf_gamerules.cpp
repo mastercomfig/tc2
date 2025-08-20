@@ -149,6 +149,7 @@
 
 #include "tier3/tier3.h"
 // memdbgon must be the last include file in a .cpp file!!!
+#include "tf_weapon_shovel.h"
 #include "tier0/memdbgon.h"
 
 
@@ -7648,6 +7649,24 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				if ( flOriginalDamage != flDamageBase )
 				{
 					pVictim->PlayDamageResistSound( flOriginalDamage, flDamageBase );
+				}
+			}
+
+			if ( pVictim->GetActiveWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SHOVEL )
+			{
+				CTFShovel* pShovel = static_cast<CTFShovel*>(pVictim->GetActiveTFWeapon());
+				if ( pShovel->HasDamageBoost() )
+				{
+					float flOriginalDamage = flDamageBase;
+					float flVictimHealthRatio = ( pVictim->GetHealth() - flRealDamage ) / pVictim->GetMaxHealth();
+					if ( flVictimHealthRatio <= 0.5f )
+					{
+						flDamageBase *= 0.8f;
+					}
+					if ( flOriginalDamage != flDamageBase )
+					{
+						pVictim->PlayDamageResistSound(flOriginalDamage, flDamageBase);
+					}
 				}
 			}
 

@@ -848,7 +848,7 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 
 			// we do an abs here. while technically incorrect, we should always be assuming we are entering the bounding box into the model in a positive direction.
 			// this can also help us trace where the arrow "was" and project backwards into the closest hitbox along the path.
-			float dot = fabsf(DotProduct( forward, (tr.endpos - start).Normalized()));
+			float dot = fabsf( DotProduct( forward, (tr.endpos - start).Normalized() ) );
 
 			if ( dot > closest_dir )
 			{
