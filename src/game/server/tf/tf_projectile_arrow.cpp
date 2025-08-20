@@ -819,10 +819,12 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 		Vector position, start, forward;
 		QAngle angles;
 		float closest_dist = 99999;
+		mstudiobbox_t *aligned_box = NULL;
+		float closest_dir = -1.0f;
 
 		// Intense, but extremely accurate:
 		AngleVectors( GetAbsAngles(), &forward );
-		start = GetAbsOrigin() + forward*16;
+		start = GetAbsOrigin() - forward*16;
 		for ( int i = 0; i < set->numhitboxes; i++ )
 		{
 			mstudiobbox_t *pbox = set->pHitbox( i );
@@ -840,6 +842,22 @@ void CTFProjectile_Arrow::ArrowTouch( CBaseEntity *pOther )
 				closest_dist = dist;
 				closest_box = pbox;
 			}
+
+			// we do an abs here. while technically incorrect, we should always be assuming we are entering the bounding box into the model in a positive direction.
+			// this can also help us trace where the arrow "was" and project backwards into the closest hitbox along the path.
+			float dot = fabsf(DotProduct( forward, (tr.endpos - start).Normalized()));
+
+			if ( dot > closest_dir )
+			{
+				closest_dir = dot;
+				aligned_box = pbox;
+			}
+		}
+
+		if ( aligned_box && aligned_box->group == HITGROUP_HEAD )
+		{
+			// if not a headshot by dist check, we need a direction check as well.
+			closest_box = aligned_box;
 		}
 	}
 
