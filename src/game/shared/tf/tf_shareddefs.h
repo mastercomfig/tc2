@@ -1768,7 +1768,7 @@ enum
 	WINPANEL_BASIC = 0,
 };
 
-#define TF_DEATH_ANIMATION_TIME			2.0
+#define TF_DEATH_ANIMATION_TIME			2.0f
 
 
 enum HudNotification_t
