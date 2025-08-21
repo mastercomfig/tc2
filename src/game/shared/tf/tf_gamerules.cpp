@@ -7661,7 +7661,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					float flVictimHealthRatio = ( pVictim->GetHealth() - flRealDamage ) / pVictim->GetMaxHealth();
 					if ( flVictimHealthRatio <= 0.5f )
 					{
-						flDamageBase *= 0.8f;
+						flDamageBase *= RemapValClamped( flOwnerHealthRatio, 0.5f, 0.1f, 0.8f, 0.5f );
 					}
 					if ( flOriginalDamage != flDamageBase )
 					{
