@@ -6077,12 +6077,12 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 			case TF_WEAPON_PIPEBOMBLAUNCHER:
 			case TF_WEAPON_GRENADELAUNCHER:
 			case TF_WEAPON_CANNON:
-#if !defined(MCOMS_BALANCE_PACK)
+#if !defined(MCOMS_BALANCE_PACK) && 0
 			case TF_WEAPON_STICKBOMB:
 #endif
 				flAdjustedDamage *= 0.75f;
 				break;
-#if defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK) || 1
 			case TF_WEAPON_STICKBOMB:
 				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
 				break;
@@ -7661,7 +7661,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					float flVictimHealthRatio = ( pVictim->GetHealth() - flRealDamage ) / pVictim->GetMaxHealth();
 					if ( flVictimHealthRatio <= 0.5f )
 					{
-						flDamageBase *= RemapValClamped( flOwnerHealthRatio, 0.5f, 0.1f, 0.8f, 0.5f );
+						flDamageBase *= RemapValClamped( flVictimHealthRatio, 0.5f, 0.1f, 0.8f, 0.5f );
 					}
 					if ( flOriginalDamage != flDamageBase )
 					{
@@ -7670,7 +7670,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				}
 			}
 
-#if defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK) || 1
 			if ( pVictim->GetActiveTFWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
 			{
 				bool bShouldResist = true;
@@ -7691,7 +7691,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pVictim->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
 					if (pMedigun)
 					{
-						flDamageBase *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 0.5f);
+						flDamageBase *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 0.75f);
 					}
 				}
 			}

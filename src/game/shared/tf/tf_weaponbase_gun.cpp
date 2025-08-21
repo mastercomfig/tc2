@@ -996,7 +996,7 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 		}
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK) || 1
 	// Medic Uber
 	if (GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC && pPlayer)
 	{
@@ -1007,7 +1007,7 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
 			if (pMedigun)
 			{
-				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 2.0f);
+				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.5f);
 			}
 		}
 	}

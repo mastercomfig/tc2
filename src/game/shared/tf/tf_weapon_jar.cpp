@@ -129,7 +129,7 @@ void CTFJar::PrimaryAttack( void )
 
 void CTFJar::SecondaryAttack(void)
 {
-	#ifdef MCOMS_BALANCE_PACK
+#if defined(MCOMS_BALANCE_PACK) || 1
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (!pPlayer)
 		return;
@@ -150,7 +150,7 @@ void CTFJar::SecondaryAttack(void)
 		pPlayer->m_Shared.AddCond(TF_COND_ENERGY_BUFF, 8.0f);
 		RemoveProjectileAmmo(pPlayer);
 	}
-	#endif
+#endif
 
 	BaseClass::SecondaryAttack();
 }

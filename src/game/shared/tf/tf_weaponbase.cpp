@@ -2015,10 +2015,10 @@ bool CTFWeaponBase::ReloadSingly( void )
 			{
 				float SeqDuration = SequenceDuration();
 				// TODO(mcoms)
-#if 0
+#if 1
 				if ( GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
-					SeqDuration *= 1.25f;
+					SeqDuration *= 1.15f;
 				}
 #endif
 				SetReloadTimer( SeqDuration );

@@ -207,7 +207,7 @@ float CTFRevolver::GetWeaponSpread( void )
 {
 	float fSpread = BaseClass::GetWeaponSpread();
 
-#if defined(MCOMS_BALANCE_PACK) || 0
+#if defined(MCOMS_BALANCE_PACK) || 1
 	int iMode = 0;
 	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 	const bool bCanHeadshot = (iMode == 1);
@@ -217,7 +217,7 @@ float CTFRevolver::GetWeaponSpread( void )
 
 	if ( bCanHeadshot )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 0
+#if defined(MCOMS_BALANCE_PACK) || 1
 		// Always accurate
 		fSpread = 0.0f;
 #else
@@ -408,17 +408,26 @@ void CTFRevolver::Detach( void )
 //-----------------------------------------------------------------------------
 float CTFRevolver::GetProjectileDamage( void )
 {
+	CTFPlayer* pOwner = ToTFPlayer(GetOwner());
+	if ( !pOwner )
+		return BaseClass::GetProjectileDamage();
+
 	float flDamageMod = 1.0f;
 	int iExtraDamageOnHit = 0;
 	CALL_ATTRIB_HOOK_INT( iExtraDamageOnHit, extra_damage_on_hit );
 	if ( iExtraDamageOnHit )
 	{
-		CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
 		if ( pOwner )
 		{
 			flDamageMod = 1.0f + ( Min( 200, pOwner->m_Shared.GetDecapitations() ) * 0.01f );
 		}
 	}
+
+	if ( pOwner->m_Shared.IsStealthed() )
+	{
+		flDamageMod *= 0.5f;
+	}
+
 #if defined(MCOMS_BALANCE_PACK) || 0
 	if (SapperKillsCollectCrits())
 	{

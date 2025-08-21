@@ -1373,6 +1373,27 @@ bool CTFGameMovement::CheckJumpButton()
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
+
+#if defined(MCOMS_BALANCE_PACK) || 1
+	if (pWpn && pWpn->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
+	{
+		bool bShouldBoost = false;
+		float flClassResourceLevelMod = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(m_pTFPlayer->GetActiveTFWeapon(), flClassResourceLevelMod, mult_player_movespeed_resource_level);
+		if (flClassResourceLevelMod != 1.0f)
+		{
+			bShouldBoost = true;
+		}
+		if (bShouldBoost)
+		{
+			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
+			if (pMedigun)
+			{
+				flJumpMod *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.2f);
+			}
+		}
+	}
+#endif
 /*
 #ifdef STAGING_ONLY
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_SPACE_GRAVITY ) )
