@@ -346,8 +346,29 @@ public:
 
 			float flBurnDuration = tf_fireball_burn_duration.GetFloat();
 
+			bool bVictimIsImmunePyro = pTFPlayer->IsPlayerClass( TF_CLASS_PYRO );
+
+			// Check sniper shields (e.g. Darwin's)
+			if ( !bVictimIsImmunePyro && pTFPlayer->IsPlayerClass( TF_CLASS_SNIPER ) )
+			{
+				for ( int i = 0; i < pTFPlayer->GetNumWearables(); ++i )
+				{
+					CTFWearable* pWearableItem = dynamic_cast<CTFWearable*>(pTFPlayer->GetWearable(i));
+					if (!pWearableItem)
+						continue;
+
+					int nAfterburnImmunity = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(pWearableItem, nAfterburnImmunity, afterburn_immunity);
+					if (nAfterburnImmunity)
+					{
+						bVictimIsImmunePyro = true;
+						break;
+					}
+				}
+			}
+
 			// This burn affects pyros, too, but only half as long
-			if ( pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) )
+			if ( bVictimIsImmunePyro )
 			{
 				pTFPlayer->m_Shared.AddCond( TF_COND_BURNING_PYRO, ( flBurnDuration * 0.5f ), pOwner );
 			}

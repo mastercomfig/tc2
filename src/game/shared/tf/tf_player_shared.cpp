@@ -2911,8 +2911,29 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		}
 		else if ( gpGlobals->curtime >= m_flFlameBurnTime )
 		{
+			bool bVictimIsImmunePyro = m_pOuter->IsPlayerClass(TF_CLASS_PYRO);
+
+			// Check sniper shields (e.g. Darwin's)
+			if ( !bVictimIsImmunePyro && m_pOuter->IsPlayerClass( TF_CLASS_SNIPER ) )
+			{
+				for (int i = 0; i < m_pOuter->GetNumWearables(); ++i)
+				{
+					CTFWearable* pWearableItem = dynamic_cast<CTFWearable*>(m_pOuter->GetWearable(i));
+					if (!pWearableItem)
+						continue;
+
+					int nAfterburnImmunity = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(pWearableItem, nAfterburnImmunity, afterburn_immunity);
+					if (nAfterburnImmunity)
+					{
+						bVictimIsImmunePyro = true;
+						break;
+					}
+				}
+			}
+
 			// Burn the player (if not pyro, who does not take persistent burning damage)
-			if ( ( TF_CLASS_PYRO != m_pOuter->GetPlayerClass()->GetClassIndex() ) || InCond( TF_COND_BURNING_PYRO ) )
+			if ( !bVictimIsImmunePyro || InCond( TF_COND_BURNING_PYRO ) )
 			{
 				float flBurnDamage = TF_BURNING_DMG;
 				int nKillType = TF_DMG_CUSTOM_BURNING;
@@ -4687,7 +4708,7 @@ void CTFPlayerShared::OnRemoveRocketPack( void )
 void CTFPlayerShared::OnRemoveBurningPyro( void )
 {
 #ifdef GAME_DLL
-	if ( m_pOuter->IsPlayerClass( TF_CLASS_PYRO) && InCond( TF_COND_BURNING ) )
+	if ( InCond( TF_COND_BURNING ) )
 	{
 		RemoveCond( TF_COND_BURNING );
 	}
@@ -6739,7 +6760,27 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon, float 
 		return;
 
 	// pyros don't burn persistently or take persistent burning damage, but we show brief burn effect so attacker can tell they hit
-	bool bVictimIsImmunePyro = ( TF_CLASS_PYRO ==  m_pOuter->GetPlayerClass()->GetClassIndex() );
+	bool bVictimIsImmunePyro = m_pOuter->IsPlayerClass( TF_CLASS_PYRO );
+
+	// Check sniper shields (e.g. Darwin's)
+	if ( !bVictimIsImmunePyro && m_pOuter->IsPlayerClass( TF_CLASS_SNIPER ) )
+	{
+		for (int i = 0; i < m_pOuter->GetNumWearables(); ++i)
+		{
+			CTFWearable* pWearableItem = dynamic_cast<CTFWearable*>(m_pOuter->GetWearable(i));
+			if (!pWearableItem)
+				continue;
+
+			int nAfterburnImmunity = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWearableItem, nAfterburnImmunity, afterburn_immunity);
+			if (nAfterburnImmunity)
+			{
+				bVictimIsImmunePyro = true;
+				break;
+			}
+		}
+	}
+
 	if ( bVictimIsImmunePyro )
 	{
 		bVictimIsImmunePyro = !InCond( TF_COND_BURNING_PYRO );
@@ -6808,25 +6849,6 @@ void CTFPlayerShared::Burn( CTFPlayer *pAttacker, CTFWeaponBase *pWeapon, float 
 		}
 
 		bAfterburnImmunity |= nAfterburnImmunity != 0;
-	}
-	
-	// Check sniper shields (e.g. Darwin's)
-	if ( !bAfterburnImmunity && m_pOuter->IsPlayerClass( TF_CLASS_SNIPER ) )
-	{
-		for ( int i = 0; i < m_pOuter->GetNumWearables(); ++i )
-		{
-			CTFWearable *pWearableItem = dynamic_cast< CTFWearable* >( m_pOuter->GetWearable( i ) );
-			if ( !pWearableItem )
-				continue;
-
-			int nAfterburnImmunity = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWearableItem, nAfterburnImmunity, afterburn_immunity );
-			if ( nAfterburnImmunity )
-			{
-				bAfterburnImmunity = true;
-				break;
-			}
-		}
 	}
 
 	// check afterburn duration

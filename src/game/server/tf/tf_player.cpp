@@ -10294,7 +10294,28 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			}
 		}
 
-		if ( IsPlayerClass( TF_CLASS_PYRO ) )
+		bool bVictimIsImmunePyro = IsPlayerClass( TF_CLASS_PYRO );
+
+		// Check sniper shields (e.g. Darwin's)
+		if ( !bVictimIsImmunePyro && IsPlayerClass( TF_CLASS_SNIPER ) )
+		{
+			for ( int i = 0; i < GetNumWearables(); ++i )
+			{
+				CTFWearable* pWearableItem = dynamic_cast<CTFWearable*>( GetWearable( i ) );
+				if ( !pWearableItem )
+					continue;
+
+				int nAfterburnImmunity = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER(pWearableItem, nAfterburnImmunity, afterburn_immunity);
+				if (nAfterburnImmunity)
+				{
+					bVictimIsImmunePyro = true;
+					break;
+				}
+			}
+		}
+
+		if ( bVictimIsImmunePyro )
 		{
 			m_Shared.AddCond( TF_COND_BURNING_PYRO, tf_afterburn_max_duration );
 		}
