@@ -10497,7 +10497,8 @@ bool CTFGameRules::IsSpawnPointValid( CBaseEntity *pSpot, CBasePlayer *pPlayer, 
 	CTFTeamSpawn *pCTFSpawn = dynamic_cast<CTFTeamSpawn*>( pSpot );
 	if ( pCTFSpawn )
 	{
-		if ( pCTFSpawn->IsDisabled() )
+		// HACK: for some reason, some maps have their match summary points disabled but don't enable them.
+		if ( pCTFSpawn->IsDisabled() && !bMatchSummary )
 			return false;
 
 		if ( pCTFSpawn->GetTeamSpawnMode() && pCTFSpawn->GetTeamSpawnMode() != nSpawnMode )
