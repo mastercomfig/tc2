@@ -6724,7 +6724,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 
 		ChangeTeam( iTeam, bAutoTeamed, bSilent );
 
-		if ( tf_arena_force_class.GetBool() == false )
+		if ( tf_arena_force_class.GetBool() == false && iTeam > LAST_SHARED_TEAM )
 		{
 			ShowViewPortPanel( ( iTeam == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
 		}
@@ -8104,14 +8104,20 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 
 				int iTeam = GetAutoTeam( nPreferedTeam );
 				ChangeTeam( iTeam, true, false );
-				ShowViewPortPanel( ( iTeam == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
+				if ( iTeam > LAST_SHARED_TEAM )
+				{
+					ShowViewPortPanel( ( iTeam == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
+				}
 			}
 #ifdef TF_RAID_MODE
 			else if ( TFGameRules()->IsBossBattleMode() )
 			{
 				int iTeam = GetAutoTeam();
 				ChangeTeam( iTeam, true );
-				ShowViewPortPanel( ( iTeam == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
+				if ( iTeam > LAST_SHARED_TEAM )
+				{
+					ShowViewPortPanel( ( iTeam == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
+				}
 			}
 #endif
 			else
@@ -8372,7 +8378,10 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		if ( bAutoTeam )
 		{
 			ChangeTeam( GetAutoTeam(), true, false );
-			ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_BLUE ) ? PANEL_CLASS_BLUE : PANEL_CLASS_RED );
+			if ( GetTeamNumber() > LAST_SHARED_TEAM )
+			{
+				ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_BLUE ) ? PANEL_CLASS_BLUE : PANEL_CLASS_RED );
+			}
 		}
 		// Otherwise, show TEAM selection ui
 		else
