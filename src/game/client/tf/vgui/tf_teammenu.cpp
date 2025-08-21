@@ -870,7 +870,7 @@ void CTFTeamMenu::OnTick()
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_RED ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_RED, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction && !bRedHasBots ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction && !bRedHasBots && iCurrentTeam != TF_TEAM_RED ) ||
 		 ( pRules->IsMannVsMachineMode() && ( GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= tf_mvm_defenders_team_size.GetInt() ) )	 )
 	{
 		m_bRedDisabled = true;
@@ -878,7 +878,7 @@ void CTFTeamMenu::OnTick()
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_BLUE ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction && !bBluHasBots ) ||
+		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction && !bBluHasBots && iCurrentTeam != TF_TEAM_BLUE ) ||
 		 ( pRules->IsMannVsMachineMode() ) )
 	{
 		m_bBlueDisabled = true;
