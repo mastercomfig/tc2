@@ -526,6 +526,13 @@ void ClientModeTFNormal::Init()
 	{
 		sv_allow_server_adverisement_to_master_server.SetValue(false);
 	}
+
+	// Boost texture streaming time
+	ConVarRef mat_lodin_time("mat_lodin_time");
+	if (mat_lodin_time.IsValid())
+	{
+		mat_lodin_time.SetValue(0.4f);
+	}
 }
 
 //-----------------------------------------------------------------------------
