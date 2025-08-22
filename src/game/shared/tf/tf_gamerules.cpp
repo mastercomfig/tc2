@@ -6834,7 +6834,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				flDamage *= 0.75f;
 				bIsPrecisionRevolver = true;
 			}
-			if ( !pWeapon->CanHaveRevengeCrits() )
+			else if ( !pWeapon->CanHaveRevengeCrits() )
 			{
 				// 15% damage penalty on crits
 				flDamage *= 0.85f;
