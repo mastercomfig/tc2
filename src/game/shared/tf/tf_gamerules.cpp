@@ -6830,8 +6830,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWeapon, iMode, set_weapon_mode);
 			if ( iMode == 1 )
 			{
-				// 25% damage penalty on crits
-				flDamage *= 0.75f;
+				// 30% damage penalty on crits
+				flDamage *= 0.7f;
 				bIsPrecisionRevolver = true;
 			}
 			else if ( !pWeapon->CanHaveRevengeCrits() )
