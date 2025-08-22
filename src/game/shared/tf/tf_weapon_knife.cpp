@@ -508,7 +508,7 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 #ifdef CLIENT_DLL
 	AngleVectors( pTarget->EyeAngles(), &vecTargetForward, NULL, NULL );
 #else
-	AngleVectors( pTarget->GetAbsAngles(), &vecTargetForward, NULL, NULL );
+	AngleVectors( pTarget->GetNetworkEyeAngles(), &vecTargetForward, NULL, NULL );
 #endif
 	vecTargetForward.z = 0.0f;
 	vecTargetForward.NormalizeInPlace();
@@ -553,12 +553,22 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 #endif
 
 	// must get a backstab on the owner's view.
-	if ( flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5 && flViewAnglesDot > -0.3f )
+#if CLIENT_DLL
+	if ( flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5f && flViewAnglesDot > -0.3f )
+#else
+	// corrected for angle error
+	if ( flPosVsTargetViewDot > -0.001746f && flPosVsOwnerViewDot > 0.498488f && flViewAnglesDot > -0.30237f )
+#endif
 	{
 #ifdef CLIENT_DLL
 		return true;
 #else
+#if 0
 		return flSightAnglesDot <= 0.61f;
+#else
+		// corrected for angle error
+		return flSightAnglesDot <= 0.611389f;
+#endif
 #endif
 	}
 	return false;

@@ -23,13 +23,15 @@
 #define LC_NONE				0
 #define LC_ALIVE			(1<<0)
 
-#define LC_ORIGIN_CHANGED	(1<<8)
-#define LC_ANGLES_CHANGED	(1<<9)
-#define LC_SIZE_CHANGED		(1<<10)
-#define LC_ANIMATION_CHANGED (1<<11)
+#define LC_ORIGIN_CHANGED		(1<<8)
+#define LC_ANGLES_CHANGED		(1<<9)
+#define LC_SIZE_CHANGED			(1<<10)
+#define LC_ANIMATION_CHANGED	(1<<11)
+#define LC_EYES_CHANGED			(1<<12)
 
 static ConVar sv_lagcompensation_teleport_dist( "sv_lagcompensation_teleport_dist", "64", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "How far a player got moved by game code before we can't lag compensate their position back" );
 #define LAG_COMPENSATION_EPS_SQR ( 0.1f * 0.1f )
+#define LAG_COMPENSATION_EPS_HIGH_SQR ( 0.001f * 0.001f )
 // Allow 4 units of error ( about 1 / 8 bbox width )
 #define LAG_COMPENSATION_ERROR_EPS_SQR ( 4.0f * 4.0f )
 
@@ -77,6 +79,7 @@ public:
 		m_fFlags = 0;
 		m_vecOrigin.Init();
 		m_vecAngles.Init();
+		m_vecEyeAngles.Init();
 		m_vecMinsPreScaled.Init();
 		m_vecMaxsPreScaled.Init();
 		m_flSimulationTime = -1;
@@ -94,6 +97,7 @@ public:
 		m_fFlags = src.m_fFlags;
 		m_vecOrigin = src.m_vecOrigin;
 		m_vecAngles = src.m_vecAngles;
+		m_vecEyeAngles = src.m_vecEyeAngles;
 		m_vecMinsPreScaled = src.m_vecMinsPreScaled;
 		m_vecMaxsPreScaled = src.m_vecMaxsPreScaled;
 		m_flSimulationTime = src.m_flSimulationTime;
@@ -116,6 +120,7 @@ public:
 	// Player position, orientation and bbox
 	Vector					m_vecOrigin;
 	QAngle					m_vecAngles;
+	QAngle					m_vecEyeAngles;
 	Vector					m_vecMinsPreScaled;
 	Vector					m_vecMaxsPreScaled;
 
@@ -314,10 +319,11 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 		}
 
 		record.m_flSimulationTime	= pPlayer->GetSimulationTime();
-#ifdef TF_DLL
-		record.m_vecAngles			= ToTFPlayer(pPlayer)->GetNetworkEyeAngles();
-#else
 		record.m_vecAngles			= pPlayer->GetLocalAngles();
+#ifdef TF_DLL
+		record.m_vecEyeAngles		= ToTFPlayer(pPlayer)->GetNetworkEyeAngles();
+#else
+		record.m_vecEyeAngles		= pPlayer->EyeAngles();
 #endif
 		record.m_vecOrigin			= pPlayer->GetLocalOrigin();
 		record.m_vecMinsPreScaled	= pPlayer->CollisionProp()->OBBMinsPreScaled();
@@ -450,6 +456,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 	Vector minsPreScaled;
 	Vector maxsPreScaled;
 	QAngle ang;
+	QAngle eye;
 
 	VPROF_BUDGET( "BacktrackPlayer", "CLagCompensationManager" );
 	int pl_index = pPlayer->entindex() - 1;
@@ -530,6 +537,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 		Assert( frac > 0 && frac < 1 ); // should never extrapolate
 
 		ang				= Lerp( frac, record->m_vecAngles, prevRecord->m_vecAngles );
+		eye				= Lerp( frac, record->m_vecEyeAngles, prevRecord->m_vecEyeAngles );
 		org				= Lerp( frac, record->m_vecOrigin, prevRecord->m_vecOrigin );
 		minsPreScaled	= Lerp( frac, record->m_vecMinsPreScaled, prevRecord->m_vecMinsPreScaled );
 		maxsPreScaled	= Lerp( frac, record->m_vecMaxsPreScaled, prevRecord->m_vecMaxsPreScaled );
@@ -540,6 +548,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 		// just copy these values since they are the best we have
 		org				= record->m_vecOrigin;
 		ang				= record->m_vecAngles;
+		eye				= record->m_vecEyeAngles;
 		minsPreScaled	= record->m_vecMinsPreScaled;
 		maxsPreScaled	= record->m_vecMaxsPreScaled;
 	}
@@ -609,6 +618,11 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 	LagRecord *change  = &m_ChangeData[ pl_index ];
 
 	QAngle angdiff = pPlayer->GetLocalAngles() - ang;
+#ifdef TF_DLL
+	QAngle eyediff = ToTFPlayer(pPlayer)->GetNetworkEyeAngles() - eye;
+#else
+	QAngle eyediff = pPlayer->EyeAngles() - eye;
+#endif
 	Vector orgdiff = pPlayer->GetLocalOrigin() - org;
 
 	// Always remember the pristine simulation time in case we need to restore it.
@@ -621,6 +635,18 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 		pPlayer->SetLocalAngles( ang );
 		change->m_vecAngles = ang;
 	}
+
+#ifdef TF_DLL
+	// this is cheap, so we just check if changed at all
+	if ( eyediff.LengthSqr() > 0.0f )
+	{
+		flags |= LC_EYES_CHANGED;
+		CTFPlayer* pTFPlayer = ToTFPlayer(pPlayer);
+		restore->m_vecEyeAngles = pTFPlayer->GetNetworkEyeAngles();
+		pTFPlayer->SetNetworkEyeAngles(eye);
+		change->m_vecEyeAngles = eye;
+	}
+#endif
 
 	// Use absolute equality here
 	if ( minsPreScaled != pPlayer->CollisionProp()->OBBMinsPreScaled() || maxsPreScaled != pPlayer->CollisionProp()->OBBMaxsPreScaled() )
@@ -829,6 +855,20 @@ void CLagCompensationManager::FinishLagCompensation( CBasePlayer *player )
 				pPlayer->SetLocalAngles( restore->m_vecAngles );
 			}
 		}
+
+#ifdef TF_DLL
+		if ( restore->m_fFlags & LC_EYES_CHANGED )
+		{
+			restoreSimulationTime = true;
+
+			CTFPlayer* pTFPlayer = ToTFPlayer( pPlayer );
+
+			if ( pTFPlayer->GetNetworkEyeAngles() == change->m_vecEyeAngles )
+			{
+				pTFPlayer->SetNetworkEyeAngles( restore->m_vecEyeAngles );
+			}
+		}
+#endif
 
 		if ( restore->m_fFlags & LC_ORIGIN_CHANGED )
 		{

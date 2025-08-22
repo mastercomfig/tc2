@@ -1171,6 +1171,8 @@ private:
 
 public:
 	const QAngle& GetNetworkEyeAngles() const { return m_angEyeAngles; }
+	// DO NOT USE!!! only here for player lag compensation.
+	void SetNetworkEyeAngles( const QAngle& vecAngle ) { m_angEyeAngles = vecAngle; }
 
 	// Achievement data storage
 	CAchievementData	m_AchievementData;
