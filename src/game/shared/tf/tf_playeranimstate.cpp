@@ -325,7 +325,7 @@ void CTFPlayerAnimState::GetOuterAbsVelocity( Vector& vel )
 void CTFPlayerAnimState::Update( float eyeYaw, float eyePitch )
 {
 	// Profile the animation update.
-	VPROF( "CMultiPlayerAnimState::Update" );
+	VPROF( "CTFPlayerAnimState::Update" );
 
 	// Get the TF player.
 	CTFPlayer *pTFPlayer = GetTFPlayer();

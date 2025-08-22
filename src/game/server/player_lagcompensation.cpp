@@ -12,6 +12,9 @@
 #include "inetchannelinfo.h"
 #include "utllinkedlist.h"
 #include "BaseAnimatingOverlay.h"
+#ifdef TF_DLL
+#include "tf_player.h"
+#endif
 #include "tier0/vprof.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -311,7 +314,11 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 		}
 
 		record.m_flSimulationTime	= pPlayer->GetSimulationTime();
+#ifdef TF_DLL
+		record.m_vecAngles			= ToTFPlayer(pPlayer)->GetNetworkEyeAngles();
+#else
 		record.m_vecAngles			= pPlayer->GetLocalAngles();
+#endif
 		record.m_vecOrigin			= pPlayer->GetLocalOrigin();
 		record.m_vecMinsPreScaled	= pPlayer->CollisionProp()->OBBMinsPreScaled();
 		record.m_vecMaxsPreScaled	= pPlayer->CollisionProp()->OBBMaxsPreScaled();

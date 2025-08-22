@@ -558,7 +558,7 @@ bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 #ifdef CLIENT_DLL
 		return true;
 #else
-		return flSightAnglesDot <= 0.5f;
+		return flSightAnglesDot <= 0.61f;
 #endif
 	}
 	return false;
