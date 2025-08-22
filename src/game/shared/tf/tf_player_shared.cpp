@@ -13036,7 +13036,7 @@ bool CTFPlayer::CanAirDash( void ) const
 	if ( m_Shared.InCond( TF_COND_SODAPOPPER_HYPE ) )
 	{
 #if defined(MCOMS_BALANCE_PACK) || 1
-		return true;
+		return m_Shared.GetScoutHypeMeter() > 0.0f;
 #else
 		if ( m_Shared.GetAirDash() < 5 )
 			return true;

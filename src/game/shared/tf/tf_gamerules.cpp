@@ -6831,7 +6831,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			if ( iMode == 1 )
 			{
 				// 30% damage penalty on crits
-				flDamage *= 0.7f;
+				flDamage *= 0.726f;
 				bIsPrecisionRevolver = true;
 			}
 			else if ( !pWeapon->CanHaveRevengeCrits() )
@@ -6882,7 +6882,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( bIsPrecisionRevolver )
 			{
-				flOptimalDistance *= 1.5f;
+				flOptimalDistance *= 1.7f;
 			}
 
 			float flDistance = MAX( 1.0f, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );

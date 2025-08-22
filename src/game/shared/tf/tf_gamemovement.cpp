@@ -1066,10 +1066,12 @@ void CTFGameMovement::AirDash( void )
 		// Loose x hype on jump
 		float flHype = m_pTFPlayer->m_Shared.GetScoutHypeMeter();
 		m_pTFPlayer->m_Shared.SetScoutHypeMeter( flHype - iHypeResetsOnJump );
+#if 0
 		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->m_Shared.GetScoutHypeMeter() <= 0.0f )
 		{
 			m_pTFPlayer->m_Shared.StopScoutHypeDrain();
 		}
+#endif
 		m_pTFPlayer->TeamFortress_SetSpeed();
 	}
 
