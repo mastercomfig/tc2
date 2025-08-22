@@ -306,7 +306,7 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		}
 
 		// charge
-		int iCharge = (iClass == TF_CLASS_MEDIC) ? g_TF_PR->GetChargeLevel(m_iPlayerIndex) : 0;
+		int iCharge = ( iClass == TF_CLASS_MEDIC && bSameTeamAsLocalPlayer ) ? g_TF_PR->GetChargeLevel(m_iPlayerIndex) : 0;
 		if (iCharge != m_iPrevCharge)
 		{
 			if (iCharge > 0)
