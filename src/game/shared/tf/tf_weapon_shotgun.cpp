@@ -568,6 +568,19 @@ void CTFSodaPopper::SecondaryAttack()
 }
 
 //-----------------------------------------------------------------------------
+float CTFSodaPopper::GetReloadSpeedScale() const
+{
+	CTFPlayer* pPlayer = GetTFPlayerOwner();
+	if (!pPlayer)
+		return BaseClass::GetReloadSpeedScale();
+
+	if ( pPlayer->m_Shared.IsAirDashing() )
+		return 2.0f;
+
+	return BaseClass::GetReloadSpeedScale();
+}
+
+//-----------------------------------------------------------------------------
 float CTFPEPBrawlerBlaster::GetProgress( void )
 {
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
