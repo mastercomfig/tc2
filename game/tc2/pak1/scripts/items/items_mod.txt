@@ -1,5 +1,19 @@
 "items_game"
 {
+  "prefabs"
+  {
+    "weapon_soda_popper"
+    {
+      "attributes"
+      {
+        "hype resets on jump"
+				{
+					"attribute_class"	"hype_resets_on_jump"
+					"value"	"40"
+				}
+      }
+    }
+  }
   "items"
   {
     "44" // The Sandman

@@ -13035,10 +13035,14 @@ bool CTFPlayer::CanAirDash( void ) const
 
 	if ( m_Shared.InCond( TF_COND_SODAPOPPER_HYPE ) )
 	{
+#if defined(MCOMS_BALANCE_PACK) || 1
+		return true;
+#else
 		if ( m_Shared.GetAirDash() < 5 )
 			return true;
 		else
  			return false;
+#endif
 	}
 
 	CTFWeaponBase *pTFActiveWeapon = GetActiveTFWeapon();
@@ -14240,6 +14244,7 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 	if ( bIsLocalPlayer )
 	{
+#if !defined(MCOMS_BALANCE_PACK) && 0
 		if ( IsHypeBuffed() )
 		{
 			m_flHypeMeter -= gpGlobals->frametime * (m_fEnergyDrinkConsumeRate*0.75f);
@@ -14248,6 +14253,7 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 				StopScoutHypeDrain();
 			}
 		}
+#endif
 
 		if ( InCond( TF_COND_PHASE ) || InCond( TF_COND_ENERGY_BUFF ) )
 		{
@@ -14295,8 +14301,10 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 void CTFPlayerShared::SetScoutHypeMeter( float val )
 {
+#if !defined(MCOMS_BALANCE_PACK) && 0
 	if ( IsHypeBuffed() )
 		return;
+#endif
 
 	m_flHypeMeter = Clamp(val, 0.0f, 100.0f);
 	//if ( m_flHypeMeter >= 100.f )

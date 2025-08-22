@@ -1061,11 +1061,15 @@ void CTFGameMovement::AirDash( void )
 	// Lose hype on airdash
 	int iHypeResetsOnJump = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pTFPlayer, iHypeResetsOnJump, hype_resets_on_jump );
-	if ( iHypeResetsOnJump != 0 )
+	if ( iHypeResetsOnJump != 0 && ( !m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) || m_pTFPlayer->m_Shared.IsHypeBuffed() ) )
 	{
 		// Loose x hype on jump
 		float flHype = m_pTFPlayer->m_Shared.GetScoutHypeMeter();
 		m_pTFPlayer->m_Shared.SetScoutHypeMeter( flHype - iHypeResetsOnJump );
+		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->m_Shared.GetScoutHypeMeter() <= 0.0f )
+		{
+			m_pTFPlayer->m_Shared.StopScoutHypeDrain();
+		}
 		m_pTFPlayer->TeamFortress_SetSpeed();
 	}
 
