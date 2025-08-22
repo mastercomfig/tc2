@@ -11164,7 +11164,12 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 		if ( m_Shared.m_nNumHealers > 0 )
 		{
 			// if we're being healed, we get a 10% speed boost to catch up with our buddy.
-			maxfbspeed = MIN( 320.0f + flFlatHealSpeedAdd, maxfbspeed * 1.1f );
+			const float flMaxBoost = 320.0f + flFlatHealSpeedAdd;
+			if ( maxfbspeed < flMaxBoost )
+			{
+				// speed up to max boost, but only if we started at a speed lower than the boost.
+				maxfbspeed = MIN( maxfbspeed * 1.1f, flMaxBoost );
+			}
 		}
 	}
 #endif
