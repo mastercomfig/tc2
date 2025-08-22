@@ -49,6 +49,7 @@ extern ConVar tf_max_health_boost;
 //-----------------------------------------------------------------------------
 CTFPlayerPanel::CTFPlayerPanel( vgui::Panel *parent, const char *name ) : vgui::EditablePanel( parent, name )
 {
+	m_iPlayerIndex = 0;
 	m_pHealthIcon = new CTFPlayerPanelGUIHealth( this, "HealthIcon" );
 	m_pClassImage = NULL;
 	m_bPlayerReadyModeActive = false;

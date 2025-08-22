@@ -131,12 +131,6 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				if ( iRespawnWait <= 0 )
 					iRespawnWait = -1;
 			}
-
-			// hide class info from the other team?
-			if ( !bSameTeamAsLocalPlayer )
-			{
-				iClass = TF_CLASS_UNDEFINED;
-			}
 		}
 
 		if ( m_iTeam != GetTeam() )
@@ -201,8 +195,9 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				{
 					m_pClassImage->SetImage( "hud_connecting" );
 				}
-				else if ( iClass == TF_CLASS_UNDEFINED )
+				else if ( iClass == TF_CLASS_UNDEFINED || !bSameTeamAsLocalPlayer )
 				{
+					// hide class info from the other team, unless dead
 					int iDeadClass = bFeigned ? g_TF_PR->GetPlayerClass( m_iPlayerIndex ) : g_TF_PR->GetPlayerClassWhenKilled( m_iPlayerIndex );
 					if ( !bAlive && !bSameTeamAsLocalPlayer && ( m_iTeam >= FIRST_GAME_TEAM ) && ( iDeadClass > TF_CLASS_UNDEFINED ) )
 					{
@@ -340,8 +335,6 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 void CTFTeamStatusPlayerPanel::Reset()
 {
 	BaseClass::Reset();
-
-	m_iTeam = TEAM_UNASSIGNED;
 }
 
 //-----------------------------------------------------------------------------
@@ -635,8 +628,10 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 					continue;
 
 				int iTeam = g_TF_PR->GetTeam(i);
+
 				if (iTeam < FIRST_GAME_TEAM)
 					continue;
+
 				if (bClassOrder && g_TF_PR->GetPlayerClass(i) != nCurrentClass)
 					continue;
 
