@@ -166,7 +166,7 @@ int	CTFGrenadePipebombProjectile::GetDamageType( void )
 //-----------------------------------------------------------------------------
 bool CTFGrenadePipebombProjectile::ShouldMiniCritOnReflect() const
 {
-	return GetType() == TF_GL_MODE_REGULAR;
+	return GetType() == TF_GL_MODE_REGULAR || GetType() == TF_GL_MODE_STICKBOMB;
 }
 
 //-----------------------------------------------------------------------------
@@ -452,6 +452,11 @@ CTFGrenadePipebombProjectile* CTFGrenadePipebombProjectile::Create( const Vector
 	case TF_PROJECTILE_CANNONBALL:
 		{
 			iPipeBombDetonateType = TF_GL_MODE_CANNONBALL;
+		}
+		break;
+	case -1:
+		{
+			iPipeBombDetonateType = TF_GL_MODE_STICKBOMB;
 		}
 		break;
 	default:
@@ -1400,6 +1405,10 @@ int CTFGrenadePipebombProjectile::GetDamageCustom()
 	else if ( m_iType == TF_GL_MODE_REMOTE_DETONATE_PRACTICE )
 	{
 		return TF_DMG_CUSTOM_PRACTICE_STICKY;
+	}
+	else if ( m_iType == TF_GL_MODE_STICKBOMB )
+	{
+		return TF_DMG_CUSTOM_STICKBOMB_EXPLOSION;
 	}
 
 	return BaseClass::GetDamageCustom();

@@ -264,7 +264,7 @@ void CTFStickBomb::Smack( void )
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			float flBaseDamage = 50.0f;
+			float flBaseDamage = 75.0f;
 			if (!bIsCrit && m_bMiniCrit)
 			{
 				flBaseDamage *= 1.35f;
@@ -279,24 +279,49 @@ void CTFStickBomb::Smack( void )
 			TFGameRules()->RadiusDamage( radiusinfo );
 
 #if defined(MCOMS_BALANCE_PACK) || 1
-			CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create(vecSwingStart, QAngle(180, 0, 0), Vector(0, 0, 100), vec3_origin, pTFPlayer, GetTFWpnData(), -1, 1.0f);
-			if (pProjectile)
-			{
-				pProjectile->SetLauncher(this);
-				pProjectile->SetCritical(bIsCrit);
-				if (!bIsCrit && m_bMiniCrit)
-				{
-					pProjectile->IncrementDeflected(); // hack for minicrits
-				}
-				pProjectile->SetModel(BaseClass::GetWorldModel());
-				pProjectile->SetDetonateTimerLength(0.7f);
-				UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
-			}
+			// at position
+			Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+			float timer1 = RandomFloat(0.6f, 0.8f);
+			CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
+			// at swing direction
+			Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+			vel2 += vecForward * 50.0f;
+			float timer2 = RandomFloat(0.6f, 0.8f);
+			CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
+			// at velocity
+			Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+			vel3 += pTFPlayer->GetAbsVelocity();
+			float timer3 = RandomFloat(0.6f, 0.8f);
+			CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
+			// random
+			Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
+			float timer4 = RandomFloat(0.6f, 0.8f);
+			CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
 #endif
 		}
 #endif
 	}
 }
+
+#ifdef GAME_DLL
+void CTFStickBomb::CreateGrenade(CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit)
+{
+	Vector angImpulse = AngularImpulse(600, random->RandomInt(-1200, 1200), 0);
+	CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create(pos, QAngle(180, 0, 0), vel, angImpulse, pPlayer, GetTFWpnData(), -1, flDmgMult);
+	if (pProjectile)
+	{
+		pProjectile->SetLauncher(this);
+		pProjectile->SetCritical(bIsCrit);
+		if (!bIsCrit && m_bMiniCrit)
+		{
+			pProjectile->IncrementDeflected(); // hack for minicrits
+		}
+		pProjectile->SetModel(BaseClass::GetWorldModel());
+		pProjectile->SetDetonateTimerLength(flTimer);
+		UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
+	}
+}
+#endif
 
 void CTFStickBomb::WeaponReset( void )
 {

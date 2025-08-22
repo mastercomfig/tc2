@@ -98,6 +98,8 @@ public:
 	virtual const char*	GetWorldModel( void ) const OVERRIDE;
 #ifdef CLIENT_DLL
 	virtual int			GetWorldModelIndex( void ) OVERRIDE;
+#else
+	void				CreateGrenade(CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit);
 #endif
 
 	void				SetDetonated( int iVal ) { m_iDetonated = iVal; }
