@@ -95,7 +95,17 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 //-----------------------------------------------------------------------------
 int	CTFRevolver::GetDamageType( void ) const
 {
-	if ( CanHeadshot() && (gpGlobals->curtime - m_flLastAccuracyCheck > 1.f) )
+	float flHeadshotCooldown = 1.0f;
+#if defined(MCOMS_BALANCE_PACK) || 1
+	int iMode = 0;
+	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
+	const bool bAlwaysAccurate = (iMode == 1);
+	if (bAlwaysAccurate)
+	{
+		flHeadshotCooldown = 0.6f;
+	}
+#endif
+	if ( CanHeadshot() && (gpGlobals->curtime - m_flLastAccuracyCheck > flHeadshotCooldown ) )
 	{
 		int iDamageType = BaseClass::GetDamageType() | DMG_USE_HITLOCATIONS;
 		return iDamageType;
@@ -247,31 +257,44 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 	if ( tf_revolver_dynamic_crosshair.GetBool() )
 	{
 		const bool bCanHeadShot = CanHeadshot();
-		const float flHeadShotCooldown = 1.0f;
+		float flHeadShotCooldown = 1.0f;
 		
 #if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
 		constexpr float flShotTimeCooldown = 1.0f / 0.6f;
 		const float flTimeBetweenShots = m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_flTimeFireDelay;
-		const float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );
+		float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );
 #else
 		const float flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
 #endif
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
+		float flMaxSize = 2.5f;
 		// when is it fully accurate?
+#if defined(MCOMS_BALANCE_PACK) || 1
+		int iMode = 0;
+		CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
+		const bool bAlwaysAccurate = (iMode == 1);
+		if (bAlwaysAccurate)
+		{
+			flAccuracyCooldown = flTimeBetweenShots * 0.4f;
+			flHeadShotCooldown = flTimeBetweenShots;
+			flMaxSize = 1.25f;
+		}
+#endif
+
 		if ( bCanHeadShot )
 		{
 			if ( flAccuracyCooldown == flHeadShotCooldown )
 			{
 				// headshot cooldown is the same as our accuracy cooldown.
-				flScale = RemapValClamped(flTimeSinceCheck, flHeadShotCooldown, 0.5f, 0.75f, 2.5f);
+				flScale = RemapValClamped(flTimeSinceCheck, flHeadShotCooldown, 0.5f, 0.75f, flMaxSize);
 			}
 			else
 			{
 				if ( flTimeSinceCheck < flAccuracyCooldown )
 				{
 					// show the accuracy time
-					flScale = RemapValClamped(flTimeSinceCheck, 0.5f, flAccuracyCooldown, 2.5f, 1.0f);
+					flScale = RemapValClamped(flTimeSinceCheck, 0.5f, flAccuracyCooldown, flMaxSize, 1.0f);
 				}
 				else
 				{

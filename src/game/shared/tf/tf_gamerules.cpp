@@ -6819,6 +6819,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		}
 #endif
 
+		bool bIsPrecisionRevolver = false;
+
 #if defined(MCOMS_BALANCE_PACK) || 1
 		// All revolver headshots falloff
 		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER )
@@ -6826,7 +6828,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			iForceCritDmgFalloff = 1;
 			int iMode = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWeapon, iMode, set_weapon_mode);
-			if ( iMode != 1 && !pWeapon->CanHaveRevengeCrits() )
+			if ( iMode == 1 )
+			{
+				// 25% damage penalty on crits
+				flDamage *= 0.75f;
+				bIsPrecisionRevolver = true;
+			}
+			if ( !pWeapon->CanHaveRevengeCrits() )
 			{
 				// 15% damage penalty on crits
 				flDamage *= 0.85f;
@@ -6871,6 +6879,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			else if ( bIsSniperRifle )
 			{
 				flOptimalDistance *= 2.5f;
+			}
+			else if ( bIsPrecisionRevolver )
+			{
+				flOptimalDistance *= 1.5f;
 			}
 
 			float flDistance = MAX( 1.0f, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
