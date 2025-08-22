@@ -264,7 +264,7 @@ void CTFStickBomb::Smack( void )
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			float flBaseDamage = 75.0f;
+			float flBaseDamage = 50.0f;
 			if (!bIsCrit && m_bMiniCrit)
 			{
 				flBaseDamage *= 1.35f;
