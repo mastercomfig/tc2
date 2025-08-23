@@ -6831,7 +6831,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			if ( iMode == 1 )
 			{
 				// 30% damage penalty on crits
-				flDamage *= 0.726f;
+				flDamage *= 0.6667f;
 				bIsPrecisionRevolver = true;
 			}
 			else if ( !pWeapon->CanHaveRevengeCrits() )
@@ -6848,6 +6848,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 								 ( info.GetCritType() == CTakeDamageInfo::CRIT_MINI && tf_weapon_minicrits_distance_falloff.GetBool() ) || 
 								 ( iForceCritDmgFalloff ) );
 		bool bDoShortRangeDistanceIncrease = !bCrit || info.GetCritType() == CTakeDamageInfo::CRIT_MINI ;
+		if (bIsPrecisionRevolver)
+		{
+			bDoShortRangeDistanceIncrease = false;
+		}
 		bool bDoLongRangeDistanceDecrease = !bIgnoreLongRangeDmgEffects && ( bForceCritFalloff || ( !bCrit && info.GetCritType() != CTakeDamageInfo::CRIT_MINI  ) );
 
 		// If we're doing any distance modification, we need to do that first
@@ -6882,7 +6886,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( bIsPrecisionRevolver )
 			{
-				flOptimalDistance *= 1.7f;
+				flOptimalDistance *= 1.4f;
 			}
 
 			float flDistance = MAX( 1.0f, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
@@ -7007,6 +7011,11 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				}
 				break;
 			}
+		}
+
+		if (bIsPrecisionRevolver && flRandomRangeVal < 0.5f)
+		{
+			flRandomDamage *= 0.5f;
 		}
 
 		// Random damage variance.

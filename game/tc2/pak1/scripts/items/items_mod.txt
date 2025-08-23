@@ -13,6 +13,32 @@
 				}
       }
     }
+    "weapon_ambassador"
+    {
+      "attributes"
+      {
+        "fire rate penalty"
+				{
+					"attribute_class"	"mult_postfiredelay"
+					"value"	"1.5"
+				}
+        "reload time increased"
+				{
+					"attribute_class"	"mult_reload_time"
+					"value"	"1.3"
+				}
+        "damage penalty"
+				{
+					"attribute_class"	"mult_dmg"
+					"value" "1.35"
+				}
+        "sniper fires tracer"
+ 				{
+					"attribute_class"	"sniper_fires_tracer"
+					"value"	"1"
+				}
+      }
+    }
   }
   "items"
   {
