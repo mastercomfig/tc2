@@ -816,6 +816,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_fCloakConsumeRate = tf_spy_cloak_consume_rate.GetFloat();
 	m_fCloakRegenRate = tf_spy_cloak_regen_rate.GetFloat();
 
+	m_fHypeConsumeRate = 10.0f;
 	m_fEnergyDrinkConsumeRate = tf_scout_energydrink_consume_rate.GetFloat();
 	m_fEnergyDrinkRegenRate = tf_scout_energydrink_regen_rate.GetFloat();
 
@@ -7750,6 +7751,7 @@ void CTFPlayerShared::OnRemoveSodaPopperHype( void )
 #else
 	// make sure we clear it out
 	SetScoutHypeMeter(0.0f);
+	m_fHypeConsumeRate = 10.0f;
 #endif // CLIENT_DLL
 }
 
@@ -14244,16 +14246,28 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 	if ( bIsLocalPlayer )
 	{
-#if !defined(MCOMS_BALANCE_PACK) && 0
 		if ( IsHypeBuffed() )
 		{
-			m_flHypeMeter -= gpGlobals->frametime * (m_fEnergyDrinkConsumeRate*0.75f);
-			if ( m_flHypeMeter <= 0.0f )
+#if defined(MCOMS_BALANCE_PACK) || 1
+			constexpr float flConsumeRate = 1.0f;
+			m_fHypeConsumeRate += 2.5f * gpGlobals->frametime;
+#else
+			constexpr float flConsumeRate = 1.0f;
+#endif
+			m_flHypeMeter -= gpGlobals->frametime * ( m_fHypeConsumeRate * flConsumeRate );
+
+
+#if defined(MCOMS_BALANCE_PACK) || 1
+			constexpr float flMinHypeBeforeStop = -7.5f;
+#else
+			constexpr float flMinHypeBeforeStop = 0.0f;
+#endif
+
+			if ( m_flHypeMeter <= flMinHypeBeforeStop )
 			{
-				StopScoutHypeDrain();
+   				StopScoutHypeDrain();
 			}
 		}
-#endif
 
 		if ( InCond( TF_COND_PHASE ) || InCond( TF_COND_ENERGY_BUFF ) )
 		{
@@ -14306,7 +14320,7 @@ void CTFPlayerShared::SetScoutHypeMeter( float val )
 		return;
 #endif
 
-	m_flHypeMeter = Clamp(val, 0.0f, 100.0f);
+	m_flHypeMeter = Min( val, 100.0f );
 	//if ( m_flHypeMeter >= 100.f )
 	//{
 	//	if ( m_pOuter->IsPlayerClass( TF_CLASS_SCOUT ) )

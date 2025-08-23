@@ -982,6 +982,7 @@ private:
 	float m_flCloakStartTime;
 #endif
 
+	float m_fHypeConsumeRate;
 	float m_fEnergyDrinkConsumeRate;
 	float m_fEnergyDrinkRegenRate;
 

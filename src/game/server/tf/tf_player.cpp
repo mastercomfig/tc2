@@ -1810,9 +1810,9 @@ void CTFPlayer::TFPlayerThink()
 	}
 
 	// maintain soda popper hype buff mark for death
-	if ( m_Shared.IsHypeBuffed() && Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) )
+	if ( m_Shared.IsHypeBuffed() )
 	{
-		m_Shared.AddCond(TF_COND_MARKEDFORDEATH_SILENT, 0.1f);
+		m_Shared.AddCond(TF_COND_MARKEDFORDEATH_SILENT, 2.0f);
 	}
 
 	// You can't touch a hooked target, so transmit plague when you get as close as you can
@@ -2498,10 +2498,13 @@ void CTFPlayer::PreThink()
 
 		if ( flHypeDecays != 0 )
 		{
-			// Loose hype over time
+			// Lose hype over time
 			float flHype = m_Shared.GetScoutHypeMeter();
-			flHype = flHype - flHypeDecays;
-			m_Shared.SetScoutHypeMeter( flHype );
+			if ( flHype > 0.0f )
+			{
+				flHype = flHype - flHypeDecays;
+				m_Shared.SetScoutHypeMeter( Max( flHype, 0.0f ) );
+			}
 			TeamFortress_SetSpeed();
 		}
 	}
@@ -10179,9 +10182,12 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 		CALL_ATTRIB_HOOK_INT( iHypeResetsOnTakeDamage, lose_hype_on_take_damage );
 		if ( iHypeResetsOnTakeDamage != 0 )
 		{
-			// Loose x hype on jump
+			// Lose x hype on jump
 			float flHype = m_Shared.GetScoutHypeMeter();
-			m_Shared.SetScoutHypeMeter( flHype - iHypeResetsOnTakeDamage * info.GetDamage() );
+			if ( flHype > 0.0f )
+			{
+				m_Shared.SetScoutHypeMeter( Max( flHype - iHypeResetsOnTakeDamage * info.GetDamage(), 0.0f ) );
+			}
 			TeamFortress_SetSpeed();
 		}
 	}

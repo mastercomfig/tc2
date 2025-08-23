@@ -87,7 +87,7 @@ ConVar hud_combattext_doesnt_block_overhead_text( "hud_combattext_doesnt_block_o
 ConVar hud_combattext_red( "hud_combattext_red", "255", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_green( "hud_combattext_green", "40", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_blue( "hud_combattext_blue", "25", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
-ConVar hud_combattext_large("hud_combattext_large", "1", FCVAR_ARCHIVE );
+ConVar hud_combattext_large("hud_combattext_large", "0", FCVAR_ARCHIVE );
 
 ConVar tf_dingalingaling( "tf_dingalingaling", "1", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
 ConVar tf_dingaling_volume( "tf_dingaling_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the hit sound.", true, 0.0, true, 1.0 );
@@ -104,7 +104,7 @@ ConVar tf_dingaling_lasthit_pitch_override( "tf_dingaling_lasthit_pitch_override
 ConVar tf_dingalingaling_repeat_delay( "tf_dingalingaling_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the hit sound.  Set to 0 to play a sound for every instance of damage dealt.", true, 0.f, false, 0.f );
 ConVar tf_dingaling_lasthit_repeat_delay( "tf_dingaling_lasthit_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the last hit sound.  Set to 0 to play a sound for every last hit.", true, 0.f, false, 0.f );
 
-#define TF_DAMAGEFEEDBACK_VERSION 2
+#define TF_DAMAGEFEEDBACK_VERSION 3
 
 ConVar tf_damagefeedback_version("tf_damagefeedback_version", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN);
 
@@ -928,6 +928,11 @@ public:
 				hud_combattext_green.SetValue(hud_combattext_green.GetDefault());
 				hud_combattext_blue.SetValue(hud_combattext_blue.GetDefault());
 			}
+			if (iUserVer < 3)
+			{
+				hud_combattext_large.SetValue(hud_combattext_large.GetDefault());
+				hud_combattext_batching.SetValue(hud_combattext_batching.GetDefault());
+			}
 		}
 
 		ResetDamageVars();
@@ -1232,7 +1237,10 @@ void CAccountPanel::Paint( void )
 
 				if ( bNewDamageStyle )
 				{
-					m_AccountDeltaItems[i].m_bLargeFont = true;
+					if ( hud_combattext_large.GetBool() )
+					{
+						m_AccountDeltaItems[i].m_bLargeFont = true;
+					}
 					m_AccountDeltaItems[i].m_bShadows = true;
 				}
 			}
@@ -1301,7 +1309,7 @@ void CAccountPanel::Paint( void )
 			}
 
 
-			if ( m_AccountDeltaItems[i].m_bLargeFont && hud_combattext_large.GetBool() )
+			if ( m_AccountDeltaItems[i].m_bLargeFont )
 			{
 				vgui::surface()->DrawSetTextFont( m_hDeltaItemFontBig );
 			}
@@ -1360,8 +1368,8 @@ void CAccountPanel::Paint( void )
 				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
 				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
 			}
-			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 120.0f : 80.0f;
-			unsigned char nAlpha = RoundFloatToByte( 80.0f * ( 1.0f - flLifetimePctAlpha) );
+			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 120.0f : 105.0f;
+			unsigned char nAlpha = RoundFloatToByte( flBaseAlpha * ( 1.0f - flLifetimePctAlpha) );
 			c[3] = nAlpha;
 
 			float flHeight = m_AccountDeltaItemsSmall[i].m_nHEnd - m_AccountDeltaItemsSmall[i].m_nHStart;

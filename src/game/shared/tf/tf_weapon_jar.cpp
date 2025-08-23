@@ -141,7 +141,7 @@ void CTFJar::SecondaryAttack(void)
 	if ((pPlayer->GetWaterLevel() == WL_Eyes) && !CanThrowUnderWater())
 		return;
 
-	if (GetWeaponProjectileType() == TF_PROJECTILE_JAR)
+	if (GetWeaponProjectileType() == TF_PROJECTILE_JAR && pPlayer->IsPlayerClass(TF_CLASS_SNIPER))
 	{
 		StartEffectBarRegen();
 #if GAME_DLL

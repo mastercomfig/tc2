@@ -2073,6 +2073,10 @@ public:
 			else if ( pPlayer->m_Shared.IsHypeBuffed() || ( pPlayer->GetActiveTFWeapon() && pPlayer->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SODA_POPPER && pPlayer->m_Shared.GetScoutHypeMeter() >= 100.0f ) )
 			{
 				vResult = Vector( 50, 2, 48 );
+				if ( !pPlayer->m_Shared.IsHypeBuffed() )
+				{
+					vResult *= 0.25f;
+				}
 				pPlayer->m_Shared.m_bChargeGlowing = false;
 			}
 			else if ( pPlayer->m_Shared.InCond( TF_COND_OFFENSEBUFF ) || pPlayer->m_Shared.InCond( TF_COND_ENERGY_BUFF ) )

@@ -6830,14 +6830,12 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			CALL_ATTRIB_HOOK_INT_ON_OTHER(pWeapon, iMode, set_weapon_mode);
 			if ( iMode == 1 )
 			{
-				// 30% damage penalty on crits
-				flDamage *= 0.6667f;
 				bIsPrecisionRevolver = true;
 			}
 			else if ( !pWeapon->CanHaveRevengeCrits() )
 			{
-				// 15% damage penalty on crits
-				flDamage *= 0.85f;
+				// 30% damage penalty on crits
+				flDamage *= 0.7f;
 			}
 		}
 #endif
@@ -6886,7 +6884,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( bIsPrecisionRevolver )
 			{
-				flOptimalDistance *= 1.4f;
+				flOptimalDistance *= 1.3f;
 			}
 
 			float flDistance = MAX( 1.0f, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
@@ -7010,12 +7008,23 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					flRandomDamage *= 1.5f;
 				}
 				break;
+			case TF_WEAPON_REVOLVER:
+				// Revolvers falloff more harshly at long range
+				if (flRandomRangeVal < 0.5f && bCrit)
+				{
+					if (flRandomRangeVal < 0.1f)
+					{
+						flRandomDamage *= 1.5f;
+					}
+					else
+					{
+						flRandomDamage *= 1.2f;
+					}
+					// can't reduce the crit below the actual damage
+					flRandomDamage = min(flRandomDamage, flDamage * 0.666666f);
+				}
+				break;
 			}
-		}
-
-		if (bIsPrecisionRevolver && flRandomRangeVal < 0.5f)
-		{
-			flRandomDamage *= 0.5f;
 		}
 
 		// Random damage variance.
@@ -7982,8 +7991,16 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttacker, iHypeOnDamage, hype_on_damage );
 			if ( iHypeOnDamage )
 			{
-				float flHype = RemapValClamped( flRealDamage, 1.f, 80.f, 1.f, 50.f );
-				float flNewHype = Min(100.f, flHype + pTFAttacker->m_Shared.GetScoutHypeMeter());
+				float flHype = RemapValClamped( flRealDamage, 1.f, 200.f, 1.f, 50.f );
+				if ( pTFAttacker->m_Shared.IsHypeBuffed() )
+				{
+					flHype *= 2.0f;
+					if ( flHype < 1 )
+					{
+						flHype = 1;
+					}
+				}
+				float flNewHype = flHype + pTFAttacker->m_Shared.GetScoutHypeMeter();
 				pTFAttacker->m_Shared.SetScoutHypeMeter(flNewHype);
 			}
 		}
