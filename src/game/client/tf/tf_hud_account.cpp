@@ -1301,7 +1301,7 @@ void CAccountPanel::Paint( void )
 			}
 
 
-			if ( m_AccountDeltaItems[i].m_bLargeFont )
+			if ( m_AccountDeltaItems[i].m_bLargeFont && hud_combattext_large.GetBool() )
 			{
 				vgui::surface()->DrawSetTextFont( m_hDeltaItemFontBig );
 			}
