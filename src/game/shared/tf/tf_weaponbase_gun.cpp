@@ -1007,7 +1007,7 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
 			if (pMedigun)
 			{
-				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.5f);
+				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.7f);
 			}
 		}
 	}

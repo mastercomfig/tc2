@@ -7721,7 +7721,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pVictim->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
 					if (pMedigun)
 					{
-						flDamageBase *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 0.75f);
+						flDamageBase *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 0.65f);
 					}
 				}
 			}
