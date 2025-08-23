@@ -1206,6 +1206,10 @@ void CAccountPanel::Paint( void )
 						m_AccountDeltaItems[iNext].m_nSourceID == m_AccountDeltaItems[i].m_nSourceID )
 					{
 						m_AccountDeltaItems[i].m_iAmount += m_AccountDeltaItems[iNext].m_iAmount;
+						if ( m_AccountDeltaItems[iNext].m_bLargeFont )
+						{
+							m_AccountDeltaItems[i].m_bLargeFont = true;
+						}
 						if ( !IsInFreezeCam() )
 						{
 							if ( bNewDamageStyle )
@@ -1368,7 +1372,7 @@ void CAccountPanel::Paint( void )
 				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
 				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
 			}
-			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 120.0f : 105.0f;
+			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 150.0f : 115.0f;
 			unsigned char nAlpha = RoundFloatToByte( flBaseAlpha * ( 1.0f - flLifetimePctAlpha) );
 			c[3] = nAlpha;
 
