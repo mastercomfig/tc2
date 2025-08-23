@@ -7746,6 +7746,7 @@ void CTFPlayerShared::OnRemoveSodaPopperHype( void )
 #ifdef CLIENT_DLL
 	if ( m_pOuter->IsLocalPlayer() )
 	{
+		m_fHypeConsumeRate = 10.0f;
 		m_pOuter->EmitSound( "DisciplineDevice.PowerDown" );
 	}
 #else
@@ -14246,22 +14247,20 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 	if ( bIsLocalPlayer )
 	{
-		if ( IsHypeBuffed() )
+#if defined(MCOMS_BALANCE_PACK) || 1
+		constexpr float flMinHypeBeforeStop = -7.5f;
+#else
+		constexpr float flMinHypeBeforeStop = 0.0f;
+#endif
+		if ( IsHypeBuffed() && m_flHypeMeter > flMinHypeBeforeStop )
 		{
 #if defined(MCOMS_BALANCE_PACK) || 1
 			constexpr float flConsumeRate = 1.0f;
-			m_fHypeConsumeRate += 2.5f * gpGlobals->frametime;
+			m_fHypeConsumeRate += (2.5f + 0.5f * m_fHypeConsumeRate) * gpGlobals->frametime;
 #else
 			constexpr float flConsumeRate = 1.0f;
 #endif
 			m_flHypeMeter -= gpGlobals->frametime * ( m_fHypeConsumeRate * flConsumeRate );
-
-
-#if defined(MCOMS_BALANCE_PACK) || 1
-			constexpr float flMinHypeBeforeStop = -7.5f;
-#else
-			constexpr float flMinHypeBeforeStop = 0.0f;
-#endif
 
 			if ( m_flHypeMeter <= flMinHypeBeforeStop )
 			{
