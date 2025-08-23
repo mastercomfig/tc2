@@ -2026,11 +2026,11 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				{
 					if ( TFGameRules()->IsEmulatingMatch() == 1 )
 					{
-						flPostMatchPeriod = 10.0f;
+						flPostMatchPeriod = 30.0f;
 					}
 					else if ( TFGameRules()->IsEmulatingMatch() == 2 )
 					{
-						flPostMatchPeriod = 30.0f;
+						flPostMatchPeriod = 45.0f;
 					}
 				}
 				m_flStateTransitionTime = gpGlobals->curtime + flPostMatchPeriod;

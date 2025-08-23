@@ -748,7 +748,7 @@ ConVar tf_test_special_ducks( "tf_test_special_ducks", "1", FCVAR_DEVELOPMENTONL
 
 ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_max", "1", FCVAR_DEVELOPMENTONLY );
 #endif // GAME_DLL
-ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "10", FCVAR_REPLICATED );
+ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "15", FCVAR_REPLICATED );
 
 ConVar tf_match_emulation("tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
@@ -8612,18 +8612,30 @@ void CTFGameRules::Think()
 				{
 					// Matchmaking path
 					pMatchDesc->PostMatchClearServerSettings();
+					return;
 				}
 				else if ( IsEmulatingMatch() )
 				{
 					MatchSummaryEnd();
 					
-					if (nTimePassed >= tf_mm_next_map_vote_time.GetInt())
+					if ( nTimePassed >= tf_mm_next_map_vote_time.GetInt() )
 					{
-						ChangeLevel();
+						static ConVarRef nextlevel("nextlevel");
+						if ( nextlevel.IsValid() && nextlevel.GetString() && *nextlevel.GetString() )
+						{
+							ChangeLevel();
+						}
+						else
+						{
+							g_bRandomMap = true;
+						}
 					}
 					
 					if (!IsCommunityGameMode())
 						m_bAllowBetweenRounds = true;
+
+					if (!g_bRandomMap)
+						return;
 				}
 				else
 				{
@@ -8633,8 +8645,8 @@ void CTFGameRules::Think()
 						m_bAllowBetweenRounds = true;
 					State_Transition( GR_STATE_RESTART );
 					SetInWaitingForPlayers( true );
+					return;
 				}
-				return;
 			}
 		}
 

@@ -20,6 +20,7 @@
 #include "tf_particlepanel.h"
 #include "tf_matchmaking_shared.h"
 #include "tf_gamerules.h"
+#include "tf_playermodelpanel.h"
 
 using namespace vgui;
 
@@ -35,6 +36,7 @@ enum matchsummary_displaystate_t
 	MS_STATE_SILVER_MEDALS,
 	MS_STATE_GOLD_MEDALS,
 	MS_STATE_FINAL,
+	MS_STATE_MVP,
 
 	MS_NUM_STATES
 };
@@ -161,6 +163,12 @@ private:
 	CExLabel					*m_pBlueTeamWinner;
 	CExLabel					*m_pBlueTeamWinnerDropshadow;
 
+	EditablePanel				*m_pMVPPanel;
+	CTFPlayerModelPanel			*m_pCharacterModelPanel;
+	CExLabel					*m_pMVPLabel;
+	CExLabel					*m_pMVPNameLabel;
+	CExLabel					*m_pMVPScoreLabel;
+
 	CTFParticlePanel			*m_pParticlePanel;
 
 	vgui::EditablePanel			*m_pStatsBgPanel;
@@ -235,6 +243,11 @@ private:
 	bool m_bRedSilverValueRevealed;
 	bool m_bRedBronzeValueRevealed;
 	bool m_bPlayerAbandoned;
+
+	int m_iWinningTeam;
+	int m_iMVPClass;
+	bool m_bFoundMVP;
+
 
 	float m_flMedalSoundTime;
 

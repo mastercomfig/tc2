@@ -107,6 +107,12 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_pBlueTeamWinner = new CExLabel( m_pBlueTeamPanel, "BlueTeamWinner", "" );
 	m_pBlueTeamWinnerDropshadow = new CExLabel( m_pBlueTeamPanel, "BlueTeamWinnerDropshadow", "" );
 
+	m_pMVPPanel = new EditablePanel(this, "MVPPanel");
+	m_pCharacterModelPanel = new CTFPlayerModelPanel(m_pMVPPanel, "MVPCharacterModel" );
+	m_pMVPLabel = new CExLabel(m_pMVPPanel, "MVPLabel", "");
+	m_pMVPNameLabel = new CExLabel(m_pMVPPanel, "MVPNameLabel", "");
+	m_pMVPScoreLabel = new CExLabel(m_pMVPPanel, "MVPScoreLabel", "");
+
 	m_pImageList = NULL;
 
 	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
@@ -139,6 +145,9 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 
 	m_bLargeMatchGroup = false;
 
+	m_iWinningTeam = -1;
+	m_bFoundMVP = false;
+
 	Q_memset( m_iImageClass, NULL, sizeof( m_iImageClass ) );
 	Q_memset( m_iImageClassAlt, NULL, sizeof( m_iImageClassAlt ) );
 
@@ -147,6 +156,7 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	ListenForGameEvent( "player_abandoned_match" );
 	ListenForGameEvent( "client_disconnect" );
 	ListenForGameEvent( "show_match_summary" );
+	ListenForGameEvent( "teamplay_win_panel" );
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
@@ -345,7 +355,7 @@ void CTFMatchSummary::SetVisible( bool state )
 
 		m_iCurrentState = MS_STATE_INITIAL;
 
-		m_flDrawingPanelTime = gpGlobals->curtime + 4.5f;
+		m_flDrawingPanelTime = gpGlobals->curtime + 5.0f;
 
 		if ( !TFGameRules() || !TFGameRules()->IsEmulatingMatch() )
 		{
@@ -1034,6 +1044,96 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInPanels", false );
 	}
+	else if ( FStrEq( type, "teamplay_win_panel" ) )
+	{
+		int iPlayerIndex = 0;
+		int iRoundScore = 0;
+		m_bFoundMVP = false;
+		m_iWinningTeam = event->GetInt("winning_team");
+		for (int i = 1; i <= 3; i++)
+		{
+			char szPlayerIndexVal[64] = "", szPlayerScoreVal[64] = "";
+			// get player index and round points from the event
+			Q_snprintf(szPlayerIndexVal, ARRAYSIZE(szPlayerIndexVal), "player_%d", i);
+			Q_snprintf(szPlayerScoreVal, ARRAYSIZE(szPlayerScoreVal), "player_%d_points", i);
+			iPlayerIndex = event->GetInt(szPlayerIndexVal, 0);
+			iRoundScore = event->GetInt(szPlayerScoreVal, 0);
+			// round score of 0 means no player to show for that position (not enough players, or didn't score any points that round)
+			if ( iRoundScore <= 0 )
+			{
+				continue;
+			}
+			if ( m_iWinningTeam == g_PR->GetTeam(iPlayerIndex) )
+			{
+				m_bFoundMVP = true;
+				break;
+			}
+		}
+		if ( m_pCharacterModelPanel )
+		{
+			m_pCharacterModelPanel->ClearCarriedItems();
+			if ( m_bFoundMVP )
+			{
+				C_TFPlayer* pPlayer = ToTFPlayer(UTIL_PlayerByIndex(iPlayerIndex));
+				int nClass = g_TF_PR->GetPlayerClass(iPlayerIndex);
+
+				m_pCharacterModelPanel->SetToPlayerClass(nClass);
+				m_pCharacterModelPanel->SetTeam(m_iWinningTeam);
+
+				CEconItemView* pWeapon = NULL;
+				int nItemSlot = (pPlayer->IsAlive() && pPlayer->GetActiveTFWeapon()) ? pPlayer->GetActiveTFWeapon()->GetAttributeContainer()->GetItem()->GetStaticData()->GetLoadoutSlot(nClass) : LOADOUT_POSITION_PRIMARY;
+				CTFWeaponBase* pEnt = dynamic_cast<CTFWeaponBase*>(pPlayer->GetEntityForLoadoutSlot(nItemSlot));
+				if (pEnt)
+				{
+					pWeapon = pEnt->GetAttributeContainer()->GetItem();
+				}
+
+				if (pWeapon)
+				{
+					m_pCharacterModelPanel->AddCarriedItem(pWeapon);
+				}
+
+				// TODO
+#if 0
+				static CSchemaAttributeDefHandle pAttrDef_PlayerRobot("appear as mvm robot");
+				static CSchemaAttributeDefHandle pAttrDef_DisableFancyLoadoutAnim("disable fancy class select anim");
+				static CSchemaAttributeDefHandle pAttrDef_ClassSelectOverrideVCD("class select override vcd");
+				CAttribute_String attrClassSelectOverrideVCD;
+
+				for (int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++)
+				{
+					CEconItemView* pItemData = TFInventoryManager()->GetItemInLoadoutForClass(nClass, i);
+				}
+#endif
+
+				for (int wbl = pPlayer->GetNumWearables() - 1; wbl >= 0; wbl--)
+				{
+					C_TFWearable* pItem = dynamic_cast<C_TFWearable*>(pPlayer->GetWearable(wbl));
+					if (!pItem)
+						continue;
+
+					if (pItem->IsViewModelWearable())
+						continue;
+
+					if (pItem->IsDisguiseWearable())
+						continue;
+
+					CAttributeContainer* pCont = pItem->GetAttributeContainer();
+					CEconItemView* pEconItemView = pCont ? pCont->GetItem() : NULL;
+
+					if (pEconItemView && pEconItemView->IsValid())
+					{
+						m_pCharacterModelPanel->AddCarriedItem(pEconItemView);
+					}
+				}
+
+				m_pCharacterModelPanel->HoldItemInSlot(nItemSlot);
+
+				m_pMVPNameLabel->SetText(g_PR->GetPlayerName(iPlayerIndex));
+				m_pMVPScoreLabel->SetText(CFmtStr("%d", iRoundScore));
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1111,6 +1211,9 @@ void CTFMatchSummary::RecalculateMedalCounts()
 	}
 }
 
+extern const char* g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS];
+extern int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS];
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1148,9 +1251,10 @@ void CTFMatchSummary::OnTick()
 
 	bool bShowPerformanceMedals = ShowPerformanceMedals();
 	bool bMapHasMatchSummaryStage = ( TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() );
-
 	
 	bool bUseMatchSummaryStage = ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() || TFGameRules()->IsEmulatingMatch() == 2 );
+
+	bool bUseNewCasualSummaryScreen = !bUseMatchSummaryStage && false; // off
 
 	switch ( m_iCurrentState )
 	{
@@ -1165,7 +1269,25 @@ void CTFMatchSummary::OnTick()
 		}
 
 		m_iCurrentState = MS_STATE_DRAWING;
-		m_flNextActionTime = bUseStage ? gpGlobals->curtime + MS_STATE_TRANSITION_TO_STATS : gpGlobals->curtime + 2.f;
+		if (bUseStage)
+		{
+			m_flNextActionTime = gpGlobals->curtime + MS_STATE_TRANSITION_TO_STATS;
+		}
+		else if (bUseNewCasualSummaryScreen && m_bFoundMVP)
+		{
+			m_iCurrentState = MS_STATE_MVP;
+			m_flNextActionTime = gpGlobals->curtime + 3.0f;
+
+			const char* pszEntryName = UTIL_GetRandomSoundFromEntry("Announcer.CasualSummaryScreenMVPQuestion");
+			if (pszEntryName && pszEntryName[0])
+			{
+				pLocalPlayer->EmitSound(pszEntryName);
+			}
+		}
+		else
+		{
+			m_flNextActionTime = gpGlobals->curtime + 2.f;
+		}
 		m_bXPShown = false;
 
 		if ( !bUseStage )
@@ -1175,6 +1297,11 @@ void CTFMatchSummary::OnTick()
 			{
 				m_pDrawingPanel->SetVisible( false );
 			}
+		}
+
+		if ( m_pMVPPanel )
+		{
+			m_pMVPPanel->SetVisible(false);
 		}
 		break;
 	}
@@ -1265,6 +1392,25 @@ void CTFMatchSummary::OnTick()
 				m_iCurrentState = bShowPerformanceMedals ? MS_STATE_BRONZE_MEDALS : MS_STATE_FINAL;
 				m_nMedalsRevealed = 0;
 				m_flNextActionTime = -1;
+			}
+			break;
+		}
+	case MS_STATE_MVP:
+		{
+			if (gpGlobals->curtime > m_flNextActionTime)
+			{
+				m_iCurrentState = MS_STATE_DRAWING;
+				if (m_pMVPPanel)
+				{
+					m_pMVPPanel->SetVisible(true);
+					// TODO
+					m_pCharacterModelPanel->PlayVCD("class_select", g_pszLegacyClassSelectVCDWeapons[m_pCharacterModelPanel->GetPlayerClass()]);
+					m_flNextActionTime = gpGlobals->curtime + 8.0f;
+				}
+				else
+				{
+					m_flNextActionTime = gpGlobals->curtime + 0.1f;
+				}
 			}
 			break;
 		}
