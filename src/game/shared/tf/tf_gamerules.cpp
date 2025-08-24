@@ -5500,6 +5500,8 @@ void CTFGameRules::SetSetup( bool bSetup )
 	ManageStopwatchTimer( bSetup );
 }
 
+ConVar tf_casual_spawn_bots("tf_casual_spawn_bots", "0");
+
 //-----------------------------------------------------------------------------
 // Purpose: Called when a new round is off and running
 //-----------------------------------------------------------------------------
@@ -5613,18 +5615,31 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	}
 
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	if ( ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2 )
+	if ( !IsMannVsMachineMode() && ( pMatch && IsCompetitiveMode() ) || IsEmulatingMatch() == 2 || ( tf_casual_spawn_bots.GetBool() && IsEmulatingMatch() ) )
 	{
+		const bool bIsCompetitive = IsCompetitiveGame();
 		// Highest difficulty bots for comp
 		static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
-		tf_bot_difficulty.SetValue(3);
+		tf_bot_difficulty.SetValue(bIsCompetitive ? 3 : 1);
 		static ConVarRef tf_bot_quota( "tf_bot_quota" );
-		tf_bot_quota.SetValue( pMatch ? (int)pMatch->GetCanonicalMatchSize() : 12 );
+		int iBotQuota;
+		if (pMatch)
+		{
+			iBotQuota = (int)pMatch->GetCanonicalMatchSize();
+		}
+		else
+		{
+			iBotQuota = bIsCompetitive ? 12 : 22;
+		}
+		tf_bot_quota.SetValue( iBotQuota );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
 		tf_bot_quota_mode.SetValue( "fill" );
 		// Bots don't taunt on kill in comp
-		static ConVarRef tf_bot_taunt_victim_chance( "tf_bot_taunt_victim_chance" );
-		tf_bot_taunt_victim_chance.SetValue( 0.0f );
+		if (bIsCompetitive)
+		{
+			static ConVarRef tf_bot_taunt_victim_chance("tf_bot_taunt_victim_chance");
+			tf_bot_taunt_victim_chance.SetValue(0.0f);
+		}
 	}
 
 	if ( m_hGamerulesProxy )
