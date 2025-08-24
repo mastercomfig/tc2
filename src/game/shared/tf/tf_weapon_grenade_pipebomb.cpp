@@ -764,7 +764,7 @@ void CTFGrenadePipebombProjectile::PipebombTouch( CBaseEntity *pOther )
 	{
 		// TODO: endpos here is incorrect
 		const float flDistSq = (pOther->WorldSpaceCenter() - pTrace.endpos).Length2DSqr();
-		const float flRadius = pOther->WorldAlignSize().x * 0.5f;
+		const float flRadius = pOther->WorldAlignSize().x * 0.5f * 1.2f; // not the full box radius
 		if (flDistSq > flRadius * flRadius)
 		{
 			return;

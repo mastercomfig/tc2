@@ -437,7 +437,7 @@ bool CTFBaseRocket::ShouldIgnoreTrace(trace_t* pTrace)
 	if (pTrace->m_pEnt && pTrace->m_pEnt->IsPlayer())
 	{
 		const float flDistSq = (pTrace->m_pEnt->WorldSpaceCenter() - pTrace->endpos).Length2DSqr();
-		const float flRadius = pTrace->m_pEnt->WorldAlignSize().x * 0.5f;
+		const float flRadius = pTrace->m_pEnt->WorldAlignSize().x * 0.5f * 1.2f; // not the full box radius
 		if (flDistSq > flRadius * flRadius)
 		{
 			return true;

@@ -350,12 +350,18 @@ void JarExplode( int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeap
 	// Splash pee on everyone nearby.
 	CBaseEntity *pListOfEntities[MAX_PLAYERS_ARRAY_SAFE];
 	int iEntities = UTIL_EntitiesInSphere( pListOfEntities, ARRAYSIZE( pListOfEntities ), vContactPoint, flRadius, FL_CLIENT | FL_NPC );
+
+	const float flCheckRadius = flRadius * 1.2f; // not the full box radius
+
 	for ( int i = 0; i < iEntities; ++i )
 	{
 		CTFPlayer *pPlayer = ToTFPlayer( pListOfEntities[i] );
 		if ( pPlayer )
 		{
 			if ( !pPlayer->IsAlive() )
+				continue;
+
+			if ( (vContactPoint - pPlayer->WorldSpaceCenter()).LengthSqr() > flCheckRadius * flCheckRadius )
 				continue;
 
 			// Do a quick trace to see if there's any geometry in the way.

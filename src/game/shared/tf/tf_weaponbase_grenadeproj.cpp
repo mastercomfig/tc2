@@ -760,7 +760,7 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	if ( tr.m_pEnt && tr.m_pEnt->IsPlayer() )
 	{
 		const float flDistSq = ( tr.m_pEnt->WorldSpaceCenter() - tr.endpos ).Length2DSqr();
-		const float flRadius = tr.m_pEnt->WorldAlignSize().x * 0.5f;
+		const float flRadius = tr.m_pEnt->WorldAlignSize().x * 0.5f * 1.2f; // not the full box radius
 		if ( flDistSq > flRadius * flRadius )
 		{
 			return;
