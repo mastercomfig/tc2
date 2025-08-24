@@ -4621,8 +4621,18 @@ Action< CTFBot > *CTFBot::OpportunisticallyUseWeaponAbilities( void )
 			CTFLunchBox *lunchbox = (CTFLunchBox *)weapon;
 			if ( lunchbox->HasAmmo() )
 			{
-				// scout lunchboxes are also gated by their energy drink meter
-				if ( !IsPlayerClass( TF_CLASS_SCOUT ) || m_Shared.GetScoutEnergyDrinkMeter() >= 100 )
+				bool bCanUse = true;
+				if ( IsPlayerClass(TF_CLASS_SCOUT) )
+				{
+					// scout lunchboxes are also gated by their energy drink meter
+					bCanUse = m_Shared.GetScoutEnergyDrinkMeter() >= 100;
+				}
+				else if ( IsPlayerClass(TF_CLASS_HEAVYWEAPONS) )
+				{
+					int iLunchboxType = lunchbox->GetLunchboxType();
+					bCanUse = GetHealth() < GetMaxHealth() || iLunchboxType == LUNCHBOX_ADDS_MINICRITS || iLunchboxType == LUNCHBOX_CHOCOLATE_BAR || iLunchboxType == LUNCHBOX_FISHCAKE;
+				}
+				if (bCanUse)
 				{
 					return new CTFBotUseItem( lunchbox );
 				}

@@ -310,7 +310,7 @@ void CTFLunchBox::DrainAmmo( bool bForceCooldown )
 	// If we're damaged while eating/taunting, bForceCooldown will be true
 	if ( pOwner->IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) )
 	{
-		if ( pOwner->GetHealth() < pOwner->GetMaxHealth() || GetLunchboxType() == LUNCHBOX_ADDS_MINICRITS || iLunchboxType == LUNCHBOX_CHOCOLATE_BAR || iLunchboxType == LUNCHBOX_FISHCAKE || bForceCooldown )
+		if ( pOwner->GetHealth() < pOwner->GetMaxHealth() || iLunchboxType == LUNCHBOX_ADDS_MINICRITS || iLunchboxType == LUNCHBOX_CHOCOLATE_BAR || iLunchboxType == LUNCHBOX_FISHCAKE || bForceCooldown )
 		{
 			pOwner->m_Shared.SetItemChargeMeter( LOADOUT_POSITION_SECONDARY, 0.f );
 		}
