@@ -884,7 +884,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 	{
 		const float kMaxRateCoachCommands = 1.0f;
 		float flLastCoachCommandDelta = gpGlobals->curtime - pPlayer->m_flLastCoachCommand;
-		if ( flLastCoachCommandDelta < kMaxRateCoachCommands && flLastCoachCommandDelta > 0.0f )
+		if ( flLastCoachCommandDelta < kMaxRateCoachCommands )
 		{
 			return;
 		}
