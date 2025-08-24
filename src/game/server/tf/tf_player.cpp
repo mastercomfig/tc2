@@ -13618,12 +13618,13 @@ void CTFPlayer::DropAmmoPackFromProjectile( CBaseEntity *pProjectile )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayer::DropHealthPack( const CTakeDamageInfo &info, bool bEmpty )
+void CTFPlayer::DropHealthPack( const CTakeDamageInfo &info, bool bEmpty, int eForceHoliday )
 {
 	Vector vecSrc = this->WorldSpaceCenter();
 	CHealthKitSmall *pMedKit = assert_cast<CHealthKitSmall*>( CBaseEntity::Create( "item_healthkit_small", vecSrc, vec3_angle, this ) );
 	if ( pMedKit )
 	{
+		pMedKit->ForceHoliday(eForceHoliday);
 		Vector vecImpulse = RandomVector( -1,1 );
 		vecImpulse.z = 1;
 		VectorNormalize( vecImpulse );

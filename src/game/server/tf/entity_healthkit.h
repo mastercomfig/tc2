@@ -37,6 +37,8 @@ public:
 	virtual void Precache( void );
 	virtual bool MyTouch( CBasePlayer *pPlayer );
 
+	virtual void ForceHoliday(int eHoliday) override;
+
 	virtual void UpdateModelIndexOverrides( void )
 	{
 		if ( modelinfo )
@@ -49,7 +51,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{ 
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if (IsHolidayActive(kHoliday_TFBirthday))
 		{
 			return TF_MEDKIT_LARGE_BDAY;
 		}
@@ -89,7 +91,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if (IsHolidayActive(kHoliday_TFBirthday))
 		{
 			return TF_MEDKIT_SMALL_BDAY;
 		}
@@ -124,7 +126,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if (IsHolidayActive(kHoliday_TFBirthday))
 		{
 			return TF_MEDKIT_MEDIUM_BDAY;
 		}
@@ -171,7 +173,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if (IsHolidayActive(kHoliday_TFBirthday))
 		{
 			return TF_MEDKIT_MEDIUM_BDAY;
 		}

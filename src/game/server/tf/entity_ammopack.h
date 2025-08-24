@@ -45,7 +45,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{ 
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if ( IsHolidayActive(kHoliday_TFBirthday) )
 		{
 			return TF_AMMOPACK_LARGE_BDAY;
 		}
@@ -78,7 +78,7 @@ public:
 
 	virtual const char *GetDefaultPowerupModel( void )
 	{ 
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if ( IsHolidayActive(kHoliday_TFBirthday) )
 		{
 			return TF_AMMOPACK_SMALL_BDAY;
 		}
@@ -111,7 +111,7 @@ public:
 	 
 	virtual const char *GetDefaultPowerupModel( void ) 
 	{
-		if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_TFBirthday ) )
+		if ( IsHolidayActive(kHoliday_TFBirthday) )
 		{
 			return TF_AMMOPACK_MEDIUM_BDAY;
 		}

@@ -217,6 +217,13 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 	return bSuccess;
 }
 
+void CHealthKit::ForceHoliday(int eHoliday)
+{
+	BaseClass::ForceHoliday(eHoliday);
+
+	UpdateModelIndexOverrides();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------

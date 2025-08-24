@@ -47,14 +47,14 @@
   }
   "items"
   {
-    "44" // The Sandman
+    "44" // Sandman
     {
       "static_attrs"
 			{
         "crit mod disabled"						"0"
       }
     }
-    "648" // The Wrap Assassin
+    "648" // Wrap Assassin
     {
       "attributes"
       {
@@ -67,6 +67,17 @@
       "static_attrs"
 			{
         "crit mod disabled"						"0"
+      }
+    }
+    "317" // Candy Cane
+    {
+      "attributes"
+      {
+        "health from packs increased"
+				{
+					"attribute_class"	"mult_health_frompacks"
+					"value"			"1.5"
+				}
       }
     }
   }

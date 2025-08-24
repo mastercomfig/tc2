@@ -61,6 +61,8 @@ CTFPowerup::CTFPowerup()
 
 	m_flThrowerTouchTime = -1;
 
+	m_eForceHoliday = kHoliday_None;
+
 	UseClientSideAnimation();
 }
 
@@ -181,6 +183,32 @@ bool CTFPowerup::ValidTouch( CBasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 bool CTFPowerup::MyTouch( CBasePlayer *pPlayer )
 {
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPowerup::ForceHoliday(int eHoliday)
+{
+	m_eForceHoliday = eHoliday;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPowerup::IsHolidayActive(int eHoliday)
+{
+	if ( m_eForceHoliday == eHoliday )
+	{
+		return true;
+	}
+
+	if ( TFGameRules() && TFGameRules()->IsHolidayActive(eHoliday) )
+	{
+		return true;
+	}
+
 	return false;
 }
 

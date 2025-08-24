@@ -453,7 +453,7 @@ public:
 	void DropAmmoPack( const CTakeDamageInfo &info, bool bEmpty, bool bDisguisedWeapon );
 	void DropAmmoPackFromProjectile( CBaseEntity *pProjectile );
 	void DropExtraAmmo( const CTakeDamageInfo& info, bool bFromDeath = false );
-	void DropHealthPack( const CTakeDamageInfo &info, bool bEmpty );
+	void DropHealthPack( const CTakeDamageInfo &info, bool bEmpty, int eForceHoliday = kHoliday_None );
 	void DropCurrencyPack( CurrencyRewards_t nSize = TF_CURRENCY_PACK_SMALL, int nAmount = 0, bool bForceDistribute = false, CBasePlayer* pMoneyMaker = NULL );	// Only pass in an amount when nSize = TF_CURRENCY_PACK_CUSTOM
 	
 	bool CanDisguise( void );
