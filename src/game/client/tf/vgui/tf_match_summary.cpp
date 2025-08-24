@@ -47,8 +47,12 @@ extern ISoundEmitterSystemBase *soundemitterbase;
 #define MS_STATE_TRANSITION_TO_MEDALS					3.0f
 #define MS_STATE_TIME_BETWEEN_MEDALS					0.1f
 #define MS_STATE_TIME_BETWEEN_MEDALS_CATEGORIES			0.1f
+#define MS_STATE_MVP_TIME								8.0f
 
 extern ConVar tf_scoreboard_alt_class_icons;
+
+extern const char* g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS];
+extern int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS];
 
 DECLARE_BUILD_FACTORY( TFSectionedListPanel );
 
@@ -1065,6 +1069,7 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 			}
 			if ( m_iWinningTeam == g_PR->GetTeam(iPlayerIndex) )
 			{
+				m_bLocalPlayerIsMVP = g_PR->IsLocalPlayer(iPlayerIndex);
 				m_bFoundMVP = true;
 				break;
 			}
@@ -1081,8 +1086,9 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 				m_pCharacterModelPanel->SetTeam(m_iWinningTeam);
 
 				CEconItemView* pWeapon = NULL;
-				int nItemSlot = (pPlayer->IsAlive() && pPlayer->GetActiveTFWeapon()) ? pPlayer->GetActiveTFWeapon()->GetAttributeContainer()->GetItem()->GetStaticData()->GetLoadoutSlot(nClass) : LOADOUT_POSITION_PRIMARY;
-				CTFWeaponBase* pEnt = dynamic_cast<CTFWeaponBase*>(pPlayer->GetEntityForLoadoutSlot(nItemSlot));
+				//int nItemSlot = (pPlayer->IsAlive() && pPlayer->GetActiveTFWeapon()) ? pPlayer->GetActiveTFWeapon()->GetAttributeContainer()->GetItem()->GetStaticData()->GetLoadoutSlot(nClass) : LOADOUT_POSITION_PRIMARY;
+				int nLoadoutSlot = g_iLegacyClassSelectWeaponSlots[nClass];	// We want to mirror the class select panel
+				CTFWeaponBase* pEnt = dynamic_cast<CTFWeaponBase*>(pPlayer->GetEntityForLoadoutSlot(nLoadoutSlot));
 				if (pEnt)
 				{
 					pWeapon = pEnt->GetAttributeContainer()->GetItem();
@@ -1127,10 +1133,8 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 					}
 				}
 
-				m_pCharacterModelPanel->HoldItemInSlot(nItemSlot);
-
-				m_pMVPNameLabel->SetText(g_PR->GetPlayerName(iPlayerIndex));
-				m_pMVPScoreLabel->SetText(CFmtStr("%d", iRoundScore));
+				m_sMVPName.assign(g_PR->GetPlayerName(iPlayerIndex));
+				m_iMVPScore = iRoundScore;
 			}
 		}
 	}
@@ -1211,9 +1215,6 @@ void CTFMatchSummary::RecalculateMedalCounts()
 	}
 }
 
-extern const char* g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS];
-extern int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS];
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1254,7 +1255,7 @@ void CTFMatchSummary::OnTick()
 	
 	bool bUseMatchSummaryStage = ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() || TFGameRules()->IsEmulatingMatch() == 2 );
 
-	bool bUseNewCasualSummaryScreen = !bUseMatchSummaryStage && false; // off
+	bool bUseNewCasualSummaryScreen = !bUseMatchSummaryStage; // on
 
 	switch ( m_iCurrentState )
 	{
@@ -1275,14 +1276,8 @@ void CTFMatchSummary::OnTick()
 		}
 		else if (bUseNewCasualSummaryScreen && m_bFoundMVP)
 		{
-			m_iCurrentState = MS_STATE_MVP;
-			m_flNextActionTime = gpGlobals->curtime + 3.0f;
-
-			const char* pszEntryName = UTIL_GetRandomSoundFromEntry("Announcer.CasualSummaryScreenMVPQuestion");
-			if (pszEntryName && pszEntryName[0])
-			{
-				pLocalPlayer->EmitSound(pszEntryName);
-			}
+			m_iCurrentState = MS_STATE_MVP_INTRO;
+			m_flNextActionTime = gpGlobals->curtime + 2.0f;
 		}
 		else
 		{
@@ -1307,11 +1302,21 @@ void CTFMatchSummary::OnTick()
 	}
 	case MS_STATE_DRAWING:
 		{
+			if ( bUseNewCasualSummaryScreen && m_bFoundMVP && !m_bPlayedMVPVoiceLine && gpGlobals->curtime > m_flNextActionTime - (MS_STATE_MVP_TIME - 1.0f))
+			{
+				m_bPlayedMVPVoiceLine = true;
+				pLocalPlayer->EmitSound(VarArgs("%s.CasualSummaryScreenMVP", g_aPlayerClassNames_NonLocalized[m_pCharacterModelPanel->GetPlayerClass()]));
+			}
 			if ( gpGlobals->curtime > m_flNextActionTime )
 			{
 				if ( m_pDrawingPanel )
 				{
 					m_pDrawingPanel->SetVisible( false );
+				}
+
+				if ( m_pMVPPanel )
+				{
+					m_pMVPPanel->SetVisible( false );
 				}
 
 				if ( m_pStatsBgPanel )
@@ -1395,17 +1400,51 @@ void CTFMatchSummary::OnTick()
 			}
 			break;
 		}
+	case MS_STATE_MVP_INTRO:
+	{
+		if (gpGlobals->curtime > m_flNextActionTime)
+		{
+			float flDelay = 2.5f;
+			const char* pszEntryName = UTIL_GetRandomSoundFromEntry("Announcer.CasualSummaryScreenMVPQuestion");
+			if (pszEntryName && pszEntryName[0])
+			{
+				flDelay = enginesound->GetSoundDuration(pszEntryName);
+				pLocalPlayer->EmitSound(pszEntryName);
+			}
+			m_iCurrentState = MS_STATE_MVP;
+			m_bPlayedRevealSound = false;
+			m_bPlayedMVPVoiceLine = false;
+			m_flNextActionTime = gpGlobals->curtime + flDelay + 0.5f;
+		}
+		break;
+	}
 	case MS_STATE_MVP:
 		{
+			if (!m_bPlayedRevealSound && gpGlobals->curtime > m_flNextActionTime - 2.0f)
+			{
+				m_bPlayedRevealSound = true;
+				pLocalPlayer->EmitSound("ui.cratesmash_rare_long");
+			}
 			if (gpGlobals->curtime > m_flNextActionTime)
 			{
 				m_iCurrentState = MS_STATE_DRAWING;
 				if (m_pMVPPanel)
 				{
 					m_pMVPPanel->SetVisible(true);
+					m_pMVPPanel->SetDialogVariable( "mvpname", m_sMVPName.c_str() );
+					m_pMVPPanel->SetDialogVariable( "mvpscore", CFmtStr("%d", m_iMVPScore) );
+					if (pLocalPlayer)
+					{
+						if (m_bLocalPlayerIsMVP)
+						{
+							pLocalPlayer->EmitSound("ui.cratesmash_ultrarare_short");
+						}
+						pLocalPlayer->EmitSound(VarArgs("%s.MVPMusic", g_aPlayerClassNames_NonLocalized[m_pCharacterModelPanel->GetPlayerClass()]));
+					}
 					// TODO
-					m_pCharacterModelPanel->PlayVCD("class_select", g_pszLegacyClassSelectVCDWeapons[m_pCharacterModelPanel->GetPlayerClass()]);
-					m_flNextActionTime = gpGlobals->curtime + 8.0f;
+					m_pCharacterModelPanel->PlayVCD("class_select", NULL, false);
+					m_pCharacterModelPanel->HoldItemInSlot(g_iLegacyClassSelectWeaponSlots[m_pCharacterModelPanel->GetPlayerClass()]);
+					m_flNextActionTime = gpGlobals->curtime + MS_STATE_MVP_TIME;
 				}
 				else
 				{

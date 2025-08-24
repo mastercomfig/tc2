@@ -36,6 +36,7 @@ enum matchsummary_displaystate_t
 	MS_STATE_SILVER_MEDALS,
 	MS_STATE_GOLD_MEDALS,
 	MS_STATE_FINAL,
+	MS_STATE_MVP_INTRO,
 	MS_STATE_MVP,
 
 	MS_NUM_STATES
@@ -245,9 +246,13 @@ private:
 	bool m_bPlayerAbandoned;
 
 	int m_iWinningTeam;
-	int m_iMVPClass;
+	int m_bLocalPlayerIsMVP;
 	bool m_bFoundMVP;
+	std::string m_sMVPName;
+	int m_iMVPScore;
 
+	bool m_bPlayedRevealSound;
+	bool m_bPlayedMVPVoiceLine;
 
 	float m_flMedalSoundTime;
 

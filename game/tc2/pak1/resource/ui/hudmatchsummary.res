@@ -1002,10 +1002,10 @@
     "ControlName"	"EditablePanel"
 		"fieldName"		"MVPPanel"
 		"xpos"			"c-320"
-		"ypos"			"35"
+		"ypos"			"0"
 		"wide"			"640"
 		"tall"			"480"
-		"zpos"					"60"
+		"zpos"					"100"
 		"visible"				"0"
 		"enabled"				"1"
 		"keyboardinputenabled"	"0"
@@ -1017,16 +1017,18 @@
       "ControlName"	"CTFPlayerModelPanel"
 		  "fieldName"		"MVPCharacterModel"
 
+			"xpos"			"c-190"
+			"ypos"			"50"
       "zpos"			"10"
-		  "wide"			"130"
-		  "tall"			"260"
+		  "wide"			"480"
+		  "tall"			"480"
       "autoResize"	"0"
 		  "pinCorner"		"0"
-      "visible"		"0"
+      "visible"		"1"
       "enabled"		"1"
       
       "render_texture"	"0"
-      "fov"			"12"
+      "fov"			"25"
       "allow_rot"		"0"
       
       "model"
@@ -1094,7 +1096,7 @@
         }
         "Medic"
         {
-          "fov"			"20"
+          "fov"			"25"
           "angles_x"		"-5"
           "angles_y"		"178"
           "angles_z"		"0"
@@ -1104,7 +1106,7 @@
         }
         "Heavy"
         {
-          "fov"			"20"
+          "fov"			"25"
           "angles_x"		"-5"
           "angles_y"		"200"
           "angles_z"		"0"
@@ -1114,7 +1116,7 @@
         }
         "Pyro"
         {
-          "fov"			"20"
+          "fov"			"25"
           "angles_x"		"-5"
           "angles_y"		"172"
           "angles_z"		"0"
@@ -1124,7 +1126,7 @@
         }
         "Spy"
         {
-          "fov"			"20"
+          "fov"			"25"
           "angles_x"		"-5"
           "angles_y"		"160"
           "angles_z"		"0"
@@ -1134,7 +1136,7 @@
         }
         "Engineer"
         {
-          "fov"			"20"
+          "fov"			"25"
           "angles_x"		"-10"
           "angles_y"		"168"
           "angles_z"		"0"
@@ -1148,11 +1150,14 @@
     "MVPLabel"
     {
       "ControlName"		"CExLabel"
-      "font"			"MVPLabel"
+		  "fieldName"		"MVPLabel"
+      "font"			"MatchSummaryWinner"
       "labelText"		"#TF_Casual_MVP"
       "visible"		"1"
       "enabled"		"1"
-      "zpos"			"4"
+			"xpos"			"c-320"
+			"ypos"			"20"
+      "zpos"			"11"
       "wide"			"p.19"
       "tall"			"30"
       "autoResize"	"0"
@@ -1162,28 +1167,34 @@
     "MVPNameLabel"
     {
         "ControlName"		"CExLabel"
-        "font"			"MVPLabel"
-        "labelText"		""
+		  	"fieldName"		"MVPNameLabel"
+        "font"			"MatchSummaryTeamScores"
+        "labelText"		"%mvpname%"
         "visible"		"1"
         "enabled"		"1"
-        "zpos"			"4"
-        "wide"			"p.19"
-        "tall"			"30"
-        "autoResize"	"0"
+				"xpos"			"c-320"
+				"ypos"			"50"
+        "zpos"			"12"
+        "wide"			"400"
+        "tall"			"35"
+        "autoResize"	"1"
         "pinCorner"		"0"
     }
 
     "MVPScoreLabel"
     {
         "ControlName"		"CExLabel"
-        "font"			"MVPScoreLabel"
-        "labelText"		""
+		  	"fieldName"		"MVPScoreLabel"
+      	"font"			"MatchSummaryWinner"
+        "labelText"		"%mvpscore%"
         "visible"		"0"
         "enabled"		"1"
-        "zpos"			"4"
+				"xpos"			"c-320"
+				"ypos"			"85"
+        "zpos"			"11"
         "wide"			"p.19"
         "tall"			"30"
-        "autoResize"	"0"
+        "autoResize"	"1"
         "pinCorner"		"0"
     }
   }

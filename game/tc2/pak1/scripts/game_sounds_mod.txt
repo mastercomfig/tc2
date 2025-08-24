@@ -88,3 +88,329 @@
 		"wave"			"vo/compmode/cm_admin_callout_question_12.mp3"
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Casual MVP Music
+//-----------------------------------------------------------------------------
+
+"Scout.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/scout_mvp.mp3"
+}
+"Soldier.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/soldier_mvp.mp3"
+}
+"Pyro.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/pyro_mvp.mp3"
+}
+"Demoman.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/demoman_mvp.mp3"
+}
+"Heavy.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/heavy_mvp.mp3"
+}
+"Engineer.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/engineer_mvp.mp3"
+}
+"Sniper.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/sniper_mvp.mp3"
+}
+"Medic.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/medic_mvp.mp3"
+}
+"Spy.MVPMusic"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/spy_mvp.mp3"
+}
+
+//-----------------------------------------------------------------------------
+// End Casual MVP Music
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Casual MVP 
+//-----------------------------------------------------------------------------
+
+"Soldier.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_soldier_summary_callout_rare_01.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_03.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_soldier_summary_callout_rare_02.mp3"
+	}
+}
+"Sniper.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_sniper_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_07.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_07.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_07.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_07.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_sniper_summary_callout_12.mp3"
+	}
+}
+"Spy.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_spy_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_04.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_04.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_04.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_06.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_06.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_06.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_06.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_06.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_16.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_16.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_17.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_17.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_17.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_17.mp3"
+		"wave"			"vo/compmode/cm_spy_summary_callout_17.mp3"
+	}
+}
+"Demoman.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_demo_summary_callout_06.mp3"
+	}
+}
+"Heavy.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_heavy_summary_callout_01.mp3"
+		"wave"			"vo/compmode/cm_heavy_summary_callout_06.mp3"
+	}
+}
+"Engineer.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_engie_summary_callout_01.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_01.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_engie_summary_callout_11.mp3"
+	}
+}
+
+"Pyro.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_pyro_summary_callout_01.mp3"
+		"wave"			"vo/compmode/cm_pyro_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_pyro_summary_callout_03.mp3"
+		"wave"			"vo/pyro_laugh_addl04.mp3"
+		"wave"			"vo/pyro_LaughShort01.mp3"
+		"wave"			"vo/pyro_LaughLong01.mp3"
+		"wave"			"vo/pyro_LaughHappy01.mp3"
+		"wave"			"vo/pyro_LaughEvil04.mp3"
+		"wave"			"vo/pyro_LaughEvil03.mp3"
+		"wave"			"vo/pyro_LaughEvil02.mp3"
+		"wave"			"vo/pyro_LaughEvil01.mp3"
+	}
+}
+"Scout.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/compmode/cm_scout_summary_callout_02.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_04.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_05.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_08.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_09.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_10.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_11.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_12.mp3"
+		"wave"			"vo/compmode/cm_scout_summary_callout_15.mp3"
+	}
+}
+"Medic.CasualSummaryScreenMVP"
+{
+	"channel"		"CHAN_VOICE"
+	"volume"		"VOL_NORM"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+	
+	"rndwave"
+	{
+		"wave"			"vo/medic_SpecialCompleted10.mp3"
+		"wave"			"vo/medic_SpecialCompleted01.mp3"
+		"wave"			"vo/medic_SpecialCompleted09.mp3"
+		"wave"			"vo/medic_AutoCappedControlPoint01.mp3"
+	}
+}
+
+//-----------------------------------------------------------------------------
+// End Casual MVP 
+//-----------------------------------------------------------------------------
