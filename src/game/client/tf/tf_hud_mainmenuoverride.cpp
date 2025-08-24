@@ -188,6 +188,7 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	m_bGameStartup = true;
 	m_bPlayingMusic = false;
+	m_flPlayMusicTime = -1.0f;
 
 	m_iCharacterImageIdx = -1;
 
@@ -1392,6 +1393,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 
 	bool bSomethingChanged = false;
 	bool bInGame = engine->IsInGame();
+	bool bIsConnected = engine->IsConnected();
 #if defined( REPLAY_ENABLED )
 	bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
 #else
@@ -1417,7 +1419,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 	}
 
 	// Hide the character if we're in game.
-	if ( bInGame || bInReplay )
+	if ( bInGame || bInReplay || bIsConnected )
 	{
 		if ( m_pCharacterImagePanel->IsVisible() )
 		{
@@ -1429,9 +1431,13 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		}
 		// we're now in game, so no longer in the startup phase.
 		m_bGameStartup = false;
-		m_bPlayingMusic = false;
+		if (m_bPlayingMusic)
+		{
+			m_bPlayingMusic = false;
+			m_flPlayMusicTime = -1.0f;
+		}
 	}
-	else if ( !bInGame && !bInReplay )
+	else if ( !bInGame && !bInReplay && !bIsConnected )
 	{
 		if ( !m_pCharacterImagePanel->IsVisible() )
 		{
@@ -1445,8 +1451,13 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		// no longer in the startup phase, try playing music!
 		if (!m_bGameStartup && !m_bPlayingMusic)
 		{
-			PlayMainMenuMusic();
+			m_flPlayMusicTime = gpGlobals->curtime + 0.5f;
 			m_bPlayingMusic = true;
+		}
+		if (m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime)
+		{
+			m_flPlayMusicTime = -1.0f;
+			PlayMainMenuMusic();
 		}
 	}
 
