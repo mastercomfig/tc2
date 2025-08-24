@@ -9395,6 +9395,7 @@ void C_TFPlayer::GetShadowRenderBounds( Vector &mins, Vector &maxs, ShadowType_t
 	{
 		GetRenderBounds( mins, maxs );
 
+#if 0
 		// HACK: this constrains the fatten to collision range
 		// this is really the best we can do without a more
 		// advanced depth based / occlusion algorithm
@@ -9416,6 +9417,7 @@ void C_TFPlayer::GetShadowRenderBounds( Vector &mins, Vector &maxs, ShadowType_t
 
 		mins -= Vector(g_flFattenAmt * minx_tr.fraction, g_flFattenAmt * miny_tr.fraction, 0);
 		maxs += Vector(g_flFattenAmt * maxx_tr.fraction, g_flFattenAmt * maxy_tr.fraction, 0);
+#endif
 	}
 }
 
