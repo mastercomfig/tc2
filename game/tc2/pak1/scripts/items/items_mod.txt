@@ -27,6 +27,16 @@
 					"attribute_class"	"mult_reload_time"
 					"value"	"1.3"
 				}
+        "damage bonus"
+				{
+					"attribute_class"	"mult_dmg"
+					"value" "1.1"
+				}
+        "damage penalty"
+				{
+					"attribute_class"	"mult_dmg"
+					"value" "1"
+				}
         "sniper fires tracer"
  				{
 					"attribute_class"	"sniper_fires_tracer"

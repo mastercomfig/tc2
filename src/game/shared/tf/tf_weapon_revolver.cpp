@@ -453,6 +453,17 @@ float CTFRevolver::GetProjectileDamage( void )
 		flDamageMod *= 0.5f;
 	}
 
+#if defined(MCOMS_BALANCE_PACK) || 1
+	int iMode = 0;
+	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
+	const bool bPrecise = (iMode == 1);
+	if (bPrecise)
+	{
+		float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
+		flDamageMod *= RemapValClamped(flTimeSinceCheck, 1.25f, 0.8f, 1.0f, 0.8f);
+	}
+#endif
+
 #if defined(MCOMS_BALANCE_PACK) || 0
 	if (SapperKillsCollectCrits())
 	{

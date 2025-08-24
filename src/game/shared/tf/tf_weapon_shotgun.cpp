@@ -574,7 +574,7 @@ float CTFSodaPopper::GetReloadSpeedScale() const
 	if (!pPlayer)
 		return BaseClass::GetReloadSpeedScale();
 
-	if ( pPlayer->m_Shared.IsAirDashing() )
+	if ( pPlayer->m_Shared.IsAirDashing() && pPlayer->m_Shared.IsHypeBuffed() )
 		return 0.1f;
 
 	return BaseClass::GetReloadSpeedScale();
