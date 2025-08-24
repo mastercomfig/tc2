@@ -5839,6 +5839,20 @@ QAngle CTFWeaponBase::GetSpreadAngles( void )
 		angEyes += angSpread;
 	}
 
+	// Airstrike gets accuracy penalty while in air
+	if ( pOwner && pOwner->m_Shared.InCond(TF_COND_BLASTJUMPING) )
+	{
+		// Using this attr to key in the AirStrike
+		float flRocketJumpAttackBonus = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pOwner, flRocketJumpAttackBonus, rocketjump_attackrate_bonus );
+		if ( flRocketJumpAttackBonus != 1.0f )
+		{
+			QAngle angSpread = RandomAngle( -6.0f, 6.0f );
+			angSpread.z = 0.0f;
+			angEyes += angSpread;
+		}
+	}
+
 	return angEyes;
 }
 

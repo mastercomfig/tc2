@@ -390,6 +390,22 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pLauncher, const char *pszCla
 		{
 			flLaunchSpeed = 3000.f;
 		}
+
+		// Airstrike gets launch speed bonus
+		if ( pTFOwner && pTFOwner->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
+		{
+			// Using this attr to key in the AirStrike
+			float flRocketJumpAttackBonus = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pTFOwner, flRocketJumpAttackBonus, rocketjump_attackrate_bonus );
+			if ( flRocketJumpAttackBonus != 1.0f )
+			{
+				flLaunchSpeed *= 2.0f;
+				if ( flLaunchSpeed > 3000.0f )
+				{
+					flLaunchSpeed = 3000.0f;
+				}
+			}
+		}
 	}
 
 	Vector vecVelocity = vecForward * flLaunchSpeed;
@@ -714,7 +730,7 @@ float CTFBaseRocket::GetRadius()
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAttacker, flRocketJumpAttackBonus, rocketjump_attackrate_bonus );
 			if ( flRocketJumpAttackBonus != 1.0f )
 			{
-				flRadius *= 0.80;
+				flRadius *= 0.80f;
 			}
 		}
 	}
