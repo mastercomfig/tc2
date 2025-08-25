@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-class CBaseEntity;
+#include "shared_classnames.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Allows an entity to access its owner regardless of entity type 
