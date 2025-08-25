@@ -14230,6 +14230,11 @@ void CTFPlayerShared::ResetRageSystem( void )
 	ResetRageBuffs();
 }
 
+ConVar tf_consume_min("tf_consume_min", "-1");
+ConVar tf_consume_base_rate("tf_consume_base_rate", "5");
+ConVar tf_consume_sec_rate("tf_consume_sec_rate", "5");
+ConVar tf_consume_ter_rate("tf_consume_ter_rate", "0.3");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -14248,15 +14253,15 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 	if ( bIsLocalPlayer )
 	{
 #if defined(MCOMS_BALANCE_PACK) || 1
-		constexpr float flMinHypeBeforeStop = -7.5f;
+		const float flMinHypeBeforeStop = tf_consume_min.GetFloat();
 #else
 		constexpr float flMinHypeBeforeStop = 0.0f;
 #endif
 		if ( IsHypeBuffed() && m_flHypeMeter > flMinHypeBeforeStop )
 		{
 #if defined(MCOMS_BALANCE_PACK) || 1
-			constexpr float flConsumeRate = 1.0f;
-			m_fHypeConsumeRate += (2.5f + 0.5f * m_fHypeConsumeRate) * gpGlobals->frametime;
+			const float flConsumeRate = tf_consume_base_rate.GetFloat();
+			m_fHypeConsumeRate += (tf_consume_sec_rate.GetFloat() + tf_consume_ter_rate.GetFloat() * m_fHypeConsumeRate) * gpGlobals->frametime;
 #else
 			constexpr float flConsumeRate = 1.0f;
 #endif
@@ -14264,7 +14269,7 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 			if ( m_flHypeMeter <= flMinHypeBeforeStop )
 			{
-   				StopScoutHypeDrain();
+				StopScoutHypeDrain();
 			}
 		}
 
@@ -14317,9 +14322,12 @@ void CTFPlayerShared::SetScoutHypeMeter( float val )
 #if !defined(MCOMS_BALANCE_PACK) && 0
 	if ( IsHypeBuffed() )
 		return;
+	const float flMax = 100.0f;
+#else
+	const float flMax = IsHypeBuffed() ? 99.0f : 100.0f;
 #endif
 
-	m_flHypeMeter = Min( val, 100.0f );
+	m_flHypeMeter = Min( val, flMax );
 	//if ( m_flHypeMeter >= 100.f )
 	//{
 	//	if ( m_pOuter->IsPlayerClass( TF_CLASS_SCOUT ) )

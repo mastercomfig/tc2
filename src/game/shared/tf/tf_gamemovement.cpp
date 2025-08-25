@@ -1061,7 +1061,8 @@ void CTFGameMovement::AirDash( void )
 	// Lose hype on airdash
 	int iHypeResetsOnJump = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pTFPlayer, iHypeResetsOnJump, hype_resets_on_jump );
-	if ( iHypeResetsOnJump != 0 && ( !m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) || m_pTFPlayer->m_Shared.IsHypeBuffed() ) )
+	CTFWeaponBase* pSodaPopper = m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER);
+	if ( iHypeResetsOnJump != 0 && ( !pSodaPopper || m_pTFPlayer->m_Shared.IsHypeBuffed() ) )
 	{
 		// Loose x hype on jump
 		float flHype = m_pTFPlayer->m_Shared.GetScoutHypeMeter();
@@ -1069,6 +1070,11 @@ void CTFGameMovement::AirDash( void )
 		{
 			m_pTFPlayer->m_Shared.SetScoutHypeMeter( Max( flHype - iHypeResetsOnJump, 0.0f ) );
 		}
+		if (pSodaPopper)
+		{
+			pSodaPopper->FinishReload();
+		}
+		// UNDONE: this is handled by condition think now
 #if 0
 		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->m_Shared.GetScoutHypeMeter() <= 0.0f )
 		{

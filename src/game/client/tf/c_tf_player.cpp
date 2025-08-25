@@ -2075,7 +2075,7 @@ public:
 				vResult = Vector( 50, 2, 48 );
 				if ( !pPlayer->m_Shared.IsHypeBuffed() )
 				{
-					vResult *= 0.25f;
+					vResult *= 0.1f;
 				}
 				pPlayer->m_Shared.m_bChargeGlowing = false;
 			}

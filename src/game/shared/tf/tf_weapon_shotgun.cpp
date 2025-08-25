@@ -570,12 +570,15 @@ void CTFSodaPopper::SecondaryAttack()
 //-----------------------------------------------------------------------------
 float CTFSodaPopper::GetReloadSpeedScale() const
 {
+	// UNDONE: reload upon airdash
+#if 0
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (!pPlayer)
 		return BaseClass::GetReloadSpeedScale();
 
 	if ( pPlayer->m_Shared.IsAirDashing() && pPlayer->m_Shared.IsHypeBuffed() )
 		return 0.1f;
+#endif
 
 	return BaseClass::GetReloadSpeedScale();
 }
