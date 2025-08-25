@@ -460,7 +460,7 @@ float CTFRevolver::GetProjectileDamage( void )
 	if (bPrecise)
 	{
 		float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
-		flDamageMod *= RemapValClamped(flTimeSinceCheck, 1.25f, 0.8f, 1.0f, 0.8f);
+		flDamageMod *= RemapValClamped(flTimeSinceCheck, 1.25f, 0.8f, 1.0f, 0.75f);
 	}
 #endif
 

@@ -7029,11 +7029,11 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				{
 					if (flRandomRangeVal < 0.1f)
 					{
-						flRandomDamage *= 1.5f;
+						flRandomDamage *= bIsPrecisionRevolver ? 1.2f : 1.5f;
 					}
 					else
 					{
-						flRandomDamage *= 1.2f;
+						flRandomDamage *= bIsPrecisionRevolver ? 1.0f : 1.2f;
 					}
 					// can't reduce the crit below the actual damage
 					flRandomDamage = min(flRandomDamage, flDamage * 0.666666f);
