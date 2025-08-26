@@ -1,4 +1,5 @@
 VERSION="0.51.0"
+PAK_VERSION="0.1.0"
 DEV_DIR=../game
 CLEAN_DIR=../game_dist
 CLEAN_DEBUG_DIR=${CLEAN_DIR}_debug

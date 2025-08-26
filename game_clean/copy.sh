@@ -23,7 +23,7 @@ declare -a FILES_REP=(
   tc2/cfg/vscript_convar_allowlist.txt
   tf2_og/cfg/vscript_convar_allowlist.txt
   #
-  tc2/pak1
+  tc2/pak1.vpk
   tf2_og/pak1
   #
   tc2/gameinfo.txt
