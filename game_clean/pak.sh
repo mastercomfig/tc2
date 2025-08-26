@@ -24,8 +24,10 @@ FULL_BASE_DIR=$(cd .. && pwd -W)
 
 rm -f ../game/tc2/pak1*.vpk
 
-# TODO: do we want to use Steam Pipe and VDF manifest?
-vpk -M -k mcoms.publickey.vdf -K mcoms.privatekey.vdf "${FULL_BASE_DIR}/game_src/tc2/pak1"
+# TODO: do we want to use VDF manifest?
+vpk -v -M -k mcoms.publickey.vdf -K mcoms.privatekey.vdf -P "${FULL_BASE_DIR}/game_src/tc2/pak1"
+# TODO: workaround to hash everything
+vpk -v -M -k mcoms.publickey.vdf -K mcoms.privatekey.vdf -P a "${FULL_BASE_DIR}/game_src/tc2/pak1_dir.vpk" "${FULL_BASE_DIR}/game_src/tc2/pak1/cfg/default.cfg"
 
 # create release zip
 rm -f pak.zip
