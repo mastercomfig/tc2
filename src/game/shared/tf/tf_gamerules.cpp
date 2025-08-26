@@ -14404,22 +14404,33 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 			{
 				for ( const auto& Score : vecPlayerScore )
 				{
-					if ( Score.iTotalScore > HighestRoundScore.iTotalScore )
+					// less than total score? irrelevant.
+					if ( Score.iTotalScore < HighestRoundScore.iTotalScore )
 					{
-						HighestRoundScore = Score;
 						continue;
 					}
 
-					if ( Score.iRoundScore > HighestRoundScore.iRoundScore )
+					// if we are more, we move on, if we are equal, go to the tiebreaker.
+					if ( Score.iTotalScore == HighestRoundScore.iTotalScore )
 					{
-						HighestRoundScore = Score;
-						continue;
+						// less than round score? irrelevant.
+						if ( Score.iRoundScore < HighestRoundScore.iRoundScore )
+						{
+							continue;
+						}
+
+						// if we are more, we move on, if we are equal, go to the next tiebreaker.
+						if ( Score.iRoundScore == HighestRoundScore.iRoundScore )
+						{
+							// player index is lower priority, irrelevant.
+							if ( Score.iPlayerIndex < HighestRoundScore.iPlayerIndex )
+							{
+								continue;
+							}
+						}
 					}
 
-					if ( Score.iPlayerIndex > HighestRoundScore.iPlayerIndex )
-					{
-						HighestRoundScore = Score;
-					}
+					HighestRoundScore = Score;
 				}
 			}
 
