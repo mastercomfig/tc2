@@ -13,6 +13,7 @@ if [ -f "${DEV_DIR}/tc2/pak1_dir.vpk" ]; then
   exit 0
 fi
 
-gh release download -R "mastercomfig/tc2-pak" --clobber $PAK_VERSION -p "pak.zip" -O pak.zip
+rm -f pak.zip
+curl "https://github.com/mastercomfig/tc2-pak/releases/download/$PAK_VERSION/pak.zip" -O pak.zip
 
 $CMD_7Z e pak.zip -y "-o${DEV_DIR}/tc2"
