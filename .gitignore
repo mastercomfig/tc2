@@ -559,4 +559,8 @@ notes.txt
 /game/tc2/custom/*.vpk
 
 *.privatekey.vdf
+
+changenotes.md
+
+pak1*.vpk
 # END TC2 MOD
