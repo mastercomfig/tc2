@@ -3,6 +3,9 @@ PAK_VERSION="0.1.0"
 DEV_DIR=../game
 CLEAN_DIR=../game_dist
 CLEAN_DEBUG_DIR=${CLEAN_DIR}_debug
+
+command -v main-command > /dev/null && CMD_7Z=7z || CMD_7Z=7za
+
 if [[ "$OSTYPE" == "linux"* ]]; then
   PLATFORM="linux"
   PLAT_DIR="linux64"
