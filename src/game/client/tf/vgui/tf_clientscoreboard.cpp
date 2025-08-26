@@ -220,6 +220,8 @@ CTFClientScoreBoardDialog::CTFClientScoreBoardDialog( IViewPort *pViewPort ) : C
 	m_nExtraSpace = 0;
 	m_hSelectedPlayer = NULL;
 	m_bUsePlayerModel = false;
+
+	m_iMedalColumnWidth = 15;
 }
 
 //-----------------------------------------------------------------------------
