@@ -112,7 +112,6 @@ void CExtraMapEntity::PrepareModelName( const char *szModelName )
 
 void CExtraMapEntity::SpawnExtraModel( void )
 {
-/*
 	const char *pszMapName = STRING( gpGlobals->mapname );
 	if ( !pszMapName || !pszMapName[0] )
 		return;
@@ -179,7 +178,6 @@ void CExtraMapEntity::SpawnExtraModel( void )
 	}
 
 	pFileKV->deleteThis();
-*/
 }
 
 //-----------------------------------------------------------------------------
