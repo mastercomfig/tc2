@@ -21,7 +21,7 @@ Follow the [installation instructions on itch.io](https://mastercoms.itch.io/tc2
 
 ## Links
 
-* [Website](https://staging.mastercomfig-site.pages.dev/tc2/)
+* [Website](https://teamcomtress.com/)
 * [Discord](https://comfig.app/discord)
 
 ## Legal
