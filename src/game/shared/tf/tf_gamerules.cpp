@@ -14268,7 +14268,7 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 		// build a vector of players & round scores
 		CUtlVector<PlayerRoundScore_t> vecPlayerScore;
 		int iPlayerIndex;
-		for( iPlayerIndex = 1 ; iPlayerIndex <= MAX_PLAYERS; iPlayerIndex++ )
+		for ( iPlayerIndex = 1 ; iPlayerIndex <= MAX_PLAYERS; iPlayerIndex++ )
 		{
 			CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( iPlayerIndex ) );
 			if ( !pTFPlayer || !pTFPlayer->IsConnected() )
@@ -14360,6 +14360,271 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 		// Send the event
 		gameeventmanager->FireEvent( winEvent );
 	}
+
+	// Casual MVP
+
+	if ( bGameOver && ( IsMatchTypeCasual() || IsEmulatingMatch() == 1 ) )
+	{
+		IGameEvent* mvpEvent = gameeventmanager->CreateEvent("casual_mvp_panel");
+
+		if ( mvpEvent )
+		{
+			mvpEvent->SetInt("winning_team", m_iWinningTeam);
+
+			// build a vector of players & round scores
+			CUtlVector<PlayerRoundScore_t> vecPlayerScore;
+			for ( int iPlayerIndex = 1; iPlayerIndex <= MAX_PLAYERS; iPlayerIndex++ )
+			{
+				CTFPlayer* pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( iPlayerIndex ) );
+				if ( !pTFPlayer || !pTFPlayer->IsConnected() )
+					continue;
+				// filter out spectators and, if not stalemate, all players not on winning team
+				int iPlayerTeam = pTFPlayer->GetTeamNumber();
+				if ( ( iPlayerTeam < FIRST_GAME_TEAM ) || ( m_iWinningTeam != TEAM_UNASSIGNED && ( m_iWinningTeam != iPlayerTeam ) ) )
+					continue;
+
+				int iRoundScore = 0, iTotalScore = 0;
+				PlayerStats_t* pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
+				if ( pStats )
+				{
+					iRoundScore = CalcPlayerScore( &pStats->statsCurrentRound, pTFPlayer );
+					iTotalScore = CalcPlayerScore( &pStats->statsAccumulated, pTFPlayer );
+				}
+
+				PlayerRoundScore_t& playerRoundScore = vecPlayerScore[vecPlayerScore.AddToTail()];
+
+				playerRoundScore.iRoundScore = iRoundScore;
+				playerRoundScore.iPlayerIndex = iPlayerIndex;
+				playerRoundScore.iTotalScore = iTotalScore;
+			}
+
+			PlayerRoundScore_t HighestRoundScore{ 0, 0, 0 };
+
+			if ( vecPlayerScore.Count() > 0 )
+			{
+				for ( const auto& Score : vecPlayerScore )
+				{
+					if ( Score.iTotalScore > HighestRoundScore.iTotalScore )
+					{
+						HighestRoundScore = Score;
+						continue;
+					}
+
+					if ( Score.iRoundScore > HighestRoundScore.iRoundScore )
+					{
+						HighestRoundScore = Score;
+						continue;
+					}
+
+					if ( Score.iPlayerIndex > HighestRoundScore.iPlayerIndex )
+					{
+						HighestRoundScore = Score;
+					}
+				}
+			}
+
+			PlayerStats_t* pStats = nullptr;
+
+			if ( HighestRoundScore.iPlayerIndex != 0 && HighestRoundScore.iTotalScore != 0 )
+			{
+				CTFPlayer* pTFPlayer = ToTFPlayer(UTIL_PlayerByIndex(HighestRoundScore.iPlayerIndex));
+				pStats = CTF_GameStats.FindPlayerStats(pTFPlayer);
+			}
+
+			if ( !pStats )
+			{
+				mvpEvent->SetInt( "player", 0 );
+			}
+			else
+			{
+				mvpEvent->SetInt("player", HighestRoundScore.iPlayerIndex);
+				mvpEvent->SetInt("player_points", HighestRoundScore.iTotalScore);
+
+				CTFPlayer* pTFPlayer = ToTFPlayer(UTIL_PlayerByIndex(HighestRoundScore.iPlayerIndex));
+
+				int iStatType1 = TFSTAT_UNDEFINED;
+				int iStat1 = 0;
+				int iStatType2 = TFSTAT_UNDEFINED;
+				int iStat2 = 0;
+				int iStatType3 = TFSTAT_UNDEFINED;
+				int iStat3 = 0;
+				int iStatType4 = TFSTAT_UNDEFINED;
+				int iStat4 = 0;
+
+				// first stat is always generic, healing for medic, damage for everyone else.
+				if ( pTFPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+				{
+					iStatType1 = TFSTAT_HEALING;
+				}
+				else
+				{
+					iStatType1 = TFSTAT_DAMAGE;
+				}
+
+				// class specific #1
+				if ( pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) )
+				{
+					iStatType2 = TFSTAT_FIREDAMAGE;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_SOLDIER ) || pTFPlayer->IsPlayerClass( TF_CLASS_DEMOMAN ) )
+				{
+					iStatType2 = TFSTAT_BLASTDAMAGE;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_SCOUT ) )
+				{
+					// no bullet damage, so let's show accuracy to scouts
+					iStatType2 = TFSTAT_SHOTS_HIT;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) )
+				{
+					// boolet.
+					iStatType2 = TFSTAT_SHOTS_FIRED;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_ENGINEER ) ) // these next classes don't do damage conventionally
+				{
+					iStatType2 = TFSTAT_BUILDINGSBUILT;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_SNIPER ) || pTFPlayer->IsPlayerClass( TF_CLASS_SPY ) )
+				{
+					// assassin classes
+					iStatType2 = TFSTAT_KILLS;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+				{
+					iStatType2 = TFSTAT_INVULNS;
+				}
+
+				// class specific #2
+				if ( pTFPlayer->IsPlayerClass( TF_CLASS_SCOUT )
+					|| pTFPlayer->IsPlayerClass( TF_CLASS_PYRO )
+					|| pTFPlayer->IsPlayerClass( TF_CLASS_SOLDIER )
+					|| pTFPlayer->IsPlayerClass( TF_CLASS_DEMOMAN )
+					|| pTFPlayer->IsPlayerClass( TF_CLASS_HEAVYWEAPONS )
+					)
+				{
+					// combat classes
+					iStatType3 = TFSTAT_KILLS;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_ENGINEER ) )
+				{
+					// sentry
+					iStatType3 = TFSTAT_MAXSENTRYKILLS;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_SNIPER ) )
+				{
+					// main assassination
+					iStatType3 = TFSTAT_HEADSHOTS;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_SPY ) )
+				{
+					// main assassination
+					iStatType3 = TFSTAT_BACKSTABS;
+				}
+				else if ( pTFPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+				{
+					// helping kills
+					iStatType3 = TFSTAT_KILLASSISTS;
+				}
+
+				// class specific #3
+				if ( pTFPlayer->IsPlayerClass(TF_CLASS_PYRO)
+					|| pTFPlayer->IsPlayerClass(TF_CLASS_SCOUT)
+					|| pTFPlayer->IsPlayerClass(TF_CLASS_SNIPER)
+					|| pTFPlayer->IsPlayerClass(TF_CLASS_SOLDIER)
+					|| pTFPlayer->IsPlayerClass(TF_CLASS_ENGINEER)
+					)
+				{
+					// bonus first, if not, then support
+					iStatType4 = TFSTAT_BONUS_POINTS;
+					if ( pStats->statsAccumulated.m_iStat[iStatType4] < 1 )
+					{
+						// support isn't an actual stat
+						iStatType4 = TFSTAT_TOTAL;
+					}
+				}
+				else if (pTFPlayer->IsPlayerClass(TF_CLASS_DEMOMAN))
+				{
+					// defensive stickies
+					iStatType4 = TFSTAT_DEFENSES;
+				}
+				else if (pTFPlayer->IsPlayerClass(TF_CLASS_HEAVYWEAPONS))
+				{
+					// tanky guy
+					iStatType4 = TFSTAT_DAMAGETAKEN;
+				}
+				else if (pTFPlayer->IsPlayerClass(TF_CLASS_SPY))
+				{
+					// sapping
+					iStatType4 = TFSTAT_BUILDINGSDESTROYED;
+				}
+				else if (pTFPlayer->IsPlayerClass(TF_CLASS_MEDIC))
+				{
+					// staying alive for a long time
+					iStatType4 = TFSTAT_PLAYTIME;
+				}
+
+				if ( iStatType1 > TFSTAT_UNDEFINED )
+				{
+					iStat1 = pStats->statsAccumulated.m_iStat[iStatType1];
+				}
+
+				if ( iStatType2 == TFSTAT_SHOTS_HIT )
+				{
+					iStat2 = RoundFloatToInt(( (float) pStats->statsAccumulated.m_iStat[TFSTAT_SHOTS_HIT] / (float) pStats->statsAccumulated.m_iStat[TFSTAT_SHOTS_FIRED] ) * 100.0f);
+				}
+				else
+				{
+					iStat2 = pStats->statsAccumulated.m_iStat[iStatType2];
+				}
+
+				if (iStatType3 > TFSTAT_UNDEFINED)
+				{
+					iStat3 = pStats->statsAccumulated.m_iStat[iStatType3];
+				}
+
+				if (iStatType4 > TFSTAT_UNDEFINED)
+				{
+					if (iStat4 == TFSTAT_TOTAL)
+					{
+						iStat4 = CalcPlayerSupportScore(&pStats->statsAccumulated, HighestRoundScore.iPlayerIndex);
+					}
+					else
+					{
+						iStat4 = pStats->statsAccumulated.m_iStat[iStatType4];
+					}
+				}
+
+				mvpEvent->SetInt("stat1", iStatType1);
+				mvpEvent->SetInt("stat1_points", iStat1);
+				mvpEvent->SetInt("stat2", iStatType2);
+				mvpEvent->SetInt("stat2_points", iStat2);
+				mvpEvent->SetInt("stat3", iStatType3);
+				mvpEvent->SetInt("stat3_points", iStat3);
+				mvpEvent->SetInt("stat4", iStatType4);
+				mvpEvent->SetInt("stat4_points", iStat4);
+			}
+
+			// Send the event
+			gameeventmanager->FireEvent(mvpEvent);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Sorts players by total score
+//-----------------------------------------------------------------------------
+int CTFGameRules::PlayerTotalScoreSortFunc( const PlayerRoundScore_t* pRoundScore1, const PlayerRoundScore_t* pRoundScore2 )
+{
+	// sort first by total score
+	if ( pRoundScore1->iTotalScore != pRoundScore2->iTotalScore )
+		return pRoundScore2->iTotalScore - pRoundScore1->iTotalScore;
+
+	// if total scores are the same, sort next by round score
+	if ( pRoundScore1->iRoundScore != pRoundScore2->iRoundScore )
+		return pRoundScore2->iRoundScore - pRoundScore1->iRoundScore;
+
+	// if scores are the same, sort next by player index so we get deterministic sorting
+	return ( pRoundScore2->iPlayerIndex - pRoundScore1->iPlayerIndex );
 }
 
 //-----------------------------------------------------------------------------

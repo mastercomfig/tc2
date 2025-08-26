@@ -117,6 +117,8 @@ private:
 	void RecalculateMedalCounts();
 	void UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &pBadgePanels, TFSectionedListPanel *pPlayerList );
 
+	bool SubActionTime(float flSubActionTime);
+
 	void InternalUpdateMedalCountForType( int iTeam, StatMedal_t eMedal );
 	matchsummary_columns_t InternalAddMedalKeyValues( int iIndex, StatMedal_t eMedal, KeyValues *pKeyValues, int nTotalMedals = -1 );
 	void FireMedalEffects( Panel *pPanel, int nPanelXPos, int nPanelYPos, int nPanelWide, int nPanelTall, StatMedal_t eParticleMedal );
@@ -168,7 +170,16 @@ private:
 	CTFPlayerModelPanel			*m_pCharacterModelPanel;
 	CExLabel					*m_pMVPLabel;
 	CExLabel					*m_pMVPNameLabel;
+	CExLabel					*m_pMVPScoreTitle;
 	CExLabel					*m_pMVPScoreLabel;
+	CExLabel					*m_pMVPStat1Title;
+	CExLabel					*m_pMVPStat1Label;
+	CExLabel					*m_pMVPStat2Title;
+	CExLabel					*m_pMVPStat2Label;
+	CExLabel					*m_pMVPStat3Title;
+	CExLabel					*m_pMVPStat3Label;
+	CExLabel					*m_pMVPStat4Title;
+	CExLabel					*m_pMVPStat4Label;
 
 	CTFParticlePanel			*m_pParticlePanel;
 
@@ -250,11 +261,18 @@ private:
 	bool m_bFoundMVP;
 	std::string m_sMVPName;
 	int m_iMVPScore;
-
-	bool m_bPlayedRevealSound;
-	bool m_bPlayedMVPVoiceLine;
+	int m_iMVPCustom1;
+	std::string m_sMVPCustom1;
+	int m_iMVPCustom2;
+	std::string m_sMVPCustom2;
+	int m_iMVPCustom3;
+	std::string m_sMVPCustom3;
+	int m_iMVPCustom4;
+	std::string m_sMVPCustom4;
 
 	float m_flMedalSoundTime;
+
+	float m_flLastSubActionTime;
 
 	CUtlVector< CTFBadgePanel* > m_pBlueBadgePanels;
 	CUtlVector< CTFBadgePanel* > m_pRedBadgePanels;

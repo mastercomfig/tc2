@@ -47,7 +47,7 @@ extern ISoundEmitterSystemBase *soundemitterbase;
 #define MS_STATE_TRANSITION_TO_MEDALS					3.0f
 #define MS_STATE_TIME_BETWEEN_MEDALS					0.1f
 #define MS_STATE_TIME_BETWEEN_MEDALS_CATEGORIES			0.1f
-#define MS_STATE_MVP_TIME								8.0f
+#define MS_STATE_MVP_TIME								9.0f
 
 extern ConVar tf_scoreboard_alt_class_icons;
 
@@ -58,6 +58,15 @@ DECLARE_BUILD_FACTORY( TFSectionedListPanel );
 
 DECLARE_HUDELEMENT( CTFMatchSummary );
 
+static CUtlMap< TFStatType_t, const char* > StatToLocalizable;
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+static bool CUtlStatType_LessThan(const TFStatType_t& type1, const TFStatType_t& type2)
+{
+	return (type1 < type2);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -115,7 +124,16 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_pCharacterModelPanel = new CTFPlayerModelPanel(m_pMVPPanel, "MVPCharacterModel" );
 	m_pMVPLabel = new CExLabel(m_pMVPPanel, "MVPLabel", "");
 	m_pMVPNameLabel = new CExLabel(m_pMVPPanel, "MVPNameLabel", "");
+	m_pMVPScoreTitle = new CExLabel(m_pMVPPanel, "MVPScoreTitle", "");
 	m_pMVPScoreLabel = new CExLabel(m_pMVPPanel, "MVPScoreLabel", "");
+	m_pMVPStat1Title = new CExLabel(m_pMVPPanel, "MVPStat1Title", "");
+	m_pMVPStat1Label = new CExLabel(m_pMVPPanel, "MVPStat1Label", "");
+	m_pMVPStat2Title = new CExLabel(m_pMVPPanel, "MVPStat2Title", "");
+	m_pMVPStat2Label = new CExLabel(m_pMVPPanel, "MVPStat2Label", "");
+	m_pMVPStat3Title = new CExLabel(m_pMVPPanel, "MVPStat3Title", "");
+	m_pMVPStat3Label = new CExLabel(m_pMVPPanel, "MVPStat3Label", "");
+	m_pMVPStat4Title = new CExLabel(m_pMVPPanel, "MVPStat4Title", "");
+	m_pMVPStat4Label = new CExLabel(m_pMVPPanel, "MVPStat4Label", "");
 
 	m_pImageList = NULL;
 
@@ -152,6 +170,8 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_iWinningTeam = -1;
 	m_bFoundMVP = false;
 
+	m_flLastSubActionTime = -1.f;
+
 	Q_memset( m_iImageClass, NULL, sizeof( m_iImageClass ) );
 	Q_memset( m_iImageClassAlt, NULL, sizeof( m_iImageClassAlt ) );
 
@@ -160,9 +180,36 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	ListenForGameEvent( "player_abandoned_match" );
 	ListenForGameEvent( "client_disconnect" );
 	ListenForGameEvent( "show_match_summary" );
-	ListenForGameEvent( "teamplay_win_panel" );
+	ListenForGameEvent( "casual_mvp_panel" );
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
+
+	if ( StatToLocalizable.Count() == 0 )
+	{
+		StatToLocalizable.SetLessFunc(&CUtlStatType_LessThan);
+		StatToLocalizable.Insert(TFSTAT_UNDEFINED, "");
+		StatToLocalizable.Insert(TFSTAT_HEALING, "#Stat_Healing");
+		StatToLocalizable.Insert(TFSTAT_DAMAGE, "#Stat_Damage");
+		StatToLocalizable.Insert(TFSTAT_FIREDAMAGE, "#Stat_FiredDamage");
+		StatToLocalizable.Insert(TFSTAT_BLASTDAMAGE, "#Stat_BlastDamage");
+		StatToLocalizable.Insert(TFSTAT_SHOTS_HIT, "#Stat_ShotsHit");
+		StatToLocalizable.Insert(TFSTAT_SHOTS_FIRED, "#Stat_ShotsFired");
+		StatToLocalizable.Insert(TFSTAT_BUILDINGSBUILT, "#Stat_BuildingsBuilt");
+		StatToLocalizable.Insert(TFSTAT_KILLS, "#TF_KILLS");
+		StatToLocalizable.Insert(TFSTAT_INVULNS, "#Stat_Invulns");
+		StatToLocalizable.Insert(TFSTAT_MAXSENTRYKILLS, "#Stat_MaxSentryKills");
+		StatToLocalizable.Insert(TFSTAT_HEADSHOTS, "#Stat_Headshots");
+		StatToLocalizable.Insert(TFSTAT_BACKSTABS, "#Stat_BackStabs");
+		StatToLocalizable.Insert(TFSTAT_KILLASSISTS, "#Stat_KillAssists");
+		StatToLocalizable.Insert(TFSTAT_BONUS_POINTS, "#Stat_BonusPoints");
+		StatToLocalizable.Insert(TFSTAT_TOTAL, "#TF_Support");
+		StatToLocalizable.Insert(TFSTAT_DEFENSES, "#Stat_Defenses");
+		StatToLocalizable.Insert(TFSTAT_CAPTURES, "#Stat_Captures");
+		StatToLocalizable.Insert(TFSTAT_DAMAGETAKEN, "#Stat_DamageTaken");
+		StatToLocalizable.Insert(TFSTAT_BUILDINGSDESTROYED, "#Stat_BuildingsDestroyed");
+		StatToLocalizable.Insert(TFSTAT_PLAYTIME, "#Stat_PlayTime");
+		StatToLocalizable.Insert(TFSTAT_TELEPORTS, "#Stat_Teleports");
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -311,6 +358,8 @@ void CTFMatchSummary::ApplySchemeSettings( vgui::IScheme *pScheme )
 
 	m_flMedalSoundTime = -1.f;
 	m_flDrawingPanelTime = -1.f;
+
+	m_flLastSubActionTime = -1.f;
 
 	m_pBlueMedalsPanel->SetDialogVariable( "blueteammedals_gold", "?" );
 	m_pBlueMedalsPanel->SetDialogVariable( "blueteammedals_silver", "?" );
@@ -946,6 +995,25 @@ void CTFMatchSummary::UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &pBadgePanel
 	}
 }
 
+bool CTFMatchSummary::SubActionTime(float flSubActionTime)
+{
+	// when we should do it at least
+	const float flSubTime = m_flNextActionTime - flSubActionTime;
+	if ( gpGlobals->curtime >= flSubTime )
+	{
+		// if we haven't done it yet
+		if ( m_flLastSubActionTime < flSubTime )
+		{
+			// mark that we did it
+			m_flLastSubActionTime = gpGlobals->curtime;
+			return true;
+		}
+	}
+
+	// not time for it
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1048,32 +1116,31 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInPanels", false );
 	}
-	else if ( FStrEq( type, "teamplay_win_panel" ) )
+	else if ( FStrEq( type, "casual_mvp_panel" ) )
 	{
-		int iPlayerIndex = 0;
-		int iRoundScore = 0;
-		m_bFoundMVP = false;
-		m_iWinningTeam = event->GetInt("winning_team");
-		for (int i = 1; i <= 3; i++)
+		int iPlayerIndex = event->GetInt("player");
+		m_bFoundMVP = iPlayerIndex != 0;
+		if (!m_bFoundMVP)
 		{
-			char szPlayerIndexVal[64] = "", szPlayerScoreVal[64] = "";
-			// get player index and round points from the event
-			Q_snprintf(szPlayerIndexVal, ARRAYSIZE(szPlayerIndexVal), "player_%d", i);
-			Q_snprintf(szPlayerScoreVal, ARRAYSIZE(szPlayerScoreVal), "player_%d_points", i);
-			iPlayerIndex = event->GetInt(szPlayerIndexVal, 0);
-			iRoundScore = event->GetInt(szPlayerScoreVal, 0);
-			// round score of 0 means no player to show for that position (not enough players, or didn't score any points that round)
-			if ( iRoundScore <= 0 )
-			{
-				continue;
-			}
-			if ( m_iWinningTeam == g_PR->GetTeam(iPlayerIndex) )
-			{
-				m_bLocalPlayerIsMVP = g_PR->IsLocalPlayer(iPlayerIndex);
-				m_bFoundMVP = true;
-				break;
-			}
+			return;
 		}
+		m_bLocalPlayerIsMVP = g_PR->IsLocalPlayer(iPlayerIndex);
+		m_iWinningTeam = event->GetInt("winning_team");
+		m_sMVPName.assign(g_PR->GetPlayerName(iPlayerIndex));
+		m_iMVPScore = event->GetInt("player_points");
+		auto Idx1 = StatToLocalizable.Find((TFStatType_t)event->GetInt("stat1"));
+		m_sMVPCustom1.assign(StatToLocalizable.IsValidIndex(Idx1) ? StatToLocalizable[Idx1] : "");
+		m_iMVPCustom1 = event->GetInt("stat1_points");
+		auto Idx2 = StatToLocalizable.Find((TFStatType_t)event->GetInt("stat2"));
+		m_sMVPCustom2.assign(StatToLocalizable.IsValidIndex(Idx2) ? StatToLocalizable[Idx2] : "");
+		m_iMVPCustom2 = event->GetInt("stat2_points");
+		auto Idx3 = StatToLocalizable.Find((TFStatType_t)event->GetInt("stat3"));
+		m_sMVPCustom3.assign(StatToLocalizable.IsValidIndex(Idx3) ? StatToLocalizable[Idx3] : "");
+		m_iMVPCustom3 = event->GetInt("stat3_points");
+		auto Idx4 = StatToLocalizable.Find((TFStatType_t)event->GetInt("stat4"));
+		m_sMVPCustom4.assign(StatToLocalizable.IsValidIndex(Idx4) ? StatToLocalizable[Idx4] : "");
+		m_iMVPCustom4 = event->GetInt("stat4_points");
+		
 		if ( m_pCharacterModelPanel )
 		{
 			m_pCharacterModelPanel->ClearCarriedItems();
@@ -1132,9 +1199,6 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 						m_pCharacterModelPanel->AddCarriedItem(pEconItemView);
 					}
 				}
-
-				m_sMVPName.assign(g_PR->GetPlayerName(iPlayerIndex));
-				m_iMVPScore = iRoundScore;
 			}
 		}
 	}
@@ -1302,13 +1366,66 @@ void CTFMatchSummary::OnTick()
 	}
 	case MS_STATE_DRAWING:
 		{
-			if ( bUseNewCasualSummaryScreen && m_bFoundMVP && !m_bPlayedMVPVoiceLine && gpGlobals->curtime > m_flNextActionTime - (MS_STATE_MVP_TIME - 1.0f))
+			if ( bUseNewCasualSummaryScreen && m_bFoundMVP )
 			{
-				m_bPlayedMVPVoiceLine = true;
-				pLocalPlayer->EmitSound(VarArgs("%s.CasualSummaryScreenMVP", g_aPlayerClassNames_NonLocalized[m_pCharacterModelPanel->GetPlayerClass()]));
+				// 1 second after
+				if ( SubActionTime(MS_STATE_MVP_TIME - 1.0f) )
+				{
+					pLocalPlayer->EmitSound(VarArgs("%s.CasualSummaryScreenMVP", g_aPlayerClassNames_NonLocalized[m_pCharacterModelPanel->GetPlayerClass()]));
+				}
+
+				if (SubActionTime(MS_STATE_MVP_TIME - 1.5f))
+				{
+					m_pMVPScoreTitle->SetVisible(true);
+					m_pMVPScoreLabel->SetVisible(true);
+					pLocalPlayer->EmitSound("ui.cratesmash_common");
+				}
+
+				if (SubActionTime(MS_STATE_MVP_TIME - 2.0f))
+				{
+					m_pMVPStat1Title->SetVisible(true);
+					m_pMVPStat1Label->SetVisible(true);
+					pLocalPlayer->EmitSound("ui.cratesmash_common");
+				}
+
+				if (SubActionTime(MS_STATE_MVP_TIME - 2.5f))
+				{
+					m_pMVPStat2Title->SetVisible(true);
+					m_pMVPStat2Label->SetVisible(true);
+					pLocalPlayer->EmitSound("ui.cratesmash_common");
+				}
+
+				if (SubActionTime(MS_STATE_MVP_TIME - 3.0f))
+				{
+					m_pMVPStat3Title->SetVisible(true);
+					m_pMVPStat3Label->SetVisible(true);
+					pLocalPlayer->EmitSound("ui.cratesmash_common");
+				}
+
+				if (SubActionTime(MS_STATE_MVP_TIME - 3.5f))
+				{
+					m_pMVPStat4Title->SetVisible(true);
+					m_pMVPStat4Label->SetVisible(true);
+					pLocalPlayer->EmitSound("ui.cratesmash_common");
+				}
 			}
 			if ( gpGlobals->curtime > m_flNextActionTime )
 			{
+				if ( m_bFoundMVP )
+				{
+					m_pMVPScoreTitle->SetVisible(false);
+					m_pMVPScoreLabel->SetVisible(false);
+					m_pMVPStat1Title->SetVisible(false);
+					m_pMVPStat1Label->SetVisible(false);
+					m_pMVPStat2Title->SetVisible(false);
+					m_pMVPStat2Label->SetVisible(false);
+					m_pMVPStat3Title->SetVisible(false);
+					m_pMVPStat3Label->SetVisible(false);
+					m_pMVPStat4Title->SetVisible(false);
+					m_pMVPStat4Label->SetVisible(false);
+					m_bFoundMVP = false;
+				}
+
 				if ( m_pDrawingPanel )
 				{
 					m_pDrawingPanel->SetVisible( false );
@@ -1412,17 +1529,14 @@ void CTFMatchSummary::OnTick()
 				pLocalPlayer->EmitSound(pszEntryName);
 			}
 			m_iCurrentState = MS_STATE_MVP;
-			m_bPlayedRevealSound = false;
-			m_bPlayedMVPVoiceLine = false;
 			m_flNextActionTime = gpGlobals->curtime + flDelay + 0.5f;
 		}
 		break;
 	}
 	case MS_STATE_MVP:
 		{
-			if (!m_bPlayedRevealSound && gpGlobals->curtime > m_flNextActionTime - 2.0f)
+			if ( SubActionTime(2.0f) )
 			{
-				m_bPlayedRevealSound = true;
 				pLocalPlayer->EmitSound("ui.cratesmash_rare_long");
 			}
 			if (gpGlobals->curtime > m_flNextActionTime)
@@ -1433,15 +1547,34 @@ void CTFMatchSummary::OnTick()
 					m_pMVPPanel->SetVisible(true);
 					m_pMVPPanel->SetDialogVariable( "mvpname", m_sMVPName.c_str() );
 					m_pMVPPanel->SetDialogVariable( "mvpscore", CFmtStr("%d", m_iMVPScore) );
+					m_pMVPPanel->SetDialogVariable("stat1title", g_pVGuiLocalize->Find(m_sMVPCustom1.c_str()) );
+					m_pMVPPanel->SetDialogVariable("stat1", CFmtStr("%d", m_iMVPCustom1));
+					m_pMVPPanel->SetDialogVariable("stat2title", g_pVGuiLocalize->Find(m_sMVPCustom2.c_str()) );
+					m_pMVPPanel->SetDialogVariable("stat2", CFmtStr("%d", m_iMVPCustom2));
+					m_pMVPPanel->SetDialogVariable("stat3title", g_pVGuiLocalize->Find(m_sMVPCustom3.c_str()) );
+					m_pMVPPanel->SetDialogVariable("stat3", CFmtStr("%d", m_iMVPCustom3));
+					m_pMVPPanel->SetDialogVariable("stat4title", g_pVGuiLocalize->Find(m_sMVPCustom4.c_str()) );
+					m_pMVPPanel->SetDialogVariable("stat4", CFmtStr("%d", m_iMVPCustom4));
 					if (pLocalPlayer)
 					{
-						if (m_bLocalPlayerIsMVP)
+						if (m_bLocalPlayerIsMVP || true)
 						{
 							pLocalPlayer->EmitSound("ui.cratesmash_ultrarare_short");
 						}
 						pLocalPlayer->EmitSound(VarArgs("%s.MVPMusic", g_aPlayerClassNames_NonLocalized[m_pCharacterModelPanel->GetPlayerClass()]));
 					}
-					// TODO
+
+					// play a particle effect
+					int nXPos, nYPos, nWide, nTall;
+					m_pCharacterModelPanel->GetBounds(nXPos, nYPos, nWide, nTall);
+					int nPanelCenterX = nXPos + (nWide / 2);
+					int nPanelCenterY = nYPos + (nTall / 2);
+					int iItemAbsX, iItemAbsY;
+					vgui::ipanel()->GetAbsPos(m_pCharacterModelPanel->GetParent()->GetVPanel(), iItemAbsX, iItemAbsY);
+					int x = iItemAbsX + nPanelCenterX;
+					int y = iItemAbsY + nPanelCenterY;
+					m_pParticlePanel->FireParticleEffect("mvm_loot_explosion", x, y, 1.0f, false);
+
 					m_pCharacterModelPanel->PlayVCD("class_select", NULL, false);
 					m_pCharacterModelPanel->HoldItemInSlot(g_iLegacyClassSelectWeaponSlots[m_pCharacterModelPanel->GetPlayerClass()]);
 					m_flNextActionTime = gpGlobals->curtime + MS_STATE_MVP_TIME;
@@ -1659,11 +1792,13 @@ void CTFMatchSummary::OnTick()
 //-----------------------------------------------------------------------------
 void CTFMatchSummary::LevelInit( void )
 {
+	m_bFoundMVP = false;
 	SetVisible( false );
 }
 
 void CTFMatchSummary::LevelShutdown( void )
 {
+	m_bFoundMVP = false;
 	SetVisible( false );
 }
 

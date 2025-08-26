@@ -566,7 +566,8 @@ protected:
 	virtual void	RespawnTeam( int iTeam );
 
 	virtual void	InternalHandleTeamWin( int iWinningTeam );
-	
+
+	static int		PlayerTotalScoreSortFunc( const PlayerRoundScore_t* pRoundScore1, const PlayerRoundScore_t* pRoundScore2 );
 	static int		PlayerRoundScoreSortFunc( const PlayerRoundScore_t *pRoundScore1, const PlayerRoundScore_t *pRoundScore2 );
 	static int		PlayerArenaRoundScoreSortFunc( const PlayerArenaRoundScore_t *pRoundScore1, const PlayerArenaRoundScore_t *pRoundScore2 );
 

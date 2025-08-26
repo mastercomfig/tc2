@@ -345,6 +345,21 @@
 		"team"		"byte"		// which team the player is being moved to
 	}
 
+	"casual_mvp_panel"
+	{
+		"winning_team"		"byte"
+		"player"					"short"
+		"player_points"		"short"
+		"stat1"						"string"
+		"stat1_points"		"short"
+		"stat2"						"string"
+		"stat2_points"		"short"
+		"stat3"						"string"
+		"stat3_points"		"short"
+		"stat4"						"string"
+		"stat4_points"		"short"
+	}
+
 	"teamplay_setup_finished"
 	{
 	}
