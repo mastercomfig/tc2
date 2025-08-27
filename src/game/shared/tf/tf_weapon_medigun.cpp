@@ -2398,10 +2398,14 @@ void CWeaponMedigun::UpdateEffects( void )
 		return;
 
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if (GetSpectatorTarget() != 0 && GetSpectatorMode() == OBS_MODE_IN_EYE)
+	{
+		pLocalPlayer = (C_TFPlayer*)UTIL_PlayerByIndex(GetSpectatorTarget());
+	}
 	C_BaseEntity *pEffectOwner = this;
 	if ( pLocalPlayer == pFiringPlayer )
 	{
-		pEffectOwner = pLocalPlayer->GetRenderedWeaponModel();
+		pEffectOwner = pFiringPlayer->GetRenderedWeaponModel();
 	}
 
 	// If we're still healing and our owner changed, then we did something
