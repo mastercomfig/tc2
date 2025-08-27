@@ -2111,6 +2111,10 @@ void CWeaponMedigun::StopChargeEffect( bool bImmediately )
 void CWeaponMedigun::ManageChargeEffect( void )
 {
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if (GetSpectatorTarget() != 0 && GetSpectatorMode() == OBS_MODE_IN_EYE)
+	{
+		pLocalPlayer = (C_TFPlayer*)UTIL_PlayerByIndex(GetSpectatorTarget());
+	}
 	C_BaseEntity *pEffectOwner = this;
 
 	if ( pLocalPlayer == NULL )
