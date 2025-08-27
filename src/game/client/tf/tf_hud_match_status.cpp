@@ -49,7 +49,7 @@ bool ShouldUseMatchHUD()
 		return false;
 
 	// TODO(mcoms): enforce this better
-	if (TFGameRules() && (TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2))
+	if ( TFGameRules() && ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2 ) )
 		return true;
 
 	return tf_use_match_hud.GetBool();
@@ -276,7 +276,7 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	: CHudElement(pElementName)
 	, BaseClass(NULL, "HudMatchStatus")
 	, m_pTimePanel( NULL )
-	, m_bUseMatchHUD( ShouldUseMatchHUD() )
+	, m_iUseMatchHUD( -1 )
 	, m_eMatchGroupSettings( k_eTFMatchGroup_Invalid )
 {
 	Panel *pParent = g_pClientMode->GetViewport();
@@ -461,9 +461,9 @@ void CTFHudMatchStatus::OnThink()
 	bool bReload = false;
 	bool bUseMatchHUD = ShouldUseMatchHUD();
 
-	if ( bUseMatchHUD != m_bUseMatchHUD )
+	if ( bUseMatchHUD != m_iUseMatchHUD )
 	{
-		m_bUseMatchHUD = bUseMatchHUD;
+		m_iUseMatchHUD = bUseMatchHUD ? 1 : 0;
 		bReload = true;
 	}
 

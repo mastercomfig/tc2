@@ -132,7 +132,7 @@ private:
 
 	vgui::HFont					m_hPlayerListFont;
 
-	bool m_bUseMatchHUD;
+	int m_iUseMatchHUD;
 };
 
 //-----------------------------------------------------------------------------
