@@ -5370,6 +5370,8 @@ CStudioHdr *C_TFPlayer::OnNewModel( void )
 	return hdr;
 }
 
+ConVar tf_force_team_vision("tf_force_team_vision", 0);
+
 //-----------------------------------------------------------------------------
 // Purpose: Is this player an enemy to the local player
 //-----------------------------------------------------------------------------
@@ -5386,6 +5388,12 @@ bool C_TFPlayer::IsEnemyPlayer( void )
 	if ( pLocalPlayer->m_hStudent && pLocalPlayer->m_bIsCoaching )
 	{
 		iTeam = pLocalPlayer->m_hStudent->GetTeamNumber();
+	}
+
+	int iForcedTeam = tf_force_team_vision.GetInt();
+	if (iForcedTeam > LAST_SHARED_TEAM)
+	{
+		iForcedTeam = Clamp(iForcedTeam, (int)TF_TEAM_RED, (int)TF_TEAM_BLUE);
 	}
 
 	switch( iTeam )
@@ -6903,7 +6911,7 @@ bool C_TFPlayer::GetCompetitiveVisibility( void )
 
 	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
 
-	if (pPlayer->IsAlive())
+	if ( pPlayer->IsAlive() )
 	{
 		// while alive, this is not active atm.
 		return true;
