@@ -51,6 +51,8 @@ END_DATADESC()
 ConVar tf_meleeattackforcescale( "tf_meleeattackforcescale", "80.0", FCVAR_CHEAT | FCVAR_GAMEDLL | FCVAR_DEVELOPMENTONLY );
 #endif
 
+ConVar tf_demoextendedrangefix("tf_demoextendedrangefix", "0", FCVAR_CHEAT | FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable the possibly unintended fix for Demoknight's shield extending the range of swords");
+
 #ifdef _DEBUG
 extern ConVar tf_weapon_criticals_force_random;
 #endif // _DEBUG
@@ -79,6 +81,7 @@ void CTFWeaponBaseMelee::WeaponReset( void )
 	m_flSmackTime = -1.0f;
 	m_bConnected = false;
 	m_bMiniCrit = false;
+	m_bWasCharging = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -140,6 +143,7 @@ void CTFWeaponBaseMelee::Spawn()
 // -----------------------------------------------------------------------------
 bool CTFWeaponBaseMelee::Holster( CBaseCombatWeapon *pSwitchingTo )
 {
+	m_bWasCharging = false; // Once we holster, remove the charge hit extension
 	m_flSmackTime = -1.0f;
 	if ( GetPlayerOwner() )
 	{
@@ -164,9 +168,10 @@ bool CTFWeaponBaseMelee::Holster( CBaseCombatWeapon *pSwitchingTo )
 
 int	CTFWeaponBaseMelee::GetSwingRange( void )
 {
-	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
-	if ( pOwner && pOwner->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
+ 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
+	if ( pOwner && (pOwner->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) || (tf_demoextendedrangefix.GetBool() && m_bWasCharging)) )
 	{
+		m_bWasCharging = false;
 		return 128;
 	}
 	else
@@ -175,6 +180,7 @@ int	CTFWeaponBaseMelee::GetSwingRange( void )
 		CALL_ATTRIB_HOOK_INT( iIsSword, is_a_sword )
 		if ( iIsSword )
 		{
+			__debugbreak();
 			return 72; // swords are typically 72
 		}
 		return 48;
@@ -202,6 +208,7 @@ void CTFWeaponBaseMelee::PrimaryAttack()
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
 	m_bConnected = false;
 
+	m_bWasCharging = pPlayer->m_Shared.InCond(TF_COND_SHIELD_CHARGE);
 	pPlayer->EndClassSpecialSkill();
 
 	// Swing the weapon.

@@ -271,25 +271,6 @@ void CTFSword::WeaponReset( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-int	CTFSword::GetSwingRange( void )
-{
-	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
-	if ( pOwner && pOwner->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
-	{
-		return 128;
-	}
-	else
-	{
-		//int iRange = 0;
-		//CALL_ATTRIB_HOOK_INT( iRange, is_a_sword )
-		//return 72;
-		return 72;
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: A speed mod that is applied even if the weapon isn't in hand.
 //-----------------------------------------------------------------------------
 float CTFSword::GetSwordSpeedMod( void )
