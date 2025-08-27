@@ -10,7 +10,7 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/cfg,tf2_og/cfg,tc2/custom}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR,tc2/cfg,tf2_og/cfg,tc2/custom,tc2/loose}
 mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tf2_og/bin/$PLAT_DIR}
 
 ./dlpak.sh
@@ -28,6 +28,8 @@ declare -a FILES_REP=(
   tc2/pak1_000.vpk
   tc2/pak1_dir.vpk
   tf2_og/pak1
+  #
+  tc2/loose
   #
   tc2/gameinfo.txt
   tf2_og/gameinfo.txt

@@ -562,6 +562,9 @@ notes.txt
 
 changenotes.md
 
+/game/tc2/custom
+!/game/tc2/custom/readme.txt
+
 pak1*.vpk
 
 pak.zip
