@@ -211,7 +211,8 @@ public:
 
 	float GetPercentInvisible( void );
 	float GetEffectiveInvisibilityLevel( void );	// takes viewer into account
-	bool GetCompetitiveVisibility( void );
+	bool IsCompetitiveVisibilityChanging() const { return m_bCompetitiveVisibleChanged; }
+	bool GetCompetitiveVisibility() const { return m_bCompetitiveVisible; }
 	bool TraceCompetitiveVision( const Vector& vecEyes );
 	virtual bool IsTransparent( void ) OVERRIDE { return GetPercentInvisible() > 0.f; }
 
@@ -526,6 +527,7 @@ protected:
 	virtual void DestroyGlowEffect( void );
 
 private:
+	bool ComputeCompetitiveVisibility(void);
 
 	bool ShouldShowPowerupGlowEffect();
 	void GetPowerupGlowEffectColor( float *r, float *g, float *b );
@@ -600,6 +602,7 @@ private:
 	bool m_bCigaretteSmokeActive;
 
 	bool m_bCompetitiveVisible;
+	bool m_bCompetitiveVisibleChanged;
 
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;

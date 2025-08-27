@@ -2120,7 +2120,9 @@ void CWeaponMedigun::ManageChargeEffect( void )
 	if ( pLocalPlayer == NULL )
 		return;
 
-	if ( pLocalPlayer == GetTFPlayerOwner() )
+	C_TFPlayer* pOwner = GetTFPlayerOwner();
+
+	if ( pLocalPlayer == pOwner)
 	{
 		pEffectOwner = pLocalPlayer->GetRenderedWeaponModel();
 		if ( !pEffectOwner )
@@ -2131,14 +2133,21 @@ void CWeaponMedigun::ManageChargeEffect( void )
 
 	bool bOwnerTaunting = false;
 
-	if ( GetTFPlayerOwner() && GetTFPlayerOwner()->m_Shared.InCond( TF_COND_TAUNTING ) == true )
+	if (pOwner && pOwner->m_Shared.InCond( TF_COND_TAUNTING ) == true )
 	{
 		bOwnerTaunting = true;
 	}
 
+	bool bOwnerInvis = false;
+
+	if (pOwner && pLocalPlayer != pOwner && (pOwner->m_Shared.IsStealthed() || !pOwner->GetCompetitiveVisibility()))
+	{
+		bOwnerInvis = true;
+	}
+
 	float flMinChargeToDeploy = GetMinChargeAmount();
 
-	if ( GetTFPlayerOwner() && bOwnerTaunting == false && m_bHolstered == false && ( m_flChargeLevel >= flMinChargeToDeploy || m_bChargeRelease == true ) )
+	if ( pOwner && bOwnerTaunting == false && m_bHolstered == false && ( m_flChargeLevel >= flMinChargeToDeploy || m_bChargeRelease == true ) && !bOwnerInvis )
 	{
 		// Did we switch from 1st to 3rd or 3rd to 1st?  Taunting does this.
 		if( pEffectOwner != m_pChargeEffectOwner )
@@ -2151,7 +2160,7 @@ void CWeaponMedigun::ManageChargeEffect( void )
 		{
 			const char *pszEffectName = NULL;
 
-			switch( GetTFPlayerOwner()->GetTeamNumber() )
+			switch( pOwner->GetTeamNumber() )
 			{
 			case TF_TEAM_BLUE:
 				pszEffectName = "medicgun_invulnstatus_fullcharge_blue";
@@ -2386,7 +2395,7 @@ void CWeaponMedigun::ClientThink()
 		ForceHealingTargetUpdate();
 	}
 
-	if ( pFiringPlayer->m_Shared.IsEnteringOrExitingFullyInvisible() )
+	if ( pFiringPlayer->m_Shared.IsEnteringOrExitingFullyInvisible() || pFiringPlayer->IsCompetitiveVisibilityChanging() )
 	{
 		UpdateEffects();
 	}
@@ -2447,7 +2456,7 @@ void CWeaponMedigun::UpdateEffects( void )
 	m_hHealingTargetEffect.pCustomEffect	= NULL;
 
 	// Don't add targets if the medic is dead
-	if ( !pEffectOwner || pFiringPlayer->IsPlayerDead() || !pFiringPlayer->IsPlayerClass( TF_CLASS_MEDIC ) || pFiringPlayer->m_Shared.IsFullyInvisible() )
+	if ( !pEffectOwner || pFiringPlayer->IsPlayerDead() || !pFiringPlayer->IsPlayerClass( TF_CLASS_MEDIC ) || pFiringPlayer->m_Shared.IsFullyInvisible() || !pFiringPlayer->GetCompetitiveVisibility() )
 		return;
 
 	// Add our targets

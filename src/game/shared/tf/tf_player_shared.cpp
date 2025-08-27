@@ -3460,7 +3460,7 @@ void CTFPlayerShared::OnAddDisguising( void )
 //		m_pOuter->ParticleProp()->StopEmission( m_pOuter->m_pDisguisingEffect );
 	}
 
-	if ( !m_pOuter->IsLocalPlayer() && ( !IsStealthed() || !m_pOuter->IsEnemyPlayer() ) )
+	if ( !m_pOuter->IsLocalPlayer() && ( !IsStealthed() || !m_pOuter->IsEnemyPlayer() ) && m_pOuter->GetCompetitiveVisibility() )
 	{
 		const char *pEffectName = ( m_pOuter->GetTeamNumber() == TF_TEAM_RED ) ? "spy_start_disguise_red" : "spy_start_disguise_blue";
 		m_pOuter->m_pDisguisingEffect = m_pOuter->ParticleProp()->Create( pEffectName, PATTACH_ABSORIGIN_FOLLOW );
@@ -3768,7 +3768,7 @@ void CTFPlayerShared::OnAddMarkedForDeath( void )
 	{
 		m_pOuter->EmitSound( "Weapon_Marked_for_Death.Indicator" );
 	}
-	else if ( !InCond( TF_COND_DISGUISED ) && !IsStealthed() )
+	else if ( !InCond( TF_COND_DISGUISED ) && !IsStealthed() && m_pOuter->GetCompetitiveVisibility() )
 	{
 		m_pOuter->EmitSound( "Weapon_Marked_for_Death.Initial" );
 	}
@@ -4868,7 +4868,7 @@ static void AddResistParticle( CTFPlayer* pPlayer, medigun_resist_types_t nResis
 		return;
 
 	// do not add if stealthed
-	if ( pPlayer->m_Shared.IsStealthed() )
+	if ( pPlayer->m_Shared.IsStealthed() || !pPlayer->GetCompetitiveVisibility() )
 		return;
 
 	// Don't add this effect if the yield effect is passed in
@@ -4955,7 +4955,7 @@ static void AddResistShield( C_LocalTempEntity** pShield, CTFPlayer* pPlayer, ET
 		return;
 
 	// do not add if stealthed
-	if ( pPlayer->m_Shared.IsStealthed() )
+	if ( pPlayer->m_Shared.IsStealthed() || !pPlayer->GetCompetitiveVisibility() )
 		return;
 
 	// Don't create a new shield if we already have one
@@ -4992,7 +4992,7 @@ static void RemoveResistShield( C_LocalTempEntity** pShield, CTFPlayer* pPlayer 
 		eCond = pPlayer->m_Shared.InCond( TF_COND_MEDIGUN_UBER_BULLET_RESIST ) ? TF_COND_MEDIGUN_UBER_BULLET_RESIST : eCond;
 		eCond = pPlayer->m_Shared.InCond( TF_COND_MEDIGUN_UBER_BLAST_RESIST ) ? TF_COND_MEDIGUN_UBER_BLAST_RESIST : eCond;
 		eCond = pPlayer->m_Shared.InCond( TF_COND_MEDIGUN_UBER_FIRE_RESIST ) ? TF_COND_MEDIGUN_UBER_FIRE_RESIST : eCond;
-		eCond = ( pPlayer->m_Shared.InCond( TF_COND_RUNE_RESIST ) && !pPlayer->m_Shared.IsStealthed() ) ? TF_COND_RUNE_RESIST : eCond;
+		eCond = ( pPlayer->m_Shared.InCond( TF_COND_RUNE_RESIST ) && !pPlayer->m_Shared.IsStealthed() && pPlayer->GetCompetitiveVisibility() ) ? TF_COND_RUNE_RESIST : eCond;
 
 		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 		if ( pLocalPlayer )
@@ -6475,7 +6475,7 @@ void CTFPlayerShared::OnAddRadiusHeal( void )
 #ifdef CLIENT_DLL
 	if ( InCond( TF_COND_RADIUSHEAL ) )
 	{
-		if ( IsStealthed() )
+		if ( IsStealthed() || !m_pOuter->GetCompetitiveVisibility() )
 		{
 			EndRadiusHealEffect();
 			return;
@@ -6593,7 +6593,7 @@ void CTFPlayerShared::OnRemoveMegaHeal( void )
 void CTFPlayerShared::OnAddKingBuff( void )
 {
 #ifdef CLIENT_DLL
-	if ( IsStealthed() )
+	if ( IsStealthed() || !m_pOuter->GetCompetitiveVisibility() )
 	{
 		EndKingBuffRadiusEffect();
 		return;
@@ -6707,7 +6707,7 @@ void CTFPlayerShared::OnRemoveTeleported( void )
 //-----------------------------------------------------------------------------
 bool CTFPlayerShared::ShouldShowRecentlyTeleported( void )
 {
-	if ( IsStealthed() )
+	if ( IsStealthed() || !m_pOuter->GetCompetitiveVisibility() )
 	{
 		return false;
 	}
@@ -7626,7 +7626,7 @@ void CTFPlayerShared::UpdateCritBoostEffect( ECritBoostUpdateType eUpdateType )
 	}
 
 	// Never show crit boost effects when stealthed
-	bShouldDisplayCritBoostEffect &= !IsStealthed();
+	bShouldDisplayCritBoostEffect &= !IsStealthed() && m_pOuter->GetCompetitiveVisibility();
 
 	// Never show crit boost effects when disguised unless we're the local player (so crits show on our viewmodel)
 	if ( !m_pOuter->IsLocalPlayer() )
@@ -12283,6 +12283,13 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 
 void CTFPlayer::OnEmitFootstepSound( const CSoundParameters& params, const Vector& vecOrigin, float fVolume )
 {
+#ifdef CLIENT_DLL
+	if ( !GetCompetitiveVisibility() )
+	{
+		return;
+	}
+#endif
+
 	// play jingles in addition to normal footstep sounds, 
 	// and play them quietly to the local player so they don't go insane
 	int iJingle = 0;

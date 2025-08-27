@@ -1756,13 +1756,13 @@ void CSpyInvisProxy::OnBind( C_BaseEntity *pBaseEntity )
 		else if ( pOwningPlayer )
 		{
 			// mimic the owner's invisibility
-			fInvis = pOwningPlayer->GetEffectiveInvisibilityLevel();
+			fInvis = !pOwningPlayer->GetCompetitiveVisibility() ? 1.0f : pOwningPlayer->GetEffectiveInvisibilityLevel();
 		}
 	}
 	else
 	{
 		float r = 1.0f, g = 1.0f, b = 1.0f;
-		fInvis = pPlayer->GetEffectiveInvisibilityLevel();
+		fInvis = !pPlayer->GetCompetitiveVisibility() ? 1.0f : pPlayer->GetEffectiveInvisibilityLevel();
 
 		switch( pPlayer->GetTeamNumber() )
 		{
@@ -5095,7 +5095,7 @@ void C_TFPlayer::StopBlastJumpLoopSound( int iUserID )
 //-----------------------------------------------------------------------------
 void C_TFPlayer::UpdateRecentlyTeleportedEffect( void )
 {
-	bool bShow = m_Shared.ShouldShowRecentlyTeleported();
+	bool bShow = m_Shared.ShouldShowRecentlyTeleported() && m_bCompetitiveVisible;
 
 	if ( bShow )
 	{			
@@ -5173,7 +5173,7 @@ void C_TFPlayer::UpdatedMarkedForDeathEffect( bool bForceStop )
 	bool bShow = m_Shared.InCond( TF_COND_MARKEDFORDEATH ) || m_Shared.InCond( TF_COND_MARKEDFORDEATH_SILENT ) || m_Shared.InCond( TF_COND_PASSTIME_PENALTY_DEBUFF );
 
 	// force stop
-	if ( bForceStop || m_Shared.IsStealthed() || m_Shared.InCond( TF_COND_DISGUISED ) )
+	if ( bForceStop || m_Shared.IsStealthed() || m_Shared.InCond( TF_COND_DISGUISED ) || !m_bCompetitiveVisible )
 	{
 		bShow = false;
 	}
@@ -5202,7 +5202,7 @@ void C_TFPlayer::UpdateRuneIcon( bool bForceStop /*= false */ )
 	 	return;
 
 	const RuneTypes_t carryingRuneType = m_Shared.GetCarryingRuneType();
-	const bool bAllowedToShow = ( m_Shared.IsCarryingRune() && !m_Shared.IsStealthed() );
+	const bool bAllowedToShow = ( m_Shared.IsCarryingRune() && !m_Shared.IsStealthed() && m_bCompetitiveVisible );
 	int iTeam = IsEnemyPlayer() && m_Shared.InCond( TF_COND_DISGUISED ) ? m_Shared.GetDisguiseTeam() : GetTeamNumber();
 
 	if ( !bAllowedToShow || bForceStop || ( carryingRuneType != m_eDisplayingRuneIcon ) )
@@ -5370,7 +5370,7 @@ CStudioHdr *C_TFPlayer::OnNewModel( void )
 	return hdr;
 }
 
-ConVar tf_force_team_vision("tf_force_team_vision", 0);
+ConVar tf_force_team_vision("tf_force_team_vision", "0", FCVAR_NONE, "Force team vision while spectating. 2 = RED, 3 = BLU");
 
 //-----------------------------------------------------------------------------
 // Purpose: Is this player an enemy to the local player
@@ -5390,10 +5390,13 @@ bool C_TFPlayer::IsEnemyPlayer( void )
 		iTeam = pLocalPlayer->m_hStudent->GetTeamNumber();
 	}
 
-	int iForcedTeam = tf_force_team_vision.GetInt();
-	if (iForcedTeam > LAST_SHARED_TEAM)
+	if (iTeam <= LAST_SHARED_TEAM)
 	{
-		iForcedTeam = Clamp(iForcedTeam, (int)TF_TEAM_RED, (int)TF_TEAM_BLUE);
+		int iForcedTeam = tf_force_team_vision.GetInt();
+		if (iForcedTeam > LAST_SHARED_TEAM)
+		{
+			iTeam = Clamp(iForcedTeam, (int)TF_TEAM_RED, (int)TF_TEAM_BLUE);
+		}
 	}
 
 	switch( iTeam )
@@ -5850,6 +5853,9 @@ bool C_TFPlayer::CanLightCigarette( void )
 	if ( GetPercentInvisible() > 0 )
 		return false;
 
+	if ( !m_bCompetitiveVisible )
+		return false;
+
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 
 	// Don't light for the local player.
@@ -5943,7 +5949,16 @@ void C_TFPlayer::ClientThink()
 	// Pass on through to the base class.
 	BaseClass::ClientThink();
 
-	m_bCompetitiveVisible = GetCompetitiveVisibility();
+	bool bIsCompetitiveVisible = ComputeCompetitiveVisibility();
+	if ( bIsCompetitiveVisible != m_bCompetitiveVisible )
+	{
+		m_bCompetitiveVisible = bIsCompetitiveVisible;
+		m_bCompetitiveVisibleChanged = true;
+	}
+	else
+	{
+		m_bCompetitiveVisibleChanged = false;
+	}
 
 	UpdateIDTarget();
 
@@ -5997,7 +6012,7 @@ void C_TFPlayer::ClientThink()
 	// b) the enemy disguised spy is now invisible
 
 	if ( !IsAlive() ||
-		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 ) ) )
+		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 || !m_bCompetitiveVisible ) ) )
 	{
 		StopSaveMeEffect( true );
 	}
@@ -6075,7 +6090,7 @@ void C_TFPlayer::ClientThink()
 	}
 */
 
-	if ( m_Shared.IsEnteringOrExitingFullyInvisible() )
+	if ( m_Shared.IsEnteringOrExitingFullyInvisible() || m_bCompetitiveVisibleChanged )
 	{
 		UpdateSpyStateChange();
 	}
@@ -6900,7 +6915,7 @@ float C_TFPlayer::GetEffectiveInvisibilityLevel( void )
 //-----------------------------------------------------------------------------
 // Purpose: Compute visibility on competitive integrity
 //-----------------------------------------------------------------------------
-bool C_TFPlayer::GetCompetitiveVisibility( void )
+bool C_TFPlayer::ComputeCompetitiveVisibility( void )
 {
 	// hack in a visibility check.
 	if ( !TFGameRules()->IsCompetitiveGame() )
@@ -6911,7 +6926,7 @@ bool C_TFPlayer::GetCompetitiveVisibility( void )
 
 	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
 
-	if ( pPlayer->IsAlive() )
+	if ( pPlayer->IsAlive() && pPlayer->GetTeamNumber() > LAST_SHARED_TEAM )
 	{
 		// while alive, this is not active atm.
 		return true;
@@ -6923,7 +6938,15 @@ bool C_TFPlayer::GetCompetitiveVisibility( void )
 		return true;
 	}
 
-	const int iLocalTeam = pPlayer->GetTeamNumber();
+	int iLocalTeam = pPlayer->GetTeamNumber();
+	if ( iLocalTeam <= LAST_SHARED_TEAM )
+	{
+		int iForcedTeam = tf_force_team_vision.GetInt();
+		if (iForcedTeam > LAST_SHARED_TEAM)
+		{
+			iLocalTeam = Clamp(iForcedTeam, (int)TF_TEAM_RED, (int)TF_TEAM_BLUE);
+		}
+	}
 	if ( m_Shared.GetDisguiseTeam() == iLocalTeam )
 	{
 		// disguised enemies not invisible -- pretending to be friendly
@@ -7988,7 +8011,7 @@ bool C_TFPlayer::IsPlayerClass( int iClass ) const
 void C_TFPlayer::AddDecal( const Vector& rayStart, const Vector& rayEnd,
 							const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, int maxLODToDecal )
 {
-	if ( m_Shared.IsStealthed() )
+	if ( m_Shared.IsStealthed() || !GetCompetitiveVisibility() )
 	{
 		return;
 	}
@@ -10168,7 +10191,7 @@ void C_TFPlayer::UpdateSpyStateChange( void )
 	UpdateRuneIcon( true );
 
 	// Remove Speed lines if Stealthed
-	if ( m_Shared.IsStealthed() )
+	if ( m_Shared.IsStealthed() || !m_bCompetitiveVisible )
 	{
 		if ( m_pSpeedBoostEffect )
 		{
@@ -10200,7 +10223,7 @@ void C_TFPlayer::UpdateOverhealEffect( void )
 	bool bShow = m_Shared.InCond( TF_COND_HEALTH_OVERHEALED );
 	int iTeam = GetTeamNumber();
 
-	if ( IsLocalPlayer() || ( m_Shared.IsStealthed() && !InSameTeam( GetLocalTFPlayer() ) ) )
+	if ( IsLocalPlayer() || ( m_Shared.IsStealthed() && !InSameTeam( GetLocalTFPlayer() ) ) || !m_bCompetitiveVisible )
 	{
 		bShow = false;
 	}

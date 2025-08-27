@@ -436,7 +436,7 @@ bool CTFWearable::ShouldDrawParticleSystems( void )
 		return false;
 
 	C_TFPlayer *pPlayer = ToTFPlayer( GetOwnerEntity() );
-	bool bStealthed = pPlayer->m_Shared.IsStealthed();
+	bool bStealthed = pPlayer->m_Shared.IsStealthed() || !pPlayer->GetCompetitiveVisibility();
 
 	// If we're disguised, this ought to only be getting called on disguise wearables,
 	// otherwise we could get two particles showing at once (disguise wearable + real wearable).

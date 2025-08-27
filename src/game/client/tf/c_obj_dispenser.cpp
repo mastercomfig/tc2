@@ -133,7 +133,7 @@ void C_ObjectDispenser::UpdateEffects( void )
 {
 	C_TFPlayer *pOwner = GetOwner();
 
-	if ( GetInvisibilityLevel() == 1.f || ( pOwner && pOwner->m_Shared.IsFullyInvisible() ) )
+	if ( GetInvisibilityLevel() == 1.f || ( pOwner && ( pOwner->m_Shared.IsFullyInvisible() || !pOwner->GetCompetitiveVisibility() ) ) )
 	{
 		StopEffects( true );
 		return;
@@ -151,7 +151,7 @@ void C_ObjectDispenser::UpdateEffects( void )
 		{
 			// don't want to show this effect for stealthed spies
 			C_TFPlayer *pPlayer = dynamic_cast< C_TFPlayer * >( pTarget );
-			if ( pPlayer && ( pPlayer->m_Shared.IsStealthed() || pPlayer->m_Shared.InCond( TF_COND_STEALTHED_BLINK ) ) )
+			if ( pPlayer && ( pPlayer->m_Shared.IsStealthed() || pPlayer->m_Shared.InCond( TF_COND_STEALTHED_BLINK ) || !pPlayer->GetCompetitiveVisibility() ) )
 				continue;
 
 			bool bHaveEffect = false;

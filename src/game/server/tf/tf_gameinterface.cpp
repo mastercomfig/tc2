@@ -36,7 +36,7 @@ void CServerGameClients::GetPlayerLimits( int& minplayers, int& maxplayers, int 
 	else
 		maxplayers = 33;
 #endif
-	defaultMaxPlayers = 24;
+	defaultMaxPlayers = 32;
 }
 
 // -------------------------------------------------------------------------------------------- //

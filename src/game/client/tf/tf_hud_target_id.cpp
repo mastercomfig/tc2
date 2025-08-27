@@ -419,7 +419,7 @@ bool CTargetID::IsValidIDTarget( int nEntIndex, float flOldTargetRetainFOV, floa
 
 			if ( pPlayer )
 			{
-				if ( pPlayer->m_Shared.IsStealthed() )
+				if ( pPlayer->m_Shared.IsStealthed() || !pPlayer->GetCompetitiveVisibility() )
 				{
 					bStealthed = true;
 					bHealthBarVisible = false;
@@ -1476,7 +1476,7 @@ void CFloatingHealthIcon::OnTick( void )
 	}
 
 	C_TFPlayer *pTargetPlayer = ToTFPlayer( m_hEntity );
-	if ( pTargetPlayer && pTargetPlayer->m_Shared.IsStealthed() )
+	if ( pTargetPlayer && ( pTargetPlayer->m_Shared.IsStealthed() || !pTargetPlayer->GetCompetitiveVisibility() ) )
 	{
 		SetVisible( false );
 		return;

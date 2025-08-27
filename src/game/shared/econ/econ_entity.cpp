@@ -1271,6 +1271,9 @@ bool CEconEntity::ShouldDrawParticleSystems( void )
 	if ( pPlayer )
 	{
 		bool bStealthed = pPlayer->m_Shared.IsStealthed();
+#if defined(TF_CLIENT_DLL)
+		bStealthed |= !pPlayer->GetCompetitiveVisibility();
+#endif
 		if ( bStealthed )
 			return false;
 		bool bDisguised = pPlayer->m_Shared.InCond( TF_COND_DISGUISED );
