@@ -1306,6 +1306,12 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 		}
 	}
 
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if (pPlayer)
+	{
+		pPlayer->m_flInterpolationTime = 1.0f;
+	}
+
 	m_flLastForwardMove = cmd->forwardmove;
 
 	cmd->random_seed = MD5_PseudoRandom( sequence_number ) & 0x7fffffff;
