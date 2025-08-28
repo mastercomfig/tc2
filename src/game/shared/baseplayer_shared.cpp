@@ -821,7 +821,11 @@ void CBasePlayer::SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalki
 
 Vector CBasePlayer::Weapon_ShootPosition( )
 {
+#ifdef GAME_DLL
+	return EyePositionOld();
+#else
 	return EyePosition();
+#endif
 }
 
 void CBasePlayer::SetAnimationExtension( const char *pExtension )

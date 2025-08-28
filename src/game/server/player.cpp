@@ -808,6 +808,10 @@ void CBasePlayer::SnapEyeAngles( const QAngle &viewAngles )
 	pl.fixangle = FIXANGLE_ABSOLUTE;
 }
 
+Vector CBasePlayer::EyePositionOld()
+{
+	return m_oldOrigin + GetViewOffset();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -4792,7 +4796,10 @@ void CBasePlayer::PostThinkVPhysics( void )
 {
 	// Check to see if things are initialized!
 	if ( !m_pPhysicsController )
+	{
+		m_oldOrigin = GetAbsOrigin();
 		return;
+	}
 
 	Vector newPosition = GetAbsOrigin();
 	float frametime = gpGlobals->frametime;

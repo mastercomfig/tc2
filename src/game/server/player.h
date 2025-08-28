@@ -341,6 +341,7 @@ public:
 	int						GetBonusChallenge() const { return m_iBonusChallenge; }
 
 	virtual Vector			EyePosition( );			// position of eyes
+	Vector					EyePositionOld();
 	const QAngle			&EyeAngles( );
 	void					EyePositionAndVectors( Vector *pPosition, Vector *pForward, Vector *pRight, Vector *pUp );
 	virtual const QAngle	&LocalEyeAngles();		// Direction of eyes
