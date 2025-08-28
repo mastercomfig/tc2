@@ -424,7 +424,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 		targettick = gpGlobals->tickcount - TIME_TO_TICKS( correct );
 	}
 
-	float flInterpTime = Clamp(cmd->lerp_time, 0.0f, 1.0f);
+	float flInterpTime = Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
 	float flTargetTime = TICKS_TO_TIME( targettick ) + flInterpTime;
 	
 	// Iterate all active players
