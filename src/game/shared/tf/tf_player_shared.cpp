@@ -3095,7 +3095,18 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			{
 				bleed.flBleedingTime = gpGlobals->curtime + TF_BLEEDING_FREQUENCY;
 
-				CTakeDamageInfo info( bleed.hBleedingAttacker, bleed.hBleedingAttacker, bleed.hBleedingWeapon, bleed.nBleedDmg, DMG_SLASH, bleed.nDmgType );
+				const bool bIsHeadTrauma = bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID());
+
+				int iKillType = bleed.nDmgType;
+				if (bIsHeadTrauma && m_pOuter->GetHealth() <= bleed.nBleedDmg)
+				{
+					// try decapitation.
+					iKillType = TF_DMG_CUSTOM_HEADSHOT_DECAPITATION;
+					// crit sound?
+					bleed.hBleedingWeapon->WeaponSound(BURST, 0.0f, true);
+				}
+
+				CTakeDamageInfo info( bleed.hBleedingAttacker, bleed.hBleedingAttacker, bleed.hBleedingWeapon, bleed.nBleedDmg, DMG_SLASH, iKillType );
 				m_pOuter->TakeDamage( info );
 
 				// It's very possible we died from the take damage, which clears all our conditions
@@ -6931,7 +6942,8 @@ void CTFPlayerShared::MakeBleed( CTFPlayer *pPlayer, CTFWeaponBase *pWeapon, flo
 	if ( !pPlayer && !pWeapon )
 		return;
 
-	float flExpireTime = gpGlobals->curtime + flBleedingTime;
+	const bool bIsHeadTrauma = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
+	const float flExpireTime = gpGlobals->curtime + flBleedingTime;
 
 	// See if this weapon has already applied a bleed and extend the time
 	FOR_EACH_VEC( m_PlayerBleeds, i )
@@ -6941,7 +6953,15 @@ void CTFPlayerShared::MakeBleed( CTFPlayer *pPlayer, CTFWeaponBase *pWeapon, flo
 		{
 			if ( flExpireTime > m_PlayerBleeds[i].flBleedingRemoveTime )
 			{
-				m_PlayerBleeds[i].flBleedingRemoveTime = flExpireTime;
+				if (bIsHeadTrauma)
+				{
+					// Sniper bleeds stack.
+					m_PlayerBleeds[i].flBleedingRemoveTime += flBleedingTime;
+				}
+				else
+				{
+					m_PlayerBleeds[i].flBleedingRemoveTime = flExpireTime;
+				}
 				return;
 			}
 		}
@@ -11710,7 +11730,7 @@ void CTFPlayerShared::HealthKitPickupEffects( int iHealthGiven /*= 0*/ )
 #ifdef GAME_DLL
 		FOR_EACH_VEC_BACK(m_PlayerBleeds, i)
 		{
-			// sniper rifles apply a critical bleed which cannot be removed. health kit will heal us, but won't completely patch us up.
+			// sniper rifles apply a critical head trauma bleed which cannot be removed. health kit will heal us, but won't completely patch us up.
 			const bleed_struct_t& bleed = m_PlayerBleeds[i];
 			if (bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID()))
 				continue;
@@ -14424,6 +14444,7 @@ void CTFPlayerShared::UpdateCloakMeter( void )
 					// Reduce the duration of this bleeding 
 					FOR_EACH_VEC( m_PlayerBleeds, i )
 					{
+						// TODO(mcoms): should sniper head trauma really also be reduced here? sniper vs spy?
 						m_PlayerBleeds[i].flBleedingRemoveTime -= flReduction;
 					}
 				}

@@ -1909,7 +1909,7 @@ float CBaseCombatWeapon::GetFireRate( void )
 // Input  :
 // Output :
 //-----------------------------------------------------------------------------
-void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 0.0f */ )
+void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /* = 0.0f */, bool bForceOwnerOnly /* = false */ )
 {
 #if !defined( CLIENT_DLL )
 	if ( !m_bSoundsEnabled )
@@ -1926,7 +1926,7 @@ void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /
 	if ( !GetParametersForSound( shootsound, params, NULL ) )
 		return;
 
-	if ( params.play_to_owner_only )
+	if ( params.play_to_owner_only || bForceOwnerOnly )
 	{
 		// Am I only to play to my owner?
 		if ( GetOwner() && GetOwner()->IsPlayer() )
