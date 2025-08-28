@@ -439,6 +439,8 @@ public:
 
 	int				m_nButtons;
 
+	float			m_flInterpolationTime = 1.0f;
+
 	CUserCmd		*m_pCurrentCommand;
 
 	// Movement constraints

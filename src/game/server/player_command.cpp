@@ -300,8 +300,12 @@ void CPlayerMove::RunPostThink( CBasePlayer *player )
 {
 	VPROF( "CPlayerMove::RunPostThink" );
 
+	player->SetInPostThink(true);
+
 	// Run post-think
 	player->PostThink();
+
+	player->SetInPostThink(false);
 }
 
 void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
@@ -447,7 +451,11 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	moveHelper->ProcessImpacts();
 	VPROF_SCOPE_END();
 
+	player->m_flInterpolationTime = ucmd->lerp_time;
+
 	RunPostThink( player );
+
+	player->m_flInterpolationTime = 1.0f;
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 

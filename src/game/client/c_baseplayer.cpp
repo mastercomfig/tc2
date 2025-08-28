@@ -1213,6 +1213,9 @@ bool C_BasePlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 		}
 	}
 
+	pCmd->lerp_time = m_flInterpolationTime;
+	m_flInterpolationTime = 1.0f;
+
 	// If the frozen flag is set, prevent view movement (server prevents the rest of the movement)
 	if ( GetFlags() & FL_FROZEN )
 	{

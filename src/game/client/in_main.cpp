@@ -1061,6 +1061,45 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 	cmd->buttons = GetButtonBits( 0 );
 #endif
 
+	if ( active )
+	{
+		C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+		if ( pPlayer )
+		{
+			float flInterpTime = gpGlobals->interpolation_amount;
+			float flTickFrac = flInterpTime * TICK_INTERVAL;
+			float flCorrectedTime = gpGlobals->curtime + flTickFrac;
+			bool bIsAttackFrame = false;
+
+			C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+			if (pWeapon)
+			{
+				// Check primary attack
+				if ((cmd->buttons & IN_ATTACK) && pWeapon->m_flNextPrimaryAttack <= flCorrectedTime)
+				{
+					bIsAttackFrame = true;
+				}
+				// Check secondary attack
+				else if ((cmd->buttons & IN_ATTACK2) && pWeapon->m_flNextSecondaryAttack <= flCorrectedTime)
+				{
+					bIsAttackFrame = true;
+				}
+				// Check special attack
+				else if ((cmd->buttons & IN_ATTACK3))
+				{
+					bIsAttackFrame = true;
+				}
+			}
+
+
+			if (bIsAttackFrame)
+			{
+				// TODO: store off sampled data
+				pPlayer->m_flInterpolationTime = flInterpTime;
+			}
+		}
+	}
+
 	// Use new view angles if alive, otherwise user last angles we stored off.
 	if ( g_iAlive )
 	{

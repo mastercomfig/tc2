@@ -61,6 +61,8 @@ public:
 #if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
 		entitygroundcontact.RemoveAll();
 #endif
+
+		lerp_time = 1.0f;
 	}
 
 	CUserCmd& operator =( const CUserCmd& src )
@@ -91,6 +93,8 @@ public:
 		entitygroundcontact			= src.entitygroundcontact;
 #endif
 
+		lerp_time = src.lerp_time;
+
 		return *this;
 	}
 
@@ -117,6 +121,7 @@ public:
 		CRC32_ProcessBuffer( &crc, &random_seed, sizeof( random_seed ) );
 		CRC32_ProcessBuffer( &crc, &mousedx, sizeof( mousedx ) );
 		CRC32_ProcessBuffer( &crc, &mousedy, sizeof( mousedy ) );
+		CRC32_ProcessBuffer( &crc, &lerp_time, sizeof( lerp_time ) );
 		CRC32_Final( &crc );
 
 		return crc;
@@ -138,6 +143,9 @@ public:
 	
 	// the tick the client created this command
 	int		tick_count;
+
+	// interpolation amount (fraction on client)
+	float	lerp_time;
 	
 	// Player instantaneous view angles.
 	QAngle	viewangles;     

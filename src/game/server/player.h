@@ -824,6 +824,9 @@ public:
 		}
 	}
 
+	void SetInPostThink( bool bInPostThink ) { m_bInPostThink = bInPostThink; };
+	bool IsInPostThink( void ) const { return m_bInPostThink; }
+
 private:
 	// How much of a movement time buffer can we process from this user?
 	int				m_nMovementTicksForUserCmdProcessingRemaining;
@@ -1024,6 +1027,9 @@ protected: //used to be private, but need access for portal mod (Dave Kircher)
 	bool						m_bPhysicsWasFrozen;
 
 private:
+
+	float					m_flInterpolationTime = 1.0f;
+	bool					m_bInPostThink = false;
 
 	int						m_iPlayerSound;// the index of the sound list slot reserved for this player
 	int						m_iTargetVolume;// ideal sound volume. 

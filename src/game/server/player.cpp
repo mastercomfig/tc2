@@ -9587,6 +9587,7 @@ void CPlayerInfo::SetLastUserCommand( const CBotCmd &ucmd )
 		cmd.viewangles = ucmd.viewangles;
 		cmd.weaponselect = ucmd.weaponselect;
 		cmd.weaponsubtype = ucmd.weaponsubtype;
+		cmd.lerp_time = 1.0f;
 
 		m_pParent->SetLastUserCommand(cmd); 
 	}

@@ -822,7 +822,18 @@ void CBasePlayer::SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalki
 Vector CBasePlayer::Weapon_ShootPosition( )
 {
 #ifdef GAME_DLL
-	return EyePositionOld();
+	Vector vCurPos = EyePosition();
+
+	if ( !IsInPostThink() || m_flInterpolationTime >= 1.0f )
+	{
+		return vCurPos;
+	}
+
+	Vector vOldPos = EyePositionOld();
+
+	Vector vLerpPos = Lerp(m_flInterpolationTime, vOldPos, vCurPos);
+	
+	return vLerpPos;
 #else
 	return EyePosition();
 #endif
