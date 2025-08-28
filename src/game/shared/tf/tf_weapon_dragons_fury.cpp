@@ -150,14 +150,17 @@ CBaseEntity* CTFWeaponFlameBall::FireProjectile( CTFPlayer *pPlayer )
 	Vector vecForward, vecRight, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
 
+	// UNDONE: it's a bit awkward for this class to shoot at an offset.
+	Vector vecSrc = pPlayer->Weapon_ShootPosition();
+#if 0
 	float fRight = 8.f;
 	if ( IsViewModelFlipped() )
 	{
 		fRight *= -1;
 	}
-	Vector vecSrc = pPlayer->Weapon_ShootPosition();
 	// Shoot from the right location
 	vecSrc = vecSrc + (vecUp * -9.0f) + (vecRight * 7.0f) + (vecForward * 3.0f);
+#endif
 
 	QAngle angForward = pPlayer->EyeAngles();
 
