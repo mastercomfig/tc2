@@ -459,11 +459,11 @@ void CTFHudMatchStatus::OnThink()
 		return;
 
 	bool bReload = false;
-	bool bUseMatchHUD = ShouldUseMatchHUD();
+	int iUseMatchHUD = ShouldUseMatchHUD() ? 1 : 0;
 
-	if ( bUseMatchHUD != m_iUseMatchHUD )
+	if (iUseMatchHUD != m_iUseMatchHUD )
 	{
-		m_iUseMatchHUD = bUseMatchHUD ? 1 : 0;
+		m_iUseMatchHUD = iUseMatchHUD;
 		bReload = true;
 	}
 
