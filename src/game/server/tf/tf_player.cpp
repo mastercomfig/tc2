@@ -8759,6 +8759,7 @@ void CTFPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 				// play the critical shot sound to the shooter	
 				if ( pWpn )
 				{
+					CDisablePredictionFiltering disabler;
 					pWpn->WeaponSound( BURST );
 				}
 			}
