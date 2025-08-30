@@ -10724,8 +10724,6 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 							pszTracerEffect = szTracerEffect;
 						}
 
-						debugoverlay->AddBoxOverlay(vecStart, Vector(-2, -2, -2), Vector(2, 2, 2), QAngle(0, 0, 0), 255, 0, 0, 127, 4);
-
 						UTIL_ParticleTracer( pszTracerEffect, vecStart, trace.endpos, entindex(), iUseAttachment, true );
 					}
 				}
