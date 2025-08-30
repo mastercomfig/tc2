@@ -1608,6 +1608,30 @@ void CTFGCServerSystem::PreClientUpdate( )
 			m_bOverridingVisibleMaxPlayers = false;
 			m_iSavedVisibleMaxPlayers = -1;
 		}
+
+		int iRedTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_RED);
+		int iBluTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
+
+		// there's nothing to do unless we restrict both teams. if at least one team is unlimited, then unlimited players can join.
+		if ( iRedTeamSize > 0 && iBluTeamSize > 0 )
+		{
+			// This changes what the server browser displays
+			// count only non-bot spectators
+			CUtlVector<CTFPlayer*> spectatorVector;
+			CollectPlayers( &spectatorVector, TEAM_SPECTATOR );
+			int spectatorCount = 0;
+			FOR_EACH_VEC( spectatorVector, iIndex )
+			{
+				if ( !spectatorVector[iIndex]->IsBot() && !spectatorVector[iIndex]->IsReplay() && !spectatorVector[iIndex]->IsHLTV() )
+				{
+					spectatorCount++;
+				}
+			}
+
+			int playerCount = iRedTeamSize + iBluTeamSize + spectatorCount;
+			MMLog("Setting sv_visiblemaxplayers to %d\n", playerCount);
+			sv_visiblemaxplayers.SetValue( playerCount );
+		}
 	}
 
 	// You may not be in matchmaking if you have a password!

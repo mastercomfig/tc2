@@ -18534,6 +18534,7 @@ int CTFGameRules::GetClassLimit( int iClass )
 		break;
 	}
 
+	// intentionally comparing to exactly NO_CLASS_LIMIT here, but elsewhere we do a gt/lt comparison, so that -2 works to bypass tf_classlimit if needed.
 	if ( ClassLimit == NO_CLASS_LIMIT && tf_classlimit.GetInt() > 0 )
 	{
 		ClassLimit = tf_classlimit.GetInt();
@@ -18578,7 +18579,7 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iClass )
 	else
 #endif // TF_RAID_MODE
 
-	if ( iClassLimit == NO_CLASS_LIMIT )
+	if ( iClassLimit <= NO_CLASS_LIMIT )
 		return true;
 
 	if ( pPlayer->GetTeamNumber() != TF_TEAM_BLUE && pPlayer->GetTeamNumber() != TF_TEAM_RED )
@@ -19649,6 +19650,8 @@ static bool BIgnoreConvarChangeInPVEMode(void)
 	return TFGameRules() && TFGameRules()->IsPVEModeActive();
 }
 
+// TODO(mcoms): add classbans to the tag list
+
 // The list of convars that automatically turn on tags when they're changed.
 // Convars in this list need to have the FCVAR_NOTIFY flag set on them, so the
 // tags are recalculated and uploaded to the master server when the convar is changed.
@@ -19673,15 +19676,26 @@ convar_tags_t convars_to_check_for_tags[] =
 	{ "tf_damage_disablespread", "dmgspread", NULL },
 	{ "mp_highlander", "highlander", NULL },
 	{ "tf_bot_count", "bots", &BIgnoreConvarChangeInPVEMode },
-	{ "tf_pve_mode", "pve" },
+	{ "tf_bot_quota", "bots", &BIgnoreConvarChangeInPVEMode },
+	{ "tf_pve_mode", "pve", NULL },
 	{ "sv_registration_successful", "_registered", NULL },
 	{ "tf_server_identity_disable_quickplay", "noquickplay", NULL },
 	{ "tf_mm_strict", "hidden", NULL },
 	{ "tf_medieval", "medieval", NULL },
-	{ "mp_holiday_nogifts", "nogifts" },
+	{ "mp_holiday_nogifts", "nogifts", NULL },
 	{ "tf_powerup_mode", "powerup", NULL },
 	{ "tf_gamemode_passtime", "passtime", NULL },
 	{ "tf_gamemode_misc", "misc", NULL }, // catch-all for matchmaking to identify sd, tc, and pd servers via sv_tags
+	{ "tf_classlimit", "classlimits", NULL },
+	{ "tf_tournament_classlimit_scout", "classlimits", NULL },
+	{ "tf_tournament_classlimit_sniper", "classlimits", NULL },
+	{ "tf_tournament_classlimit_soldier", "classlimits", NULL },
+	{ "tf_tournament_classlimit_demoman", "classlimits", NULL },
+	{ "tf_tournament_classlimit_medic", "classlimits", NULL },
+	{ "tf_tournament_classlimit_heavy", "classlimits", NULL },
+	{ "tf_tournament_classlimit_pyro", "classlimits", NULL },
+	{ "tf_tournament_classlimit_spy", "classlimits", NULL },
+	{ "tf_tournament_classlimit_engineer", "classlimits", NULL },
 };
 
 //-----------------------------------------------------------------------------

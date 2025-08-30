@@ -1474,7 +1474,7 @@ void CTFClassMenu::UpdateNumClassLabels( int iTeam )
 		int classCount = g_TF_PR->GetCountForPlayerClass( iTeam, g_ClassDefinesRemap[i], false );
 		int iClassLimit = TFGameRules()->GetClassLimit( g_ClassDefinesRemap[i] );
 
-		if ( iClassLimit != NO_CLASS_LIMIT )
+		if ( iClassLimit > NO_CLASS_LIMIT )
 		{
 			if ( classCount >= iClassLimit )
 			{
