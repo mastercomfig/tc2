@@ -133,6 +133,12 @@ ConVar_ServerBounded *cl_interp = &cl_interp_var;
 
 float GetClientInterpAmount()
 {
+	static const ConVar* cl_interpolate = g_pCVar->FindVar("cl_interpolate");
+	if ( cl_interpolate && !cl_interpolate->GetBool() )
+	{
+		return 0.0f;
+	}
+
 	static const ConVar *pUpdateRate = g_pCVar->FindVar( "cl_updaterate" );
 	if ( pUpdateRate )
 	{
