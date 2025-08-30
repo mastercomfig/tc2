@@ -12,8 +12,8 @@
 	"$phongexponentfactor"  "75"
 	"$phongalbedotint" "1"
 	
-	//"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
-  "$lightwarptexture" "models/lightwarps/weapon_lightwarp"
+	"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
+	//"$lightwarptexture" "models/lightwarps/weapon_lightwarp"
 			
 	"$phongfresnelranges"	"[.3 .5 3]"
 	"$halflambert" "1"

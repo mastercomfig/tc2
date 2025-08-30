@@ -6,7 +6,8 @@
 	"$phong" "1"
 	"$phongexponent" "20"
 	"$phongboost" "2"	
-	"$lightwarptexture" "models/lightwarps/weapon_lightwarp"
+	"$lightwarptexture" "models/lightwarps/softened_weapon_lightwarp"
+	//"$lightwarptexture" "models/lightwarps/weapon_lightwarp"
 	"$phongfresnelranges"	"[.25 .5 1]"
 
 	"$tempvar" "0"
