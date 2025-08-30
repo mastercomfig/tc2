@@ -1600,14 +1600,7 @@ void CTFGCServerSystem::PreClientUpdate( )
 	}
 	else
 	{
-		// Not in MvM.  Check for restoring sv_visiblemaxplayers
-		if ( m_bOverridingVisibleMaxPlayers )
-		{
-			MMLog( "Restoring sv_visiblemaxplayers to %d\n", m_iSavedVisibleMaxPlayers );
-			sv_visiblemaxplayers.SetValue( m_iSavedVisibleMaxPlayers );
-			m_bOverridingVisibleMaxPlayers = false;
-			m_iSavedVisibleMaxPlayers = -1;
-		}
+		bool bOverridingMaxPlayers = false;
 
 		int iRedTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_RED);
 		int iBluTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
@@ -1615,6 +1608,8 @@ void CTFGCServerSystem::PreClientUpdate( )
 		// there's nothing to do unless we restrict both teams. if at least one team is unlimited, then unlimited players can join.
 		if ( iRedTeamSize > 0 && iBluTeamSize > 0 )
 		{
+			bOverridingMaxPlayers = true;
+
 			// This changes what the server browser displays
 			// count only non-bot spectators
 			CUtlVector<CTFPlayer*> spectatorVector;
@@ -1629,8 +1624,28 @@ void CTFGCServerSystem::PreClientUpdate( )
 			}
 
 			int playerCount = iRedTeamSize + iBluTeamSize + spectatorCount;
-			MMLog("Setting sv_visiblemaxplayers to %d\n", playerCount);
-			sv_visiblemaxplayers.SetValue( playerCount );
+			if ( sv_visiblemaxplayers.GetInt() <= 0 || sv_visiblemaxplayers.GetInt() != playerCount )
+			{
+				MMLog( "Setting sv_visiblemaxplayers to %d\n", playerCount );
+
+				// save off visible players
+				if ( !m_bOverridingVisibleMaxPlayers )
+				{
+					m_bOverridingVisibleMaxPlayers = true;
+					m_iSavedVisibleMaxPlayers = sv_visiblemaxplayers.GetInt();
+				}
+
+				sv_visiblemaxplayers.SetValue( playerCount );
+			}
+		}
+
+		// Not in MvM.  Check for restoring sv_visiblemaxplayers
+		if ( !bOverridingMaxPlayers && m_bOverridingVisibleMaxPlayers )
+		{
+			MMLog( "Restoring sv_visiblemaxplayers to %d\n", m_iSavedVisibleMaxPlayers );
+			sv_visiblemaxplayers.SetValue( m_iSavedVisibleMaxPlayers );
+			m_bOverridingVisibleMaxPlayers = false;
+			m_iSavedVisibleMaxPlayers = -1;
 		}
 	}
 
