@@ -6686,9 +6686,9 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 			CTFTeam *pTeam = TFTeamMgr()->GetTeam( iTeam );
 			if ( pTeam )
 			{
-				if ( pTeam->GetNumPlayers() >= TF_LAST_NORMAL_CLASS - 1 )
+				if ( pTeam->GetNumPlayers() >= iTeamSizeRestriction )
 				{
-					// if this join would put too many players on the team in Highlander mode, refuse
+					// if this join would put too many players on the team, refuse.
 					// come up with a better way to tell the player they tried to join a full team!
 					ShowViewPortPanel( PANEL_TEAM );
 					return;
