@@ -8756,7 +8756,7 @@ void CTFPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 					info_modified.SetDamageCustom( TF_DMG_CUSTOM_HEADSHOT );
 				}
 
-				// play the critical shot sound to the shooter	
+				// play the critical shot sound to the shooter
 				if ( pWpn )
 				{
 					CDisablePredictionFiltering disabler;
@@ -20654,9 +20654,9 @@ bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const 
 	if ( pEntityTransmitBits && !pEntityTransmitBits->Get( pPlayer->entindex() ) )
 		return false;
 
-	// get max distance player could have moved within max lag compensation time, 
-	// multiply by 1.5 to to avoid "dead zones"  (sqrt(2) would be the exact value)
-	float maxDistance = 1.5 * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
+	// get max distance player could have moved within max lag compensation time 
+	// multiply by 1.5 to avoid "dead zones"  (sqrt(2) would be the exact value)
+	float maxDistance = 1.5f * 1000.0f * 1.0f; // was sv_maxunlag.GetFloat()
 
 	// If the player is within this distance, lag compensate them in case they're running past us.
 	if ( vHisOrigin.DistTo( vMyOrigin ) < maxDistance )

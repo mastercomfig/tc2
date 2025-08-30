@@ -45,7 +45,7 @@ private:
 //-----------------------------------------------------------------------------
 // List of all info camera links
 //-----------------------------------------------------------------------------
-CUtlFixedLinkedList<CInfoCameraLink *> g_InfoCameraLinkList;
+CUtlFixedLinkedList64<CInfoCameraLink *> g_InfoCameraLinkList;
 
 
 //-----------------------------------------------------------------------------
@@ -152,8 +152,8 @@ void PointCameraSetupVisibility( CBaseEntity *pPlayer, int area, unsigned char *
 		pCameraEnt->TransmitToPlayer( nPlayerIndex, false );
 	}
 	
-	intp nNext;
-	for ( intp i = g_InfoCameraLinkList.Head(); i != g_InfoCameraLinkList.InvalidIndex(); i = nNext )
+	uintp nNext;
+	for ( uintp i = g_InfoCameraLinkList.Head(); i != g_InfoCameraLinkList.InvalidIndex(); i = nNext )
 	{
 		nNext = g_InfoCameraLinkList.Next( i );
 

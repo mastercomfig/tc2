@@ -299,11 +299,6 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 		nCustomDamageType = pWeapon->GetCustomDamageType();
 	}
 
-	if ( iWeapon != TF_WEAPON_MINIGUN )
-	{
-		fireInfo.m_iTracerFreq = 2;
-	}
-
 	// Reset multi-damage structures.
 	ClearMultiDamage();
 
@@ -317,10 +312,29 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 	}
 #endif // !CLIENT
 
+	float curtime = gpGlobals->curtime;
+
 	const float flTimeBetweenShots = pWeaponInfo->GetWeaponData(iMode).m_flTimeFireDelay;
+
 	int nBulletsPerShot = pWeaponInfo->GetWeaponData( iMode ).m_nBulletsPerShot;
+	const bool bMultiShot = nBulletsPerShot > 1;
+
+	float flTimeSinceLastShot = pWpn ? (curtime - pWpn->m_flLastFireTime) : flTimeBetweenShots;
+
+	if ( iWeapon != TF_WEAPON_MINIGUN )
+	{
+		if (flTimeSinceLastShot >= 0.25f && !bMultiShot)
+		{
+			fireInfo.m_iTracerFreq = 1;
+		}
+		else
+		{
+			fireInfo.m_iTracerFreq = 2;
+		}
+	}
+
 	bool bShotgun = nDamageType & DMG_BUCKSHOT;
-	bool bFixedSpread = bShotgun && ( nBulletsPerShot > 1 ) && IsFixedWeaponSpreadEnabled( pWpn );
+	bool bFixedSpread = bShotgun && ( bMultiShot ) && IsFixedWeaponSpreadEnabled( pWpn );
 	if ( pWeapon )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, nBulletsPerShot, mult_bullets_per_shot );
@@ -368,7 +382,6 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 		}
 		else
 		{
-			float curtime = gpGlobals->curtime;
 			float flVariance = 0.5f;
 
 			// two bullets down the crosshair for shotguns, like fixed spread.
@@ -377,7 +390,6 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 			if ( bAccurateBullet && pWpn )
 			{
 				bool bAccuracyBonus = false;
-				float flTimeSinceLastShot = ( curtime - pWpn->m_flLastFireTime );
 				float flTimeSinceLastAccurateShot = ( curtime - pWpn->m_flLastAccurateFireTime );
 				const float flMinAccuracyCooldown = 0.25f;
 				const float flMaxAccuracyCooldown = nBulletsPerShot == 1 ? 1.25f : flMinAccuracyCooldown;

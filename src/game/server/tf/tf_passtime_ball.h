@@ -115,7 +115,7 @@ private:
 		Vector vecOrigin;
 	};
 	
-	CUtlFixedLinkedList<LagRecord> m_lagCompensationHistory;
+	CUtlFixedLinkedList64<LagRecord> m_lagCompensationHistory;
 	LagRecord m_lagCompensationRestore;
 	bool m_bLagCompensationNeedsRestore;
 	float m_flLagCompensationTeleportDistanceSqr;

@@ -29,14 +29,14 @@
 #define LC_ANIMATION_CHANGED	(1<<11)
 #define LC_EYES_CHANGED			(1<<12)
 
-static ConVar sv_lagcompensation_teleport_dist( "sv_lagcompensation_teleport_dist", "64", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "How far a player got moved by game code before we can't lag compensate their position back" );
+// Max distance we can travel normally is sqrt(3) * sv_maxvelocity * TICK_INTERVAL
+static ConVar sv_lagcompensation_teleport_dist( "sv_lagcompensation_teleport_dist", "95", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "How far a player got moved by game code before we can't lag compensate their position back" );
 #define LAG_COMPENSATION_EPS_SQR ( 0.1f * 0.1f )
-#define LAG_COMPENSATION_EPS_HIGH_SQR ( 0.001f * 0.001f )
 // Allow 4 units of error ( about 1 / 8 bbox width )
 #define LAG_COMPENSATION_ERROR_EPS_SQR ( 4.0f * 4.0f )
 
 ConVar sv_unlag( "sv_unlag", "1", FCVAR_DEVELOPMENTONLY, "Enables player lag compensation" );
-ConVar sv_maxunlag( "sv_maxunlag", "0.6", FCVAR_DEVELOPMENTONLY, "Maximum lag compensation in seconds", true, 0.0f, true, 1.0f );
+ConVar sv_maxunlag( "sv_maxunlag", "0.5", FCVAR_DEVELOPMENTONLY, "Maximum lag compensation in seconds", true, 0.0f, true, 0.85f );
 ConVar sv_lagflushbonecache( "sv_lagflushbonecache", "1", FCVAR_DEVELOPMENTONLY, "Flushes entity bone cache on lag compensation" );
 ConVar sv_showlagcompensation( "sv_showlagcompensation", "0", FCVAR_CHEAT, "Show lag compensated hitboxes whenever a player is lag compensated." );
 
@@ -227,7 +227,7 @@ private:
 	}
 
 	// keep a list of lag records for each player
-	CUtlFixedLinkedList< LagRecord >	m_PlayerTrack[ MAX_PLAYERS ];
+	CUtlFixedLinkedList64< LagRecord >	m_PlayerTrack[ MAX_PLAYERS ];
 
 	// Scratchpad for determining what needs to be restored
 	CBitVec<MAX_PLAYERS>	m_RestorePlayer;
@@ -262,15 +262,22 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 
 	VPROF_BUDGET( "FrameUpdatePostEntityThink", "CLagCompensationManager" );
 
+	// note: this used to be sv_maxunlag. however
+	// that now only limits latency, and ignores
+	// view interpolation latency, since it's more
+	// intuitive for us to only limit how much
+	// ping can be a factor. we chose 1 second
+	// as it's a historical default for the unlag limit.
+
 	// remove all records before that time:
-	int flDeadtime = gpGlobals->curtime - sv_maxunlag.GetFloat();
+	float flDeadtime = gpGlobals->curtime - 1.0f;
 
 	// Iterate all active players
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
 
-		CUtlFixedLinkedList< LagRecord > *track = &m_PlayerTrack[i-1];
+		auto *track = &m_PlayerTrack[i-1];
 
 		if ( !pPlayer )
 		{
@@ -391,7 +398,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 
 	// Get true latency
 
-	// correct is the amout of time we have to correct game time
+	// correct is the amount of time we have to correct game time
 	float correct = 0.0f;
 
 	INetChannelInfo *nci = engine->GetPlayerNetInfo( player->entindex() ); 
@@ -399,33 +406,41 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	if ( nci )
 	{
 		// add network latency
-		correct+= nci->GetLatency( FLOW_OUTGOING );
+		correct += nci->GetLatency( FLOW_OUTGOING );
 	}
 
-	// calc number of view interpolation ticks - 1
-	int lerpTicks = TIME_TO_TICKS( player->m_fLerpTime );
+	// check bounds [0,sv_maxunlag]
+	correct = clamp(correct, 0.0f, sv_maxunlag.GetFloat());
+
+	// calculate view interpolation latency
+	// this used to be bound by sv_maxunlag.
+	// however, lerp is already constrained by server values
+	// so it makes more sense to keep sv_maxunlag as just
+	// a latency limit for gameplay.
+	float flLerpTime = player->m_fLerpTime;
+	if ( flLerpTime >= TICK_INTERVAL )
+	{
+		// before, we assumed lerp_time was 1.0
+		// but now we take into consideration the additional render time lag
+		flLerpTime += TICK_INTERVAL;
+		flLerpTime -= cmd->lerp_time * TICK_INTERVAL;
+	}
 
 	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
-	correct += TICKS_TO_TIME( lerpTicks );
-	
-	// check bounds [0,sv_maxunlag]
-	correct = clamp( correct, 0.0f, sv_maxunlag.GetFloat() );
+	correct += flLerpTime;
 
-	// correct tick send by player 
-	int targettick = cmd->tick_count - lerpTicks;
+	// correct tick sent by player 
+	float flTargetTime = TICKS_TO_TIME( cmd->tick_count ) - flLerpTime;
 
-	// calc difference between tick send by player and our latency based tick
-	float deltaTime =  correct - TICKS_TO_TIME(gpGlobals->tickcount - targettick);
+	// calc difference between tick sent by player and our latency based tick
+	float deltaTime = correct - ( gpGlobals->curtime - flTargetTime );
 
-	if ( fabs( deltaTime ) > 0.2f )
+	if ( fabsf( deltaTime ) > 0.2f )
 	{
 		// difference between cmd time and latency is too big > 200ms, use time correction based on latency
 		// DevMsg("StartLagCompensation: delta too big (%.3f)\n", deltaTime );
-		targettick = gpGlobals->tickcount - TIME_TO_TICKS( correct );
+		flTargetTime = gpGlobals->curtime - correct;
 	}
-
-	float flInterpTime = Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
-	float flTargetTime = TICKS_TO_TIME( targettick ) + flInterpTime;
 	
 	// Iterate all active players
 	const CBitVec<MAX_EDICTS> *pEntityTransmitBits = engine->GetEntityTransmitBitsForClient( player->entindex() - 1 );
@@ -465,9 +480,9 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 	int pl_index = pPlayer->entindex() - 1;
 
 	// get track history of this player
-	CUtlFixedLinkedList< LagRecord > *track = &m_PlayerTrack[ pl_index ];
+	auto *track = &m_PlayerTrack[ pl_index ];
 
-	// check if we have at leat one entry
+	// check if we have at least one entry
 	if ( track->Count() <= 0 )
 		return;
 
@@ -489,7 +504,7 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 
 		if ( !(record->m_fFlags & LC_ALIVE) )
 		{
-			// player most be alive, lost track
+			// player must be alive, lost track
 			return;
 		}
 
@@ -711,9 +726,12 @@ void CLagCompensationManager::BacktrackPlayer( CBasePlayer *pPlayer, float flTar
 
 		for( int i=0; i<MAXSTUDIOPOSEPARAM; i++ )
 		{
+#if 0
 			//don't lerp pose params, just pick the closest
 			pPlayer->SetPoseParameter( i, record->m_flPoseParameters[i] );
-			//pAnimating->SetPoseParameter( i, Lerp( frac, record->m_flPoseParameters[i], prevRecord->m_flPoseParameters[i] ) );
+#else
+			pPlayer->SetPoseParameter( i, Lerp( frac, record->m_flPoseParameters[i], prevRecord->m_flPoseParameters[i] ) );
+#endif
 		}
 	}
 	if( !interpolatedMasters )

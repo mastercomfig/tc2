@@ -327,9 +327,17 @@ void CTFModeManager::Init()
 	EnableSteamScreenshots( true );
 }
 
+ConVar cl_interpolate_disable("cl_interpolate_disable", "0", FCVAR_CHEAT);
+
 void CTFModeManager::LevelInit( const char *newmap )
 {
 	g_pClientMode->LevelInit( newmap );
+
+	static ConVarRef cl_interpolate("cl_interpolate");
+	if (cl_interpolate.IsValid())
+	{
+		cl_interpolate.SetValue(!cl_interpolate_disable.GetBool());
+	}
 }
 
 void CTFModeManager::LevelShutdown( void )

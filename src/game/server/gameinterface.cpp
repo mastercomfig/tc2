@@ -236,7 +236,7 @@ static int		g_nCommandClientIndex = 0;
 // The chapter number of the current
 static int		g_nCurrentChapterIndex = -1;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || 1
 static ConVar sv_showhitboxes( "sv_showhitboxes", "-1", FCVAR_CHEAT, "Send server-side hitboxes for specified entity to client (NOTE:  this uses lots of bandwidth, use on listen server only)." );
 #endif
 
@@ -1317,7 +1317,7 @@ void CServerGameDLL::PreClientUpdate( bool simulating )
 	
 	IGameSystem::PreClientUpdateAllSystems();
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || 1
 	if ( sv_showhitboxes.GetInt() == -1 )
 		return;
 

@@ -1064,31 +1064,32 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 	if ( active )
 	{
 		C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
-		if ( pPlayer )
+		if ( pPlayer && pPlayer->m_flInterpolationTime >= 1.0f )
 		{
 			float flInterpTime = gpGlobals->interpolation_amount;
 			float flTickFrac = flInterpTime * TICK_INTERVAL;
-			float flCorrectedTime = gpGlobals->curtime + flTickFrac;
 			bool bIsAttackFrame = false;
 
 			C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
 			if (pWeapon)
 			{
 				// Check primary attack
-				if ((cmd->buttons & IN_ATTACK) && pWeapon->m_flNextPrimaryAttack <= flCorrectedTime)
+				if ( ( cmd->buttons & IN_ATTACK ) && pWeapon->m_flNextPrimaryAttack <= gpGlobals->curtime )
 				{
 					bIsAttackFrame = true;
 				}
+#ifndef TF_CLIENT_DLL
 				// Check secondary attack
-				else if ((cmd->buttons & IN_ATTACK2) && pWeapon->m_flNextSecondaryAttack <= flCorrectedTime)
+				else if ( ( cmd->buttons & IN_ATTACK2 ) && pWeapon->m_flNextSecondaryAttack <= gpGlobals->curtime )
 				{
 					bIsAttackFrame = true;
 				}
 				// Check special attack
-				else if ((cmd->buttons & IN_ATTACK3))
+				else if ( ( cmd->buttons & IN_ATTACK3 ) )
 				{
 					bIsAttackFrame = true;
 				}
+#endif
 			}
 
 

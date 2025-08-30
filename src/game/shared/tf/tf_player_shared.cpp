@@ -32,6 +32,7 @@
 #include "tf_dropped_weapon.h"
 #include "tf_weapon_passtime_gun.h"
 #include "tf_weapon_rocketpack.h"
+#include "engine/ivdebugoverlay.h"
 #include <functional>
 
 // Client specific.
@@ -101,6 +102,8 @@
 
 #include "tf_wearable_weapons.h"
 #include "tf_weapon_bonesaw.h"
+
+ConVar sv_showimpacts("sv_showimpacts", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Shows client (red) and server (blue) bullet impact point");
 
 static ConVar tf_demoman_charge_frametime_scaling( "tf_demoman_charge_frametime_scaling", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "When enabled, scale yaw limiting based on client performance (frametime)." );
 static const float YAW_CAP_SCALE_MIN = 0.2f;
@@ -6951,18 +6954,19 @@ void CTFPlayerShared::MakeBleed( CTFPlayer *pPlayer, CTFWeaponBase *pWeapon, flo
 		if ( m_PlayerBleeds[i].hBleedingAttacker && m_PlayerBleeds[i].hBleedingAttacker == pPlayer &&
 			 m_PlayerBleeds[i].hBleedingWeapon && m_PlayerBleeds[i].hBleedingWeapon == pWeapon )
 		{
-			if ( flExpireTime > m_PlayerBleeds[i].flBleedingRemoveTime )
+			if (gpGlobals->curtime <= m_PlayerBleeds[i].flBleedingRemoveTime)
 			{
 				if (bIsHeadTrauma)
 				{
 					// Sniper bleeds stack.
 					m_PlayerBleeds[i].flBleedingRemoveTime += flBleedingTime;
+					return;
 				}
-				else
+				if (flExpireTime > m_PlayerBleeds[i].flBleedingRemoveTime)
 				{
 					m_PlayerBleeds[i].flBleedingRemoveTime = flExpireTime;
+					return;
 				}
-				return;
 			}
 		}
 	}
@@ -10585,6 +10589,29 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 		}
 #endif // GAME_DLL
 
+		if ( sv_showimpacts.GetBool() )
+		{
+#ifdef CLIENT_DLL
+			// draw red client impact markers
+			debugoverlay->AddBoxOverlay( trace.endpos, Vector(-2,-2,-2), Vector(2,2,2), QAngle( 0, 0, 0), 255,0,0,127, 4 );
+
+			if ( trace.m_pEnt && trace.m_pEnt->IsPlayer() )
+			{
+				C_BasePlayer *player = ToBasePlayer( trace.m_pEnt );
+				player->DrawClientHitboxes( 4, true );
+			}
+#else
+			// draw blue server impact markers
+			NDebugOverlay::Box( trace.endpos, Vector(-2,-2,-2), Vector(2,2,2), 0,0,255,127, 4 );
+
+			if ( trace.m_pEnt && trace.m_pEnt->IsPlayer() )
+			{
+				CBasePlayer *player = ToBasePlayer( trace.m_pEnt );
+				player->DrawServerHitboxes( 4, true );
+			}
+#endif
+		}
+
 		if ( bDoEffects )
 		{
 			// If shot starts out of water and ends in water
@@ -10631,13 +10658,10 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 					}
 				}
 
-
-				C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-
 				bool bInToolRecordingMode = clienttools->IsInRecordingMode();
 
 				// If we're using a viewmodel, override vecStart with the muzzle of that - just for the visual effect, not gameplay.
-				if ( ( pLocalPlayer != NULL ) && !pLocalPlayer->ShouldDrawThisPlayer() && !bInToolRecordingMode && pWpn )
+				if ( !ShouldDrawThisPlayer() && !bInToolRecordingMode && pWpn )
 				{
 					C_BaseAnimating *pAttachEnt = pWpn->GetAppropriateWorldOrViewModel();
 					if ( pAttachEnt != NULL )
@@ -10671,14 +10695,36 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 				if ( tf_useparticletracers.GetBool() )
 				{
 					const char *pszTracerEffect = GetTracerType();
+
+					bool bIsHeadshot = false;
+					if (nDamageType & DMG_USE_HITLOCATIONS)
+					{
+						if (trace.hitgroup == HITGROUP_HEAD)
+						{
+							bIsHeadshot = true;
+						}
+					}
+
+					// force a tracer for the shooter if it's a headshot.
+					if (!ShouldDrawThisPlayer() && bIsHeadshot && pWpn && WeaponID_IsSniperRifle(pWpn->GetWeaponID()))
+					{
+						pszTracerEffect = VarArgs("bullet_pistol_tracer01_%s", GetTeamNumber() == TF_TEAM_RED ? "red" : "blue");
+						if ( m_Shared.InCond(TF_COND_AIMING) )
+						{
+							GetHorriblyHackedRailgunPosition(trace.startpos, &vecStart);
+						}
+					}
+
 					if ( pszTracerEffect && pszTracerEffect[0] )
 					{
 						char szTracerEffect[128];
-						if ( nDamageType & DMG_CRITICAL )
+						if ( nDamageType & DMG_CRITICAL || bIsHeadshot )
 						{
 							Q_snprintf( szTracerEffect, sizeof(szTracerEffect), "%s_crit", pszTracerEffect );
 							pszTracerEffect = szTracerEffect;
 						}
+
+						debugoverlay->AddBoxOverlay(vecStart, Vector(-2, -2, -2), Vector(2, 2, 2), QAngle(0, 0, 0), 255, 0, 0, 127, 4);
 
 						UTIL_ParticleTracer( pszTracerEffect, vecStart, trace.endpos, entindex(), iUseAttachment, true );
 					}
