@@ -379,6 +379,8 @@ public:
 	int				GetClassLimit( int iClass );
 	bool			CanPlayerChooseClass( CBasePlayer *pPlayer, int iClass );
 
+	virtual int		GetTeamSize( int iTeam = 0 ) OVERRIDE;
+
 	virtual bool	ShouldBalanceTeams( void );
 
 	virtual int		GetBonusRoundTime( bool bGameOver = false ) OVERRIDE;

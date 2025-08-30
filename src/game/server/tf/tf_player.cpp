@@ -6271,20 +6271,14 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 	{
 		if ( TFGameRules() )
 		{
-			int iTeamSizeRestriction = 0;
-			if ( TFGameRules()->IsInHighlanderMode() )
-			{
-				iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
-			}
-			else if ( TFGameRules()->IsInSixesMode() )
-			{
-				iTeamSizeRestriction = 6;
-			}
+			int iRedSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_RED);
+			int iBluSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
 
-			if ( iTeamSizeRestriction > 0 )
+			if ( iRedSizeRestriction > 0 || iBluSizeRestriction > 0 )
 			{
-				if ( ( pBlue->GetNumPlayers() >= iTeamSizeRestriction ) &&
-					 ( pRed->GetNumPlayers() >= iTeamSizeRestriction ) )
+				const bool bBluFull = TFGameRules()->IsMannVsMachineMode() || (iBluSizeRestriction > 0 && pBlue->GetNumPlayers() >= iBluSizeRestriction);
+				const bool bRedFull = iRedSizeRestriction > 0 && pRed->GetNumPlayers() >= iRedSizeRestriction;
+				if ( bBluFull && bRedFull )
 				{
 					// teams are full....join team Spectator for now
 					return TEAM_SPECTATOR;
@@ -6684,14 +6678,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 		int iTeamSizeRestriction = 0;
 		if ( TFGameRules() )
 		{
-			if ( TFGameRules()->IsInHighlanderMode() )
-			{
-				iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
-			}
-			else if ( TFGameRules()->IsInSixesMode() )
-			{
-				iTeamSizeRestriction = 6;
-			}
+			iTeamSizeRestriction = TFGameRules()->GetTeamSize( iTeam );
 		}
 
 		if ( iTeamSizeRestriction > 0 )

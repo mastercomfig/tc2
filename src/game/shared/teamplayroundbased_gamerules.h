@@ -210,6 +210,8 @@ public:
 
 	bool		SwitchedTeamsThisRound( void ) { return m_bSwitchedTeamsThisRound; }
 
+	virtual int			GetTeamSize( int iTeam = 0 );
+
 	virtual bool ShouldBalanceTeams( void );
 	bool		IsInTournamentMode( void );
 	bool		IsInHighlanderMode( void );

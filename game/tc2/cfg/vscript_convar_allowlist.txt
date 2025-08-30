@@ -881,6 +881,9 @@ vscript_convar_allowlist
     tf_target_dummy_lifetime                                          allowed
     tf_target_dummy_melee_mult                                        allowed
     tf_target_dummy_other_mult                                        allowed
+    tf_team_size                                                      allowed
+    tf_team_size_blu                                                  allowed
+    tf_team_size_red                                                  allowed
     tf_tauntcam_fov_override                                          allowed
     tf_teleporter_fov_start                                           allowed
     tf_teleporter_fov_time                                            allowed

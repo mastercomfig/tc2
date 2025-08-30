@@ -3626,6 +3626,22 @@ void CTeamplayRoundBasedRules::Update( float frametime )
 }
 #endif
 
+int CTeamplayRoundBasedRules::GetTeamSize( int iTeam )
+{
+	if ( IsInSixesMode() )
+	{
+		return 6;
+	}
+
+	if ( IsInHighlanderMode() )
+	{
+		return TF_LAST_NORMAL_CLASS - 1;
+	}
+
+	// means no team size restriction
+	return 0;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: returns true if we should even bother to do balancing stuff
 //-----------------------------------------------------------------------------

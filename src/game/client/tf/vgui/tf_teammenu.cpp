@@ -787,7 +787,6 @@ void CTFTeamMenu::OnTick()
 		return;
 
 	bool bHighlander = pRules->IsInHighlanderMode();
-	bool bSixes = pRules->IsInSixesMode();
 
 	if ( m_pHighlanderLabel )
 	{
@@ -814,23 +813,18 @@ void CTFTeamMenu::OnTick()
 	
 	int iCurrentTeam = pLocalPlayer->GetTeamNumber();
 
-	int iTeamSizeRestriction = 0;
-	if ( bHighlander )
-	{
-		iTeamSizeRestriction = TF_LAST_NORMAL_CLASS - 1;
-	}
-	else if (bSixes)
-	{
-		iTeamSizeRestriction = 6;
-	}
+	int iRedSizeRestriction = pRules->GetTeamSize(TF_TEAM_RED);
+	int iBluSizeRestriction = pRules->GetTeamSize(TF_TEAM_BLUE);
+	const bool bEitherTeamSizeRestricted = iRedSizeRestriction > 0 || iBluSizeRestriction > 0;
 
-	bool bRedHasBots = false;
-	bool bBluHasBots = false;
-	if ( iTeamSizeRestriction > 0 && iCurrentTeam <= LAST_SHARED_TEAM )
+	bool bRedHasBots = iRedSizeRestriction == 0;
+	bool bBluHasBots = iBluSizeRestriction == 0;
+	// TODO: see how GetAutoTeam handles bot counts
+	if ( bEitherTeamSizeRestricted && !pRules->IsMannVsMachineMode() && iCurrentTeam <= LAST_SHARED_TEAM )
 	{
 		for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)
 		{
-			if (!g_PR->IsConnected(playerIndex) || !g_PR->IsValid(playerIndex))
+			if ( !g_PR->IsConnected(playerIndex) || !g_PR->IsValid(playerIndex) )
 			{
 				continue;
 			}
@@ -848,20 +842,20 @@ void CTFTeamMenu::OnTick()
 
 			switch (nTeam)
 			{
-			case TF_TEAM_BLUE:
-			{
-				bBluHasBots = true;
-				break;
-			}
 			case TF_TEAM_RED:
 			{
 				bRedHasBots = true;
 				break;
 			}
+			case TF_TEAM_BLUE:
+			{
+				bBluHasBots = true;
+				break;
+			}
 			}
 
 			// we don't need to check further
-			if (bBluHasBots && bRedHasBots)
+			if (bRedHasBots && bBluHasBots)
 			{
 				break;
 			}
@@ -870,22 +864,21 @@ void CTFTeamMenu::OnTick()
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_RED ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_RED, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iTeamSizeRestriction && !bRedHasBots && iCurrentTeam != TF_TEAM_RED ) ||
-		 ( pRules->IsMannVsMachineMode() && ( GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= tf_mvm_defenders_team_size.GetInt() ) )	 )
+		 ( iRedSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() >= iRedSizeRestriction && !bRedHasBots && iCurrentTeam != TF_TEAM_RED ) )
 	{
 		m_bRedDisabled = true;
 	}
 
 	if ( ( bUnbalanced && iHeavyTeam == TF_TEAM_BLUE ) || 
 		 ( pRules->WouldChangeUnbalanceTeams( TF_TEAM_BLUE, iCurrentTeam ) ) ||
-		 ( iTeamSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iTeamSizeRestriction && !bBluHasBots && iCurrentTeam != TF_TEAM_BLUE ) ||
+		 ( iBluSizeRestriction > 0 && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() >= iBluSizeRestriction && !bBluHasBots && iCurrentTeam != TF_TEAM_BLUE ) ||
 		 ( pRules->IsMannVsMachineMode() ) )
 	{
 		m_bBlueDisabled = true;
 	}
 
 	bool bTeamsFull = m_bRedDisabled && m_bBlueDisabled;
-	SetHighlanderTeamsFullPanels( iTeamSizeRestriction > 0 && bTeamsFull );
+	SetHighlanderTeamsFullPanels( bTeamsFull );
 
 	if ( m_pSpecTeamButton && m_pSpecLabel && m_pAutoTeamButton )
 	{
@@ -911,21 +904,19 @@ void CTFTeamMenu::OnTick()
 					m_pSpecLabel->SetVisible( false );
 				}
 
-				if ( iTeamSizeRestriction > 0 )
+				// no spectator team, and both teams are full. don't show auto team.
+				if ( bTeamsFull )
 				{
-					if ( bTeamsFull )
+					if ( m_pAutoTeamButton->IsVisible() )
 					{
-						if ( m_pAutoTeamButton->IsVisible() )
-						{
-							m_pAutoTeamButton->SetVisible( false );
-						}
+						m_pAutoTeamButton->SetVisible( false );
 					}
-					else
+				}
+				else
+				{
+					if ( !m_pAutoTeamButton->IsVisible() )
 					{
-						if ( !m_pAutoTeamButton->IsVisible() )
-						{
-							m_pAutoTeamButton->SetVisible( true );
-						}
+						m_pAutoTeamButton->SetVisible( true );
 					}
 				}
 			}
