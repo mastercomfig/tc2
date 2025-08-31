@@ -8340,8 +8340,8 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 			if ( !pMatchDesc || pMatchDesc->BAllowTeamChange() )
 			{
-				bool bPreventCustomGameModeChange = ( IsCustomGameMode() && ( GetTeamNumber() >= FIRST_GAME_TEAM ) );
-				if ( !IsCoaching() && !bPreventCustomGameModeChange )
+				bool bPreventChange = GetTeamNumber() >= FIRST_GAME_TEAM;
+				if ( !IsCoaching() && !bPreventChange )
 				{
 					int iTeam = GetAutoTeam();
 					ChangeTeam( iTeam, true, false );
