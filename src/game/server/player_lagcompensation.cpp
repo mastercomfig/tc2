@@ -438,7 +438,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 		bForceServer = false;
 
 		// correct tick sent by player
-		float flTargetTime = TICKS_TO_TIME(cmd->tick_count) - flLerpTime;
+		flTargetTime = TICKS_TO_TIME(cmd->tick_count) - flLerpTime;
 
 		// calc difference between tick sent by player and our latency based tick
 		deltaTime = correct - (gpGlobals->curtime - flTargetTime);
