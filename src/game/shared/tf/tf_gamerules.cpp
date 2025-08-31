@@ -7212,8 +7212,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			float flHeadshotModifier = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pAttacker, flHeadshotModifier, headshot_damage_modify);
 
-			// last 50 headshot damage goes into bleed now
-			flDamage -= MIN(fBaseDamage, 50.0f * flHeadshotModifier);
+			// last 25 headshot damage goes into bleed now
+			flDamage -= MIN(fBaseDamage, 25.0f * flHeadshotModifier);
 		}
 		#endif
 	}

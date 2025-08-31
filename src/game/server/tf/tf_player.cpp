@@ -11076,11 +11076,12 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flBleedingTime, bleeding_duration );
 		}
 
+		// sniper head trauma
 		#if defined(MCOMS_BALANCE_PACK) || 1
 		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
 		if ( IsHeadshot(info.GetDamageCustom()) && pTFWeapon && WeaponID_IsSniperRifle(pTFWeapon->GetWeaponID()) )
 		{
-			const float fHeadshotBleedTime = 4.0f;
+			const float fHeadshotBleedTime = 2.0f;
 			m_Shared.MakeBleed(pTFAttacker, dynamic_cast<CTFWeaponBase*>(info.GetWeapon()), fHeadshotBleedTime, TF_BLEEDING_DMG * 2);
 		}
 		#endif
