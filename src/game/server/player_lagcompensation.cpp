@@ -420,10 +420,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	float flLerpTime = player->m_fLerpTime;
 	if ( flLerpTime >= TICK_INTERVAL && cmd )
 	{
-		// before, we assumed lerp_time was 1.0
-		// but now we take into consideration the additional render time lag
-		flLerpTime += TICK_INTERVAL;
-		flLerpTime -= cmd->lerp_time * TICK_INTERVAL;
+		flLerpTime -= Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
 	}
 
 	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
