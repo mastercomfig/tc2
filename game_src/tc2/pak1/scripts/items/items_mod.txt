@@ -44,6 +44,17 @@
 				}
       }
     }
+    "weapon_red_tape_recorder"
+    {
+      "attributes"
+      {
+        "increased sapper health"
+        {
+          "attribute_class"	"mult_sapper_health"
+					"value" "1.5"
+        }
+      }
+    }
   }
   "items"
   {
