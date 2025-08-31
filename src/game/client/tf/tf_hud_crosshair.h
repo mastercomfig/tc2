@@ -43,6 +43,7 @@ private:
 	int					m_iDmgCrosshairTextureID;
 	IVguiMatInfo*		m_pDmgCrosshairMaterial;
 	int					m_iDamaged;
+	bool				m_bKill;
 	float				m_flDamageOffTime;
 
 	char				m_szPreviousCrosshair[256];	// name of the current crosshair

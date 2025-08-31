@@ -31,6 +31,8 @@ ConVar cl_crosshair_scale( "cl_crosshair_scale", "32.0", FCVAR_ARCHIVE );
 
 ConVar cl_crosshair_gap( "cl_crosshair_gap", "0", FCVAR_ARCHIVE );
 
+ConVar cl_hitmarker( "cl_hitmarker", "1", FCVAR_ARCHIVE );
+
 using namespace vgui;
 
 // Everything else is expecting to find "CHudCrosshair"
@@ -243,7 +245,8 @@ void CHudTFCrosshair::HandleDamageEvent(C_TFPlayer* pAttacker, C_BaseCombatChara
 		}
 
 		bool bLastHit = (iHealth <= 0) || bDeadRingerSpy;
-		m_iDamaged = bLastHit ? 2 : 1;
+		m_iDamaged = iDamage;
+		m_bKill = bLastHit;
 		float flNewDmgTime = gpGlobals->curtime + (bLastHit ? 0.2f : 0.1f);
 		if (flNewDmgTime > m_flDamageOffTime)
 		{
@@ -349,10 +352,17 @@ void CHudTFCrosshair::Paint()
 
 	vgui::ISurface* pSurf = vgui::surface();
 
-	if (m_iDamaged)
+	if ( cl_hitmarker.GetBool() && m_iDamaged > 0 )
 	{
 		Color dmgClr(255, 40, 20, 255);
-		float flScaleFactor = m_iDamaged == 1 ? 1.5f : 2.3f;
+		float flScaleFactor = m_bKill ? 1.5f : 1.0f;
+		float flDmgLerp = RemapValClamped(m_iDamaged, 10.0f, 150.0f, 0.0f, 0.5f);
+		if ( m_bKill )
+		{
+			// TODO(mcoms): overkill
+			flDmgLerp += RemapValClamped(m_iDamaged / 3.0f, 10.0f, 150.0f, 0.0f, 0.5f);
+		}
+		flScaleFactor += flDmgLerp;
 		float flDmgWidth = flWidth * flScaleFactor;
 		float flDmgHeight = flHeight * flScaleFactor;
 		int iDmgWidth = (int)(flDmgWidth + 0.5f);
