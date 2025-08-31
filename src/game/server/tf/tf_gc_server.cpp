@@ -1600,16 +1600,14 @@ void CTFGCServerSystem::PreClientUpdate( )
 	}
 	else
 	{
-		bool bOverridingMaxPlayers = false;
-
 		int iRedTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_RED);
 		int iBluTeamSize = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
 
-		// there's nothing to do unless we restrict both teams. if at least one team is unlimited, then unlimited players can join.
-		if ( iRedTeamSize > 0 && iBluTeamSize > 0 )
-		{
-			bOverridingMaxPlayers = true;
+		bool bOverridingMaxPlayers = iRedTeamSize > 0 && iBluTeamSize > 0;
 
+		// there's nothing to do unless we restrict both teams. if at least one team is unlimited, then unlimited players can join.
+		if ( bOverridingMaxPlayers )
+		{
 			// This changes what the server browser displays
 			// count only non-bot spectators
 			CUtlVector<CTFPlayer*> spectatorVector;
@@ -1623,8 +1621,8 @@ void CTFGCServerSystem::PreClientUpdate( )
 				}
 			}
 
-			int playerCount = iRedTeamSize + iBluTeamSize + spectatorCount;
-			if ( sv_visiblemaxplayers.GetInt() <= 0 || sv_visiblemaxplayers.GetInt() != playerCount )
+			int playerCount = Max(iRedTeamSize + iBluTeamSize + spectatorCount, 24);
+			if ( sv_visiblemaxplayers.GetInt() < playerCount )
 			{
 				MMLog( "Setting sv_visiblemaxplayers to %d\n", playerCount );
 

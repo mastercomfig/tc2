@@ -6683,10 +6683,37 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 
 		if ( iTeamSizeRestriction > 0 )
 		{
+			bool bTeamHasBots = false;
+			if ( !TFGameRules()->IsMannVsMachineMode() && iTeam <= LAST_SHARED_TEAM )
+			{
+				for ( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
+				{
+					CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerByIndex( playerIndex ) );
+
+					if ( !pPlayer )
+						continue;
+
+					if ( FNullEnt(pPlayer->edict() ) )
+						continue;
+
+					if ( !pPlayer->IsConnected() )
+						continue;
+
+					if ( pPlayer->GetTeamNumber() != iTeam )
+						continue;
+
+					if ( !pPlayer->IsBot() )
+						continue;
+
+					bTeamHasBots = true;
+					break;
+				}
+			}
+
 			CTFTeam *pTeam = TFTeamMgr()->GetTeam( iTeam );
 			if ( pTeam )
 			{
-				if ( pTeam->GetNumPlayers() >= iTeamSizeRestriction )
+				if ( !bTeamHasBots && pTeam->GetNumPlayers() >= iTeamSizeRestriction )
 				{
 					// if this join would put too many players on the team, refuse.
 					// come up with a better way to tell the player they tried to join a full team!
