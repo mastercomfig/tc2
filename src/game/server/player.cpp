@@ -762,7 +762,7 @@ bool CBasePlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, cons
 
 	// get max distance player could have moved within max lag compensation time, 
 	// multiply by 1.5 to avoid "dead zones"  (sqrt(2) would be the exact value)
-	float maxDistance = 1.5 * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
+	float maxDistance = 1.5f * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
 
 	// If the player is within this distance, lag compensate them in case they're running past us.
 	if ( vHisOrigin.DistTo( vMyOrigin ) < maxDistance )
@@ -770,7 +770,7 @@ bool CBasePlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, cons
 
 	// If their origin is not within a 45 degree cone in front of us, no need to lag compensate.
 	Vector vForward;
-	AngleVectors( pCmd->viewangles, &vForward );
+	AngleVectors( pCmd ? pCmd->viewangles : pPlayer->pl.v_angle, &vForward );
 	
 	Vector vDiff = vHisOrigin - vMyOrigin;
 	VectorNormalize( vDiff );

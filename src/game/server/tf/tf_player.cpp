@@ -892,6 +892,8 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 		IGameEvent *pEvent = gameeventmanager->CreateEvent( "show_annotation" );
 		if ( pEvent )
 		{
+			lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
+
 			Vector vForward;
  			AngleVectors( pPlayer->EyeAngles(), &vForward );
 
@@ -901,7 +903,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 			// TODO: don't construct both?
 			CTraceFilterSimple filter(pPlayer->GetStudent(), COLLISION_GROUP_NONE);
 			CTraceFilterIgnoreTeammates teamFilter(pPlayer, COLLISION_GROUP_NONE, iTeam, true);
-			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_OPAQUE, bIsCoaching ? &filter : &teamFilter, &trace );
+			UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + vForward * MAX_WEAPON_TRACE, MASK_VISIBLE_AND_NPCS, bIsCoaching ? &filter : &teamFilter, &trace );
 
 			CBaseEntity* pHitEntity = trace.m_pEnt;
 			int iTargetTeam = 0;
@@ -929,11 +931,20 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 						CFuncTrackTrain* pTrackTrain = dynamic_cast<CFuncTrackTrain*>(pHitEntity);
 						if (pTrackTrain)
 						{
-							auto hTrainWatcher = TFGameRules()->GetPayloadToPush(iTeam);
-							if (hTrainWatcher.IsValid() && hTrainWatcher->GetTrainEntity() == pHitEntity)
+							auto hBlockTrainWatcher = TFGameRules()->GetPayloadToBlock(iTeam);
+							if (hBlockTrainWatcher.IsValid() && hBlockTrainWatcher->GetTrainEntity() == pHitEntity)
 							{
-								// this is our pushable entity, so its ours
+								// this is our blockable entity, so its ours to defend
 								iTargetTeam = iTeam;
+							}
+							else
+							{
+								auto hPushTrainWatcher = TFGameRules()->GetPayloadToPush(iTeam);
+								if (hPushTrainWatcher.IsValid() && hPushTrainWatcher->GetTrainEntity() == pHitEntity)
+								{
+									// this is our pushable entity, so its ours to attack
+									iTargetTeam = iTeam == TF_TEAM_RED ? TF_TEAM_BLUE : TF_TEAM_RED;
+								}
 							}
 							bHandled = true;
 						}
@@ -941,10 +952,27 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 
 					if (!bHandled)
 					{
-						CTeamControlPoint* pPoint = dynamic_cast<CTeamControlPoint*>(pHitEntity);
-						if (pPoint)
+						CDynamicProp* pPoint = dynamic_cast<CDynamicProp*>(pHitEntity);
+						// TODO(mcoms): surely there's a better way to do this.
+						if ( pPoint && !V_strcmp(pPoint->GetModelName().ToCStr(), "models/props_gameplay/cap_point_base.mdl") )
 						{
-							iTargetTeam = pPoint->GetOwner();
+							CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+							if (pMaster)
+							{
+								for (int i = 0; i < pMaster->GetNumPoints(); ++i)
+								{
+									CTeamControlPoint* point = pMaster->GetControlPoint(i);
+									if (point && pMaster->IsInRound(point))
+									{
+										// TODO(mcoms): what on earth can we do but this...
+										if ( ( point->WorldSpaceCenter() - pPoint->WorldSpaceCenter() ).LengthSqr() < 100.0f )
+										{
+											iTargetTeam = point->GetOwner();
+											break;
+										}
+									}
+								}
+							}
 							bHandled = true;
 						}
 					}
@@ -1036,6 +1064,8 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 				break;
 			}
 			gameeventmanager->FireEvent( pEvent );
+
+			lagcompensation->FinishLagCompensation(pPlayer);
 		}
 
 	}
@@ -20681,7 +20711,7 @@ bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const 
 	{
 		// If their origin is not within a 45 degree cone in front of us, no need to lag compensate.
 		Vector vForward;
-		AngleVectors( pCmd->viewangles, &vForward );
+		AngleVectors( pCmd ? pCmd->viewangles : pPlayer->pl.v_angle, &vForward );
 
 		Vector vDiff = vHisOrigin - vMyOrigin;
 		VectorNormalize( vDiff );

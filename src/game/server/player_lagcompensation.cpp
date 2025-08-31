@@ -418,7 +418,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	// so it makes more sense to keep sv_maxunlag as just
 	// a latency limit for gameplay.
 	float flLerpTime = player->m_fLerpTime;
-	if ( flLerpTime >= TICK_INTERVAL )
+	if ( flLerpTime >= TICK_INTERVAL && cmd )
 	{
 		// before, we assumed lerp_time was 1.0
 		// but now we take into consideration the additional render time lag
@@ -429,13 +429,22 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
 	correct += flLerpTime;
 
-	// correct tick sent by player 
-	float flTargetTime = TICKS_TO_TIME( cmd->tick_count ) - flLerpTime;
+	bool bForceServer = true;
+	float flTargetTime = 0.0f;
+	float deltaTime = 0.0f;
 
-	// calc difference between tick sent by player and our latency based tick
-	float deltaTime = correct - ( gpGlobals->curtime - flTargetTime );
+	if ( cmd )
+	{
+		bForceServer = false;
 
-	if ( fabsf( deltaTime ) > 0.2f )
+		// correct tick sent by player
+		float flTargetTime = TICKS_TO_TIME(cmd->tick_count) - flLerpTime;
+
+		// calc difference between tick sent by player and our latency based tick
+		deltaTime = correct - (gpGlobals->curtime - flTargetTime);
+	}
+
+	if ( bForceServer || fabsf( deltaTime ) > 0.2f )
 	{
 		// difference between cmd time and latency is too big > 200ms, use time correction based on latency
 		// DevMsg("StartLagCompensation: delta too big (%.3f)\n", deltaTime );
