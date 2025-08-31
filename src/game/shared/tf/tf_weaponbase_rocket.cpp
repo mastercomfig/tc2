@@ -449,6 +449,7 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 
 bool CTFBaseRocket::ShouldIgnoreTrace(trace_t* pTrace)
 {
+#if defined(MCOMS_BALANCE_PACK_CYLINDERS)
 	// radius bbox filter
 	if (pTrace->m_pEnt && pTrace->m_pEnt->IsPlayer())
 	{
@@ -459,6 +460,7 @@ bool CTFBaseRocket::ShouldIgnoreTrace(trace_t* pTrace)
 			return true;
 		}
 	}
+#endif
 	return false;
 }
 

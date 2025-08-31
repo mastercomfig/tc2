@@ -756,6 +756,7 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	bool bHitEnemy = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetEnemyTeam( GetTeamNumber() );
 	bool bHitFriendly = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetTeamNumber() && CanCollideWithTeammates();
 
+#if defined(MCOMS_BALANCE_PACK_CYLINDERS)
 	// radius bbox filter
 	if ( tr.m_pEnt && tr.m_pEnt->IsPlayer() )
 	{
@@ -766,6 +767,7 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 			return;
 		}
 	}
+#endif
 
 	// Combat items are solid to enemy projectiles and bullets
 	if ( bHitEnemy && tr.m_pEnt->IsCombatItem() )
