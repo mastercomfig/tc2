@@ -6092,6 +6092,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	case TEAM_UNASSIGNED:
 	default:
 		{
+			m_pSpawnPoint = NULL;
 			pSpot = CBaseEntity::Instance( INDEXENT(0) );
 			break;		
 		}
