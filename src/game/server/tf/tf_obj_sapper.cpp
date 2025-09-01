@@ -663,6 +663,12 @@ int CObjectSapper::GetBaseHealth( void )
 	float flSapperHealth = SAPPER_MAX_HEALTH;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBuilder(), flSapperHealth, mult_sapper_health );
 
+	CTFWeaponBuilder *pWeapon = dynamic_cast< CTFWeaponBuilder* >( GetBuilder()->Weapon_GetWeaponByType( TF_WPN_TYPE_BUILDING ) );
+	if ( pWeapon )
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flSapperHealth, mult_sapper_health );
+	}
+
 	return flSapperHealth;
 }
 

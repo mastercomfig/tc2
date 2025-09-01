@@ -48,7 +48,7 @@
     {
       "attributes"
       {
-        "increased sapper health"
+        "sapper health bonus"
         {
           "attribute_class"	"mult_sapper_health"
 					"value" "1.5"
