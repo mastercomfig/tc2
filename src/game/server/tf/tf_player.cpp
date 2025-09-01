@@ -6407,6 +6407,15 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 				}
 			}
 
+			if ( GetTeamNumber() == TF_TEAM_RED )
+			{
+				nPlayerCountRed--;
+			}
+			else if ( GetTeamNumber() == TF_TEAM_BLUE )
+			{
+				nPlayerCountBlue--;
+			}
+
 			if ( nPlayerCountRed < nPlayerCountBlue )
 			{
 				iTeam = TF_TEAM_RED;
@@ -6426,18 +6435,30 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 				iTeam = RandomInt( 0, 1 ) ? TF_TEAM_RED : TF_TEAM_BLUE;
 			}
 
+			int iNumRed = pRed->GetNumPlayers();
+			int iNumBlu = pBlue->GetNumPlayers();
+
+			if ( GetTeamNumber() == TF_TEAM_RED )
+			{
+				iNumRed--;
+			}
+			else if ( GetTeamNumber() == TF_TEAM_BLUE )
+			{
+				iNumBlu--;
+			}
+
 			bool bKick = false;
 			// Now we have a team we want to join to balance the human players, can we join it?
 			if ( iTeam == TF_TEAM_RED )
 			{
-				if ( pBlue->GetNumPlayers() < pRed->GetNumPlayers() )
+				if ( iNumBlu < iNumRed )
 				{
 					bKick = true;
 				}
 			}
 			else
 			{
-				if ( pRed->GetNumPlayers() < pBlue->GetNumPlayers() )
+				if ( iNumRed < iNumBlu )
 				{
 					bKick = true;
 				}
@@ -6451,11 +6472,23 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 			// If kick needed but failed, fall through to default logic
 		}
 
-		if ( pBlue->GetNumPlayers() < pRed->GetNumPlayers() )
+		int iNumRed = pRed->GetNumPlayers();
+		int iNumBlu = pBlue->GetNumPlayers();
+
+		if ( GetTeamNumber() == TF_TEAM_RED )
+		{
+			iNumRed--;
+		}
+		else if ( GetTeamNumber() == TF_TEAM_BLUE )
+		{
+			iNumBlu--;
+		}
+
+		if ( iNumBlu < iNumRed )
 		{
 			iTeam = TF_TEAM_BLUE;
 		}
-		else if ( pRed->GetNumPlayers() < pBlue->GetNumPlayers() )
+		else if ( iNumRed < iNumBlu )
 		{
 			iTeam = TF_TEAM_RED;
 		}
@@ -8340,8 +8373,8 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 			if ( !pMatchDesc || pMatchDesc->BAllowTeamChange() )
 			{
-				bool bPreventChange = GetTeamNumber() >= FIRST_GAME_TEAM;
-				if ( !IsCoaching() && !bPreventChange )
+				bool bPreventCustomGameModeChange = ( IsCustomGameMode() && ( GetTeamNumber() >= FIRST_GAME_TEAM ) );
+				if ( !IsCoaching() && !bPreventCustomGameModeChange )
 				{
 					int iTeam = GetAutoTeam();
 					ChangeTeam( iTeam, true, false );
