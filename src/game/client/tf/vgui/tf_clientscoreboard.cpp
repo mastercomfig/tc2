@@ -405,6 +405,15 @@ void CTFClientScoreBoardDialog::ShowPanel( bool bShow )
 	{
 		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 			return;
+
+		if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
+		{
+			float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
+			if ( flRestartTime > 0.f && flRestartTime < 10.f )
+			{
+				return;
+			}
+		}
 	}
 
 	// Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
