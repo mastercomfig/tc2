@@ -285,12 +285,12 @@ void CTFAnnotationsPanel::AddAnnotation( IGameEvent * event )
 						wchar_t enemyFormat[256];
 						_snwprintf(enemyFormat, ARRAYSIZE(enemyFormat), L"%ls", g_pVGuiLocalize->Find("#TF_Comp_PingEnemy"));
 
-						wchar_t* colorMarker = wcsstr(enemyFormat, L":");
+						wchar_t* colorMarker = wcsstr(enemyFormat, L" :");
 
 						if (colorMarker)
 						{
 							pHudChat->SetCustomColor(pHudChat->GetClientEnemyColor(pLocalPlayer->entindex()));
-							*(colorMarker) = COLOR_CUSTOM;
+							*(colorMarker + 1) = COLOR_CUSTOM;
 						}
 						g_pVGuiLocalize->ConstructString_safe(wszLocalized, enemyFormat, 2, wszPlayerName, wzFollowEntityName);
 					}
