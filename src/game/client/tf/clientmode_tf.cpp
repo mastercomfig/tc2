@@ -702,6 +702,9 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 		{
 			int iClass = pLocalPlayer->GetPlayerClass()->GetClassIndex();
 
+			// execute shared settings before class specific ones, upon class change
+			engine->ExecuteClientCmd("exec classchange.cfg");
+
 			// have the player to exec a <class>.cfg file for the class they have selected
 			char szCmd[128];
 			Q_snprintf( szCmd, sizeof( szCmd ), "exec %s.cfg", GetPlayerClassData( iClass )->m_szClassName );
