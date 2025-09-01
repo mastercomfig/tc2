@@ -1263,6 +1263,8 @@ CTFPlayer::CTFPlayer()
 	m_bRegenerating = false;
 	m_bRespawning = false;
 
+	m_pSpawnPoint = NULL;
+
 	m_bAlreadyUsedExtendFreezeThisDeath = false;
 
 	m_flNextHurtSpeakTime = 0.0f;
@@ -6097,6 +6099,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 
 	if ( !pSpot )
 	{
+		m_pSpawnPoint = NULL;
 		Warning( "PutClientInServer: no %s on level\n", pSpawnPointName );
 		return CBaseEntity::Instance( INDEXENT(0) );
 	}
