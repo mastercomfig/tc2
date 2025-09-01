@@ -342,6 +342,46 @@ Color CHudChat::GetClientColor( int clientIndex )
 
 	return g_ColorYellow;
 }
+
+//-----------------------------------------------------------------------------
+Color CHudChat::GetClientEnemyColor( int clientIndex )
+{
+	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
+
+	if ( pScheme == NULL )
+		return Color( 255, 255, 255, 255 );
+
+	if ( clientIndex == 0 ) // console msg
+	{
+		return g_ColorGreen;
+	}
+	else if( g_PR )
+	{
+		int iTeam = g_PR->GetTeam( clientIndex );
+
+		C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( clientIndex ) );
+		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+
+		if ( IsVoiceSubtitle() == true )
+		{
+			// if this player is on the other team, disguised as my team, show disguised color
+			if ( pPlayer && pLocalPlayer && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) &&
+				pPlayer->m_Shared.GetDisguiseTeam() == pLocalPlayer->GetTeamNumber() )
+			{
+				iTeam = pPlayer->m_Shared.GetDisguiseTeam();
+			}
+		}
+
+		switch ( iTeam )
+		{
+		case TF_TEAM_BLUE	: return pScheme->GetColor( "TFColors.ChatTextRed", g_ColorRed );
+		case TF_TEAM_RED	: return pScheme->GetColor( "TFColors.ChatTextBlue", g_ColorBlue );
+		default	: return g_ColorGrey;
+		}
+	}
+
+	return g_ColorYellow;
+}
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

@@ -959,21 +959,22 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 							CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
 							if (pMaster)
 							{
+								int iNumPoints = pMaster->GetNumPoints();
 								for (int i = 0; i < pMaster->GetNumPoints(); ++i)
 								{
 									CTeamControlPoint* point = pMaster->GetControlPoint(i);
 									if (point && pMaster->IsInRound(point))
 									{
 										// TODO(mcoms): what on earth can we do but this...
-										if ( ( point->WorldSpaceCenter() - pPoint->WorldSpaceCenter() ).LengthSqr() < 100.0f )
+										if ( iNumPoints == 1 || ( point->WorldSpaceCenter() - pPoint->WorldSpaceCenter() ).LengthSqr() < 200.0f )
 										{
 											iTargetTeam = point->GetOwner();
+											bHandled = true;
 											break;
 										}
 									}
 								}
 							}
-							bHandled = true;
 						}
 					}
 
@@ -1002,18 +1003,15 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 						iTargetTeam = pPoint->GetOwner();
 					}
 					// if the target is not neutral, then we can attack/defend it
-					if (iTargetTeam > LAST_SHARED_TEAM)
+					if (iTeam != iTargetTeam)
 					{
-						if (iTeam != iTargetTeam)
-						{
-							// attack if its not on our team.
-							command = kCoachCommand_Attack;
-						}
-						else
-						{
-							// its ours, so defend.
-							command = kCoachCommand_Defend;
-						}
+						// attack if its not on our team.
+						command = kCoachCommand_Attack;
+					}
+					else
+					{
+						// its ours, so defend.
+						command = kCoachCommand_Defend;
 					}
 					
 				}

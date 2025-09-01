@@ -23,9 +23,14 @@
 #include "viewrender.h"
 #include "tf_gamerules.h"
 #include "tf_hud_training.h"
+#include "hud_basechat.h"
+#include "hud_chat.h"
+#include "voice_status.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+extern ConVar cl_mute_all_comms;
 
 DECLARE_HUDELEMENT_DEPTH( CTFAnnotationsPanel, 1 );
 
@@ -199,6 +204,15 @@ void CTFAnnotationsPanel::AddAnnotation( IGameEvent * event )
 	location.y = y;
 	location.z = z;
 
+	// mute pings
+	if ( TFGameRules() && !TFGameRules()->IsInTraining() && cl_mute_all_comms.GetBool() && ( id != 0 ) )
+	{
+		if ( GetClientVoiceMgr() && GetClientVoiceMgr()->IsPlayerBlocked( id ) )
+		{
+			return;
+		}
+	}
+
 	m_bShouldBeVisible = true;
 
 	// Try and add the callout
@@ -213,6 +227,85 @@ void CTFAnnotationsPanel::AddAnnotation( IGameEvent * event )
 		pCallout->SetFollowEntity( pFollowEntity );
 		pCallout->SetShowDistance( bShowDistance );
 		pCallout->UpdateCallout();
+
+		CBaseHudChat* pHudChat = (CBaseHudChat*)GET_HUDELEMENT(CHudChat);
+		if (pHudChat)
+		{
+			C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+			C_BasePlayer* pEventPlayer = UTIL_PlayerByIndex(id);
+			if (pLocalPlayer && pEventPlayer && pLocalPlayer->GetTeamNumber() == g_PR->GetTeam(pEventPlayer->entindex()))
+			{
+				wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
+				g_pVGuiLocalize->ConvertANSIToUnicode(g_PR->GetPlayerName(pEventPlayer->entindex()), wszPlayerName, sizeof(wszPlayerName));
+
+				wchar_t wszLocalized[256];
+				if (!pFollowEntity)
+				{
+					g_pVGuiLocalize->ConstructString_safe(wszLocalized, g_pVGuiLocalize->Find("#TF_Comp_PingWorld"), 1, wszPlayerName);
+				}
+				else if ( pFollowEntity->IsPlayer() )
+				{
+					wchar_t enemyFormat[256];
+					_snwprintf(enemyFormat, ARRAYSIZE(enemyFormat), L"%ls", g_pVGuiLocalize->Find("#TF_Comp_PingEnemy"));
+
+					wchar_t* colorMarker = wcsstr(enemyFormat, L"::");
+
+					if ( colorMarker )
+					{
+						pHudChat->SetCustomColor(pHudChat->GetClientEnemyColor(pLocalPlayer->entindex()));
+						*(colorMarker + 1) = COLOR_CUSTOM;
+					}
+
+					CTFPlayer* pTargetPlayer = ToTFPlayer(pFollowEntity);
+					int nClassID = pTargetPlayer->GetPlayerClass()->GetClassIndex();
+					g_pVGuiLocalize->ConstructString_safe(wszLocalized, enemyFormat, 2, wszPlayerName, g_pVGuiLocalize->Find( g_aPlayerClassNames[ nClassID ] ) );
+				}
+				else if ( pFollowEntity->IsBaseObject() )
+				{
+					wchar_t* wzFollowEntityName = NULL;
+					C_BaseObject* pBuilding = dynamic_cast<C_BaseObject*>(pFollowEntity);
+					if (pBuilding && pBuilding->GetType() < OBJ_LAST)
+					{
+						// Must match resource/tf_objects.txt!!!
+						const char* szLocalizedObjectNames[OBJ_LAST] =
+						{
+							"#TF_Object_Dispenser",
+							"#TF_Object_Tele",
+							"#TF_Object_Sentry",
+							"#TF_object_Sapper"
+						};
+						wzFollowEntityName = g_pVGuiLocalize->Find(szLocalizedObjectNames[pBuilding->GetType()]);
+					}
+					if ( pFollowEntity->GetTeamNumber() == pLocalPlayer->GetTeamNumber() )
+					{
+						g_pVGuiLocalize->ConstructString_safe(wszLocalized, g_pVGuiLocalize->Find("#TF_Comp_PingBuilding"), 2, wszPlayerName, wzFollowEntityName);
+					}
+					else
+					{
+						wchar_t enemyFormat[256];
+						_snwprintf(enemyFormat, ARRAYSIZE(enemyFormat), L"%ls", g_pVGuiLocalize->Find("#TF_Comp_PingEnemy"));
+
+						wchar_t* colorMarker = wcsstr(enemyFormat, L":");
+
+						if (colorMarker)
+						{
+							pHudChat->SetCustomColor(pHudChat->GetClientEnemyColor(pLocalPlayer->entindex()));
+							*(colorMarker) = COLOR_CUSTOM;
+						}
+						g_pVGuiLocalize->ConstructString_safe(wszLocalized, enemyFormat, 2, wszPlayerName, wzFollowEntityName);
+					}
+				}
+				else
+				{
+					g_pVGuiLocalize->ConstructString_safe(wszLocalized, g_pVGuiLocalize->Find("#TF_Comp_PingObjective"), 1, wszPlayerName);
+				}
+
+				char szLocalized[256];
+				g_pVGuiLocalize->ConvertUnicodeToANSI(wszLocalized, szLocalized, sizeof(szLocalized));
+
+				pHudChat->ChatPrintf(pLocalPlayer->entindex(), CHAT_FILTER_NAMECHANGE, "%s", szLocalized);
+			}
+		}
 
 		if ( pCallout->IsVisible() )
 		{

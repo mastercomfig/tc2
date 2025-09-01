@@ -288,6 +288,7 @@ public:
 	virtual Color	GetDefaultTextColor( void );
 	virtual Color	GetTextColorForClient( TextColor colorNum, int clientIndex );
 	virtual Color	GetClientColor( int clientIndex );
+	virtual Color	GetClientEnemyColor(int clientIndex) { return GetClientColor(clientIndex); }
 
 	virtual int		GetFilterForString( const char *pString );
 
