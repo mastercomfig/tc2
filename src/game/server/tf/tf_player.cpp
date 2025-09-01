@@ -879,7 +879,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 	if (!pPlayer || command >= kNumCoachCommands || !TFGameRules())
 		return;
 	const bool bIsCoaching = pPlayer->IsCoaching() && pPlayer->GetStudent();
-	const bool bIsComp = pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules()->IsCompetitiveGame();
+	const bool bIsComp = pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->ShowMatchSummary();
 	if ( bIsCoaching || bIsComp )
 	{
 		const float kMaxRateCoachCommands = 1.0f;
@@ -1097,6 +1097,7 @@ CTFPlayer::CTFPlayer()
 
 	m_flNextTimeCheck = gpGlobals->curtime;
 	m_flSpawnTime = 0;
+	m_flRespawnTime = 0;
 
 	m_flWaterExitTime = 0;
 
@@ -2276,66 +2277,80 @@ void CTFPlayer::PostSpawnThink( void )
 
 void CTFPlayer::StrandedSpawnThink(void)
 {
-	if (!CheckStrandedSpawn())
+	int iResult = CheckStrandedSpawn();
+	if ( !iResult )
 	{
 		// if we left, then we can't be stranded anymore
-		m_Shared.m_bInStrandedSpawn = false;
+		m_Shared.m_iStrandedSpawn = 0;
 		return;
 	}
 
-	m_Shared.m_bInStrandedSpawn = true;
+	m_Shared.m_iStrandedSpawn = iResult;
 	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.01f, "StrandedSpawnThink" );
 }
 
-bool CTFPlayer::CheckStrandedSpawn(void)
+int CTFPlayer::CheckStrandedSpawn(void)
 {
-	// if time elapsed
-	if (m_flSpawnTime == 0.0f || gpGlobals->curtime - m_flSpawnTime >= 7.0f)
-	{
-		return false;
-	}
-
 	// if the player died, exit
-	if (!IsAlive())
+	if ( !IsAlive() )
 	{
-		return false;
+		return 0;
 	}
 
 	// not spectator
-	if (GetTeamNumber() <= LAST_SHARED_TEAM)
+	if ( GetTeamNumber() <= LAST_SHARED_TEAM )
 	{
-		return false;
+		return 0;
+	}
+
+	// not coaching
+	if ( IsCoaching() )
+	{
+		return 0;
 	}
 
 	// we don't care during match summary
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
-	if (bMatchSummary)
+	if ( bMatchSummary )
 	{
-		return false;
+		return 0;
 	}
 
 	// left respawn room
-	if (m_Shared.GetRespawnTouchCount() <= 0)
+	if ( m_Shared.GetRespawnTouchCount() <= 0 )
 	{
-		return false;
+		return 0;
+	}
+
+	// not damaged
+	if ( gpGlobals->curtime - m_flLastDamageTime <= 0.1f )
+	{
+		return 0;
 	}
 
 	CBaseEntity* pLastSpawnPoint = GetSpawnPoint();
-	if (!pLastSpawnPoint)
+	if ( !pLastSpawnPoint )
 	{
-		return false;
+		return 0;
 	}
 	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
 
 	// tighter check for leaving respawn room
-	if ((GetAbsOrigin() - vLastSpawnPos).Length2DSqr() > 25.0f * 25.0f || abs(GetAbsOrigin().z - vLastSpawnPos.z) > 50.0f)
+	if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 72.0f * 72.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 72.0f )
 	{
-		return false;
+		return 0;
+	}
+
+	// if time elapsed
+	if ( m_flRespawnTime == 0.0f || gpGlobals->curtime - m_flRespawnTime >= 7.0f )
+	{
+		return 1;
 	}
 
 	// just allow players to respawn during first 7 seconds
 #if 1
-	return true;
+	// don't upgrade from 1 to 2
+	return m_Shared.m_iStrandedSpawn == 1 ? 1 : 2;
 #else
 	CFuncRespawnRoom* pLastRespawnRoom;
 	GetMyRespawnRoom(NULL, vLastSpawnPos, pLastRespawnRoom);
@@ -3842,6 +3857,10 @@ void CTFPlayer::Spawn()
 	}
 
 	m_flSpawnTime = gpGlobals->curtime;
+	if ( !m_bStrandedSpawnSwitch && !m_bInstantClassSpawn && !m_bRegenerating )
+	{
+		m_flRespawnTime = gpGlobals->curtime;
+	}
 
 	SetModelScale( 1.0f );
 	UpdateModel();
@@ -4208,8 +4227,6 @@ void CTFPlayer::Spawn()
 		SetHealth( GetMaxHealth() );
 	}
 
-	m_Shared.m_bInStrandedSpawn = false;
-
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
 	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.1f, "StrandedSpawnThink" );
 }
@@ -4292,7 +4309,7 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 	}
 
 	// We may have been boosted over our max health. If we have, 
-	// restore it after we reset out class values.
+	// restore it after we reset our class values.
 	int nOldMaxHealth = GetMaxHealth();
 	int nOldHealth = GetHealth();
 	bool bBoosted = ( nOldHealth > nOldMaxHealth || !bRefillHealthAndAmmo ) && ( nOldMaxHealth > 0 );
@@ -4439,7 +4456,7 @@ void CTFPlayer::InitClass( void )
 	SetMaxHealth( GetMaxHealth() );
 	SetHealth( GetMaxHealth() );
 	// reset damage time (for out of combat properties to active)
-	SetLastEntityDamagedTime(0.0f);
+	m_flLastDamageTime = 0.0f;
 
 	TeamFortress_SetSpeed();
 
@@ -6030,6 +6047,12 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 
+	// if we're in competitive, don't switch our spawns if we're fully stranded (time elapsed after spawn) or we didn't explicitly respawn from a stranded spawn (switched class / regenerated).
+	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && m_pSpawnPoint && ( m_Shared.IsInStrandedSpawn() || m_bInstantClassSpawn || m_bRegenerating ) && !m_bStrandedSpawnSwitch )
+	{
+		return m_pSpawnPoint;
+	}
+
 	// See if the map is asking to force this player to spawn at a specific location
 	if ( GetRespawnLocationOverride() && !bMatchSummary )
 	{
@@ -7371,7 +7394,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		}
 	}
 
-	// in games with competitive integrity, we block respawn room respawns from happening
+	// in games with competitive integrity, we block respawn room respawns from happening unless we're in our initial spawn state
 	bool bWarnForResupply = false;
 	if ( TFGameRules()->IsCompetitiveGame() && !m_Shared.IsInStrandedSpawn() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !( m_bAllowInstantSpawn || bDeadInstantSpawn || bInStalemateClassChangeTime ) && bInRespawnRoom )
 	{
@@ -7384,7 +7407,9 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 
 	if ( bShouldNotRespawn == false && ( m_bAllowInstantSpawn || bDeadInstantSpawn || bInRespawnRoom || bInStalemateClassChangeTime ) )
 	{
+		m_bInstantClassSpawn = !m_bAllowInstantSpawn && !bDeadInstantSpawn;
 		ForceRespawn();
+		m_bInstantClassSpawn = false;
 
 		return;
 	}
@@ -7461,7 +7486,7 @@ void CTFPlayer::CheckInstantLoadoutRespawn( void )
 		bNotify = true;
 	}
 
-	// Not in competitive games
+	// We don't instant respawn our loadout in competitive games, unless we're in our initial spawn
 	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !m_Shared.IsInStrandedSpawn() )
 	{
 		if ( !bNotify )
@@ -13320,6 +13345,9 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	// Don't overflow the value for this.
 	m_iHealth = 0;
 
+	// Reset stranded spawn state
+	m_Shared.m_iStrandedSpawn = 2;
+
 	// If we died in sudden death and we're an engineer, explode our buildings
 	if ( IsPlayerClass( TF_CLASS_ENGINEER ) && TFGameRules()->InStalemate() && TFGameRules()->IsInArenaMode() == false )
 	{
@@ -15152,9 +15180,13 @@ void CTFPlayer::ForceRespawn( void )
 	CTF_GameStats.Event_PlayerForceRespawn( this );
 
 	m_flSpawnTime = gpGlobals->curtime;
+	if ( !m_bStrandedSpawnSwitch && !m_bInstantClassSpawn && !m_bRegenerating )
+	{
+		m_flRespawnTime = gpGlobals->curtime;
+	}
 	m_Shared.m_flHolsterAnimTime = 0.f;	// BRETT SAID I COULD DO THIS
 	// reset damage time for out of combat
-	SetLastEntityDamagedTime(0.0f);
+	m_flLastDamageTime = 0.0f;
 
 	bool bRandom = false;
 

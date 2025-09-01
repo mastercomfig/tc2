@@ -678,7 +678,8 @@ public:
 
 	void IncrementRespawnTouchCount() { ++m_iSpawnRoomTouchCount; }
 	void DecrementRespawnTouchCount() { m_iSpawnRoomTouchCount = Max( m_iSpawnRoomTouchCount - 1, 0 ); }
-	bool IsInStrandedSpawn() { return m_bInStrandedSpawn; }
+	int IsInStrandedSpawn() const { return m_iStrandedSpawn; }
+	void SetInStrandedSpawn( int iStrandedSpawn ) { m_iStrandedSpawn = iStrandedSpawn; }
 	int GetRespawnTouchCount() const { return m_iSpawnRoomTouchCount; }
 
 #ifdef CLIENT_DLL
@@ -1190,7 +1191,8 @@ private:
 
 	CNetworkVar( int,  m_iDisguiseBody );
 
-	CNetworkVar(bool, m_bInStrandedSpawn);
+	/** stranded spawn level: 1) hasn't left spawn, 2) hasn't left spawn in the last 7 seconds  */
+	CNetworkVar( int, m_iStrandedSpawn );
 
 	CNetworkVar( int,  m_iSpawnRoomTouchCount );
 

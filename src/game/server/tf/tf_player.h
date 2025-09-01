@@ -636,6 +636,9 @@ public:
 
 	void SetUsingVRHeadset( bool bState ){ m_bUsingVRHeadset = bState; }
 
+	void SetInstantClassSpawn( bool bInstant ) { m_bInstantClassSpawn = bInstant; }
+	void SetStrandedSpawnSwitch( bool bSwitch ) { m_bStrandedSpawnSwitch = bSwitch; }
+
 	static bool m_bTFPlayerNeedsPrecache;
 
 	// IHasAttributes
@@ -1118,7 +1121,7 @@ protected:
 	void				UpdateTimers( void );
 	void				PostSpawnThink( void );
 	void				StrandedSpawnThink( void );
-	bool				CheckStrandedSpawn(void);
+	int					CheckStrandedSpawn(void);
 
 	// Regeneration due to being a Medic, or derived from items
 	void				RegenThink();
@@ -1239,6 +1242,8 @@ private:
 
 	bool				m_bPlayedFreezeCamSound;
 	bool				m_bSwitchedClass;
+	bool				m_bStrandedSpawnSwitch;
+	bool				m_bInstantClassSpawn; // this marks when we've instant spawned in the respawn room
 	bool				m_bRememberLastWeapon;
 	bool				m_bRememberActiveWeapon;
 	bool				m_bRespawnOnLoadoutChange;
@@ -1253,6 +1258,7 @@ private:
 	Vector m_vecLastDeathPosition;
 
 	float				m_flSpawnTime;
+	float				m_flRespawnTime;
 
 	float				m_flLastAction;
 	float				m_flTimeInSpawn;

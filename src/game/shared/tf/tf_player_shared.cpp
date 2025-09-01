@@ -403,7 +403,7 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	RecvPropEHandle( RECVINFO( m_hCarriedObject ) ),
 	RecvPropBool( RECVINFO( m_bCarryingObject ) ),
 	RecvPropFloat( RECVINFO( m_flNextNoiseMakerTime ) ),
-	RecvPropBool(RECVINFO(m_bInStrandedSpawn)),
+	RecvPropInt( RECVINFO( m_iStrandedSpawn ) ),
 	RecvPropInt( RECVINFO( m_iSpawnRoomTouchCount ) ),
 	RecvPropInt( RECVINFO( m_iKillCountSinceLastDeploy ) ),
 	RecvPropFloat( RECVINFO( m_flFirstPrimaryAttack ) ),
@@ -580,7 +580,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	SendPropEHandle( SENDINFO( m_hCarriedObject ) ),
 	SendPropBool( SENDINFO( m_bCarryingObject ) ),
 	SendPropFloat( SENDINFO( m_flNextNoiseMakerTime ) ),
-	SendPropBool(SENDINFO(m_bInStrandedSpawn)),
+	SendPropBool( SENDINFO( m_iStrandedSpawn ) ),
 	SendPropInt( SENDINFO( m_iSpawnRoomTouchCount ) ),
 	SendPropInt( SENDINFO( m_iKillCountSinceLastDeploy ) ),
 	SendPropFloat( SENDINFO( m_flFirstPrimaryAttack ) ),
@@ -861,7 +861,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_bInStrandedSpawn = false;
+	m_iStrandedSpawn = 2;
 
 	m_flNextNoiseMakerTime = 0;
 	m_iSpawnRoomTouchCount = 0;
@@ -972,7 +972,7 @@ void CTFPlayerShared::Init( CTFPlayer *pPlayer )
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_bInStrandedSpawn = false;
+	m_iStrandedSpawn = 2;
 
 	SetJumping( false );
 	SetAssist( NULL );
@@ -1022,7 +1022,10 @@ void CTFPlayerShared::Spawn( void )
 
 	m_bBiteEffectWasApplied = false;
 
-	m_iSpawnRoomTouchCount = 0;
+	if ( !m_pOuter->m_bStrandedSpawnSwitch && !m_pOuter->m_bInstantClassSpawn && !m_pOuter->m_bRegenerating )
+	{
+		m_iSpawnRoomTouchCount = 0;
+	}
 
 	for( int i = FIRST_LOADOUT_SLOT_WITH_CHARGE_METER; i <= LAST_LOADOUT_SLOT_WITH_CHARGE_METER; ++i )
 	{

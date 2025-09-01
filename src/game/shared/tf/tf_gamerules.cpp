@@ -16191,7 +16191,9 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 					// Remove upgrade attributes from the player and their items
 					g_hUpgradeEntity->GrantOrRemoveAllUpgrades( pTFPlayer, true );
 
+					pTFPlayer->SetInstantClassSpawn(true);
 					pTFPlayer->ForceRespawn();
+					pTFPlayer->SetInstantClassSpawn(false);
 				}
 			}
 		}
@@ -16222,9 +16224,13 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "+inspect_server" ) )
 		{
-			if (pTFPlayer->m_Shared.IsInStrandedSpawn())
+			if ( IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && pTFPlayer->m_Shared.IsInStrandedSpawn() == 2 )
 			{
+				pTFPlayer->SetStrandedSpawnSwitch(true);
 				pTFPlayer->ForceRespawn();
+				pTFPlayer->SetStrandedSpawnSwitch(false);
+				// lower tier stranded spawn
+				pTFPlayer->m_Shared.SetInStrandedSpawn( 1 );
 			}
 			else
 			{
@@ -21511,7 +21517,7 @@ bool CTFGameRules::IsConnectedUserInfoChangeAllowed( CBasePlayer *pPlayer )
 #else
 		flRespawnTime = pTFPlayer->GetClassChangeTime(); // Called when the player changes class and respawns
 #endif
-		if( ( gpGlobals->curtime - flRespawnTime ) < 2.f && pTFPlayer->m_Shared.IsInStrandedSpawn() )
+		if ( ( gpGlobals->curtime - flRespawnTime ) < 2.f && pTFPlayer->m_Shared.IsInStrandedSpawn() )
 			return true;
 
 		// CTFPlayerShared has an option to suppress prediction. If the client is trying to change itself to match that

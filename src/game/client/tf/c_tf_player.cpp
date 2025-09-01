@@ -4678,7 +4678,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			}
 		}
 
-		if ( !IsPlayerClass(m_iOldClass) )
+		if ( !IsPlayerClass(m_iOldClass) && m_Shared.IsInStrandedSpawn() )
 		{
 			m_flChangeClassTime = gpGlobals->curtime;
 
@@ -4688,7 +4688,6 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 				event->SetInt( "updateType", updateType );
 				gameeventmanager->FireEventClientSide( event );
 			}
-
 		}
 
 		bool bUpdateAttachedWeapons = (GetObserverTarget() != m_hOldObserverTarget);
