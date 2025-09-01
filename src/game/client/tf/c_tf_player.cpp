@@ -11590,7 +11590,7 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 	{
 		if ( GetTeamNumber() == TF_TEAM_RED )
 		{
-			*r = 255;
+			*r = 1.0f;
 			*g = 0;
 			*b = 0;
 		}
@@ -11598,7 +11598,7 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 		{
 			*r = 0;
 			*g = 0;
-			*b = 255;
+			*b = 1.0f;
 		}
 		return;
 	}

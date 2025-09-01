@@ -5619,7 +5619,9 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	}
 
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	if ( !IsMannVsMachineMode() && ( pMatch && IsCompetitiveMode() ) || IsEmulatingMatch() == 2 || ( tf_casual_spawn_bots.GetBool() && IsEmulatingMatch() ) )
+	const bool bIsCompMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2;
+	const bool bIsCasualMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 1;
+	if ( !IsMannVsMachineMode() && ( bIsCompMatch || ( tf_casual_spawn_bots.GetBool() && bIsCasualMatch ) ) )
 	{
 		const bool bIsCompetitive = IsCompetitiveGame();
 		// Highest difficulty bots for comp
