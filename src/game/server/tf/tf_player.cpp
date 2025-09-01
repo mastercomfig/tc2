@@ -6714,7 +6714,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 		if ( iTeamSizeRestriction > 0 )
 		{
 			bool bTeamHasBots = false;
-			if ( !TFGameRules()->IsMannVsMachineMode() && iTeam <= LAST_SHARED_TEAM )
+			if ( !TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() <= LAST_SHARED_TEAM )
 			{
 				for ( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
 				{
