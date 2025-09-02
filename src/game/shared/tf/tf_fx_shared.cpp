@@ -409,7 +409,7 @@ void FX_FireBullets( CTFWeaponBase *pWpn, int iPlayer, const Vector &vecOrigin, 
 				{
 #if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
 					// Give players control over accuracy vs. speed on their revolvers / pistols
-					constexpr float flShotTimeCooldown = 1.0f / 0.6f;
+					constexpr float flShotTimeCooldown = 1.0f / 0.4f;
 					const float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, flMinAccuracyCooldown, flMaxAccuracyCooldown);
 #else
 					const float flAccuracyCooldown = flMaxAccuracyCooldown;
