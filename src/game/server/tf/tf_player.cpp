@@ -6048,7 +6048,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 
 	// if we're in competitive, don't switch our spawns if we're fully stranded (time elapsed after spawn) or we didn't explicitly respawn from a stranded spawn (switched class / regenerated).
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && m_pSpawnPoint && ( m_Shared.IsInStrandedSpawn() || m_bInstantClassSpawn || m_bRegenerating ) && !m_bStrandedSpawnSwitch )
+	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && m_pSpawnPoint && m_Shared.IsInStrandedSpawn() && !m_bStrandedSpawnSwitch )
 	{
 		return m_pSpawnPoint;
 	}

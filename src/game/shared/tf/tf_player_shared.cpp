@@ -861,7 +861,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_iStrandedSpawn = 2;
+	m_iStrandedSpawn = 0;
 
 	m_flNextNoiseMakerTime = 0;
 	m_iSpawnRoomTouchCount = 0;
@@ -972,7 +972,7 @@ void CTFPlayerShared::Init( CTFPlayer *pPlayer )
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_iStrandedSpawn = 2;
+	m_iStrandedSpawn = 0;
 
 	SetJumping( false );
 	SetAssist( NULL );
