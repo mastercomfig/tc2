@@ -99,6 +99,7 @@ protected:
 
 private:
 	bool DoSwingTraceInternal( trace_t &trace, bool bCleave, CUtlVector< trace_t >* pTargetTraceVector );
+	bool DoMeleeTrace( trace_t& trace, CTFPlayer *pPlayer, Vector vecSwingStart, Vector vecSwingEnd, Vector vecSwingMins, Vector vecSwingMaxs, ITraceFilter* filter );
 	bool OnSwingHit( trace_t &trace );
 
 	CTFWeaponBaseMelee( const CTFWeaponBaseMelee & ) {}

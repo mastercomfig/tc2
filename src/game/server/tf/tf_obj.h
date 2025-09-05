@@ -355,13 +355,14 @@ public:
 
 	Vector GetBuildOrigin() { return m_vecBuildOrigin; }
 	Vector GetBuildCenterOfMass() { return m_vecBuildCenterOfMass; }
-protected:
 
 #ifdef TF2_OG
 	virtual bool CanBeUpgraded() const { return !(IsDisposableBuilding() || IsMiniBuilding() || GetType() == OBJ_DISPENSER || GetType() == OBJ_TELEPORTER); }
 #else
-	virtual bool CanBeUpgraded() const { return !( IsDisposableBuilding() || IsMiniBuilding() ); }
+	virtual bool CanBeUpgraded() const { return !(IsDisposableBuilding() || IsMiniBuilding()); }
 #endif
+
+protected:
 	
 	virtual int  GetUpgradeMetalRequired();
 

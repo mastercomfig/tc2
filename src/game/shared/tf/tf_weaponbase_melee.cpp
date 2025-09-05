@@ -25,6 +25,7 @@
 #endif
 
 ConVar tf_weapon_criticals_melee( "tf_weapon_criticals_melee", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Controls random crits for melee weapons. 0 - Melee weapons do not randomly crit. 1 - Melee weapons can randomly crit only if tf_weapon_criticals is also enabled. 2 - Melee weapons can always randomly crit regardless of the tf_weapon_criticals setting." );
+ConVar tf_melee_enemy_priority( "tf_melee_enemy_priority", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Prevents teammates from blocking melee attacks." );
 
 //=============================================================================
 //
@@ -476,6 +477,7 @@ bool CTFWeaponBaseMelee::DoSwingTraceInternal( trace_t &trace, bool bCleave, CUt
 	// swarm so tightly they hit each other and no-one else
 	bool bDontHitTeammates = pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS && TFGameRules()->IsMannVsMachineMode();
 	CTraceFilterIgnoreTeammates ignoreTeammatesFilter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
+	bool bEnemyPriority = tf_melee_enemy_priority.GetBool() && !bDontHitTeammates;
 
 	if ( bCleave )
 	{
@@ -514,12 +516,12 @@ bool CTFWeaponBaseMelee::DoSwingTraceInternal( trace_t &trace, bool bCleave, CUt
 	}
 	else
 	{
-		bool bSapperHit = false;
-
 		// if this weapon can damage sappers, do that trace first
 		int iDmgSappers = 0;
 		CALL_ATTRIB_HOOK_INT( iDmgSappers, set_dmg_apply_to_sapper );
-		if ( iDmgSappers != 0 )
+		// also repair buildings first
+		const bool bHealBuildings = pPlayer->IsPlayerClass( TF_CLASS_ENGINEER ); // check WeaponID == WRENCH or Class == ENGINEER?
+		if ( iDmgSappers != 0 || bHealBuildings )
 		{
 			CTraceFilterIgnorePlayers ignorePlayersFilter( NULL, COLLISION_GROUP_NONE );
 			UTIL_TraceLine( vecSwingStart, vecSwingEnd, MASK_SOLID, &ignorePlayersFilter, &trace );
@@ -536,55 +538,91 @@ bool CTFWeaponBaseMelee::DoSwingTraceInternal( trace_t &trace, bool bCleave, CUt
 				CBaseObject *pObject = static_cast< CBaseObject* >( trace.m_pEnt );
 				if ( pObject->HasSapper() )
 				{
-					bSapperHit = true;
+					return true;
 				}
-			}
-		}
-
-		if ( !bSapperHit )
-		{
-			// See if we hit anything.
-			if ( bDontHitTeammates )
-			{
-				UTIL_TraceLine( vecSwingStart, vecSwingEnd, MASK_SOLID, &ignoreTeammatesFilter, &trace );
-			}
-			else
-			{
-				CTraceFilterIgnoreFriendlyCombatItems filter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
-				UTIL_TraceLine( vecSwingStart, vecSwingEnd, MASK_SOLID, &filter, &trace );
-			}
-
-			if ( trace.fraction >= 1.0 )
-			{
-				if ( bDontHitTeammates )
+				
+				if ( bHealBuildings )
 				{
-					UTIL_TraceHull( vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, MASK_SOLID, &ignoreTeammatesFilter, &trace );
-				}
-				else
-				{
-					CTraceFilterIgnoreFriendlyCombatItems filter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
-					UTIL_TraceHull( vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, MASK_SOLID, &filter, &trace );
-				}
-
-				if ( trace.fraction < 1.0 )
-				{
-					// Calculate the point of intersection of the line (or hull) and the object we hit
-					// This is and approximation of the "best" intersection
-					CBaseEntity *pHit = trace.m_pEnt;
-					if ( !pHit || pHit->IsBSPModel() )
+#if 0
+					// TODO: client
+#ifdef GAME_DLL
+					// these require metal
+					if ( pPlayer->GetAmmoCount( TF_AMMO_METAL ) > 0 )
 					{
-						// Why duck hull min/max?
-						FindHullIntersection( vecSwingStart, trace, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pPlayer );
-					}
+						// repair the building
+						if ( pObject->CanBeRepaired() )
+						{
+							if ( pObject->GetHealth() < pObject->GetMaxHealthForCurrentLevel() )
+							{
+								return true;
+							}
+						}
 
-					// This is the point on the actual surface (the hull could have hit space)
-					vecSwingEnd = trace.endpos;	
+						// upgrade the building
+						if ( pObject->CanBeUpgraded() )
+						{
+							if ( pObject->GetUpgradeLevel() < pObject->GetMaxUpgradeLevel() )
+							{
+								return true;
+							}
+						}
+					}
+					// todo: sentry ammo
+					// construction boost
+					if ( pObject->IsBuilding() )
+					{
+						return true;
+					}
+#endif
+#else
+					// just always hit the building as an engineer
+					return true;
+#endif
 				}
 			}
 		}
+		
+		if ( bDontHitTeammates )
+		{
+			return DoMeleeTrace( trace, pPlayer, vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, &ignoreTeammatesFilter );
+		}
 
-		return ( trace.fraction < 1.0f );
+		if ( bEnemyPriority && DoMeleeTrace( trace, pPlayer, vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, &ignoreTeammatesFilter ) )
+		{
+			return true;
+		}
+
+		CTraceFilterIgnoreFriendlyCombatItems filter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
+		return DoMeleeTrace( trace, pPlayer, vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, &filter );
 	}
+}
+
+bool CTFWeaponBaseMelee::DoMeleeTrace( trace_t& trace, CTFPlayer *pPlayer, Vector vecSwingStart, Vector vecSwingEnd, Vector vecSwingMins, Vector vecSwingMaxs, ITraceFilter* filter )
+{
+	// See if we hit anything.
+	UTIL_TraceLine( vecSwingStart, vecSwingEnd, MASK_SOLID, filter, &trace );
+
+	if ( trace.fraction >= 1.0f )
+	{
+		UTIL_TraceHull( vecSwingStart, vecSwingEnd, vecSwingMins, vecSwingMaxs, MASK_SOLID, filter, &trace );
+
+		if (trace.fraction < 1.0)
+		{
+			// Calculate the point of intersection of the line (or hull) and the object we hit
+			// This is and approximation of the "best" intersection
+			CBaseEntity* pHit = trace.m_pEnt;
+			if (!pHit || pHit->IsBSPModel())
+			{
+				// Why duck hull min/max?
+				FindHullIntersection(vecSwingStart, trace, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pPlayer);
+			}
+
+			// This is the point on the actual surface (the hull could have hit space)
+			vecSwingEnd = trace.endpos;
+		}
+	}
+
+	return ( trace.fraction < 1.0f );
 }
 
 
