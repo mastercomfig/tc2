@@ -12212,7 +12212,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 		// Turn into a ghost
 		m_Shared.RemoveAllCond();
-		m_Shared.AddCond(TF_COND_HALLOWEEN_GHOST_MODE);
+		m_Shared.AddCond( TF_COND_HALLOWEEN_GHOST_MODE );
 
 		// Create a puff right where we died to mask the ghost spawning in
 		DispatchParticleEffect( "ghost_appearation", PATTACH_ABSORIGIN, this );
