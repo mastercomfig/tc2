@@ -2285,6 +2285,12 @@ void CTFPlayer::StrandedSpawnThink(void)
 		return;
 	}
 
+	if ( !TFGameRules()->IsCompetitiveGame() )
+	{
+		// always full stranded spawn in pubs
+		iResult = 2;
+	}
+
 	m_Shared.m_iStrandedSpawn = iResult;
 	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.01f, "StrandedSpawnThink" );
 }
@@ -6047,8 +6053,8 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 
-	// if we're in competitive, don't switch our spawns if we're fully stranded (time elapsed after spawn) or we didn't explicitly respawn from a stranded spawn (switched class / regenerated).
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && m_pSpawnPoint && m_Shared.IsInStrandedSpawn() && !m_bStrandedSpawnSwitch )
+	// don't switch our spawns if we're in our initial spawn, and we didn't explicitly respawn (switched class / regenerated).
+	if ( TFGameRules() && m_pSpawnPoint && m_Shared.IsInStrandedSpawn() && ( m_bInstantClassSpawn || m_bRegenerating ) && !m_bStrandedSpawnSwitch )
 	{
 		return m_pSpawnPoint;
 	}
@@ -7094,10 +7100,12 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 			}
 		}
 	}
+
+	// reset spawn point
+	m_pSpawnPoint = NULL;
 	
 	m_Shared.RemoveAllCond();
 	DuelMiniGame_NotifyPlayerChangedTeam( this, iTeamNum, false );
-
 }
 
 //-----------------------------------------------------------------------------
@@ -12199,9 +12207,12 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	// Cheat this death!
 	if ( m_Shared.InCond( TF_COND_HALLOWEEN_IN_HELL ) )
 	{
+		// Reset spawn point
+		m_pSpawnPoint = NULL;
+
 		// Turn into a ghost
 		m_Shared.RemoveAllCond();
-		m_Shared.AddCond( TF_COND_HALLOWEEN_GHOST_MODE );
+		m_Shared.AddCond(TF_COND_HALLOWEEN_GHOST_MODE);
 
 		// Create a puff right where we died to mask the ghost spawning in
 		DispatchParticleEffect( "ghost_appearation", PATTACH_ABSORIGIN, this );
@@ -13349,6 +13360,9 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	// Reset stranded spawn state
 	m_Shared.m_iStrandedSpawn = 2;
+
+	// Reset spawn point
+	m_pSpawnPoint = NULL;
 
 	// If we died in sudden death and we're an engineer, explode our buildings
 	if ( IsPlayerClass( TF_CLASS_ENGINEER ) && TFGameRules()->InStalemate() && TFGameRules()->IsInArenaMode() == false )

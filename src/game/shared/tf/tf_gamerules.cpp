@@ -16226,7 +16226,7 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "+inspect_server" ) )
 		{
-			if ( IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && pTFPlayer->m_Shared.IsInStrandedSpawn() == 2 )
+			if ( pTFPlayer->m_Shared.IsInStrandedSpawn() && ( !IsCompetitiveGame() || pTFPlayer->m_Shared.IsInStrandedSpawn() == 2 ) )
 			{
 				pTFPlayer->SetStrandedSpawnSwitch(true);
 				pTFPlayer->ForceRespawn();
