@@ -704,11 +704,28 @@ bool CBaseObject::EstimateValidBuildPos( void )
 	if ( IsTakingTriggerHurtDamageAtPoint( m_vecBuildCenterOfMass ) )
 		return false;
 
-	if ( PointInRespawnRoom( NULL, m_vecBuildOrigin ) && !g_pServerBenchmark->IsBenchmarkRunning() )
-		return false;
+	// If this is a teleporter, don't teleport others into a trigger hurt
+	if ( GetType() == OBJ_TELEPORTER )
+	{
+		Vector vTeleportPos = m_vecBuildOrigin;
+		vTeleportPos.z += 53;
+		if ( IsTakingTriggerHurtDamageAtPoint( vTeleportPos ) )
+		{
+			return false;
+		}
+	}
 
-	if ( PointInRespawnRoom( NULL, m_vecBuildCenterOfMass ) && !g_pServerBenchmark->IsBenchmarkRunning() )
-		return false;
+	// MCOMS_BALANCE_PACK: BLU can build in setup time
+	bool bCanBuildInRespawnRoom = ( GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->InSetup() ) || g_pServerBenchmark->IsBenchmarkRunning();
+
+	if ( !bCanBuildInRespawnRoom )
+	{
+		if ( PointInRespawnRoom( NULL, m_vecBuildOrigin ) )
+			return false;
+
+		if ( PointInRespawnRoom( NULL, m_vecBuildCenterOfMass ) )
+			return false;
+	}
 
 	Vector vecBuildFarEdge = m_vecBuildOrigin + m_vecBuildForward * ( m_flBuildDistance + 8.0f );
 	if ( PointsCrossRespawnRoomVisualizer( pPlayer->WorldSpaceCenter(), vecBuildFarEdge ) )
@@ -900,6 +917,8 @@ void CBaseObject::StartPlacement( CTFPlayer *pPlayer )
 
 	// Set the skin
 	m_nSkin = ( GetTeamNumber() == TF_TEAM_RED ) ? 0 : 1;
+
+	UpdateDisabledState();
 }
 
 //-----------------------------------------------------------------------------
@@ -3460,7 +3479,8 @@ void CBaseObject::UpdateDisabledState( void )
 {
 	const bool bShouldBeEnabled = !m_bHasSapper
 							   && !m_bPlasmaDisable
-							   && (!TFGameRules()->RoundHasBeenWon() || TFGameRules()->GetWinningTeam() == GetTeamNumber());
+							   && ( !TFGameRules()->RoundHasBeenWon() || TFGameRules()->GetWinningTeam() == GetTeamNumber() )
+							   && ( GetTeamNumber() != TF_TEAM_BLUE || !PointInRespawnRoom( NULL, GetAbsOrigin() ) );
 
 	SetDisabled( !bShouldBeEnabled );
 }
