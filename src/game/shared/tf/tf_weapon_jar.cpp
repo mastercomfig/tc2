@@ -1077,13 +1077,10 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	CBaseEntity *pInflictor = GetOriginalLauncher();
 
 	float flLifeTime = gpGlobals->curtime - m_flCreationTime;
+	float flDecrement = 0.0f;
 	if ( flLifeTime >= FLIGHT_TIME_TO_REDUCE_COOLDOWN )
 	{
-		auto pLauncher = dynamic_cast<CTFWeaponBase*>( pInflictor );
-		if ( pLauncher && pOwner != pPlayer && pLauncher->HasEffectBarRegeneration() )
-		{
-			pLauncher->DecrementBarRegenTime( 1.5f );
-		}
+		flDecrement = 1.5f;
 	}
 
 	// just do the bleed effect directly since the bleed
@@ -1095,6 +1092,8 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	const bool bLowHealthCull = iVictimHealth <= pPlayer->GetMaxHealth() * 0.3f;
 	if ( bLowHealthCull )
 	{
+		flDecrement = 10.0f;
+
 		const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 		trace_t *pNewTrace = const_cast<trace_t*>( pTrace );
 
@@ -1140,6 +1139,15 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	RemoveCleaver();
 
 	m_bHitPlayer = true;
+
+	if ( flDecrement > 0.0f )
+	{
+		auto pLauncher = dynamic_cast<CTFWeaponBase*>(pInflictor);
+		if ( pLauncher && pOwner != pPlayer && pLauncher->HasEffectBarRegeneration() )
+		{
+			pLauncher->DecrementBarRegenTime( flDecrement );
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
