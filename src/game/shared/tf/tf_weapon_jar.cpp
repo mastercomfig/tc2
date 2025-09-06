@@ -1091,28 +1091,38 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	pPlayer->m_Shared.MakeBleed( pOwner, (CTFCleaver *)pInflictor, 5.f );
 
 	// Give 'em a love tap.
-	const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
-	trace_t *pNewTrace = const_cast<trace_t*>( pTrace );
-
-	CTakeDamageInfo info;
-	info.SetAttacker( pOwner );
-	info.SetInflictor( this ); 
-	info.SetWeapon( pInflictor );
-	info.SetDamage( GetDamage() );
-	info.SetDamageCustom( TF_DMG_CUSTOM_CLEAVER );
-	info.SetDamagePosition( GetAbsOrigin() );
-	int iDamageType = GetDamageType();
-	if ( IsCritical() )
+	const int iVictimHealth = pPlayer->GetHealth();
+	const bool bLowHealthCull = iVictimHealth <= pPlayer->GetMaxHealth() * 0.3f;
+	if ( bLowHealthCull )
 	{
-		iDamageType |= DMG_CRITICAL;
-	}
-	info.SetDamageType( iDamageType );
+		const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
+		trace_t *pNewTrace = const_cast<trace_t*>( pTrace );
 
-	// Hurt 'em.
-	Vector dir;
-	AngleVectors( GetAbsAngles(), &dir );
-	pPlayer->DispatchTraceAttack( info, dir, pNewTrace );
-	ApplyMultiDamage();
+		CTakeDamageInfo info;
+		info.SetAttacker( pOwner );
+		info.SetInflictor( this ); 
+		info.SetWeapon( pInflictor );
+		float flDamage = GetDamage();
+		if ( bLowHealthCull && flDamage < iVictimHealth * 0.5f )
+		{
+			flDamage = iVictimHealth * 0.5f;
+		}
+		info.SetDamage( flDamage );
+		info.SetDamageCustom( TF_DMG_CUSTOM_CLEAVER );
+		info.SetDamagePosition( GetAbsOrigin() );
+		int iDamageType = GetDamageType();
+		if ( IsCritical() || bLowHealthCull )
+		{
+			iDamageType |= DMG_CRITICAL;
+		}
+		info.SetDamageType( iDamageType );
+
+		// Hurt 'em.
+		Vector dir;
+		AngleVectors( GetAbsAngles(), &dir );
+		pPlayer->DispatchTraceAttack( info, dir, pNewTrace );
+		ApplyMultiDamage();
+	}
 
 	// sound effects
 	EmitSound_t params;
