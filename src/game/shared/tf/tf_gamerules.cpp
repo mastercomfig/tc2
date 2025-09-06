@@ -3757,7 +3757,12 @@ float CTFGameRules::GetRespawnTimeScalar( int iTeam )
 {
 	// In PvE mode, we don't modify respawn times
 	if ( IsPVEModeActive() )
-		return 1.0;
+		return 1.0f;
+
+	// In competitive, we don't modify respawn times.
+	// Players could be disconnected and we don't want to adjust respawn times based on player count.
+	if ( IsCompetitiveGame() )
+		return 1.0f;
 
 	return BaseClass::GetRespawnTimeScalar( iTeam );
 }
