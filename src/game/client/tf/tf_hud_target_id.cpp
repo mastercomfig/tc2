@@ -216,7 +216,7 @@ bool CTargetID::DrawHealthIcon()
 	if ( pEnt && pEnt->IsBaseObject() )
 		return true;
 
-	if ( tf_hud_target_id_disable_health_icon.GetBool() )
+	if ( !tf_hud_target_id_disable_health_icon.GetBool() )
 		return true;
 
 	return false;
