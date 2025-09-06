@@ -38,6 +38,7 @@
 #include "iserver.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "team.h"
 #include "tier0/memdbgon.h"
 
 using namespace GCSDK;
@@ -1621,9 +1622,15 @@ void CTFGCServerSystem::PreClientUpdate( )
 				}
 			}
 
+			int iRedNumPlayers = GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers();
+			int iBluNumPlayers = GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers();
+
 			// if we have a full server of players, we want to add one more slot for a connecting player to be able to spectate, instead of advertising as full.
+			int totalPlayers = iRedTeamSize + iBluTeamSize + spectatorCount; // how many slots we have
+			int actualPlayers = iRedNumPlayers + iBluNumPlayers + spectatorCount + 1; // how many slots we occupy, plus 1 for the connecting player
+
 			// we want at least 24 players since we want to retain the legacy default max player count if we can.
-			int playerCount = Max( iRedTeamSize + iBluTeamSize + spectatorCount + 1, 24 );
+			int playerCount = Max( Max( totalPlayers, actualPlayers ), 24);
 			// cannot be more than maxplayers.
 			if ( playerCount > gpGlobals->maxClients )
 			{
