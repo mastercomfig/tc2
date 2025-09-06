@@ -28,12 +28,12 @@ jobs:
           # also ignore archives from releases
           path: |
             ${{ github.workspace }}
-            !${{ github.workspace }}/.git
-            !${{ github.workspace }}/.github
-            !${{ github.workspace }}/.vscode
-            !${{ github.workspace }}/game_clean
-            !${{ github.workspace }}/game_dist
-            !${{ github.workspace }}/game_dist_debug
+            !${{ github.workspace }}/.git/**
+            !${{ github.workspace }}/.github/**
+            !${{ github.workspace }}/.vscode/**
+            !${{ github.workspace }}/game_clean/**
+            !${{ github.workspace }}/game_dist/**
+            !${{ github.workspace }}/game_dist_debug/**
             !${{ github.workspace }}/team-comtress-2.png
             !${{ github.workspace }}/.gitattributes
             !${{ github.workspace }}/.gitignore
@@ -41,10 +41,9 @@ jobs:
             !${{ github.workspace }}/LICENSE
             !${{ github.workspace }}/README.md
             !${{ github.workspace }}/thirdpartylegalnotices.txt
-            !${{ github.workspace }}/src/.vscode
-            !${{ github.workspace }}/game
+            !${{ github.workspace }}/src/.vscode/**
+            !${{ github.workspace }}/game/**
             !${{ github.workspace }}/game.zip
-            !${{ github.workspace }}/game-debug-info.zip
           key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-mscache-${{ github.ref_name }}-
@@ -93,7 +92,9 @@ jobs:
 
       - name: Copy dist
         id: copy-dist
-        run: ./game_clean/copy.sh
+        run: |
+          rm ./game/tc2/pak1*.vpk
+          ./game_clean/copy.sh
         shell: bash
 
       - name: Push to Itch
