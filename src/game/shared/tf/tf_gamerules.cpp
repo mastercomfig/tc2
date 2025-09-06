@@ -6834,9 +6834,10 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 
 #if defined(MCOMS_BALANCE_PACK) || 1
 		// SMG headshots falloff
-		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
+		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
 		{
 			iForceCritDmgFalloff = 1;
+			flDamage *= 0.5f;
 		}
 #endif
 
