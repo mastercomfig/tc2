@@ -2420,7 +2420,7 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 	LocalFlexController_t i;
 
 	// a bit hackish, but this will let us know if we're entering a new scene.
-	if (m_flLastTickTime < FLT_EPSILON)
+	if ( ( m_pScene && m_flLastTickTime < FLT_EPSILON ) || m_RootMDL.m_MDL.m_flTime < FLT_EPSILON )
 	{
 		// reset flex weights
 		for (i = LocalFlexController_t(0); i < GetNumFlexControllers(); i++)
@@ -2467,10 +2467,14 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 		// Advance time
 		if ( m_flLastTickTime < FLT_EPSILON )
 		{
-			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1f;
+			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
+			// if we have an end time, we can give some time to lerp to idle.
+			if ( m_flSceneEndTime > FLT_EPSILON )
+			{
+				m_flLastTickTime -= 0.1f;
+			}
 		}
 
-		// we're pending a model update, so don't stomp the last tick time with the old model.
 		m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
 		m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
 

@@ -777,7 +777,7 @@ void CMDLPanel::DoAnimationEvents( CStudioHdr *pStudioHdr, int nSeqNum, float fl
 			if ( pevent[i].cycle <= pEventState->m_flPrevEventCycle )
 				continue;
 
-			FireEvent( pevent[ i ].pszEventName(), pevent[ i ].pszOptions() );
+			FireSeqEvent( pevent[ i ] );
 		}
 
 		// Necessary to get the next loop working
@@ -788,17 +788,24 @@ void CMDLPanel::DoAnimationEvents( CStudioHdr *pStudioHdr, int nSeqNum, float fl
 	{
 		if ( (pevent[i].cycle > pEventState->m_flPrevEventCycle && pevent[i].cycle <= flEventCycle) )
 		{
-			// big hack. I am sorry. These old events just rely on the ID, and can't use their event name.
-			std::string str = std::to_string(pevent[i].event);
-			const char* pszEventName =
-				pevent[i].event == 5004 // CL_EVENT_SOUND
-				|| (pevent[i].event >= 6004 && pevent[i].event <= 6009) ? // CL_EVENT_FOOTSTEP_ & CL_EVENT_MFOOTSTEP_
-				str.c_str() : pevent[i].pszEventName();
-			FireEvent( pszEventName, pevent[ i ].pszOptions() );
+			FireSeqEvent( pevent[ i ] );
 		}
 	}
 
 	pEventState->m_flPrevEventCycle = flEventCycle;
+}
+
+void CMDLPanel::FireSeqEvent( const mstudioevent_t& seqEvent )
+{
+	// HACK: big hack. I am sorry. These old events just rely on the ID, and can't use their event name.
+	// convert the event ID to a string
+	std::string str = std::to_string( seqEvent.event );
+	// if it's an event with these legacy IDs, use the string version of the ID
+	const char* pszEventName =
+		seqEvent.event == 5004 // CL_EVENT_SOUND
+		|| ( seqEvent.event >= 6004 && seqEvent.event <= 6009 ) ? // CL_EVENT_FOOTSTEP_ and CL_EVENT_MFOOTSTEP_
+		str.c_str() : seqEvent.pszEventName();
+	FireEvent( pszEventName, seqEvent.pszOptions() );
 }
 
 void CMDLPanel::FireEvent( const char *pszEventName, const char *pszEventOptions )
