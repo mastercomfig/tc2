@@ -374,6 +374,8 @@ bool CTFAnnotationsPanel::ShouldDraw( void )
 	// never draw on match summary stage
 	if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 		return false;
+	if ( IsInFreezeCam() )
+		return false;
 	return m_bShouldBeVisible;
 }
 
