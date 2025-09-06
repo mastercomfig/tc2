@@ -93,7 +93,6 @@ jobs:
       - name: Copy dist
         id: copy-dist
         run: |
-          rm ./game/tc2/pak1*.vpk
           ./game_clean/copy.sh
         shell: bash
 
