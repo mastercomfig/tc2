@@ -14305,10 +14305,10 @@ void CTFPlayerShared::ResetRageSystem( void )
 	ResetRageBuffs();
 }
 
-ConVar tf_consume_min("tf_consume_min", "-1");
-ConVar tf_consume_base_rate("tf_consume_base_rate", "5");
-ConVar tf_consume_sec_rate("tf_consume_sec_rate", "5");
-ConVar tf_consume_ter_rate("tf_consume_ter_rate", "0.3");
+ConVar tf_consume_min("tf_consume_min", "-1", FCVAR_REPLICATED);
+ConVar tf_consume_base_rate("tf_consume_base_rate", "1.25", FCVAR_REPLICATED);
+ConVar tf_consume_sec_rate("tf_consume_sec_rate", "0", FCVAR_REPLICATED);
+ConVar tf_consume_ter_rate("tf_consume_ter_rate", "0", FCVAR_REPLICATED);
 
 //-----------------------------------------------------------------------------
 // Purpose: 

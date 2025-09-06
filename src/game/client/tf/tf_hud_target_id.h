@@ -55,6 +55,7 @@ public:
 	virtual void	FireGameEvent( IGameEvent * event );
 
 	virtual	bool	DrawHealthIcon();
+	virtual bool	DrawFloatingHealth() { return true; }
 	virtual	C_TFPlayer *GetTargetForSteamAvatar( C_TFPlayer *pTFPlayer );
 private:
 
@@ -116,6 +117,7 @@ public:
 	virtual void PerformLayout( void );
 
 	virtual	bool	DrawHealthIcon()	{ return true; }
+	virtual bool	DrawFloatingHealth() { return false; }
 private:
 	vgui::Panel		*m_pBGPanel_Spec_Blue;
 	vgui::Panel		*m_pBGPanel_Spec_Red;
@@ -136,6 +138,7 @@ public:
 	virtual wchar_t	*GetPrepend( void ) { return m_wszPrepend; }
 
 	virtual	bool	DrawHealthIcon() { return true; }
+	virtual bool	DrawFloatingHealth() { return false; }
 private:
 	wchar_t		m_wszPrepend[ MAX_PREPEND_STRING ];
 

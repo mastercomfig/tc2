@@ -62,14 +62,14 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_rocketpack );
 #if defined(MCOMS_BALANCE_PACK) || 1
 ConVar tf_rocketpack_cost( "tf_rocketpack_cost", "50", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_launch_delay( "tf_rocketpack_launch_delay", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
-ConVar tf_rocketpack_refire_delay( "tf_rocketpack_refire_delay", "0.7", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
+ConVar tf_rocketpack_refire_delay( "tf_rocketpack_refire_delay", "0.2", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_toggle_duration( "tf_rocketpack_toggle_duration", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_delay_launch( "tf_rocketpack_delay_launch", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_launch_absvelocity_preserved( "tf_rocketpack_launch_absvelocity_preserved", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_airborne_launch_absvelocity_preserved( "tf_rocketpack_airborne_launch_absvelocity_preserved", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_impact_push_min( "tf_rocketpack_impact_push_min", "100", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_impact_push_max( "tf_rocketpack_impact_push_max", "300", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
-ConVar tf_rocketpack_launch_push( "tf_rocketpack_launch_push", "500", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
+ConVar tf_rocketpack_launch_push( "tf_rocketpack_launch_push", "150", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 #else
 ConVar tf_rocketpack_cost( "tf_rocketpack_cost", "50", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_launch_delay( "tf_rocketpack_launch_delay", "0.65", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );

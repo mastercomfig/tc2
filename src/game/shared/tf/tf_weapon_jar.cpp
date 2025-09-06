@@ -1089,8 +1089,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 
 	// Give 'em a love tap.
 	const int iVictimHealth = pPlayer->GetHealth();
-	const bool bLowHealthCull = iVictimHealth <= pPlayer->GetMaxHealth() * 0.3f;
-	if ( bLowHealthCull )
+	const bool bLowHealthCull = iVictimHealth - 10 <= pPlayer->GetMaxHealth() * 0.3f;
 	{
 		flDecrement = 10.0f;
 
@@ -1102,7 +1101,11 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 		info.SetInflictor( this ); 
 		info.SetWeapon( pInflictor );
 		float flDamage = GetDamage();
-		if ( bLowHealthCull && flDamage < iVictimHealth * 0.5f )
+		if ( !bLowHealthCull )
+		{
+			flDamage = 10.0f;
+		}
+		else if ( flDamage < iVictimHealth * 0.5f )
 		{
 			flDamage = iVictimHealth * 0.5f;
 		}

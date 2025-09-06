@@ -571,7 +571,7 @@ void CTFSodaPopper::SecondaryAttack()
 float CTFSodaPopper::GetReloadSpeedScale() const
 {
 	// UNDONE: reload upon airdash
-#if 0
+#if 1
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (!pPlayer)
 		return BaseClass::GetReloadSpeedScale();
