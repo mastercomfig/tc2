@@ -213,6 +213,7 @@ bool C_BaseViewModel::ShouldFlipViewModel()
 	{
 		return pWeapon->m_bFlipViewModel != cl_flipviewmodels.GetBool();
 	}
+	return cl_flipviewmodels.GetBool(); // Some viewmodels don't have a weapon associated, and are thus default to non-flipped.
 #endif
 
 	return false;
