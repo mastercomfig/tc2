@@ -1621,7 +1621,14 @@ void CTFGCServerSystem::PreClientUpdate( )
 				}
 			}
 
-			int playerCount = Max(iRedTeamSize + iBluTeamSize + spectatorCount, 24);
+			// if we have a full server of players, we want to add one more slot for a connecting player to be able to spectate, instead of advertising as full.
+			// we want at least 24 players since we want to retain the legacy default max player count if we can.
+			int playerCount = Max( iRedTeamSize + iBluTeamSize + spectatorCount + 1, 24 );
+			// cannot be more than maxplayers.
+			if ( playerCount > gpGlobals->maxClients )
+			{
+				playerCount = gpGlobals->maxClients;
+			}
 			if ( sv_visiblemaxplayers.GetInt() < playerCount )
 			{
 				MMLog( "Setting sv_visiblemaxplayers to %d\n", playerCount );

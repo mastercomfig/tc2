@@ -5635,7 +5635,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		}
 		else
 		{
-			iBotQuota = bIsCompetitive ? 12 : 22;
+			iBotQuota = bIsCompetitive ? 12 : 24;
 		}
 		tf_bot_quota.SetValue( iBotQuota );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
