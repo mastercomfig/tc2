@@ -4540,6 +4540,7 @@ void CTFPlayer::GiveDefaultItems()
 	// Give weapons.
 	ManageRegularWeapons( pData );
 
+	// TODO: MCOMS_MEDIEVAL_MODE
 	if ( !TFGameRules() || !TFGameRules()->IsInMedievalMode() )
 	{
 		// Give a builder weapon for each object the playerclass is allowed to build

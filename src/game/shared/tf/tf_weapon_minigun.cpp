@@ -258,6 +258,11 @@ void CTFMinigun::SharedAttack()
 	if ( pPlayer->m_nButtons & IN_ATTACK )
 	{
 		m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
+		if ( TFGameRules() && TFGameRules()->IsInMedievalMode() )
+		{
+			// medieval mode hackish, can't fire bullets
+			m_iWeaponMode = TF_WEAPON_SECONDARY_MODE;
+		}
 	}
 	else if ( pPlayer->m_nButtons & IN_ATTACK2 )
 	{

@@ -382,6 +382,8 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	virtual bool CanDrop( void ) { return false; }
 	virtual bool AllowTaunts( void ) { return true; }
 
+	virtual bool CanDeploy() OVERRIDE;
+
 	// Fire Rate
 	virtual float ApplyFireDelay( float flDelay ) const;
 

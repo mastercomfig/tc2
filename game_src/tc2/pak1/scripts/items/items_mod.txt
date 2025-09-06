@@ -7,10 +7,15 @@
       "attributes"
       {
         "hype resets on jump"
-				{
-					"attribute_class"	"hype_resets_on_jump"
-					"value"	"35"
-				}
+        {
+          "attribute_class"	"hype_resets_on_jump"
+          "value"	"35"
+        }
+        "allowed in medieval mode"
+        {
+          "attribute_class"	"allowed_in_medieval_mode"
+          "value"	"2"
+        }
       }
     }
     "weapon_ambassador"
@@ -18,30 +23,38 @@
       "attributes"
       {
         "fire rate penalty"
-				{
-					"attribute_class"	"mult_postfiredelay"
-					"value"	"1.6"
-				}
+        {
+          "attribute_class"	"mult_postfiredelay"
+          "value"	"1.6"
+        }
         "reload time increased"
-				{
-					"attribute_class"	"mult_reload_time"
-					"value"	"1.3"
-				}
+        {
+          "attribute_class"	"mult_reload_time"
+          "value"	"1.3"
+        }
         "damage bonus"
-				{
-					"attribute_class"	"mult_dmg"
-					"value" "1.1"
-				}
+        {
+          "attribute_class"	"mult_dmg"
+          "value" "1.1"
+        }
         "damage penalty"
-				{
-					"attribute_class"	"mult_dmg"
-					"value" "1"
-				}
+        {
+          "attribute_class"	"mult_dmg"
+          "value" "1"
+        }
         "sniper fires tracer"
- 				{
-					"attribute_class"	"sniper_fires_tracer"
-					"value"	"1"
-				}
+         {
+          "attribute_class"	"sniper_fires_tracer"
+          "value"	"1"
+        }
+      }
+    }
+    "weapon_long_heatmaker"
+    {
+      "allowed in medieval mode"
+      {
+        "attribute_class"	"allowed_in_medieval_mode"
+        "value"	"1"
       }
     }
     "weapon_red_tape_recorder"
@@ -51,7 +64,7 @@
         "sapper health bonus"
         {
           "attribute_class"	"mult_sapper_health"
-					"value" "1.5"
+          "value" "1.5"
         }
       }
     }
@@ -61,23 +74,30 @@
     "44" // Sandman
     {
       "static_attrs"
-			{
+      {
         "crit mod disabled"						"0"
       }
     }
-    "648" // Wrap Assassin
+    "237" // Rocket Jumper
     {
       "attributes"
       {
-        "effect bar recharge rate increased"
-				{
-					"attribute_class"	"effectbar_recharge_rate"
-					"value" "1.0"
-				}
+        "allowed in medieval mode"
+        {
+          "attribute_class"	"allowed_in_medieval_mode"
+          "value"	"1"
+        }
       }
-      "static_attrs"
-			{
-        "crit mod disabled"						"0"
+    }
+    "265" // Stickybomb Jumper
+    {
+      "attributes"
+      {
+        "allowed in medieval mode"
+        {
+          "attribute_class"	"allowed_in_medieval_mode"
+          "value"	"1"
+        }
       }
     }
     "317" // Candy Cane
@@ -85,9 +105,57 @@
       "attributes"
       {
         "health from packs increased"
+        {
+          "attribute_class"	"mult_health_frompacks"
+          "value"			"1.5"
+        }
+      }
+    }
+    "648" // Wrap Assassin
+    {
+      "attributes"
+      {
+        "effect bar recharge rate increased"
+        {
+          "attribute_class"	"effectbar_recharge_rate"
+          "value" "1.0"
+        }
+      }
+      "static_attrs"
+      {
+        "crit mod disabled"						"0"
+      }
+    }
+    "772" // Baby Face's Blaster
+    {
+      "attributes"
+      {
+        "allowed in medieval mode"
+        {
+          "attribute_class"	"allowed_in_medieval_mode"
+          "value"	"2"
+        }
+      }
+    }
+    "1179" // Thermal Thruster
+    {
+      "attributes"
+      {
+        "allowed in medieval mode"
 				{
-					"attribute_class"	"mult_health_frompacks"
-					"value"			"1.5"
+					"attribute_class"	"allowed_in_medieval_mode"
+					"value"	"1"
+				}
+      }
+    }
+    "1180" // Gas Passer
+    {
+      "attributes"
+      {
+        "allowed in medieval mode"
+				{
+					"attribute_class"	"allowed_in_medieval_mode"
+					"value"	"1"
 				}
       }
     }

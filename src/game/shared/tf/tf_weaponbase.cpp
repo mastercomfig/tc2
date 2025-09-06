@@ -1928,6 +1928,21 @@ bool CTFWeaponBase::CanOverload( void ) const
 	return ( nCanOverload != 0 );
 }
 
+bool CTFWeaponBase::CanDeploy( void )
+{
+	if ( TFGameRules() && TFGameRules()->IsInMedievalMode() )
+	{
+		int iMedievalAllow = 0;
+		CALL_ATTRIB_HOOK_INT( iMedievalAllow, allowed_in_medieval_mode );
+		if ( iMedievalAllow == 2 )
+		{
+			return false;
+		}
+	}
+
+	return BaseClass::CanDeploy();
+}
+
 float CTFWeaponBase::ApplyFireDelay( float flDelay ) const
 {
 	float flDelayMult = 1.0f;
