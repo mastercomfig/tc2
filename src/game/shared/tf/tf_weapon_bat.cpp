@@ -230,7 +230,7 @@ void CTFBat_Wood::GetBallDynamics( Vector& vecLoc, QAngle& vecAngles, Vector& ve
 {
 	Vector vecForward, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, NULL, &vecUp );
-	vecLoc    = pPlayer->GetAbsOrigin() + pPlayer->GetModelScale() * ( Vector( 0, 0, 50 ) + vecForward * 32.f );
+	vecLoc    = pPlayer->GetAbsOrigin() + pPlayer->GetModelScale() * ( vecUp * 50.0f + vecForward * 32.f );
 	vecAngles = pPlayer->GetAbsAngles();
 
 	// Calculate the initial impulse on the item.
@@ -457,8 +457,9 @@ bool CTFBat_Wood::CanCreateBall( CTFPlayer* pPlayer )
 
 	Vector vecForward, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, NULL, &vecUp );
-	Vector vecBallStart = pPlayer->GetAbsOrigin() + Vector( 0, 0, 50 );
-	Vector vecBallEnd   = vecBallStart + vecForward * 32.f;
+	const float flModelScale = pPlayer->GetModelScale();
+	Vector vecBallStart = pPlayer->GetAbsOrigin() + vecUp * 50.0f * flModelScale;
+	Vector vecBallEnd   = vecBallStart + vecForward * 32.f * flModelScale;
 	
 	// Trace out and see if we hit a wall.
 	trace_t trace;

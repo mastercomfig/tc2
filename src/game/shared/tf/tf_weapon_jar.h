@@ -56,8 +56,9 @@ public:
 
 	virtual CBaseEntity *FireJar( CTFPlayer *pPlayer );
 	virtual void		TossJarThink( void );
+	bool				CanCreateJar( CTFPlayer* pPlayer, trace_t& trace );
 
-	virtual float		InternalGetEffectBarRechargeTime( void ) { return 20.1; }
+	virtual float		InternalGetEffectBarRechargeTime( void ) { return 20.1f; }
 
 	virtual const char*			GetEffectLabelText( void ) { return "#TF_JAR"; }
 

@@ -10,9 +10,11 @@
 
 // Client specific.
 #ifdef CLIENT_DLL
+#include "c_basedoor.h"
 #include "c_tf_player.h"
 // Server specific.
 #else
+#include "doors.h"
 #include "soundent.h"
 #include "te_effect_dispatch.h"
 #include "tf_player.h"
@@ -121,7 +123,8 @@ void CTFJar::PrimaryAttack( void )
 	if ( iJarCount == 0 )
 		return;
 
-	if ( ( pPlayer->GetWaterLevel() == WL_Eyes ) && !CanThrowUnderWater() )
+	trace_t trace;
+	if ( !CanCreateJar( pPlayer, trace ) )
 		return;
 
 	BaseClass::PrimaryAttack();
@@ -138,10 +141,7 @@ void CTFJar::SecondaryAttack(void)
 	if (iJarCount == 0)
 		return;
 
-	if ((pPlayer->GetWaterLevel() == WL_Eyes) && !CanThrowUnderWater())
-		return;
-
-	if (GetWeaponProjectileType() == TF_PROJECTILE_JAR && pPlayer->IsPlayerClass(TF_CLASS_SNIPER))
+	if ( GetWeaponProjectileType() == TF_PROJECTILE_JAR && pPlayer->IsPlayerClass( TF_CLASS_SNIPER ) )
 	{
 		StartEffectBarRegen();
 #if GAME_DLL
@@ -186,6 +186,44 @@ Vector CTFJar::GetVelocityVector( const Vector &vecForward, const Vector &vecRig
 #endif
 
 //-----------------------------------------------------------------------------
+// Purpose: Determines if there is space to create a jar.
+//-----------------------------------------------------------------------------
+bool CTFJar::CanCreateJar( CTFPlayer* pPlayer, trace_t& trace )
+{
+	if ( pPlayer->GetWaterLevel() == WL_Eyes && !CanThrowUnderWater() )
+		return false;
+
+	Vector vecForward, vecRight, vecUp;
+	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
+
+	float fRight = 8.f;
+	if ( IsViewModelFlipped() )
+	{
+		fRight *= -1;
+	}
+	Vector vecJarStart = pPlayer->Weapon_ShootPosition();
+	vecJarStart        += vecRight * fRight + vecUp * -6.0f;
+	Vector vecJarEnd   = vecJarStart + vecForward * 16.f;
+	
+	// Trace out and see if we hit a wall.
+	CTraceFilterSimple traceFilter( this, COLLISION_GROUP_NONE );
+	UTIL_TraceHull( vecJarStart, vecJarEnd, -Vector(8,8,8), Vector(8,8,8), MASK_SOLID_BRUSHONLY, &traceFilter, &trace );
+	if ( trace.startsolid )
+		return false;
+	else
+	{
+		if ( trace.m_pEnt )
+		{
+			// Don't let the player throw through doors.
+			CBaseDoor *pDoor = dynamic_cast<CBaseDoor*>( trace.m_pEnt );
+			if ( pDoor )
+				return false;
+		}
+		return true;
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CTFJar::TossJarThink( void )
@@ -201,21 +239,8 @@ void CTFJar::TossJarThink( void )
 	Vector vecForward, vecRight, vecUp;
 	AngleVectors( pPlayer->EyeAngles(), &vecForward, &vecRight, &vecUp );
 
-	float fRight = 8.f;
-	if ( IsViewModelFlipped() )
-	{
-		fRight *= -1;
-	}
-	Vector vecSrc = pPlayer->Weapon_ShootPosition();
-	vecSrc +=  vecForward * 16.0f + vecRight * fRight + vecUp * -6.0f;
-
-	trace_t trace;	
-	Vector vecEye = pPlayer->EyePosition();
-	CTraceFilterSimple traceFilter( this, COLLISION_GROUP_NONE );
-	UTIL_TraceHull( vecEye, vecSrc, -Vector(8,8,8), Vector(8,8,8), MASK_SOLID_BRUSHONLY, &traceFilter, &trace );
-
-	// If we started in solid, don't let them fire at all
-	if ( trace.startsolid )
+	trace_t trace;
+	if ( !CanCreateJar( pPlayer, trace ) )
 		return;
 
 	Vector vecVelocity = GetVelocityVector( vecForward, vecRight, vecUp );
@@ -547,9 +572,9 @@ void CTFProjectile_Jar::PipebombTouch( CBaseEntity *pOther )
 		// Exception to this rule - if we're a jar or milk, and our potential victim is on fire, then allow collision after all.
 		// If we're a jar or milk, then still allow collision if our potential victim is on fire.
 		// TODO(mcoms): this could use a virtual function instead
-		if (m_iProjectileType != TF_PROJECTILE_CLEAVER &&
-			m_iProjectileType != TF_PROJECTILE_SPELL &&
-			m_iProjectileType != TF_PROJECTILE_THROWABLE )
+		if ( m_iProjectileType != TF_PROJECTILE_CLEAVER &&
+			 m_iProjectileType != TF_PROJECTILE_SPELL &&
+			 m_iProjectileType != TF_PROJECTILE_THROWABLE )
 		{
 			auto victim = ToTFPlayer(pOther);
 			if (!victim->m_Shared.InCond(TF_COND_BURNING))
