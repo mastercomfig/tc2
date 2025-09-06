@@ -228,6 +228,14 @@ DESCRIPTION INFO_OPTIONS
 		{ "0" }
 	}
 	
+	"hud_combattext_large"
+	{
+		"#TF_CombatText_Large"
+		"#Tooltip_CombatTextLarge"
+		{ BOOL }
+		{ "0" }
+	}
+	
 	"tf_remember_activeweapon"
 	{
 		"#TF_rememberactiveweapon"
