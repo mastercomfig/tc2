@@ -13359,7 +13359,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	m_iHealth = 0;
 
 	// Reset stranded spawn state
-	m_Shared.m_iStrandedSpawn = 2;
+	m_Shared.m_iStrandedSpawn = 0;
 
 	// Reset spawn point
 	m_pSpawnPoint = NULL;
