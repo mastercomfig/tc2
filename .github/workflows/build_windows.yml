@@ -44,6 +44,7 @@ jobs:
             !${{ github.workspace }}/src/.vscode/**
             !${{ github.workspace }}/game/**
             !${{ github.workspace }}/game.zip
+            !${{ github.workspace }}/game-debug-info.zip
           key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-mscache-${{ github.ref_name }}-
