@@ -2459,6 +2459,13 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 				AddToSpyCloakMeter( gpGlobals->frametime * m_aHealers[i].flAmount );	
 			}
 
+			// Being healed by a medigun, don't decay our health
+			bDecayHealth = false;
+			if (bHealDisguise)
+			{
+				bDecayDisguiseHealth = false;
+			}
+
 			// Don't heal over the healer's overheal bonus
 			if ( flCurOverheal >= m_aHealers[i].flOverhealBonus )
 			{
@@ -2472,32 +2479,9 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 				bHealDisguise = false;
 			}
 
-			CTFPlayer *pTFHealer = ToTFPlayer( m_aHealers[i].pHealer );
 			if ( !bHealActual && !bHealDisguise )
 			{
-				if ( pTFHealer )
-				{
-					// Quick fix never lets health decay, even when they're at or above max overheal
-					CWeaponMedigun *pMedigun = dynamic_cast< CWeaponMedigun* >( pTFHealer->GetActiveTFWeapon() );
-					if ( pMedigun && pMedigun->GetMedigunType() == MEDIGUN_QUICKFIX )
-					{
-						bDecayHealth = false;
-						bDecayDisguiseHealth = false;
-					}
-				}
-
 				continue;
-			}
-
-			// Being healed by a medigun, don't decay our health
-			if ( bHealActual )
-			{
-				bDecayHealth = false;
-			}
-
-			if ( bHealDisguise )
-			{
-				bDecayDisguiseHealth = false;
 			}
 
 			// What we multiply the heal amount by (can be changed by conditions or items).
@@ -2605,7 +2589,9 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 						{
 							CTFPlayer *pHealScorer = ToTFPlayer( m_aHealers[i].pHealScorer );
 							if ( pHealScorer )
-							{	
+							{
+								// UNDONE: we're taking the risk now
+#if 0
 								// Don't report healing when we're close to the buff cap and haven't taken damage recently.
 								// This avoids sending bogus heal stats while maintaining our max overheal.  Ideally we
 								// wouldn't decay in this scenario, but that would be a risky change.
@@ -2613,6 +2599,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 								{
 									CTF_GameStats.Event_PlayerHealedOther( pHealScorer, flHealAmount );
 								}
+#endif
 
 								// Add this to the one-second-healing counter
 								m_aHealers[i].flHealedLastSecond += flHealAmount;
