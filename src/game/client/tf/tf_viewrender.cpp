@@ -42,7 +42,19 @@ ConVarFlags s_flaggedConVars[] =
 {
 	{ "r_screenfademinsize", FCVAR_CHEAT, "0" },
 	{ "r_screenfademaxsize", FCVAR_CHEAT, "0" },
-	{ "mat_dxlevel", FCVAR_SPONLY, NULL },
+	{ "r_staticprop_lod", FCVAR_CHEAT, "-1" },
+	{ "lod_TransitionDist", FCVAR_CHEAT, "800" },
+	{ "cl_particle_retire_cost", FCVAR_CHEAT, "0" },
+	{ "dsp_off", FCVAR_CHEAT, "0" },
+	{ "r_drawropes", FCVAR_CHEAT, "1" },
+	{ "mat_depthbias_decal", FCVAR_CHEAT, "-262144" },
+	{ "mat_depthbias_normal", FCVAR_CHEAT, "0.0f" },
+	{ "mat_slopescaledepthbias_decal", FCVAR_CHEAT, "-0.5" },
+	{ "mat_slopescaledepthbias_normal", FCVAR_CHEAT, "0.0f" },
+	{ "mat_softwarelighting", FCVAR_CHEAT, "0" },
+	{ "r_dopixelvisibility", FCVAR_CHEAT, "1" },
+	{ "r_shader_srgb", FCVAR_CHEAT, "0" },
+	{ "mat_dxlevel", FCVAR_SPONLY | FCVAR_NOT_CONNECTED, NULL },
 };
 
 //-----------------------------------------------------------------------------

@@ -14,16 +14,23 @@ whitelist
 	models\...                           trusted_source
 	materials\...                        trusted_source
 	particles\...                        trusted_source
-	scripts\game_sounds.txt              trusted_source
 	scripts\game_sounds_manifest.txt     trusted_source
+	scripts\game_sounds.txt              trusted_source
 	scripts\game_sounds_player.txt       trusted_source
 	scripts\game_sounds_vo.txt           trusted_source
 	scripts\game_sounds_vo_handmade.txt  trusted_source
 	scripts\game_sounds_weapons.txt      trusted_source
 	scripts\game_sounds_physics.txt      trusted_source
 	scripts\game_sounds_music.txt        trusted_source
-	scripts\game_sounds_vo_taunts.txt       trusted_source
+	scripts\game_sounds_vo_taunts.txt    trusted_source
 	scripts\game_sounds_taunt_workshop.txt trusted_source
+	scripts\game_sounds_mvm.txt          trusted_source
+	scripts\game_sounds_vo_mvm_handmade.txt trusted_source
+	scripts\game_sounds_vo_rd_robots.txt trusted_source
+	scripts\game_sounds_passtime.txt     trusted_source
+	scripts\game_sounds_vo_pauling.txt   trusted_source
+	scripts\game_sounds_vo_merasmus.txt  trusted_source
+	scripts\game_sounds_vo_tough_break.txt trusted_source
 	scripts\soundmixers.txt              trusted_source
 	scripts\items\...                    trusted_source
 	scripts\screens\...                  trusted_source
@@ -34,9 +41,50 @@ whitelist
   scripts\decals_subrect.txt           trusted_source
   scripts\extra_models.txt             trusted_source
   scripts\gamehaptics.txt              trusted_source
+	scripts\globalactors.txt             trusted_source
+	scripts\mvm_level_sound_tweaks.txt   trusted_source
+	scripts\mvm_level_sounds.txt         trusted_source
   scripts\objects.txt                  trusted_source
   scripts\sentences.txt                trusted_source
 	scripts\soundscapes_manifest.txt     trusted_source
+	scripts\soundscapes.txt              trusted_source
+	scripts\soundscapes_2fort.txt        trusted_source
+	scripts\soundscapes_dustbowl.txt     trusted_source
+	scripts\soundscapes_well.txt         trusted_source
+	scripts\soundscapes_badlands.txt     trusted_source
+	scripts\soundscapes_gravelpit.txt    trusted_source
+	scripts\soundscapes_hydro.txt        trusted_source
+	scripts\soundscapes_granary.txt      trusted_source
+	scripts\soundscapes_goldrush.txt     trusted_source
+	scripts\soundscapes_ravine.txt       trusted_source
+	scripts\soundscapes_lumberyard.txt   trusted_source
+	scripts\soundscapes_pipeline.txt     trusted_source
+	scripts\soundscapes_sawmill.txt      trusted_source
+	scripts\soundscapes_nucleus.txt      trusted_source
+	scripts\soundscapes_viaduct.txt      trusted_source
+	scripts\soundscapes_gorge.txt        trusted_source
+	scripts\soundscapes_doublecross.txt  trusted_source
+	scripts\soundscapes_medieval.txt     trusted_source
+	scripts\soundscapes_thundermountain.txt trusted_source
+	scripts\soundscapes_hightower.txt    trusted_source
+	scripts\soundscapes_upward.txt       trusted_source
+	scripts\soundscapes_cp_coldfront.txt trusted_source
+	scripts\soundscapes_halloween.txt    trusted_source
+	scripts\soundscapes_mountainlab.txt  trusted_source
+	scripts\soundscapes_nightfall.txt    trusted_source
+	scripts\soundscapes_lakeside.txt     trusted_source
+	scripts\soundscapes_barnblitz.txt    trusted_source
+	scripts\soundscapes_harbor.txt       trusted_source
+	scripts\soundscapes_deathpit.txt     trusted_source
+	scripts\soundscapes_mannworks.txt    trusted_source
+	scripts\soundscapes_cactusvalley.txt trusted_source
+	scripts\soundscapes_soho.txt         trusted_source
+	scripts\soundscapes_warehouse.txt    trusted_source
+	scripts\soundscapes_rottenburg.txt   trusted_source
+	scripts\soundscapes_moonbase.txt     trusted_source
+	scripts\soundscapes_powerhouse.txt   trusted_source
+	scripts\soundscapes_hellfire.txt     trusted_source
+	scripts\soundscapes_lair.txt         trusted_source
   scripts\surfaceproperties_manifest.txt trusted_source
   scripts\surfaceproperties.txt        trusted_source
   scripts\surfaceproperties_hl2.txt    trusted_source
