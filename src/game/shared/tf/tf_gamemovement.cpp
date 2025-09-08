@@ -2789,7 +2789,7 @@ void CTFGameMovement::FullWalkMove()
 	{
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_ACTIVE ) && mv->m_vecVelocity[2] < 0 )
 		{
-			mv->m_vecVelocity[2] = Max( mv->m_vecVelocity[2], m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat() );
+			mv->m_vecVelocity[2] = Max( mv->m_vecVelocity[2], m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat() );
 			float flDrag = tf_parachute_maxspeed_xy.GetFloat();
 			// Instead of clamping, we'll dampen
 			float flSpeedX = abs( mv->m_vecVelocity[0] );
