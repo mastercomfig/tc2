@@ -222,7 +222,7 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 		unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
 	}
 
-	if (!bDedicated)
+	if ( !bDedicated )
 	{
 		UnloadSteam();
 	}

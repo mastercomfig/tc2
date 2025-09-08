@@ -57,16 +57,16 @@
 			game+mod			|appid_440|tf/tf2_sound_vo_english.vpk
 			game+mod			|appid_440|tf/tf2_sound_misc.vpk
 			game+mod+vgui		|appid_440|tf/tf2_misc.vpk
-			game				|appid_243750|hl2/hl2_textures.vpk
-			game				|appid_243750|hl2/hl2_sound_vo_english.vpk
-			game				|appid_243750|hl2/hl2_sound_misc.vpk
-			game+vgui			|appid_243750|hl2/hl2_misc.vpk
-			platform+vgui		|appid_243750|platform/platform_misc.vpk
+			game				|appid_440|hl2/hl2_textures.vpk
+			game				|appid_440|hl2/hl2_sound_vo_english.vpk
+			game				|appid_440|hl2/hl2_sound_misc.vpk
+			game+vgui			|appid_440|hl2/hl2_misc.vpk
+			platform+vgui		|appid_440|platform/platform_misc.vpk
 
 			// Last, mount in shared HL2 and TF2 loose files
 			game				|appid_440|tf
-			game				|appid_243750|hl2
-			platform			|appid_243750|platform
+			game				|appid_440|hl2
+			platform			|appid_440|platform
 
 			// Random files downloaded from gameservers go into a seperate directory, so
 			// that it's easy to keep those files segregated from the official game files
@@ -79,7 +79,16 @@
 			// packed up in the .bsp file so that it will be mounted as a map search pack.
 			// The map search pack is mounted at the top of the search path list,
 			// but only while you are connected that server and on that map.
-			game+download		|gameinfo_path|/download
+			game+download		|appid_440|tf/download
+			game+download		|gameinfo_path|download
 		}
+	}
+
+	ToolsEnvironment
+	{
+		"Engine"			"Source"
+		"UseVPLATFORM"		"1"
+		"PythonVersion"		"2.7"
+		"PythonHomeDisable"	"1"
 	}
 }
