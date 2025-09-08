@@ -2596,10 +2596,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 								// This avoids sending bogus heal stats while maintaining our max overheal.  Ideally we
 								// wouldn't decay in this scenario, but that would be a risky change.
 								if ( iBoostMax - nPrevHealth > 1 || gpGlobals->curtime - m_pOuter->GetLastDamageReceivedTime() <= 1.f )
+#endif
 								{
 									CTF_GameStats.Event_PlayerHealedOther( pHealScorer, flHealAmount );
 								}
-#endif
 
 								// Add this to the one-second-healing counter
 								m_aHealers[i].flHealedLastSecond += flHealAmount;
@@ -2651,7 +2651,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 										// Give the medic some uber if it is from their (AoE heal) which has no overheal
 										if ( m_aHealers[i].flOverhealBonus <= 1.0f )
 										{
-											// Give a litte bit of uber based on actual healing
+											// Give a little bit of uber based on actual healing
 											// Give them a little bit of Uber
 											CWeaponMedigun *pMedigun = static_cast<CWeaponMedigun *>( pHealScorer->Weapon_OwnsThisID( TF_WEAPON_MEDIGUN ) );
 											if ( pMedigun )
