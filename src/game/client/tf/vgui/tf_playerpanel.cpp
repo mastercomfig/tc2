@@ -244,10 +244,10 @@ bool CTFPlayerPanel::Update( void )
 
 			bool bReadyMode = TFGameRules()->UsePlayerReadyStatusMode();
 
-			int iCharge = ( iClass == TF_CLASS_MEDIC ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : 0;
+			int iCharge = ( iClass == TF_CLASS_MEDIC ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : -1;
 			if ( iCharge != m_iPrevCharge )
 			{
-				if ( iCharge > 0 && ( !m_bPlayerReadyModeActive || bObserver ) )
+				if ( iCharge >= 0 && ( !m_bPlayerReadyModeActive || bObserver ) )
 				{
 					SetDialogVariable( "chargeamount", VarArgs( "%d%%", iCharge ) );
 					bChanged = true;
