@@ -909,3 +909,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+*******************************
+Team Comtress 2 Asset Credits
+*******************************
+
+Toon Explosion FX by CHAOFANATIC is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Enhanced Flames by ZooL is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+New Shield FX by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Short Circuit Effects by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Healing FX by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Projectile Trails by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Explosions & Building FX by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Bullet Impacts by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+What's Left of Ye — A TF2 Blood Mod by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Altered Fire FX by Skeleton Hotel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Color Coded Lethality of Sniper Rifle Charge Meter by Bradasparky is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Glow Support for Generic Über Materials by Squid Eevee is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Enhanced Water by hatter_bird is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+2007 Water Splash by Isolar is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Aligned, Improved, and Strengthened Heal Beam by Luna Nos Fide is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Ubercharge Texture Fix MKII by A Paint Bucket Named Huey is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+SFM Styled Uber Textures (CASUAL COMPATIBLE) by NullNone https://gamebanana.com/mods/495455
+
+Refined Lineup-styled Eyes by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
