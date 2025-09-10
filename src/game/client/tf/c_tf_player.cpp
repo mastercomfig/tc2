@@ -6625,7 +6625,7 @@ bool C_TFPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 
 		int nCurrentButtons = pCmd->buttons;
 		// TODO(mcoms): allow during taunt now.
-#if !defined(TF2_OG) && 0
+#if !defined(TF2_OG)
 		pCmd->buttons = 0;
 #endif
 
