@@ -414,3 +414,13 @@
 //-----------------------------------------------------------------------------
 // End Casual MVP 
 //-----------------------------------------------------------------------------
+
+"HudChat.Message"
+{
+	"channel"	"CHAN_STREAM"
+	"volume"	"VOL_NORM"
+	"soundlevel"  "SNDLVL_NONE"
+	"pitch"	"PITCH_NORM"
+
+	"wave"	"misc/talk.wav"
+}
