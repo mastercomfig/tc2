@@ -88,7 +88,6 @@ public:
 	virtual void		WeaponReset( void );
 	virtual float		GetSwordSpeedMod( void );
 	virtual int			GetSwordHealthMod();
-	virtual int			GetSwingRange( void );
 	virtual void		OnDecapitation( CTFPlayer *pDeadPlayer );
 	
 	virtual bool		Deploy( void );
