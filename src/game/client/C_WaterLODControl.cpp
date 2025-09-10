@@ -38,6 +38,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_WaterLODControl, DT_WaterLODControl, CWaterLODControl
 	RecvPropFloat(RECVINFO(m_flCheapWaterEndDistance)),
 END_RECV_TABLE()
 
+ConVar r_cheapwater_forceoff( "r_cheapwater_forceoff", "1", FCVAR_ARCHIVE, "Ignore maps setting cheap water distance." );
 
 //------------------------------------------------------------------------------
 // Purpose :
@@ -46,10 +47,11 @@ END_RECV_TABLE()
 //------------------------------------------------------------------------------
 void C_WaterLODControl::OnDataChanged(DataUpdateType_t updateType)
 {
-#if 0
+	if ( r_cheapwater_forceoff.GetBool() )
+		return;
+
 	view->SetCheapWaterStartDistance( m_flCheapWaterStartDistance );
 	view->SetCheapWaterEndDistance( m_flCheapWaterEndDistance );
-#endif
 }
 
 //------------------------------------------------------------------------------
