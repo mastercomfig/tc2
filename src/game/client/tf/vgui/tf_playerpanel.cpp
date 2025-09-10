@@ -69,7 +69,7 @@ void CTFPlayerPanel::Reset( void )
 	m_iPrevClass = -999;
 	m_bPrevAlive = false;
 	m_iPrevRespawnWait = -999;
-	m_iPrevCharge = -1;
+	m_iPrevCharge = -2;
 	m_bPrevReady = true;
 	m_iPrevState = GR_STATE_PREGAME;
 	m_bPlayerReadyModeActive = false;
