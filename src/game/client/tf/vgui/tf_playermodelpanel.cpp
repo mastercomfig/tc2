@@ -1439,7 +1439,7 @@ void CTFPlayerModelPanel::PostPaint3D( IMatRenderContext *pRenderContext )
 // For TF we use this as a way to render effects on top of model as appropriate (ie Unusual effects)
 //-----------------------------------------------------------------------------
 void CTFPlayerModelPanel::RenderingRootModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix )
-{	
+{
 	if ( !m_bUseParticle )
 		return;
 
