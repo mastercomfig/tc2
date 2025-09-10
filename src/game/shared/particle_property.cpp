@@ -560,7 +560,7 @@ void CParticleProperty::UpdateControlPoint( ParticleEffectList_t *pEffect, int i
 	if ( pWearable && GetAttribInterface( pWearable ) && !pWearable->IsPlayer() )
 	{
 		C_BaseAnimating *pAnimating = pPoint->hEntity->GetBaseAnimating();
-		if ( pAnimating && pAnimating->IsBoneAccessorInitialized() )
+		if ( pAnimating )
 		{
 			int bUseHeadOrigin = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pAnimating, bUseHeadOrigin, particle_effect_use_head_origin );
