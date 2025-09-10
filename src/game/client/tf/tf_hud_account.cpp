@@ -632,6 +632,9 @@ public:
 					}
 				}
 
+				// TODO(mcoms)
+				// UNDONE: get a better sound
+#if 0
 				// play squasher for bullets, unless we already played it as the hitsound.
 				if ( bIsBullet && tf_dingalingaling_effect.GetInt() != 8 )
 				{
@@ -650,6 +653,7 @@ public:
 						pLocalPlayer->EmitSound(filter, pLocalPlayer->entindex(), es);
 					}
 				}
+#endif
 			}
 
 #ifdef TF2_OG
