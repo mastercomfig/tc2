@@ -103,6 +103,34 @@ void SubscribeToLocalPlayerSOCache( ISharedObjectListener* pListener )
 	}
 }
 
+bool ForceCompetitiveConvars()
+{
+
+	bool anyFailures = false;
+
+	Assert( ThreadInMainThread() );
+	for ( ConCommandBase *ccb = g_pCVar->GetCommands(); ccb; ccb = ccb->GetNext() )
+	{
+		if ( ccb->IsCommand() )
+			continue;
+
+		ConVar *pVar = ( ConVar * ) ccb;
+
+		if ( !pVar->IsCompetitiveRestricted() )
+			continue;
+
+		// Hack: This var is created by the dxconfig system, but it doesn't actually exist.
+		// Skip it so we have no vars change when running a clean config.
+		if ( V_stricmp( pVar->GetName(), "r_decal_cullsize" ) == 0 )
+			continue;
+		
+		if ( !pVar->SetCompetitiveMode( true ) )
+			anyFailures = true;
+	}
+
+	return !anyFailures;
+}
+
 
 //-----------------------------------------------------------------------------
 // Constructor
@@ -280,7 +308,15 @@ void CTFGCClientSystem::FireGameEvent( IGameEvent *event )
 				break;
 
 			case eConnectState_NonmatchmadeServer:
+			{
+				// Check for matchmaking emulation
+				if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() == 2 && false )
+				{
+					// TODO(mcoms): how to enforce engine defaults properly?
+					ForceCompetitiveConvars();
+				}
 				break;
+			}
 		}
 		m_steamIDCurrentServer.Clear();
 		if ( steamapicontext && steamapicontext->SteamUser() && steamapicontext->SteamUtils() )
@@ -1021,34 +1057,6 @@ CTFGSLobby* CTFGCClientSystem::GetLobby() const
 
 
 //-----------------------------------------------------------------------------
-
-bool ForceCompetitiveConvars()
-{
-
-	bool anyFailures = false;
-
-	Assert( ThreadInMainThread() );
-	for ( ConCommandBase *ccb = g_pCVar->GetCommands(); ccb; ccb = ccb->GetNext() )
-	{
-		if ( ccb->IsCommand() )
-			continue;
-
-		ConVar *pVar = ( ConVar * ) ccb;
-
-		if ( !pVar->IsCompetitiveRestricted() )
-			continue;
-
-		// Hack: This var is created by the dxconfig system, but it doesn't actually exist.
-		// Skip it so we have no vars change when running a clean config.
-		if ( V_stricmp( pVar->GetName(), "r_decal_cullsize" ) == 0 )
-			continue;
-		
-		if ( !pVar->SetCompetitiveMode( true ) )
-			anyFailures = true;
-	}
-
-	return !anyFailures;
-}
 
 void CTFGCClientSystem::ConnectToServer( const char *connect )
 {
