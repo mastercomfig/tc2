@@ -1998,7 +1998,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	}
 
 	// Round damage like players
-	flDamage = RoundFloatToInt( flDamage );
+	flDamage = (int) ( flDamage + 0.5f );
 
 	// Don't look, Tom Bui!
 	static struct
