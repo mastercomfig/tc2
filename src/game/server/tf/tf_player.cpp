@@ -11179,7 +11179,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		}
 
 		// sniper head trauma
-		#if defined(MCOMS_BALANCE_PACK) || 1
+		#if defined(MCOMS_BALANCE_PACK)
 		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
 		if ( IsHeadshot(info.GetDamageCustom()) && pTFWeapon && WeaponID_IsSniperRifle(pTFWeapon->GetWeaponID()) )
 		{
@@ -16657,7 +16657,7 @@ void CTFPlayer::RemoveInvisibility( bool bOnAttack )
 		return;
 
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	if (bOnAttack && GetActiveTFWeapon())
 	{
 		// L'Etranger can attack while invis but flash a little
