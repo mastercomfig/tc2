@@ -11166,7 +11166,8 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 		// Take damage - round to the nearest integer.
 		int iOldHealth = m_iHealth;
-		m_iHealth -= ( realDamage + 0.5f );
+		// this will round half to even, so 2.5 goes to 2, but 3.5 goes to 4
+		m_iHealth -= RoundFloatToInt( realDamage );
 
 		if ( IsHeadshot( info.GetDamageCustom() ) && (m_iHealth <= 0) && (iOldHealth != 1) )
 		{

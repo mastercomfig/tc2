@@ -1627,7 +1627,7 @@ void CBaseObject::SetHealth( float flHealth )
 	bool changed = m_flHealth != flHealth;
 
 	m_flHealth = flHealth;
-	m_iHealth = Ceil2Int(m_flHealth);
+	m_iHealth = Floor2Int(m_flHealth);
 
 
 	/*
@@ -1997,8 +1997,8 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 		break;
 	}
 
-	// Round up damage like players
-	flDamage = Ceil2Int( flDamage );
+	// Round damage like players
+	flDamage = RoundFloatToInt( flDamage );
 
 	// Don't look, Tom Bui!
 	static struct
