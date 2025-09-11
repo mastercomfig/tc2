@@ -70,9 +70,9 @@ extern ConVar tf_nav_in_combat_range;
 #endif
 
 #ifdef TF2_OG
-#define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.66f
-#else
 #define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.33f
+#else
+#define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.66f
 #endif
 
 #define SENTRYGUN_MAX_LEVEL_MINI			1
