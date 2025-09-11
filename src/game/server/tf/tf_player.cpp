@@ -205,6 +205,8 @@ ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow pla
 ConVar tf_deploying_bomb_time( "tf_deploying_bomb_time", "1.90", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time to deploy bomb before the point of no return." );
 ConVar tf_deploying_bomb_delay_time( "tf_deploying_bomb_delay_time", "0.0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time to delay before deploying bomb." );
 
+ConVar tf_tournament_allow_pings("tf_tournament_allow_pings", "0", 0, "If enabled, players can ping in competitive games.");
+
 #ifdef TF_RAID_MODE
 ConVar tf_raid_team_size( "tf_raid_team_size", "5", FCVAR_NOTIFY, "Max number of Raiders" );
 ConVar tf_raid_respawn_safety_time( "tf_raid_respawn_safety_time", "1.5", FCVAR_NOTIFY, "Number of seconds of invulnerability after respawning" );
@@ -880,7 +882,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 		return;
 	const bool bIsCoaching = pPlayer->IsCoaching() && pPlayer->GetStudent();
 	const bool bIsComp = pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->ShowMatchSummary();
-	if ( bIsCoaching || bIsComp )
+	if ( bIsCoaching || bIsComp && tf_tournament_allow_pings.GetBool() )
 	{
 		const float kMaxRateCoachCommands = 1.0f;
 		float flLastCoachCommandDelta = gpGlobals->curtime - pPlayer->m_flLastCoachCommand;
@@ -1840,11 +1842,13 @@ void CTFPlayer::TFPlayerThink()
 		}
 	}
 
+#if defined(MCOMS_BALANCE_PACK)
 	// maintain soda popper hype buff mark for death
 	if ( m_Shared.IsHypeBuffed() )
 	{
 		m_Shared.AddCond(TF_COND_MARKEDFORDEATH_SILENT, 2.0f);
 	}
+#endif
 
 	// You can't touch a hooked target, so transmit plague when you get as close as you can
 	if ( GetGrapplingHookTarget() && GetGrapplingHookTarget()->IsPlayer() && m_Shared.GetCarryingRuneType() == RUNE_PLAGUE )
@@ -7480,7 +7484,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 // Purpose: The GC has told us this player wants to respawn now that their loadout has changed.
 //-----------------------------------------------------------------------------
 void CTFPlayer::CheckInstantLoadoutRespawn( void )
-{	
+{
 	// Must be alive
 	if ( !IsAlive() )
 		return;
@@ -10135,6 +10139,24 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 					bFlinch = false;
 				}
 			}
+			// immune to afterburn flinch
+			if ( bitsDamage & DMG_BURN && ( bitsDamage & DMG_IGNITE ) == 0 )
+			{
+				for (int i = 0; i < GetNumWearables(); ++i)
+				{
+					CTFWearable* pWearableItem = dynamic_cast<CTFWearable*>(GetWearable(i));
+					if (!pWearableItem)
+						continue;
+
+					int nAfterburnImmunity = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER(pWearableItem, nAfterburnImmunity, afterburn_immunity);
+					if (nAfterburnImmunity)
+					{
+						bFlinch = false;
+						break;
+					}
+				}
+			}
 		}
 
 		if ( bFlinch )
@@ -10259,6 +10281,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			HandleRageGain( pTFAttacker, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage() * flRageScale, flInverseRageGainScale );
 		}
 
+#if defined(MCOMS_BALANCE_PACK)
 		if ( pTFAttacker && info.GetDamageCustom() == TF_DMG_CUSTOM_BLEEDING )
 		{
 			CTFWeaponBase* pGiftWrapBat = pTFAttacker->Weapon_OwnsThisID(TF_WEAPON_BAT_GIFTWRAP);
@@ -10272,6 +10295,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 				pGiftWrapBat->DecrementBarRegenTime(info.GetDamage() * 0.0625f);
 			}
 		}
+#endif
 	}
 
 	if ( pWeapon && ( ( pWeapon->GetWeaponID() == TF_WEAPON_BAT_FISH ) || ( pWeapon->GetWeaponID() == TF_WEAPON_SLAP ) ) )
@@ -11166,8 +11190,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 		// Take damage - round to the nearest integer.
 		int iOldHealth = m_iHealth;
-		// this will round half to even, so 2.5 goes to 2, but 3.5 goes to 4
-		m_iHealth -= RoundFloatToInt( realDamage );
+		m_iHealth -= ( realDamage + 0.5f );
 
 		if ( IsHeadshot( info.GetDamageCustom() ) && (m_iHealth <= 0) && (iOldHealth != 1) )
 		{
