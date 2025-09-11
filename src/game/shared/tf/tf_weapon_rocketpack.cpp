@@ -59,7 +59,7 @@ LINK_ENTITY_TO_CLASS( tf_weapon_rocketpack, CTFRocketPack );
 PRECACHE_WEAPON_REGISTER( tf_weapon_rocketpack );
 
 // Todo: Mark as cheat prior to shipping
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 ConVar tf_rocketpack_cost( "tf_rocketpack_cost", "50", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_launch_delay( "tf_rocketpack_launch_delay", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 ConVar tf_rocketpack_refire_delay( "tf_rocketpack_refire_delay", "0.2", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );

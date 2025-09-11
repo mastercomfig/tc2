@@ -132,7 +132,7 @@ void CTFJar::PrimaryAttack( void )
 
 void CTFJar::SecondaryAttack(void)
 {
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (!pPlayer)
 		return;

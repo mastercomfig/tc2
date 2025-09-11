@@ -6103,12 +6103,12 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 			case TF_WEAPON_PIPEBOMBLAUNCHER:
 			case TF_WEAPON_GRENADELAUNCHER:
 			case TF_WEAPON_CANNON:
-#if !defined(MCOMS_BALANCE_PACK) && 0
+#if !defined(MCOMS_BALANCE_PACK)
 			case TF_WEAPON_STICKBOMB:
 #endif
 				flAdjustedDamage *= 0.75f;
 				break;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			case TF_WEAPON_STICKBOMB:
 				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
 				break;
@@ -6837,7 +6837,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		int iForceCritDmgFalloff = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iForceCritDmgFalloff, crit_dmg_falloff );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		// SMG headshots falloff
 		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SMG )
 		{
@@ -6848,7 +6848,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 
 		bool bIsPrecisionRevolver = false;
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		// All revolver headshots falloff
 		if ( bCrit && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_REVOLVER )
 		{
@@ -7207,13 +7207,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			flDamage *= flDmgMult;
 		}
 
-		#if defined(MCOMS_BALANCE_PACK) || 1
+		#if defined(MCOMS_BALANCE_PACK)
 		float fBaseDamage = flDamage;
 		#endif
 
 		flDamage += flCritDamage;
 
-		#if defined(MCOMS_BALANCE_PACK) || 1
+		#if defined(MCOMS_BALANCE_PACK)
 		if (fBaseDamage < 150.0f && flCritDamage > 0 && pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID()) && IsHeadshot(info.GetDamageCustom()))
 		{
 			// Check for headshot damage modifiers
@@ -7727,7 +7727,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				}
 			}
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			if ( pVictim->GetActiveTFWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
 			{
 				bool bShouldResist = true;

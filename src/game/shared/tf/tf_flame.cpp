@@ -550,7 +550,7 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 	}
 
 	// TODO(mcoms): re-evaluate this
-#if !defined ( MCOMS_BALANCE_PACK ) && !defined( TF2_OG ) && 0
+#if !defined ( MCOMS_BALANCE_PACK ) && !defined( TF2_OG )
 	if ( pTFTarget )
 	{
 		float flIndexMod = 1.f;

@@ -46,7 +46,7 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_mechanical_arm );
 const float tf_mecharm_orb_size = 100.f;
 const float tf_mecharm_orb_speed = 700.f;
 const int tf_mecharm_orb_cost = 65;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 const int tf_mecharm_orb_zap_targets = 4;
 const int tf_mecharm_orb_zap_damage = 20;
 #else
@@ -871,7 +871,7 @@ void CTFProjectile_MechanicalArmOrb::CheckForProjectiles( void )
 			}
 			else
 			{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 				pProjectile->SetDamage(pProjectile->GetDamage() * 0.65f);
 				CTFGrenadePipebombProjectile* pGrenade = dynamic_cast<CTFGrenadePipebombProjectile*>(pProjectile);
 				if (pGrenade)

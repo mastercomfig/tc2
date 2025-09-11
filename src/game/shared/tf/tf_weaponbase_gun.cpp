@@ -996,7 +996,7 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 		}
 	}
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	// Medic Uber
 	if (GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC && pPlayer)
 	{

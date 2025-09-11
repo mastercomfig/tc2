@@ -114,7 +114,7 @@ ConVar tf_halloween_kart_boost_duration( "tf_halloween_kart_boost_duration", "1.
 
 ConVar tf_scout_air_dash_count( "tf_scout_air_dash_count", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 #define DEFAULT_SPY_INVIS_TIME "0.7"
 #else
 #define DEFAULT_SPY_INVIS_TIME "1.0"
@@ -166,7 +166,7 @@ ConVar tf_damage_events_track_for( "tf_damage_events_track_for", "30",  FCVAR_DE
 
 extern ConVar tf_halloween_giant_health_scale;
 
-ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "1", FCVAR_NONE, "1 - Allow player to slide for a bit after taunting" );
+ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", FCVAR_NONE, "1 - Allow player to slide for a bit after taunting" );
 
 #endif // GAME_DLL
 
@@ -175,7 +175,7 @@ ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONL
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 #define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "1.4"
 #else
 #define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "2.0"
@@ -2696,7 +2696,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			float flReduction = 2;	 // ( flReduction + 1 ) x faster reduction
 			FOR_EACH_VEC( m_PlayerBleeds, i )
 			{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 				// sniper rifle bleeds cannot be healed away.
 				if ( m_PlayerBleeds[i].hBleedingWeapon && WeaponID_IsSniperRifle(m_PlayerBleeds[i].hBleedingWeapon->GetWeaponID()) )
 					continue;
@@ -3115,7 +3115,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		}
 	}
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	const int iJetCount = m_StuckJets.Count();
 	if ( iJetCount )
 	{
@@ -11761,7 +11761,7 @@ void CTFPlayerShared::HealthKitPickupEffects( int iHealthGiven /*= 0*/ )
 	// and sutures
 	if ( InCond( TF_COND_BLEEDING ) )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 #ifdef GAME_DLL
 		FOR_EACH_VEC_BACK(m_PlayerBleeds, i)
 		{
@@ -12449,7 +12449,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	// L'Etranger can always attack while cloaked
 	int iAddCloakOnHit = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveWeapon(), iAddCloakOnHit, add_cloak_on_hit);
@@ -12493,7 +12493,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		return false;
 	}
 
-#if defined(TF2_OG) || defined(MCOMS_BALANCE_PACK) || 1
+#if defined(TF2_OG) || defined(MCOMS_BALANCE_PACK)
 	const bool bCanAttackWhileTaunting = iCanAttackFlags & TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY;
 #else
 	const bool bCanAttackWhileTaunting = false;
@@ -13100,7 +13100,7 @@ bool CTFPlayer::CanAirDash( void ) const
 
 	if ( m_Shared.InCond( TF_COND_SODAPOPPER_HYPE ) )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		return m_Shared.GetScoutHypeMeter() > 0.0f;
 #else
 		if ( m_Shared.GetAirDash() < 5 )
@@ -13355,7 +13355,7 @@ bool CTFPlayer::CanMoveDuringTaunt()
 
 	if ( m_Shared.InCond( TF_COND_TAUNTING ) || m_Shared.InCond( TF_COND_HALLOWEEN_THRILLER ) )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		return true;
 #endif
 #ifdef GAME_DLL
@@ -14314,14 +14314,14 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 	if ( bIsLocalPlayer )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		const float flMinHypeBeforeStop = tf_consume_min.GetFloat();
 #else
 		constexpr float flMinHypeBeforeStop = 0.0f;
 #endif
 		if ( IsHypeBuffed() && m_flHypeMeter > flMinHypeBeforeStop )
 		{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			const float flConsumeRate = tf_consume_base_rate.GetFloat();
 			m_fHypeConsumeRate += (tf_consume_sec_rate.GetFloat() + tf_consume_ter_rate.GetFloat() * m_fHypeConsumeRate) * gpGlobals->frametime;
 #else
@@ -14381,13 +14381,11 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 void CTFPlayerShared::SetScoutHypeMeter( float val )
 {
-#if !defined(MCOMS_BALANCE_PACK) && 0
+#if !defined(MCOMS_BALANCE_PACK)
 	if ( IsHypeBuffed() )
 		return;
-	const float flMax = 100.0f;
-#else
-	const float flMax = IsHypeBuffed() ? 99.0f : 100.0f;
 #endif
+	const float flMax = IsHypeBuffed() ? 99.0f : 100.0f;
 
 	m_flHypeMeter = Min( val, flMax );
 	//if ( m_flHypeMeter >= 100.f )

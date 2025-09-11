@@ -255,7 +255,7 @@ void CTFStickBomb::Smack( void )
 
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF;
 #else
 			int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
@@ -271,14 +271,14 @@ void CTFStickBomb::Smack( void )
 			}
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flBaseDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
 #else
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, 100.0f );
 #endif
 			TFGameRules()->RadiusDamage( radiusinfo );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			// at position
 			Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
 			float timer1 = RandomFloat(0.6f, 0.8f);

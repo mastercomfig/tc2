@@ -73,7 +73,7 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	// L'Etranger can always attack
 	int iAddCloakOnHit = 0;
 	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
@@ -96,7 +96,7 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 int	CTFRevolver::GetDamageType( void ) const
 {
 	float flHeadshotCooldown = 1.0f;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	int iMode = 0;
 	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 	const bool bAlwaysAccurate = (iMode == 1);
@@ -126,7 +126,7 @@ bool CTFRevolver::CanFireCriticalShot( bool bIsHeadshot, CBaseEntity *pTarget /*
 	if ( pPlayer && pPlayer->m_Shared.IsCritBoosted() )
 		return true;
 
-#if !defined(MCOMS_BALANCE_PACK) && 0
+#if !defined(MCOMS_BALANCE_PACK)
 	// Magic.
 	if ( pTarget && ( pPlayer->GetAbsOrigin() - pTarget->GetAbsOrigin() ).Length2DSqr() > Square( 1200.f ) )
 		return false;
@@ -185,7 +185,7 @@ void CTFRevolver::PrimaryAttack( void )
 	m_flLastAccuracyCheck = gpGlobals->curtime;
 
 
-#if !(defined(MCOMS_BALANCE_PACK) || 0)
+#if !defined(MCOMS_BALANCE_PACK)
 	if ( SapperKillsCollectCrits() )
 	{
 		// Do this after the attack, so that we know if we are doing custom damage
@@ -219,7 +219,7 @@ float CTFRevolver::GetWeaponSpread( void )
 {
 	float fSpread = BaseClass::GetWeaponSpread();
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	int iMode = 0;
 	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 	const bool bCanHeadshot = (iMode == 1);
@@ -229,7 +229,7 @@ float CTFRevolver::GetWeaponSpread( void )
 
 	if ( bCanHeadshot )
 	{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		// Always accurate
 		fSpread = 0.0f;
 #else
@@ -272,7 +272,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
 		float flMaxSize = 2.5f;
 		// when is it fully accurate?
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 		int iMode = 0;
 		CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 		const bool bAlwaysAccurate = (iMode == 1);
@@ -341,7 +341,7 @@ int CTFRevolver::GetCount( void )
 //-----------------------------------------------------------------------------
 const char* CTFRevolver::GetEffectLabelText( void )
 {
-#if defined(MCOMS_BALANCE_PACK) || 0
+#if defined(MCOMS_BALANCE_PACK)
 	return "#TF_BONUS";
 #else
 	int iExtraDamageOnHit = 0;
@@ -362,7 +362,7 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !(defined(MCOMS_BALANCE_PACK) || 0)
+#if !defined(MCOMS_BALANCE_PACK)
 		if ( SapperKillsCollectCrits() )
 		{	
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -391,7 +391,7 @@ bool CTFRevolver::Deploy( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !(defined(MCOMS_BALANCE_PACK) || 0)
+#if !defined(MCOMS_BALANCE_PACK)
 		if ( SapperKillsCollectCrits() )
 		{
 			if ( pOwner->m_Shared.GetRevengeCrits() )
@@ -453,7 +453,7 @@ float CTFRevolver::GetProjectileDamage( void )
 		flDamageMod *= 0.5f;
 	}
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	int iMode = 0;
 	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
 	const bool bPrecise = (iMode == 1);
@@ -464,7 +464,7 @@ float CTFRevolver::GetProjectileDamage( void )
 	}
 #endif
 
-#if defined(MCOMS_BALANCE_PACK) || 0
+#if defined(MCOMS_BALANCE_PACK)
 	if (SapperKillsCollectCrits())
 	{
 		// low initial damage

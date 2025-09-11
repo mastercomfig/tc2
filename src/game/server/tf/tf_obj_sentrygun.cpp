@@ -316,7 +316,7 @@ void CObjectSentrygun::SentryThink( void )
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	// shield after disabling
 	const float flTimeTillFade = m_flShieldFadeTime - gpGlobals->curtime;
 	if ( m_nShieldLevel == 0 && flTimeTillFade > 0.001f && !m_bPlayerControlled && !IsCarried() )
@@ -897,7 +897,7 @@ bool CObjectSentrygun::FindTarget()
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
 			m_bPlayerControlled = true;
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			// no shield
 			m_nShieldLevel.Set(SHIELD_NONE);
 #else
@@ -1335,7 +1335,7 @@ void CObjectSentrygun::Attack()
 		// This is different for each type because of how the boost worked before the firing speed fix.
 		if ( m_bPlayerControlled )
 		{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			vecFireRateBoosts.push_back(0.5f);
 #else
 			if (IsMiniBuilding())
@@ -1454,7 +1454,7 @@ bool CObjectSentrygun::FireRocket()
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 			float flPlayerRocketTime = flRocketTime / 2.0f;
 #else
 			float flPlayerRocketTime = 2.25f;
@@ -2073,7 +2073,11 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 	// UNDONE(mcoms): bringing sapper resistance back
 #if !defined(TF2_OG) || 1
 	// Check to see if we are being sapped.
+#if defined(MCOMS_BALANCE_PACK)
 	if ( !iAttackIgnoresResists && HasSapper() )
+#else
+	if ( HasSapper() )
+#endif
 	{
 		// Get the sapper owner.
 		CBaseObject *pSapper = GetObjectOfTypeOnMe( OBJ_ATTACHMENT_SAPPER );
@@ -2430,7 +2434,7 @@ int CObjectSentrygun::GetMaxHealthForCurrentLevel( void )
 	{
 		iHealth *= 2.0f / 3.0f;
 	}
-	return (int) ceilf(iHealth);
+	return Ceil2Int(iHealth);
 }
 //-------------------------------------------------------------------------------------------------------------------------------
 void CObjectSentrygun::MakeScaledBuilding( CTFPlayer *pPlayer )

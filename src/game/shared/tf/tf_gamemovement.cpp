@@ -1389,7 +1389,7 @@ bool CTFGameMovement::CheckJumpButton()
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
 
-#if defined(MCOMS_BALANCE_PACK) || 1
+#if defined(MCOMS_BALANCE_PACK)
 	if (pWpn && pWpn->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
 	{
 		bool bShouldBoost = false;
