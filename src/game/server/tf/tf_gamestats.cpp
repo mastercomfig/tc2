@@ -1177,6 +1177,7 @@ void CTFGameStats::Event_PlayerDamage( CBasePlayer *pBasePlayer, const CTakeDama
 			TF_Gamestats_WeaponStats_t *pWeaponStats = &m_reportedStats.m_pCurrentGame->m_aWeaponStats[damage.iWeapon];
 			pWeaponStats->iHits++;
 			pWeaponStats->iTotalDamage += iDamageTaken;
+			IncrementStat( pAttacker, TFSTAT_SHOTS_HIT, 1 );
 
 			// Try and figure out where the damage is coming from
 			Vector vecDamageOrigin = info.GetReportedPosition();
