@@ -33,61 +33,6 @@ ConVar tf_bot_melee_only( "tf_bot_melee_only", "0", FCVAR_GAMEDLL, "If nonzero, 
 extern const char *GetRandomBotName( void );
 extern void CreateBotName( int iTeam, int iClassIndex, CTFBot::DifficultyType skill, char* pBuffer, int iBufferSize );
 
-static bool UTIL_KickBotFromTeam( int kickTeam )
-{
-	int i;
-
-	// try to kick a dead bot first
-	for ( i = 1; i <= gpGlobals->maxClients; ++i )
-	{
-		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
-		CTFBot* pBot = dynamic_cast<CTFBot*>(pPlayer);
-
-		if (pBot == NULL)
-			continue;
-
-		if ( pBot->HasAttribute( CTFBot::QUOTA_MANANGED ) == false )
-			continue;
-
-		if ( ( pPlayer->GetFlags() & FL_FAKECLIENT ) == 0 )
-			continue;
-
-		if ( !pPlayer->IsAlive() && pPlayer->GetTeamNumber() == kickTeam )
-		{
-			// its a bot on the right team - kick it
-			engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pPlayer->GetUserID() ) );
-
-			return true;
-		}
-	}
-
-	// no dead bots, kick any bot on the given team
-	for ( i = 1; i <= gpGlobals->maxClients; ++i )
-	{
-		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
-		CTFBot* pBot = dynamic_cast<CTFBot*>(pPlayer);
-
-		if (pBot == NULL)
-			continue;
-
-		if ( pBot->HasAttribute( CTFBot::QUOTA_MANANGED ) == false )
-			continue;
-
-		if ( ( pPlayer->GetFlags() & FL_FAKECLIENT ) == 0 )
-			continue;
-
-		if (pPlayer->GetTeamNumber() == kickTeam)
-		{
-			// its a bot on the right team - kick it
-			engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pPlayer->GetUserID() ) );
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
 //----------------------------------------------------------------------------------------------------------------
 
 CTFBotManager::CTFBotManager()
@@ -280,7 +225,7 @@ void CTFBotManager::OnCreepKilled( CTFPlayer *killer )
 //----------------------------------------------------------------------------------------------------------------
 bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 {
-	CUtlVector< CTFPlayer* > vecCandidates;
+	CUtlVector< CTFBot* > vecCandidates;
 
 	// Gather potential candidates
 	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
@@ -301,7 +246,7 @@ bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 		{
 			if ( pBot->GetTeamNumber() == nTeam )
 			{
-				vecCandidates.AddToTail( pPlayer );
+				vecCandidates.AddToTail( pBot );
 			}
 		}
 	}
@@ -309,15 +254,38 @@ bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 	CTFPlayer *pVictim = NULL;
 	if ( vecCandidates.Count() > 0 )
 	{
-		// first look for bots that are currently dead
-		FOR_EACH_VEC( vecCandidates, i )
+		// only in a game team
+		if ( nTeam > LAST_SHARED_TEAM )
 		{
-			CTFPlayer *pPlayer = vecCandidates[i];
-			if ( pPlayer && !pPlayer->IsAlive() )
+			// first look for bots that are currently dead
+			if ( !pVictim )
 			{
-				pVictim = pPlayer;
-				break;
+				FOR_EACH_VEC( vecCandidates, i )
+				{
+					CTFBot *pPlayer = vecCandidates[i];
+					if ( pPlayer && !pPlayer->IsAlive() )
+					{
+						pVictim = pPlayer;
+						break;
+					}
+				}
 			}
+			
+			// look for a bot which can change class: indicates flexibility
+			if ( !pVictim )
+			{
+				FOR_EACH_VEC( vecCandidates, i )
+				{
+					CTFBot *pPlayer = vecCandidates[i];
+					if ( pPlayer && pPlayer->CanChangeClass() )
+					{
+						pVictim = pPlayer;
+						break;
+					}
+				}
+			}
+
+			// TODO(mcoms): look for a bot on the low priority of our current roster
 		}
 
 		// if we didn't fine one, try to kick anyone on the team
@@ -325,7 +293,7 @@ bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 		{
 			FOR_EACH_VEC( vecCandidates, i )
 			{
-				CTFPlayer *pPlayer = vecCandidates[i];
+				CTFBot *pPlayer = vecCandidates[i];
 				if ( pPlayer )
 				{
 					pVictim = pPlayer;
@@ -342,7 +310,7 @@ bool CTFBotManager::RemoveBotFromTeamAndKick( int nTeam )
 			pVictim->CommitSuicide();
 		}
 		pVictim->ForceChangeTeam( TEAM_UNASSIGNED ); // skipping TEAM_SPECTATOR because some servers don't allow spectators
-		UTIL_KickBotFromTeam( TEAM_UNASSIGNED );
+		engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pVictim->GetUserID() ) );
 		return true;
 	}
 
@@ -446,6 +414,7 @@ void CTFBotManager::MaintainBotQuota()
 		}
 	}
 
+	// TODO(mcoms): how does this interact with our new slot system for team sizes?
 	// if bots will auto-vacate, we need to keep one slot open to allow players to join
 	if ( tf_bot_auto_vacate.GetBool() )
 	{
@@ -497,7 +466,7 @@ void CTFBotManager::MaintainBotQuota()
 		// kick a bot to maintain quota
 		
 		// first remove any unassigned bots
-		if ( UTIL_KickBotFromTeam( TEAM_UNASSIGNED ) )
+		if ( RemoveBotFromTeamAndKick( TEAM_UNASSIGNED ) )
 			return;
 
 		int kickTeam;
@@ -530,11 +499,11 @@ void CTFBotManager::MaintainBotQuota()
 		}
 
 		// attempt to kick a bot from the given team
-		if ( UTIL_KickBotFromTeam( kickTeam ) )
+		if ( RemoveBotFromTeamAndKick( kickTeam ) )
 			return;
 
 		// if there were no bots on the team, kick a bot from the other team
-		UTIL_KickBotFromTeam( kickTeam == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE );
+		RemoveBotFromTeamAndKick( kickTeam == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE );
 	}
 }
 
