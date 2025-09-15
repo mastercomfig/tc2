@@ -1089,7 +1089,7 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 		int iDelayMax = 60;
 
 #ifdef TF_DLL
-		if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
+		if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() || TFGameRules()->UsePlayerReadyStatusMode() ) )
 		{
 			iDelayMax = 180;
 		}

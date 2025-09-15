@@ -6781,7 +6781,11 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 	// Use defense buffs if it's not a backstab or direct crush damage (telefrage, etc.)
 	if ( pVictim && info.GetDamageCustom() != TF_DMG_CUSTOM_BACKSTAB && ( info.GetDamageType() & DMG_CRUSH ) == 0 )
 	{
+#if defined(MCOMS_BALANCE_PACK)
 		if ( !iAttackIgnoresResists && pVictim->m_Shared.InCond( TF_COND_DEFENSEBUFF ) )
+#else
+		if ( pVictim->m_Shared.InCond( TF_COND_DEFENSEBUFF ) )
+#endif
 		{
 			// We take no crits of any kind...
 			if( eBonusEffect == kBonusEffect_MiniCrit || eBonusEffect == kBonusEffect_Crit )
