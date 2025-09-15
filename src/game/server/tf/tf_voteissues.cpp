@@ -190,7 +190,13 @@ void CKickIssue::ExecuteCommand( void )
 
 	// If we're not in strict mode they might be here as or be able to rejoin as an adhoc player -- ban.
 	// Technically the GC might send them back here for *new* match if they get kicked as ad-hoc, the current match ends, etc.
+	// TODO: this doesn't work
 	engine->ServerCommand( CFmtStr( "banid %d \"%s\"\n", sv_vote_kick_ban_duration.GetInt(), m_steamIDVoteTarget.Render() ) );
+	// also ban by user ID since the steam ID isn't working atm.
+	if ( m_hPlayerTarget )
+	{
+		engine->ServerCommand(CFmtStr("banid %d \"%s\"\n", sv_vote_kick_ban_duration.GetInt(), m_hPlayerTarget->GetUserID() ) );
+	}
 
 	// Band-aid: Hacks are able to avoid kick+ban, and we're not yet sure how they're doing it.  This code checks to see
 	//           if they come back.
