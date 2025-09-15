@@ -2481,6 +2481,7 @@ void CViewRender::Render2DEffectsPostHUD( const CViewSetup &viewRender )
 //
 //-----------------------------------------------------------------------------
 
+ConVar r_waterforcecheap("r_waterforcecheap", "0", FCVAR_ARCHIVE);
 
 //-----------------------------------------------------------------------------
 // Determines what kind of water we're going to use
@@ -2512,6 +2513,19 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 		return;
 	}
 
+	// Determine if the water surface is opaque or not
+	info.m_bOpaqueWater = !pWaterMaterial->IsTranslucent();
+
+	// DX level 70 can't handle anything but cheap water
+	if ( engine->GetDXSupportLevel() < 80 )
+		return;
+
+#ifdef _X360
+	bool bForceCheap = false;
+#else
+	bool bForceCheap = r_waterforcecheap.GetBool();
+#endif
+
 #ifdef _X360
 	bool bForceExpensive = false;
 #else
@@ -2523,7 +2537,7 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 	switch( g_pPortalRender->ShouldForceCheaperWaterLevel() )
 	{
 	case 0: //force cheap water
-		info.m_bCheapWater = true;
+		bForceCheap = true;
 		return;
 
 	case 1: //downgrade level to "simple reflection"
@@ -2537,25 +2551,16 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 	};
 #endif
 
-	// Determine if the water surface is opaque or not
-	info.m_bOpaqueWater = !pWaterMaterial->IsTranslucent();
-
-	// DX level 70 can't handle anything but cheap water
-	if (engine->GetDXSupportLevel() < 80)
-		return;
-
-	bool bForceCheap = false;
-
 	// The material can override the default settings though
 	IMaterialVar *pForceCheapVar = pWaterMaterial->FindVar( "$forcecheap", NULL, false );
 	IMaterialVar *pForceExpensiveVar = pWaterMaterial->FindVar( "$forceexpensive", NULL, false );
 	if ( pForceCheapVar && pForceCheapVar->IsDefined() )
 	{
 		bForceCheap = ( pForceCheapVar->GetIntValueFast() != 0 );
-		if ( bForceCheap )
-		{
-			bForceExpensive = false;
-		}
+	}
+	if ( bForceCheap )
+	{
+		bForceExpensive = false;
 	}
 	if ( !bForceCheap && pForceExpensiveVar && pForceExpensiveVar->IsDefined() )
 	{
@@ -2586,6 +2591,10 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 		bLocalReflection = pReflectTextureVar && (pReflectTextureVar->GetType() == MATERIAL_VAR_TYPE_TEXTURE);
 	}
 
+	// Check if the water is out of the cheap water LOD range; if so, use cheap water
+	bool bCheapWater = fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance;
+	// Gary says: I'm reverting this change so that water LOD works on dx9 for ep2.
+#if 0 //defined(_X360)
 	// Brian says FIXME: I disabled cheap water LOD when local specular is specified.
 	// There are very few places that appear to actually
 	// take advantage of it (places where water is in the PVS, but outside of LOD range).
@@ -2593,19 +2602,13 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 	// by making cheap water lod actually work (the water LOD wasn't actually rendering!!!)
 	// or to just always render the reflection + refraction if there's a local specular specified.
 	// Note that water LOD *does* work with refract-only water
-
-	// Gary says: I'm reverting this change so that water LOD works on dx9 for ep2.
-
-	// Check if the water is out of the cheap water LOD range; if so, use cheap water
-#if 1
-	if ( !bForceExpensive && ( bForceCheap || ( fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance ) ) )
+	bCheapWater = bCheapWater && !bLocalReflection;
+#endif
+	// if we force cheap water, ignore the material's request to force expensive.
+	if ( bForceCheap || ( !bForceExpensive || bCheapWater ) )
 	{
 		return;
 	}
-#else
-	if ( ( (fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance) && !bLocalReflection ) || bForceCheap )
- 		return;
-#endif
 	// Get the material that is for the water surface that is visible and check to see
 	// what render targets need to be rendered, if any.
 	if ( !r_WaterDrawRefraction.GetBool() )
