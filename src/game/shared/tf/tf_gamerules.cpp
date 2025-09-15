@@ -3762,7 +3762,7 @@ float CTFGameRules::GetRespawnTimeScalar( int iTeam )
 	// In competitive, we don't modify respawn times.
 	// Players could be disconnected and we don't want to adjust respawn times based on player count.
 	if ( IsCompetitiveGame() )
-		return 1.0f;
+		return IsInSixesMode() ? 0.8f : 1.0f; // TODO: make this 1
 
 	return BaseClass::GetRespawnTimeScalar( iTeam );
 }
@@ -18517,19 +18517,6 @@ bool CTFGameRules::ShouldShowPreRoundDoors() const
 //-----------------------------------------------------------------------------
 int CTFGameRules::GetClassLimit( int iClass )
 {
-	if ( IsInHighlanderMode() )
-	{
-		return 1;
-	}
-
-	if ( IsInSixesMode() )
-	{
-		if ( iClass == TF_CLASS_MEDIC || iClass == TF_CLASS_DEMOMAN )
-		{
-			return 1;
-		}
-		return 2;
-	}
 
 	int ClassLimit = NO_CLASS_LIMIT;
 
@@ -18552,6 +18539,22 @@ int CTFGameRules::GetClassLimit( int iClass )
 	if ( ClassLimit == NO_CLASS_LIMIT && tf_classlimit.GetInt() > 0 )
 	{
 		ClassLimit = tf_classlimit.GetInt();
+	}
+
+	if ( IsInHighlanderMode() )
+	{
+		// allow overriding
+		return ClassLimit != NO_CLASS_LIMIT ? ClassLimit: 1;
+	}
+
+	if ( IsInSixesMode() )
+	{
+		// allow overriding
+		if ( iClass == TF_CLASS_MEDIC || iClass == TF_CLASS_DEMOMAN )
+		{
+			return ClassLimit != NO_CLASS_LIMIT ? ClassLimit : 1;
+		}
+		return ClassLimit != NO_CLASS_LIMIT ? ClassLimit : 2;
 	}
 
 	return ClassLimit;
