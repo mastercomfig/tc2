@@ -6346,20 +6346,6 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 	{
 		if ( TFGameRules() )
 		{
-			int iRedSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_RED);
-			int iBluSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
-
-			if ( iRedSizeRestriction > 0 || iBluSizeRestriction > 0 )
-			{
-				const bool bBluFull = TFGameRules()->IsMannVsMachineMode() || (iBluSizeRestriction > 0 && pBlue->GetNumPlayers() >= iBluSizeRestriction);
-				const bool bRedFull = iRedSizeRestriction > 0 && pRed->GetNumPlayers() >= iRedSizeRestriction;
-				if ( bBluFull && bRedFull )
-				{
-					// teams are full....join team Spectator for now
-					return TEAM_SPECTATOR;
-				}
-			}
-
 			bool bReturnDefenders = false;
 
 #ifdef TF_RAID_MODE
@@ -6515,6 +6501,20 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 			}
 
 			// If kick needed but failed, fall through to default logic
+		}
+		
+		int iRedSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_RED);
+		int iBluSizeRestriction = TFGameRules()->GetTeamSize(TF_TEAM_BLUE);
+
+		if ( iRedSizeRestriction > 0 || iBluSizeRestriction > 0 )
+		{
+			const bool bBluFull = TFGameRules()->IsMannVsMachineMode() || (iBluSizeRestriction > 0 && pBlue->GetNumPlayers() >= iBluSizeRestriction);
+			const bool bRedFull = iRedSizeRestriction > 0 && pRed->GetNumPlayers() >= iRedSizeRestriction;
+			if ( bBluFull && bRedFull )
+			{
+				// teams are full....join team Spectator for now
+				return TEAM_SPECTATOR;
+			}
 		}
 
 		int iNumRed = pRed->GetNumPlayers();
