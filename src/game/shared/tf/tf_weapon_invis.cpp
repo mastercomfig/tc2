@@ -220,11 +220,11 @@ bool CTFWeaponInvis::ActivateInvisibilityWatch( void )
 	if ( bDoSkill )
 	{
 		bDidAction = true;
-		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.5 );
+		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.5f );
 	}
 	else
 	{
-		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.1 );
+		pOwner->m_Shared.SetNextStealthTime( gpGlobals->curtime + 0.1f );
 	}
 
 	return bDidAction;

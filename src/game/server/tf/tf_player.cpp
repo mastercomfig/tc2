@@ -16656,9 +16656,8 @@ void CTFPlayer::RemoveInvisibility( bool bOnAttack )
 	if ( !m_Shared.IsStealthed() )
 		return;
 
-
 #if defined(MCOMS_BALANCE_PACK)
-	if (bOnAttack && GetActiveTFWeapon())
+	if ( bOnAttack && GetActiveTFWeapon() )
 	{
 		// L'Etranger can attack while invis but flash a little
 		int iAddCloakOnHit = 0;

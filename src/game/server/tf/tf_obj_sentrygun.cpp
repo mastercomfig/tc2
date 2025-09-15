@@ -53,7 +53,7 @@ extern ConVar tf_nav_in_combat_range;
 #define SENTRYGUN_ADD_SHELLS	40
 #define SENTRYGUN_ADD_ROCKETS	8
 
-#define SENTRY_THINK_DELAY	0.05
+#define SENTRY_THINK_DELAY	0.05f
 
 #define	SENTRYGUN_CONTEXT	"SentrygunContext"
 
@@ -1376,12 +1376,12 @@ void CObjectSentrygun::Attack()
 		}
 		else
 		{
-			m_flNextAttack = MAX(m_flNextAttack, gpGlobals->curtime);
+			m_flNextAttack = max(m_flNextAttack, gpGlobals->curtime);
 		}
 	}
 	else
 	{
-		m_flNextAttack = MAX(m_flNextAttack, gpGlobals->curtime);
+		m_flNextAttack = max(m_flNextAttack, gpGlobals->curtime);
 		// SetSentryAnim( TFTURRET_ANIM_SPIN );
 	}
 
@@ -1729,7 +1729,7 @@ bool CObjectSentrygun::Fire()
 			DetonateObject();
 		}
 
-		m_flNextAttack = gpGlobals->curtime + 0.2;
+		m_flNextAttack = gpGlobals->curtime + 0.2f;
 	}
 
 	// note when we last fired at en enemy (or tried to)
