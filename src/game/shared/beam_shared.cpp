@@ -1047,6 +1047,8 @@ bool CBeam::ShouldDraw()
 	{
 		if ( m_nMinDXLevel > g_pMaterialSystemHardwareConfig->GetDXSupportLevel() )
 			return false;
+		if ( m_nMinDXLevel >= 90 && g_pMaterialSystemHardwareConfig->PreferReducedFillrate() )
+			return false;
 	}
 	return BaseClass::ShouldDraw();
 }
