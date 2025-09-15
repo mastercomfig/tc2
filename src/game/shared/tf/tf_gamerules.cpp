@@ -6894,8 +6894,12 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flMax = flCenter + flRandomDamageSpread;
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
-		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
-		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && (bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER);
+		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle( pWeapon->GetWeaponID() ) && bitsDamage & DMG_BULLET;
+#if defined(MCOMS_BALANCE_PACK)
+		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && ( bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER );
+#else
+		const bool bApplySpreadToRampup = false;
+#endif
 		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
@@ -6962,7 +6966,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flRandomRangeVal;
 		if ( bNoDamageSpread )
 		{
-			if (!bApplySpreadToRampup)
+			if ( !bApplySpreadToRampup )
 			{
 				flRandomRangeVal = flCenter;
 			}
@@ -6970,11 +6974,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			{
 				constexpr float flSpreadRampupRange = 0.9f;
 				constexpr float flSpreadFalloffRange = 0.35f;
-				// TODO(mcoms): probably not doing this for now
 				if ( flCenter > flSpreadRampupRange )
 				{
+					// TODO(mcoms): probably not doing this for now
+#if 0
 					// additional rampup based upon old random range val.
 					flRandomRangeVal = flMax - RemapValClamped(flCenter, flSpreadRampupRange, 1.0f, flRandomDamageSpread, 0.0f);
+#endif
 				}
 				else if ( flCenter >= flSpreadFalloffRange )
 				{
@@ -7020,7 +7026,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				// The actual change was reduced from +/-15% damage to +/-3% damage.
 				// This also never applied to stickies, as they always have DMG_NOCLOSEDISTANCEMOD, and originally that caused this to not apply.
 				// We also don't need to apply this change when damage spread is disabled, since we don't have to worry about the variance.
-				// So instead now, we only apply this if we don't have distance mod, which means pipe directs and stickytraps, and only
+				// So instead now, we only apply this if we don't have distance mod, which means pipes and stickytraps, and only
 				// if we have random damage spread turned on, since otherwise it's not relevant. If we turn it on for distance mod, it means
 				// we also change the damage ramp and we don't want to do that. Only change the random damage spread on the base damage value
 				// applied.
@@ -7040,6 +7046,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					flRandomDamage *= 1.5f;
 				}
 				break;
+#if defined(MCOMS_BALACNE_PACK)
 			case TF_WEAPON_REVOLVER:
 				// Revolvers falloff more harshly at long range
 				if (flRandomRangeVal < 0.5f && bCrit)
@@ -7056,6 +7063,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					flRandomDamage = min(flRandomDamage, flDamage * 0.666666f);
 				}
 				break;
+#endif
 			}
 		}
 
@@ -7714,6 +7722,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				}
 			}
 
+#if defined(MCOMS_BALANCE_PACK)
 			if ( pVictim->GetActiveWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SHOVEL && gpGlobals->curtime >= pVictim->GetActiveTFWeapon()->GetLastReadyTime() )
 			{
 				CTFShovel* pShovel = static_cast<CTFShovel*>( pVictim->GetActiveTFWeapon() );
@@ -7731,6 +7740,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					}
 				}
 			}
+#endif
 
 #if defined(MCOMS_BALANCE_PACK)
 			if ( pVictim->GetActiveTFWeapon() && pVictim->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
