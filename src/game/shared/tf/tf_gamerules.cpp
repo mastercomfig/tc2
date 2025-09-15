@@ -139,6 +139,7 @@
 #include "tf_weapon_buff_item.h"
 #include "tf_weapon_flamethrower.h"
 #include "tf_weapon_medigun.h"
+#include "tf_weapon_shovel.h"
 
 #include "econ_holidays.h"
 #include "rtime.h"
@@ -149,7 +150,6 @@
 
 #include "tier3/tier3.h"
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tf_weapon_shovel.h"
 #include "tier0/memdbgon.h"
 
 
@@ -2964,7 +2964,7 @@ bool CTFGameRules::PlayerReadyStatus_HaveMinPlayersToEnable( void )
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
 
 	// we always have enough players if the match wants players to autoready
-	if ( pMatchDesc && pMatchDesc->BUsesAutoReady() || IsEmulatingMatch() )
+	if ( pMatchDesc && pMatchDesc->BUsesAutoReady() || IsEmulatingMatch() == 1 )
 		return true;
 
 #ifdef GAME_DLL
@@ -3081,7 +3081,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		}
 	}
 
-	if ( IsEmulatingMatch() )
+	if ( IsEmulatingMatch() == 1 )
 	{
 		// only auto-start an emulated match if we have a 6v6 available (our smallest match group possible).
 		// otherwise, just keep waiting for players.
@@ -4978,6 +4978,7 @@ void SpawnRunes( void )
 
 void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 {
+	// TODO(mcoms): not just match
 	if ( !bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && m_flMatchSummaryTeleportTime < 0 )
 	{
 		bool bShouldSkipRespawn = false;
@@ -8375,7 +8376,7 @@ bool CTFGameRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 				return true;
 
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-			if ( IsEmulatingMatch() || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+			if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
 				return true;
 
 			// Make sure we have enough to allow ready mode commands
@@ -13538,8 +13539,8 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				if ( GetGlobalTeam( pVictim->GetTeamNumber() ) && GetGlobalTeam( pVictim->GetTeamNumber() )->GetNumPlayers() > 1 )
 #endif // !DEBUG
 				{
-					float flFastTime = IsCompetitiveGame() ? 120.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
-					float flSlowTime = IsCompetitiveGame() ? 300.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
+					float flFastTime = IsCompetitiveGame() ? 45.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
+					float flSlowTime = IsCompetitiveGame() ? 90.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
 
 					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
 					{
@@ -13885,7 +13886,7 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 			if ( !pPlayer->IsBot() && State_Get() != GR_STATE_RND_RUNNING )
 			{
 				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-				if ( !IsEmulatingMatch() && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
+				if ( IsEmulatingMatch() != 1 && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
 				{
 					// Always reset when a player leaves this type of match if it isn't MvM
 					if ( !IsMannVsMachineMode() )
@@ -21694,7 +21695,7 @@ void CTFGameRules::BetweenRounds_Start( void )
 	}
 
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-	if ( IsEmulatingMatch() || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+	if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
 	{
 		for ( int i = 1; i <= MAX_PLAYERS; i++ )
 		{

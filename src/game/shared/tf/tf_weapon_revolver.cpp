@@ -261,7 +261,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 		const bool bCanHeadShot = CanHeadshot();
 		float flHeadShotCooldown = 1.0f;
 		
-#if !defined(MCOMS_BALANCE_PACK_NO_SPREAD_CHANGES)
+#if defined(MCOMS_BALANCE_PACK_SPREAD_CHANGES)
 		constexpr float flShotTimeCooldown = 1.0f / 0.4f;
 		const float flTimeBetweenShots = m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_flTimeFireDelay;
 		float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );

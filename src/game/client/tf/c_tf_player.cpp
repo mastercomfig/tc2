@@ -5095,7 +5095,7 @@ void C_TFPlayer::StopBlastJumpLoopSound( int iUserID )
 //-----------------------------------------------------------------------------
 void C_TFPlayer::UpdateRecentlyTeleportedEffect( void )
 {
-	bool bShow = m_Shared.ShouldShowRecentlyTeleported() && m_bCompetitiveVisible;
+	bool bShow = m_Shared.ShouldShowRecentlyTeleported() && GetCompetitiveVisibility();
 
 	if ( bShow )
 	{			
@@ -5173,7 +5173,7 @@ void C_TFPlayer::UpdatedMarkedForDeathEffect( bool bForceStop )
 	bool bShow = m_Shared.InCond( TF_COND_MARKEDFORDEATH ) || m_Shared.InCond( TF_COND_MARKEDFORDEATH_SILENT ) || m_Shared.InCond( TF_COND_PASSTIME_PENALTY_DEBUFF );
 
 	// force stop
-	if ( bForceStop || m_Shared.IsStealthed() || m_Shared.InCond( TF_COND_DISGUISED ) || !m_bCompetitiveVisible )
+	if ( bForceStop || m_Shared.IsStealthed() || m_Shared.InCond( TF_COND_DISGUISED ) || !GetCompetitiveVisibility() )
 	{
 		bShow = false;
 	}
@@ -5202,7 +5202,7 @@ void C_TFPlayer::UpdateRuneIcon( bool bForceStop /*= false */ )
 	 	return;
 
 	const RuneTypes_t carryingRuneType = m_Shared.GetCarryingRuneType();
-	const bool bAllowedToShow = ( m_Shared.IsCarryingRune() && !m_Shared.IsStealthed() && m_bCompetitiveVisible );
+	const bool bAllowedToShow = ( m_Shared.IsCarryingRune() && !m_Shared.IsStealthed() && GetCompetitiveVisibility() );
 	int iTeam = IsEnemyPlayer() && m_Shared.InCond( TF_COND_DISGUISED ) ? m_Shared.GetDisguiseTeam() : GetTeamNumber();
 
 	if ( !bAllowedToShow || bForceStop || ( carryingRuneType != m_eDisplayingRuneIcon ) )
@@ -5853,7 +5853,7 @@ bool C_TFPlayer::CanLightCigarette( void )
 	if ( GetPercentInvisible() > 0 )
 		return false;
 
-	if ( !m_bCompetitiveVisible )
+	if ( !GetCompetitiveVisibility() )
 		return false;
 
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
@@ -5949,6 +5949,8 @@ void C_TFPlayer::ClientThink()
 	// Pass on through to the base class.
 	BaseClass::ClientThink();
 
+	// TODO(mcoms)
+#if 0
 	bool bIsCompetitiveVisible = ComputeCompetitiveVisibility();
 	if ( bIsCompetitiveVisible != m_bCompetitiveVisible )
 	{
@@ -5959,6 +5961,7 @@ void C_TFPlayer::ClientThink()
 	{
 		m_bCompetitiveVisibleChanged = false;
 	}
+#endif
 
 	UpdateIDTarget();
 
@@ -6012,7 +6015,7 @@ void C_TFPlayer::ClientThink()
 	// b) the enemy disguised spy is now invisible
 
 	if ( !IsAlive() ||
-		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 || !m_bCompetitiveVisible ) ) )
+		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 || !GetCompetitiveVisibility() ) ) )
 	{
 		StopSaveMeEffect( true );
 	}
@@ -6853,7 +6856,7 @@ Vector C_TFPlayer::GetObserverCamOrigin( void )
 //-----------------------------------------------------------------------------
 float C_TFPlayer::GetEffectiveInvisibilityLevel( void )
 {
-	if ( !m_bCompetitiveVisible )
+	if ( !GetCompetitiveVisibility() )
 	{
 		return 1.0f;
 	}
@@ -9385,7 +9388,7 @@ ShadowType_t C_TFPlayer::ShadowCastType( void )
 	if ( !IsVisible() /*|| GetPercentInvisible() > 0.0f*/ )
 		return SHADOWS_NONE;
 
-	if ( !m_bCompetitiveVisible )
+	if ( !GetCompetitiveVisibility() )
 		return SHADOWS_NONE;
 
 	if ( IsEffectActive(EF_NODRAW | EF_NOSHADOW) )
@@ -10191,7 +10194,7 @@ void C_TFPlayer::UpdateSpyStateChange( void )
 	UpdateRuneIcon( true );
 
 	// Remove Speed lines if Stealthed
-	if ( m_Shared.IsStealthed() || !m_bCompetitiveVisible )
+	if ( m_Shared.IsStealthed() || !GetCompetitiveVisibility() )
 	{
 		if ( m_pSpeedBoostEffect )
 		{
@@ -10223,7 +10226,7 @@ void C_TFPlayer::UpdateOverhealEffect( void )
 	bool bShow = m_Shared.InCond( TF_COND_HEALTH_OVERHEALED );
 	int iTeam = GetTeamNumber();
 
-	if ( IsLocalPlayer() || ( m_Shared.IsStealthed() && !InSameTeam( GetLocalTFPlayer() ) ) || !m_bCompetitiveVisible )
+	if ( IsLocalPlayer() || ( m_Shared.IsStealthed() && !InSameTeam( GetLocalTFPlayer() ) ) || !GetCompetitiveVisibility() )
 	{
 		bShow = false;
 	}

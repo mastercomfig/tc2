@@ -454,7 +454,7 @@ bool CTFGameMovement::GrapplingHookMove()
 		mv->m_vecVelocity += vDesiredMove.Normalized() * ( tf_grapplinghook_acceleration.GetFloat() * gpGlobals->frametime );
 
 		flSpeed = mv->m_vecVelocity.LengthSqr();
-		if ( flSpeed > mv->m_flMaxSpeed )
+		if ( flSpeed > mv->m_flMaxSpeed * mv->m_flMaxSpeed )
 		{
 			flSpeed = FastSqrt( flSpeed );
 			mv->m_vecVelocity *= mv->m_flMaxSpeed / flSpeed;
@@ -463,9 +463,11 @@ bool CTFGameMovement::GrapplingHookMove()
 	else
 	{
 		// Simple velocity calculation
-		float vDist = vDesiredMove.Length();
-		if ( vDist > mv->m_flMaxSpeed * gpGlobals->frametime )
+		float vDist = vDesiredMove.LengthSqr();
+		float flDistMin = mv->m_flMaxSpeed * gpGlobals->frametime;
+		if ( vDist > flDistMin * flDistMin )
 		{
+			vDist = FastSqrt( vDist );
 			mv->m_vecVelocity = vDesiredMove * ( mv->m_flMaxSpeed / vDist );
 		}
 		else
@@ -1053,7 +1055,11 @@ void CTFGameMovement::AirDash( void )
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pTFPlayer, flJumpMod, mod_jump_height );
 	// Weapon-restricted version
 	CTFWeaponBase *pWpn = m_pTFPlayer->GetActiveTFWeapon();
+#if defined(MCOMS_BALANCE_PACK)
 	if ( pWpn && gpGlobals->curtime >= pWpn->GetLastReadyTime() )
+#else
+	if ( pWpn )
+#endif
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
@@ -1070,10 +1076,12 @@ void CTFGameMovement::AirDash( void )
 		{
 			m_pTFPlayer->m_Shared.SetScoutHypeMeter( Max( flHype - iHypeResetsOnJump, 0.0f ) );
 		}
+#if defined(MCOMS_BALANCE_PACK)
 		if (pSodaPopper)
 		{
 			pSodaPopper->FinishReload();
 		}
+#endif
 		// UNDONE: this is handled by condition think now
 #if 0
 		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->m_Shared.GetScoutHypeMeter() <= 0.0f )
@@ -1384,7 +1392,11 @@ bool CTFGameMovement::CheckJumpButton()
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pTFPlayer, flJumpMod, mod_jump_height );
 	// Weapon-restricted version
 	CTFWeaponBase *pWpn = m_pTFPlayer->GetActiveTFWeapon();
+#if defined(MCOMS_BALANCE_PACK)
 	if ( pWpn && gpGlobals->curtime >= pWpn->GetLastReadyTime() )
+#else
+	if ( pWpn )
+#endif
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
@@ -2601,6 +2613,8 @@ void CTFGameMovement::CategorizePosition( void )
 				}
 			}
 
+			// TODO(mcoms): this makes charges slide on slopes more?
+
 			// check if we're moving up a slope
 			if ( trace.plane.normal.z < 1.0f && DotProduct(mv->m_vecVelocity, trace.plane.normal) < 0.0f )
 			{
@@ -3121,11 +3135,13 @@ void CTFGameMovement::SetGroundEntity( trace_t *pm )
 		m_pTFPlayer->m_Shared.SetAirDash( 0 );
 		m_pTFPlayer->m_Shared.SetAirDucked( 0 );
 
+#if defined(MCOMS_BALANCE_PACK)
 		// upon landing on the ground, remove the soda popper buff.
 		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) )
 		{
 			m_pTFPlayer->m_Shared.StopScoutHypeDrain();
 		}
+#endif
 
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) )
 		{

@@ -4220,7 +4220,7 @@ void CTFPlayer::Spawn()
 	if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
 	{
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-		if ( TFGameRules()->IsEmulatingMatch() || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+		if ( TFGameRules()->IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
 		{
 			TFGameRules()->PlayerReadyStatus_UpdatePlayerState( this, true );
 		}
@@ -11178,15 +11178,15 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flBleedingTime, bleeding_duration );
 		}
 
+#if defined(MCOMS_BALANCE_PACK)
 		// sniper head trauma
-		#if defined(MCOMS_BALANCE_PACK)
 		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
 		if ( IsHeadshot(info.GetDamageCustom()) && pTFWeapon && WeaponID_IsSniperRifle(pTFWeapon->GetWeaponID()) )
 		{
 			const float fHeadshotBleedTime = 2.0f;
 			m_Shared.MakeBleed(pTFAttacker, dynamic_cast<CTFWeaponBase*>(info.GetWeapon()), fHeadshotBleedTime, TF_BLEEDING_DMG * 2);
 		}
-		#endif
+#endif
 
 		// Take damage - round to the nearest integer.
 		int iOldHealth = m_iHealth;
@@ -11270,7 +11270,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		m_Shared.MakeBleed( pTFAttacker, dynamic_cast< CTFWeaponBase * >( info.GetWeapon() ), flBleedingTime );
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK) && 0
 	if ( pTFAttacker && !(info.GetDamageType() & DMG_BLAST) )
 	{
 		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
@@ -11393,7 +11393,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			event->SetInt( "attacker", pPlayer->GetUserID() );
 			
 			event->SetInt( "custom", info.GetDamageCustom() );
-			event->SetBool("bullet", (info.GetDamageType() & (DMG_BULLET | DMG_BUCKSHOT) ) != 0 );
+			event->SetBool( "bullet", (info.GetDamageType() & (DMG_BULLET | DMG_BUCKSHOT) ) != 0 );
 			event->SetBool( "showdisguisedcrit", m_bShowDisguisedCrit );
 			event->SetBool( "crit", (info.GetDamageType() & DMG_CRITICAL) != 0 );
 			event->SetBool( "minicrit", m_bMiniCrit );
@@ -12929,7 +12929,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayerAttacker, iDropHealthOnKill, drop_health_pack_on_kill );
 		if ( iDropHealthOnKill == 1 )
 		{
-			DropHealthPack( info, true );
+			DropHealthPack( info, true, kHoliday_TFBirthday );
 		}
 
 		int iKillForcesAttackerToLaugh = 0;
@@ -14382,7 +14382,12 @@ bool CTFPlayer::SetObserverMode(int mode)
 		{
 			mode = OBS_MODE_CHASE;
 		}
+		// TODO(mcoms)
+#if 0
 		else if ( mode == OBS_MODE_ROAMING && !TFGameRules()->IsCompetitiveGame() )
+#else
+		else if ( mode == OBS_MODE_ROAMING )
+#endif
 		{
 			mode = OBS_MODE_IN_EYE;
 		}
@@ -14411,11 +14416,19 @@ bool CTFPlayer::SetObserverMode(int mode)
 		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
 	}
 
-	// competitive games now allow spec mode changes due to visibility checks
-	if ( TFGameRules()->IsEmulatingMatch() == 1 || TFGameRules()->IsCompetitiveGame() )
+	if ( TFGameRules()->IsEmulatingMatch() == 1 )
 	{
 		bAllowSpecModeChange = true;
 	}
+
+	// TODO(mcoms)
+#if 0
+	// competitive games now allow spec mode changes due to visibility checks
+	if ( TFGameRules()->IsCompetitiveGame() == 1 )
+	{
+		bAllowSpecModeChange = true;
+	}
+#endif
 
 	if ( !bAllowSpecModeChange )
 	{
@@ -14423,10 +14436,7 @@ bool CTFPlayer::SetObserverMode(int mode)
 		{
 			if ( IsValidObserverTarget( GetObserverTarget() ) )
 			{
-				if (m_iObserverMode != OBS_MODE_IN_EYE)
-				{
-					m_iObserverMode.Set(OBS_MODE_IN_EYE);
-				}
+				m_iObserverMode.Set( OBS_MODE_IN_EYE );
 			}
 			else
 			{
@@ -15844,7 +15854,7 @@ void CTFPlayer::PainSound( const CTakeDamageInfo &info )
 		return;
 	}
 
-	float flPainLength = 0.25f;
+	float flPainLength = 0.1f;
 
 	bool bAttackerIsPlayer = ( info.GetAttacker() && info.GetAttacker()->IsPlayer() );
 
@@ -17075,11 +17085,14 @@ bool CTFPlayer::IsValidObserverTarget( CBaseEntity * target )
 			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() );
 		}
 
+		// TODO(mcoms)
+#if 0
 		if ( TFGameRules()->IsCompetitiveGame() )
 		{
 			// no longer need strict rules in competitive
 			bStrictRules = false;
 		}
+#endif
 
 		if ( bStrictRules )
 		{
@@ -19179,11 +19192,19 @@ void CTFPlayer::DoTauntAttack( void )
 		{
 			GetBonePosition( iRightHand, bonePos, boneAngles );
 
-			CPVSFilter filter( bonePos );
-			TE_TFExplosion( filter, 0.0f, bonePos, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, entindex() );
+			Vector vOrigin = WorldSpaceCenter();
 
-			CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vec3_origin, bonePos, 200.f, DMG_BLAST | DMG_HALF_FALLOFF | DMG_USEDISTANCEMOD, TF_DMG_CUSTOM_TAUNTATK_GRENADE, &bonePos );
-			CTFRadiusDamageInfo radiusinfo( &info, bonePos, 100.f );
+			CTraceFilterSimple traceFilter( this, COLLISION_GROUP_NONE );
+			trace_t tr;
+			UTIL_TraceLine( vOrigin, bonePos, MASK_SOLID, &traceFilter, &tr );
+
+			Vector explodePos = tr.endpos;
+
+			CPVSFilter filter( explodePos );
+			TE_TFExplosion( filter, 0.0f, explodePos, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, entindex() );
+
+			CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vec3_origin, explodePos, 200.f, DMG_BLAST | DMG_HALF_FALLOFF | DMG_USEDISTANCEMOD, TF_DMG_CUSTOM_TAUNTATK_GRENADE, &explodePos );
+			CTFRadiusDamageInfo radiusinfo( &info, explodePos, 100.f );
 			TFGameRules()->RadiusDamage( radiusinfo );
 		}
 	}
@@ -20584,7 +20605,7 @@ bool CTFPlayer::SpeakConceptIfAllowed( int iConcept, const char *modifiers, char
 		{
 			return false;
 		}
-		m_flNextHurtSpeakTime = gpGlobals->curtime + 0.25f;
+		m_flNextHurtSpeakTime = gpGlobals->curtime + 0.1f;
 	}
 
 	// Save the current concept.

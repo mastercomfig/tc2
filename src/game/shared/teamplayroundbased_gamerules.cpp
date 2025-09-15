@@ -2030,7 +2030,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 					}
 					else if ( TFGameRules()->IsEmulatingMatch() == 2 )
 					{
-						flPostMatchPeriod = 45.0f;
+						flPostMatchPeriod = 30.0f;
 					}
 				}
 				m_flStateTransitionTime = gpGlobals->curtime + flPostMatchPeriod;

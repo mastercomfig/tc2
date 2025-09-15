@@ -270,7 +270,7 @@ void CHudTournament::PreparePanel( void )
 	if ( TFGameRules()->IsInPreMatch() )
 	{
 		bool bCountdownVisible = false;
-		bool bAutoReady = TFGameRules()->IsEmulatingMatch();
+		bool bAutoReady = TFGameRules()->IsEmulatingMatch() == 1;
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatchDesc )
 		{
@@ -629,7 +629,7 @@ void CHudTournament::OnTick( void )
 		if ( m_bReadyStatusMode )
 		{
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-			if ( !TFGameRules()->IsEmulatingMatch() && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
+			if ( TFGameRules()->IsEmulatingMatch() != 1 && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
 			{
 				RecalculatePlayerPanels();
 
