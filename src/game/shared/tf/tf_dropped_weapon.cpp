@@ -410,7 +410,9 @@ ConVar tf_dropped_weapon_glows("tf_dropped_weapon_glows", "1", FCVAR_ARCHIVE, "T
 //-----------------------------------------------------------------------------
 void CTFDroppedWeapon::ClientThink()
 {
-	if (!tf_dropped_weapon_glows.GetBool())
+	// don't do all this extra work if we don't support glows.
+	static ConVarRef glow_outline_effect_enable("glow_outline_effect_enable");
+	if ( !tf_dropped_weapon_glows.GetBool() || !g_pMaterialSystemHardwareConfig->SupportsPixelShaders_2_0() || !glow_outline_effect_enable.IsValid() || !glow_outline_effect_enable.GetBool() )
 		return;
 
 	C_TFPlayer *pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
