@@ -21,16 +21,16 @@
 #include "in_buttons.h"
 #endif // CLIENT_DLL
 
-const float tf_flame_burn_index_drain_rate = 1.25f;
-const float tf_flame_burn_index_per_collide = 1.f;
-const float tf_flame_burn_index_per_collide_remap_x = 10.f;
-const float tf_flame_burn_index_per_collide_remap_y = 50.f;
-const float tf_flame_burn_index_damage_scale_min = 0.5f;
+const float tf_flame_burn_index_drain_rate = 26.666666f; // penalty for missing a flame -- based upon tick rate and burn frequency
+const float tf_flame_burn_index_per_collide = 33.333333f; // bonus for hitting a flame -- based upon tick rate and fire interval
+const float tf_flame_burn_index_per_collide_remap_x = 50.f; // min accuracy floor
+const float tf_flame_burn_index_per_collide_remap_y = 100.f; // 100% accuracy
+const float tf_flame_burn_index_damage_scale_min = 0.5f; // max damage penalty for min accuracy
 
 #ifdef TF2_OG
 #define DEFAULT_FLAME_DMG_MODE_DIST "1"
 #else
-#define DEFAULT_FLAME_DMG_MODE_DIST "1"
+#define DEFAULT_FLAME_DMG_MODE_DIST "0"
 #endif
 ConVar tf_flame_dmg_mode_dist( "tf_flame_dmg_mode_dist", DEFAULT_FLAME_DMG_MODE_DIST, FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_HIDDEN );
 
@@ -70,6 +70,7 @@ const float tf_flame_mindamagedist = 300.f;
 const float tf_flame_min_damage_scale_time = 0.5f;
 const float tf_flame_min_damage_scale_time_cap = 0.5f;
 #endif
+const float tf_flame_damage_scale_time_min = 0.09375f; // time it takes to reach tf_flame_maxdamagedist
 
 IMPLEMENT_NETWORKCLASS_ALIASED( TFFlameManager, DT_TFFlameManager );
 
@@ -545,12 +546,11 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 		{
 			float flTimeAlive = gpGlobals->curtime - pFlame->m_flSpawnTime;
 			float flLifeMax = pFlame->m_flLifeTime * tf_flame_min_damage_scale_time_cap;
-			flDamageScale = RemapValClamped(flTimeAlive, 0.f, flLifeMax, 1.f, tf_flame_min_damage_scale_time);
+			flDamageScale = RemapValClamped(flTimeAlive, tf_flame_damage_scale_time_min, flLifeMax, 1.f, tf_flame_min_damage_scale_time);
 		}
 	}
 
-	// TODO(mcoms): re-evaluate this
-#if !defined ( MCOMS_BALANCE_PACK ) && !defined( TF2_OG )
+#if !defined( TF2_OG )
 	if ( pTFTarget )
 	{
 		float flIndexMod = 1.f;
@@ -707,11 +707,16 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	int iEntIndex = m_mapEntitiesBurnt.Find( pEnt );
 	if ( iEntIndex != m_mapEntitiesBurnt.InvalidIndex() )
 	{
+		float flAmount = tf_flame_burn_index_per_collide;
+
+		// my guess for why this is here: we're looking for how they're aiming their latest flames, so weight it by lifetime to get the full heat amount.
+		// however, this doesn't actually work because this effectively adds a new falloff mechanism!
+#if 0
 		float flTimeAlive = gpGlobals->curtime - pFlame->m_flSpawnTime;
+		flAmount *= RemapValClamped(flTimeAlive, 0.0f, 0.02f, 1.0f, 0.5f);
+#endif
 
-		float flAmount = RemapValClamped( flTimeAlive, 0.f, 0.02f, ( tf_flame_burn_index_per_collide * 2.f ), tf_flame_burn_index_per_collide );
-
-		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex += flAmount;
+		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex = Min( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex, tf_flame_burn_index_per_collide_remap_y );
 	}
 
 	// if we already burn this entity, check if we can burn it again
@@ -832,7 +837,8 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	}
 	else
 	{
-		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide } );
+		// start at max, so we decay down if we don't maintain accuracy
+		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y } );
 	}
 }
 
