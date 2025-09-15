@@ -17,10 +17,10 @@ struct EntityWhiteList_t
 // limit the entities that can be created using this method
 EntityWhiteList_t g_szEntityWhiteList[] =
 {
-//	{ "rocket", "entity_rocket" },
-//	{ "carrier", "entity_carrier" },
+	{ "rocket", "entity_rocket" },
+	{ "carrier", "entity_carrier" },
 	{ "sign", "entity_sign" },
-//	{ "saucer", "entity_saucer" },
+	{ "saucer", "entity_saucer" },
 };
 
 

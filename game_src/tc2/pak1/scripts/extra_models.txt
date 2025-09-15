@@ -1,0 +1,179 @@
+"models"
+{
+	"ctf_2fort"
+	{
+		"rocket"
+		{
+			"0"
+			{
+				"location"		"-4198 353 93"
+				"rotation"		"7.88082 291.234 168.739"
+			}		
+		}
+		"carrier"
+		{
+			"0"
+			{
+				"location"		"-3609.09 508.769 52.6112"
+				"rotation"		"0 266 0"
+			}		
+		}
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-3806 380 115"
+			}		
+		}
+	}
+	"cp_dustbowl"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-5780 7073 -2328"
+			}		
+		}
+	}	
+	"pl_goldrush"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-4700 9954 -2220"
+			}		
+		}
+	}
+	"pl_badwater"
+	{
+		"rocket"
+		{
+			"0"
+			{
+				"location"		"-5034.41 10230.9 -2344.11"
+				"rotation"		"44.1871 152.427 -170.841"
+			}
+		}
+		"carrier"
+		{
+			"0"
+			{
+				"location"		"-6012.43 10035.8 -2414.11"
+				"rotation"		"-2.02016 258.776 6.37398"
+			}
+		}
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-4901 10407 -2222"
+			}		
+		}
+	}
+	"koth_lakeside_final"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"8450 -3701 516"
+			}		
+		}
+	}	
+	"cp_gravelpit"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-11940 -3797 -53"
+			}		
+		}
+	}	
+	"arena_lumberyard"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-10986  4090 25"
+			}		
+		}
+	}
+	"mvm_decoy"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"527 7330 300"
+			}		
+		}
+	}
+	"sd_doomsday"
+	{
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-9894 2811 -6858"
+			}		
+		}
+	}
+	"ctf_doublecross"
+	{
+		"carrier"
+		{
+			"0"
+			{
+				"location"		"8826.89 124.393 33.3473"
+				"rotation"		"-11.5169 246.459 -5.46215"
+			}
+		}
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"9670 -182 182"
+			}		
+		}
+	}
+	"cp_granary"
+	{
+		"carrier"
+		{
+			"0"
+			{
+				"location"		"-9467.61 3629.94 -5.91296"
+				"rotation"		"-1.89876 100.837 9.81988"
+			}
+		}
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"-11026 4495 129"
+			}		
+		}
+	}
+	"pl_barnblitz"
+	{
+		"rocket"
+		{
+			"0"
+			{
+				"location"		"6396.68 -1331.05 -2713.32"
+				"rotation"		"13.2387 81.5351 144.757"
+			}
+		}
+		"saucer"
+		{
+			"0"
+			{
+				"location"		"6763 -1528 -2682"
+			}		
+		}
+	}
+}
