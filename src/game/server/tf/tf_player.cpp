@@ -6948,7 +6948,8 @@ void CTFPlayer::ForceChangeTeam( int iTeamNum, bool bFullTeamSwitch )
 	{
 		RemoveNemesisRelationships();
 
-		if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
+		// mcoms: now doing this for all, not just comp
+		if ( true || TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 		{
 			if ( IsAlive() )
 			{
@@ -7064,7 +7065,8 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 
 	BaseClass::ChangeTeam( iTeamNum, bAutoTeam, bSilent, bAutoBalance );
 
-	if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
+	// mcoms: this will suicide a player if they change teams or disconnect, which allows players to still maintain kill credit
+	//if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) )
 	{
 		if ( IsAlive() )
 		{
@@ -7876,7 +7878,8 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	}
 	else if ( FStrEq( pcmd, "resetclass" ) )
 	{
-		if ( TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) && (GetTeamNumber() > LAST_SHARED_TEAM))
+		// mcoms: now doing this for all, not just comp
+		if ( true || TFGameRules() && ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsCompetitiveGame() ) && (GetTeamNumber() > LAST_SHARED_TEAM))
 		{
 			if ( IsAlive() )
 			{

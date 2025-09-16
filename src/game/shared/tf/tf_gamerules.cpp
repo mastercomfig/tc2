@@ -3751,6 +3751,8 @@ void CTFGameRules::LevelInitPostEntity( void )
 #endif // GAME_DLL
 }
 
+ConVar tf_tournament_respawn_multiplier("tf_tournament_respawn_multiplier", "-1", FCVAR_REPLICATED, "Respawn time multiplier for competitive mode.");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -3763,7 +3765,9 @@ float CTFGameRules::GetRespawnTimeScalar( int iTeam )
 	// In competitive, we don't modify respawn times.
 	// Players could be disconnected and we don't want to adjust respawn times based on player count.
 	if ( IsCompetitiveGame() )
-		return IsInSixesMode() ? 0.8f : 1.0f; // TODO: make this 1
+		if ( tf_tournament_respawn_multiplier.GetFloat() >= 0.0f )
+			return tf_tournament_respawn_multiplier.GetFloat();
+		return IsInSixesMode() ? 0.8f : 1.0f; // TODO: make this 1 by default across the board
 
 	return BaseClass::GetRespawnTimeScalar( iTeam );
 }
