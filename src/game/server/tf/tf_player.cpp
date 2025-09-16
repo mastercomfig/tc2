@@ -18642,8 +18642,10 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 					// Time for crits!
 					m_Shared.ActivateRageBuff( this, iBuffType );
 
+#if defined(MCOMS_BALANCE_PACK)
 					// Don't allow the taunt to be cancelled
 					m_bAllowMoveDuringTaunt = true;
+#endif
 
 					// Pyro needs high defense while he's taunting
 					//m_Shared.AddCond( TF_COND_DEFENSEBUFF_HIGH, 3.0f );
