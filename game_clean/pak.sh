@@ -27,7 +27,7 @@ rm -f ../game/tc2/pak1*.vpk
 # TODO: do we want to use VDF manifest?
 vpk -v -M -k mcoms.publickey.vdf -K mcoms.privatekey.vdf -P "${FULL_BASE_DIR}/game_src/tc2/pak1"
 # TODO: workaround to hash everything
-vpk -v -M -k mcoms.publickey.vdf -K mcoms.privatekey.vdf -P a "${FULL_BASE_DIR}/game_src/tc2/pak1_dir.vpk" "${FULL_BASE_DIR}/game_src/tc2/pak1/cfg/default.cfg"
+(cd ${FULL_BASE_DIR}/game_src/tc2/pak1 && echo $PAK_VERSION > "cfg/version.txt" && vpk -v -M -k ../../../game_clean/mcoms.publickey.vdf -K ../../../game_clean/mcoms.privatekey.vdf -P a "${FULL_BASE_DIR}/game_src/tc2/pak1_dir.vpk" "cfg/version.txt" && rm "cfg/version.txt")
 
 # create release zip
 rm -f pak.zip
