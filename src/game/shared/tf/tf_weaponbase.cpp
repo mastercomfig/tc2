@@ -2029,8 +2029,7 @@ bool CTFWeaponBase::ReloadSingly( void )
 			if ( SendWeaponAnim( ACT_RELOAD_START ) )
 			{
 				float SeqDuration = SequenceDuration();
-				// TODO(mcoms)
-#if 1
+#if defined(MCOMS_BALANCE_PACK)
 				if ( GetWeaponID() == TF_WEAPON_PARTICLE_CANNON )
 				{
 					SeqDuration *= 1.15f;
@@ -5854,6 +5853,7 @@ QAngle CTFWeaponBase::GetSpreadAngles( void )
 		angEyes += angSpread;
 	}
 
+#if defined(MCOMS_BALANCE_PACK)
 	// Airstrike gets accuracy penalty while in air
 	if ( pOwner && pOwner->m_Shared.InCond(TF_COND_BLASTJUMPING) )
 	{
@@ -5867,6 +5867,7 @@ QAngle CTFWeaponBase::GetSpreadAngles( void )
 			angEyes += angSpread;
 		}
 	}
+#endif
 
 	return angEyes;
 }

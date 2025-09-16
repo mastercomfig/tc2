@@ -25,7 +25,7 @@
 #endif
 
 ConVar tf_weapon_criticals_melee( "tf_weapon_criticals_melee", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Controls random crits for melee weapons. 0 - Melee weapons do not randomly crit. 1 - Melee weapons can randomly crit only if tf_weapon_criticals is also enabled. 2 - Melee weapons can always randomly crit regardless of the tf_weapon_criticals setting." );
-ConVar tf_melee_enemy_priority( "tf_melee_enemy_priority", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Prevents teammates from blocking melee attacks." );
+ConVar tf_melee_enemy_priority( "tf_melee_enemy_priority", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Prevents teammates from blocking melee attacks." );
 
 //=============================================================================
 //
@@ -477,7 +477,7 @@ bool CTFWeaponBaseMelee::DoSwingTraceInternal( trace_t &trace, bool bCleave, CUt
 	// swarm so tightly they hit each other and no-one else
 	bool bDontHitTeammates = pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS && TFGameRules()->IsMannVsMachineMode();
 	CTraceFilterIgnoreTeammates ignoreTeammatesFilter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
-	bool bEnemyPriority = tf_melee_enemy_priority.GetBool() && !bDontHitTeammates;
+	bool bEnemyPriority = tf_melee_enemy_priority.GetBool() || !TFGameRules()->IsMannVsMachineMode() && !TFGameRules()->IsInMedievalMode();
 
 	if ( bCleave )
 	{

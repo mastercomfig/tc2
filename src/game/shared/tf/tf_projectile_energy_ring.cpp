@@ -64,8 +64,12 @@ void PrecacheRing(void *pUser)
 PRECACHE_REGISTER_FN(PrecacheRing);
 
 #ifdef GAME_DLL
+#if defined(MCOMS_BALANCE_PACK)
 ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.05", FCVAR_CHEAT );
 ConVar tf_bison_in_enemy_slow("tf_bison_in_enemy_slow", "0.25", FCVAR_CHEAT);
+#else
+ConVar tf_bison_tick_time("tf_bison_tick_time", "0.025", FCVAR_CHEAT);
+#endif
 #endif
 
 
@@ -190,11 +194,13 @@ void CTFProjectile_EnergyRing::Spawn()
 	SetSolidFlags( FSOLID_TRIGGER | FSOLID_NOT_SOLID );
 	SetCollisionGroup( TFCOLLISION_GROUP_ROCKETS );
 
+#if defined(MCOMS_BALANCE_PACK)
 #ifdef GAME_DLL
 	if (ShouldPenetrate())
 	{
 		SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + tf_bison_tick_time.GetFloat(), "BisonThink");
 	}
+#endif
 #endif
 }
 
@@ -297,9 +303,11 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 
 		if ( ShouldPenetrate() )
 		{
+#if defined(MCOMS_BALANCE_PACK)
 			Vector dir;
 			AngleVectors(GetAbsAngles(), &dir);
 			SetAbsVelocity(dir * GetInitialVelocity() * tf_bison_in_enemy_slow.GetFloat());
+#endif
 			return;
 		}
 		

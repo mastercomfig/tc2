@@ -68,7 +68,9 @@ public:
 
 	bool			SapperKillsCollectCrits( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, sapper_kills_collect_crits ); return (iMode == 1); };
 
+#if defined(MCOMS_BALANCE_PACK)
 	virtual int GetMaxRevengeCrits(void) OVERRIDE { return 10; }
+#endif
 
 	virtual bool		Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	virtual bool		Deploy( void );

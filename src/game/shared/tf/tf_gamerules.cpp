@@ -127,6 +127,7 @@
 	#include "tf_party.h"
 	#include "tf_autobalance.h"
 	#include "player_voice_listener.h"
+	#include "func_respawnroom.h"
 #endif
 
 #include "tf_mann_vs_machine_stats.h"
@@ -16247,7 +16248,16 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "+inspect_server" ) )
 		{
-			if ( pTFPlayer->m_Shared.IsInStrandedSpawn() && ( !IsCompetitiveGame() || pTFPlayer->m_Shared.IsInStrandedSpawn() == 2 ) )
+			bool bDoStrandedSpawn;
+			if ( IsCompetitiveGame() )
+			{
+				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() == 2;
+			}
+			else
+			{
+				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() || ( pTFPlayer->m_Shared.GetRespawnTouchCount() > 0 && PointInRespawnRoom( pTFPlayer, pTFPlayer->WorldSpaceCenter(), true ) );
+			}
+			if ( bDoStrandedSpawn )
 			{
 				pTFPlayer->SetStrandedSpawnSwitch(true);
 				pTFPlayer->ForceRespawn();
@@ -17883,7 +17893,11 @@ bool CTFGameRules::PlayerMayBlockPoint( CBasePlayer *pPlayer, int iPointIndex, c
 #endif
 
 	// Invuln players can block points
-	if ( pTFPlayer->m_Shared.IsInvulnerable()|| pTFPlayer->m_Shared.InCond( TF_COND_MEGAHEAL ) )
+#if defined(MCOMS_BALANCE_PACK)
+	if ( pTFPlayer->m_Shared.IsInvulnerable() || pTFPlayer->m_Shared.InCond( TF_COND_MEGAHEAL ) )
+#else
+	if ( pTFPlayer->m_Shared.IsInvulnerable() )
+#endif
 	{
 		if ( pszReason )
 		{

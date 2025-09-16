@@ -554,8 +554,8 @@ void CTFSodaPopper::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFSodaPopper::SecondaryAttack()
 {
+#if !defined(MCOMS_BALANCE_PACK)
 	// does nothing anymore
-#if 0
 	CTFPlayer *pPlayer = GetTFPlayerOwner( );
 	if ( !pPlayer || pPlayer->m_Shared.IsHypeBuffed() )
 		return;
@@ -570,8 +570,8 @@ void CTFSodaPopper::SecondaryAttack()
 //-----------------------------------------------------------------------------
 float CTFSodaPopper::GetReloadSpeedScale() const
 {
-	// UNDONE: reload upon airdash
-#if 1
+#if defined(MCOMS_BALANCE_PACK)
+	// reload upon airdash
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (!pPlayer)
 		return BaseClass::GetReloadSpeedScale();

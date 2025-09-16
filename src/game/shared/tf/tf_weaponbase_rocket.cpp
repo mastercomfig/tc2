@@ -391,6 +391,7 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pLauncher, const char *pszCla
 			flLaunchSpeed = 3000.f;
 		}
 
+#if defined(MCOMS_BALANCE_PACK)
 		// Airstrike gets launch speed bonus
 		if ( pTFOwner && pTFOwner->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
 		{
@@ -406,6 +407,7 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pLauncher, const char *pszCla
 				}
 			}
 		}
+#endif
 	}
 
 	Vector vecVelocity = vecForward * flLaunchSpeed;

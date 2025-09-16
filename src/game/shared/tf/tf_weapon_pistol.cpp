@@ -73,6 +73,7 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_handgun_scout_primary );
 CTFPistol_ScoutPrimary::CTFPistol_ScoutPrimary()
 {
 	m_flPushTime = -1.f;
+	// TODO(mcoms)
 	m_bReadyToPush = false;
 }
 
@@ -104,8 +105,10 @@ void CTFPistol_ScoutPrimary::SecondaryAttack( void )
 	if ( m_flNextSecondaryAttack > gpGlobals->curtime )
 		return;
 
+#if 0
 	if ( m_bReadyToPush )
 		return;
+#endif
 
 	pOwner->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_SECONDARY );
 	SendWeaponAnim( ACT_SECONDARY_VM_ALTATTACK );
@@ -123,6 +126,7 @@ void CTFPistol_ScoutPrimary::SecondaryAttack( void )
 Activity CTFPistol_ScoutPrimary::TranslateViewmodelHandActivityInternal(Activity actBase)
 {
 	Activity iActivity = actBase;
+#if 0
 	switch (iActivity)
 	{
 	case ACT_VM_IDLE:
@@ -136,6 +140,7 @@ Activity CTFPistol_ScoutPrimary::TranslateViewmodelHandActivityInternal(Activity
 	default:
 		break;
 	}
+#endif
 
 	return BaseClass::TranslateViewmodelHandActivityInternal(iActivity);
 }
@@ -197,8 +202,12 @@ void CTFPistol_ScoutPrimary::Push( void )
 		{
 			Vector vecToVictim = pVictim->GetAbsOrigin() - pOwner->GetAbsOrigin();
 			VectorNormalize( vecToVictim );
+#if defined(MCOMS_BALANCE_PACK)
 			Vector vecVel = pOwner->GetAbsVelocity();
 			pVictim->ApplyGenericPushbackImpulse( vecToVictim * 400.f + vecVel, pOwner);
+#else
+			pVictim->ApplyGenericPushbackImpulse( vecToVictim * 400.f, pOwner );
+#endif
 			float flDamage = 1.f;
 			CTakeDamageInfo info( pVictim, pOwner, this, flDamage, DMG_MELEE | DMG_NEVERGIB | DMG_CLUB, TF_DMG_CUSTOM_NONE );
 			CalculateMeleeDamageForce( &info, vecForward, GetAbsOrigin() + vecForward * flDist, 1.f / flDamage * 80.f );
@@ -232,7 +241,11 @@ void CTFPistol_ScoutPrimary::ItemPostFrame()
 {
 	if ( m_flPushTime > -1.f && gpGlobals->curtime > m_flPushTime )
 	{
+#if !defined(MCOMS_BALANCE_PACK)
+		Push();
+#endif
 		m_flPushTime = -1.f;
+#if defined(MCOMS_BALANCE_PACK)
 		m_bReadyToPush = true;
 	}
 
@@ -241,6 +254,7 @@ void CTFPistol_ScoutPrimary::ItemPostFrame()
 		// keep delaying
 		m_flNextPrimaryAttack = gpGlobals->curtime + 0.6f;
 		m_flNextSecondaryAttack = gpGlobals->curtime + 1.5f;
+#endif
 	}
 
 	BaseClass::ItemPostFrame();

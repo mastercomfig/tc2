@@ -2343,13 +2343,21 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	{
 		return 0;
 	}
-	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
 
+	// not in respawn room
+	if ( !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
+	{
+		return 0;
+	}
+
+#if 0
 	// tighter check for leaving respawn room
+	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
 	if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 72.0f * 72.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 72.0f )
 	{
 		return 0;
 	}
+#endif
 
 	// if time elapsed
 	if ( m_flRespawnTime == 0.0f || gpGlobals->curtime - m_flRespawnTime >= 7.0f )
@@ -2605,7 +2613,7 @@ void CTFPlayer::CheckForIdle( void )
 
 		m_bIsAFK = false;
 
-		if ( !cbMoving && PointInRespawnRoom( this, WorldSpaceCenter() ) )
+		if ( !cbMoving && m_Shared.GetRespawnTouchCount() > 0 && PointInRespawnRoom( this, WorldSpaceCenter() ) )
 		{
 			m_flTimeInSpawn += TICK_INTERVAL;
 		}

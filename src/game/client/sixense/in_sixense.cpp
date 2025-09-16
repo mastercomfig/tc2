@@ -3274,6 +3274,10 @@ void SixenseInput::SixenseUpdateMouseCursor()
 		{
 			Q_strncpy( window_name, "Team Comtress 2", str_len );
 		}
+		else if (FStrEq(pGameDir, "tc2_beta"))
+		{
+			Q_strncpy(window_name, "Team Comtress 2 Beta", str_len);
+		}
 		else if ( FStrEq( pGameDir, "tf2_og" ) )
 		{
 			Q_strncpy( window_name, "Team Fortress 2", str_len );

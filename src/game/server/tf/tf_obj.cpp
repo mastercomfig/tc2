@@ -714,7 +714,6 @@ bool CBaseObject::EstimateValidBuildPos( void )
 			return false;
 		}
 	}
-
 	
 #if defined(MCOMS_BALANCE_PACK)
 	// BLU can build in setup time

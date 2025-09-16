@@ -687,7 +687,7 @@ void CHudMainMenuOverride::PlayMainMenuMusic()
 
 	// only want to run the holiday check for TF2
 	const char* pGameName = CommandLine()->ParmValue("-game", "hl2");
-	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0))
+	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0) || (V_stricmp(pGameName, "tc2_beta") == 0))
 	{
 		// check for a holiday sound file
 		const char* pszHoliday = UTIL_GetActiveHolidayString();

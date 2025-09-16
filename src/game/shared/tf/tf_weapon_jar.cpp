@@ -1088,10 +1088,14 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	pPlayer->m_Shared.MakeBleed( pOwner, (CTFCleaver *)pInflictor, 5.f );
 
 	// Give 'em a love tap.
+#if defined(MCOMS_BALANCE_PACK)
 	const int iVictimHealth = pPlayer->GetHealth();
 	const bool bLowHealthCull = iVictimHealth - 10 <= pPlayer->GetMaxHealth() * 0.3f;
+#endif
 	{
+#if defined(MCOMS_BALANCE_PACK)
 		flDecrement = 10.0f;
+#endif
 
 		const trace_t *pTrace = &CBaseEntity::GetTouchTrace();
 		trace_t *pNewTrace = const_cast<trace_t*>( pTrace );
@@ -1101,6 +1105,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 		info.SetInflictor( this ); 
 		info.SetWeapon( pInflictor );
 		float flDamage = GetDamage();
+#if defined(MCOMS_BALANCE_PACK)
 		if ( !bLowHealthCull )
 		{
 			flDamage = 10.0f;
@@ -1109,11 +1114,16 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 		{
 			flDamage = iVictimHealth * 0.5f;
 		}
+#endif
 		info.SetDamage( flDamage );
 		info.SetDamageCustom( TF_DMG_CUSTOM_CLEAVER );
 		info.SetDamagePosition( GetAbsOrigin() );
 		int iDamageType = GetDamageType();
+#if defined(MCOMS_BALANCE_PACK)
 		if ( IsCritical() || bLowHealthCull )
+#else
+		if ( IsCritical() )
+#endif
 		{
 			iDamageType |= DMG_CRITICAL;
 		}

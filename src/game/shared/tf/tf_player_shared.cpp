@@ -166,6 +166,7 @@ ConVar tf_damage_events_track_for( "tf_damage_events_track_for", "30",  FCVAR_DE
 
 extern ConVar tf_halloween_giant_health_scale;
 
+// TODO(mcoms)
 ConVar tf_allow_sliding_taunt( "tf_allow_sliding_taunt", "0", FCVAR_NONE, "1 - Allow player to slide for a bit after taunting" );
 
 #endif // GAME_DLL
@@ -198,7 +199,8 @@ ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVA
 ConVar tf_feign_death_duration( "tf_feign_death_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death buffs last." );
 ConVar tf_feign_death_speed_duration( "tf_feign_death_speed_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death speed boost last." );
 
-ConVar tf_allow_taunt_switch( "tf_allow_taunt_switch", "2", FCVAR_REPLICATED, "0 - players are not allowed to switch weapons while taunting, 1 - players can switch weapons at the start of a taunt (old bug behavior), 2 - players can switch weapons at any time during a taunt." );
+// TODO(mcoms)
+ConVar tf_allow_taunt_switch( "tf_allow_taunt_switch", "0", FCVAR_REPLICATED, "0 - players are not allowed to switch weapons while taunting, 1 - players can switch weapons at the start of a taunt (old bug behavior), 2 - players can switch weapons at any time during a taunt." );
 
 ConVar tf_allow_all_team_partner_taunt( "tf_allow_all_team_partner_taunt", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
@@ -722,9 +724,11 @@ bool CTFPlayer::IsAllowedToTaunt( void )
 	if ( ShouldStopTaunting() )
 		return false;
 
+#if !defined(MCOMS_BALANCE_PACK)
 	// Check to see if we are on the ground.
-	if ( false && GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
+	if ( GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 		return false;
+#endif
 
 	CTFWeaponBase *pActiveWeapon = m_Shared.GetActiveTFWeapon();
 	if ( pActiveWeapon )
@@ -3088,9 +3092,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			{
 				bleed.flBleedingTime = gpGlobals->curtime + TF_BLEEDING_FREQUENCY;
 
-				const bool bIsHeadTrauma = bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID());
-
 				int iKillType = bleed.nDmgType;
+
+#if defined(MCOMS_BALANCE_PACK)
+				const bool bIsHeadTrauma = bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID());
 				if (bIsHeadTrauma && m_pOuter->GetHealth() <= bleed.nBleedDmg)
 				{
 					// try decapitation.
@@ -3098,6 +3103,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 					// crit sound?
 					bleed.hBleedingWeapon->WeaponSound(BURST, 0.0f, true);
 				}
+#endif
 
 				CTakeDamageInfo info( bleed.hBleedingAttacker, bleed.hBleedingAttacker, bleed.hBleedingWeapon, bleed.nBleedDmg, DMG_SLASH, iKillType );
 				m_pOuter->TakeDamage( info );
@@ -6935,7 +6941,11 @@ void CTFPlayerShared::MakeBleed( CTFPlayer *pPlayer, CTFWeaponBase *pWeapon, flo
 	if ( !pPlayer && !pWeapon )
 		return;
 
+#if defined(MCOMS_BALANCE_PACK)
 	const bool bIsHeadTrauma = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
+#else
+	const bool bIsHeadTrauma = false;
+#endif
 	const float flExpireTime = gpGlobals->curtime + flBleedingTime;
 
 	// See if this weapon has already applied a bleed and extend the time
@@ -8360,7 +8370,7 @@ void CTFPlayerShared::Disguise( int nTeam, int nClass, CTFPlayer* pDesiredTarget
 			}
 
 #ifdef GAME_DLL
-			if ( !PointInRespawnRoom( m_pOuter, m_pOuter->WorldSpaceCenter() ) )
+			if ( !PointInRespawnRoom( m_pOuter, m_pOuter->WorldSpaceCenter(), true ) )
 			{
 				m_flCloakMeter = 0.f;
 			}
@@ -10729,7 +10739,7 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 }
 
 #ifdef CLIENT_DLL
-static ConVar tf_impactwatertimeenable( "tf_impactwatertimeenable", "1", 0, "Rate limit bullet impact effects on water." );
+static ConVar tf_impactwatertimeenable( "tf_impactwatertimeenable", "0", 0, "Rate limit bullet impact effects on water." );
 static ConVar tf_impactwatertime( "tf_impactwatertime", "0.2f", 0, "The interval between bullet impact effects on water." );
 #endif
 
@@ -11188,6 +11198,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 					bool bCharge = ( pMedigun->GetMedigunType() == MEDIGUN_QUICKFIX && pHealTarget->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) );
 
 					const float flHealTargetMaxSpeed = ( bCharge ) ? tf_max_charge_speed.GetFloat() : pHealTarget->TeamFortress_CalculateMaxSpeed( true );
+#if defined(MCOMS_BALANCE_PACK)
 					const float flFlatHealSpeedBonus = maxfbspeed + flFlatHealSpeedAdd;
 					if (flHealTargetMaxSpeed > flFlatHealSpeedBonus)
 					{
@@ -11198,6 +11209,9 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 						// boost to at least this flat heal speed bonus.
 						maxfbspeed = flFlatHealSpeedBonus;
 					}
+#else
+					maxfbspeed = Max(maxfbspeed, flHealTargetMaxSpeed);
+#endif
 				}
 			}
 		}
@@ -11215,7 +11229,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			}
 		}
 	}
-#ifndef TF2_OG
+#if !defined(TF2_OG) && defined(MCOMS_BALANCE_PACK)
 	else
 	{
 		// Not Medic
@@ -13673,6 +13687,12 @@ int CTFPlayerShared::GetSequenceForDeath( CBaseAnimating* pRagdoll, bool bBurnin
 {
 	if ( !pRagdoll )
 		return -1;
+
+	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	{
+		if ( m_pOuter && ( m_pOuter->GetTeamNumber() == TF_TEAM_PVE_INVADERS ) )
+			return -1;
+	}
 
 	int iDeathSeq = -1;
 // 	if ( bBurning )
