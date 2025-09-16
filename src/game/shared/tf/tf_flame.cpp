@@ -23,7 +23,7 @@
 
 const float tf_flame_burn_index_drain_rate = 26.666666f; // penalty for missing a flame -- based upon tick rate and burn frequency
 const float tf_flame_burn_index_per_collide = 33.333333f; // bonus for hitting a flame -- based upon tick rate and fire interval
-const float tf_flame_burn_index_per_collide_remap_x = 50.f; // min accuracy floor
+const float tf_flame_burn_index_per_collide_remap_x = 60.f; // min accuracy floor
 const float tf_flame_burn_index_per_collide_remap_y = 100.f; // 100% accuracy
 const float tf_flame_burn_index_damage_scale_min = 0.5f; // max damage penalty for min accuracy
 
