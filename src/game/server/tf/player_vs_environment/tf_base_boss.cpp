@@ -579,11 +579,14 @@ int CTFBaseBoss::OnTakeDamage_Alive( const CTakeDamageInfo &rawInfo )
 
 		CTF_GameStats.Event_BossDamage( pAttacker, info.GetDamage() );
 
+#if defined(MCOMS_BALANCE_PACK) && 0
+		// TODO(mcoms): do we want building types to provide crit chance?
 		// Give crit chance from damage
 		if ( rawInfo.GetAttacker() != this )
 		{
 			pAttacker->RecordDamageEvent( info, GetHealth() <= 0, iPrevHealth );
 		}
+#endif
 	}
 
 	return result;
