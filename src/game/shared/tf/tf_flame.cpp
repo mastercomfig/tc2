@@ -716,7 +716,7 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 		flAmount *= RemapValClamped(flTimeAlive, 0.0f, 0.02f, 1.0f, 0.5f);
 #endif
 
-		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex = Min( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex, tf_flame_burn_index_per_collide_remap_y );
+		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex = Min( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex + flAmount, tf_flame_burn_index_per_collide_remap_y );
 	}
 
 	// if we already burn this entity, check if we can burn it again
