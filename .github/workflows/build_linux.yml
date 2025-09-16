@@ -20,14 +20,23 @@ jobs:
             ${{ runner.os }}-ccache-${{ github.base_ref }}-
             ${{ runner.os }}-ccache-tc2-mod-
 
+      # - name: Setup Butler
+      #   id: setup-butler
+      #   run: |
+      #     sudo apt-get install p7zip-full
+      #     mkdir -p ~/.local/bin
+      #     curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+      #     7z x -y butler.zip -o$HOME/.local/bin/
+      #     rm butler.zip
+      #     chmod +x ~/.local/bin/butler
+      #     butler -V
+
       - name: Setup Butler
         id: setup-butler
         run: |
           sudo apt-get install p7zip-full
           mkdir -p ~/.local/bin
-          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
-          7z x -y butler.zip -o$HOME/.local/bin/
-          rm butler.zip
+          7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
           chmod +x ~/.local/bin/butler
           butler -V
 

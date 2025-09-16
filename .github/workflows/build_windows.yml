@@ -60,13 +60,22 @@ jobs:
       - name: Add msbuild
         uses: microsoft/setup-msbuild@v1.0.2
 
+      # - name: Setup Butler
+      #   id: setup-butler
+      #   run: |
+      #     New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
+      #     Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
+      #     Expand-Archive -Path butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
+      #     Remove-Item butler.zip
+      #     $Env:Path += ";$Env:USERPROFILE\.bin;"
+      #     [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
+      #     butler -V
+
       - name: Setup Butler
         id: setup-butler
         run: |
           New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
-          Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
-          Expand-Archive -Path butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
-          Remove-Item butler.zip
+          Expand-Archive -Path cibin/butler/windows/butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
           $Env:Path += ";$Env:USERPROFILE\.bin;"
           [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
           butler -V
