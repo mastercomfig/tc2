@@ -1054,7 +1054,12 @@ ConVar cl_obj_fake_alert( "cl_obj_fake_alert", "0", 0, "", true, BUILDING_HUD_AL
 //-----------------------------------------------------------------------------
 BuildingHudAlert_t C_BaseObject::GetBuildingAlertLevel( void )
 {
-	float flHealthPercent = GetHealth() / GetMaxHealth();
+	// this used to be 0 upon any damage due to integer division.
+	// our threshold for low health used to be 66%
+	// our threshold for very low health used to be 33%
+	// very low health was the only one that ever triggered.
+	// so we adjusted the thresholds below to adjust for what players are used to now.
+	float flHealthPercent = (float) GetHealth() / (float) GetMaxHealth();
 
 	BuildingHudAlert_t alertLevel = BUILDING_HUD_ALERT_NONE;
 
@@ -1062,11 +1067,11 @@ BuildingHudAlert_t C_BaseObject::GetBuildingAlertLevel( void )
 	{
 		alertLevel = BUILDING_HUD_ALERT_SAPPER;
 	}
-	else if ( !IsBuilding() && flHealthPercent < 0.33 )
+	else if ( !IsBuilding() && flHealthPercent <= 0.9 )
 	{
 		alertLevel = BUILDING_HUD_ALERT_VERY_LOW_HEALTH;
 	}
-	else if ( !IsBuilding() && flHealthPercent < 0.66 )
+	else if ( !IsBuilding() && flHealthPercent < 1 )
 	{
 		alertLevel = BUILDING_HUD_ALERT_LOW_HEALTH;
 	}

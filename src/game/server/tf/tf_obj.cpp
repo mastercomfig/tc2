@@ -1551,7 +1551,7 @@ void CBaseObject::MakeDisposableBuilding( CTFPlayer *pPlayer )
 void CBaseObject::BuildingThink( void )
 {
 	// Continue construction
-	Construct( (GetMaxHealth() - OBJECT_CONSTRUCTION_STARTINGHEALTH) / m_flTotalConstructionTime * OBJECT_CONSTRUCTION_INTERVAL );
+	Construct( ( GetMaxHealth() - OBJECT_CONSTRUCTION_STARTINGHEALTH ) / m_flTotalConstructionTime * OBJECT_CONSTRUCTION_INTERVAL );
 }
 
 //-----------------------------------------------------------------------------
@@ -2124,7 +2124,7 @@ bool CBaseObject::Construct( float flHealth )
 	if ( IsBuilding() )
 	{
 		// Reduce the construction time by the correct amount for the health passed in
-		float flConstructionTime = flHealth / ((GetMaxHealth() - OBJECT_CONSTRUCTION_STARTINGHEALTH) / m_flTotalConstructionTime);
+		float flConstructionTime = flHealth / ( ( GetMaxHealth() - OBJECT_CONSTRUCTION_STARTINGHEALTH ) / m_flTotalConstructionTime );
 		if ( flConstructionTime < 0.0f )
 		{
 			flConstructionTime *= -1.0f;
@@ -2152,6 +2152,11 @@ bool CBaseObject::Construct( float flHealth )
 		// Return true if we're constructed now
 		if ( m_flConstructionTimeLeft <= 0.0f )
 		{
+			// round up to max health.
+			if ( m_flHealth >= ( GetMaxHealth() - OBJECT_CONSTRUCTION_STARTINGHEALTH ) )
+			{
+				SetHealth( ceilf(m_flHealth) );
+			}
 			FinishedBuilding();
 			return true;
 		}
@@ -2997,7 +3002,7 @@ int CBaseObject::Command_Repair( CTFPlayer *pActivator, float flAmount, float fl
 #endif
 
 	float flRepairAmountMax = flAmount * flRepairMod;
-	int iRepairAmount = Min( RoundFloatToInt( flRepairAmountMax ), GetMaxHealth() - RoundFloatToInt( GetHealth() ) );
+	int iRepairAmount = Min( RoundFloatToInt( flRepairAmountMax ), GetMaxHealth() - Floor2Int( GetHealth() ) );
 	int iRepairCost = Ceil2Int( (float)( iRepairAmount ) / flRepairToMetalRatio );
 	if ( iRepairCost > pActivator->GetBuildResources() )
 	{
@@ -3079,10 +3084,10 @@ void CBaseObject::StartUpgrading( void )
 	if ( !m_bCarryDeploy && !IsUsingReverseBuild() )
 	{
 		int iMaxHealth = GetMaxHealthForCurrentLevel();
-		if (GetMaxHealth() != iMaxHealth)
+		if ( GetMaxHealth() != iMaxHealth )
 		{
-			SetMaxHealth(iMaxHealth);
-			SetHealth(iMaxHealth);
+			SetMaxHealth( iMaxHealth );
+			SetHealth( iMaxHealth );
 		}
 	}
 
