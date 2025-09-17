@@ -1999,14 +1999,10 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	// Round damage like players
 	flDamage = (int) ( flDamage + 0.5f );
 
-	// Don't look, Tom Bui!
-	static struct
+	auto IsDamageFatal = []( const float flHealth, const float flDamage ) -> bool
 	{
-		bool operator()( const float flHealth, const float flDamage ) const
-		{
-			return ( ( flHealth - flDamage ) < 1 );
-		}
-	} IsDamageFatal;
+		return ( ( flHealth - flDamage ) < 1 );
+	};
 
 	// Only track actual damage - not overkill
 	m_AchievementData.AddDamageEventToHistory( info.GetAttacker(), ( IsDamageFatal( m_flHealth, flDamage ) ) ? m_flHealth : flDamage );
