@@ -342,11 +342,9 @@ void CSteamFriendsListPanel::UpdateFriendsList()
 	auto pSteamFriends = steamapicontext->SteamFriends();
 	bool bDone = false;
 	
-	const double flStart = Plat_FloatTime();
-	// only use 0.5ms per second and chunk at 10 friends per second since that's what we can see
+	//const double flStart = Plat_FloatTime();
 	int iNumProcessed = 0;
-	while( m_nLastProcessedPotentialFriend < m_mapKnownFriends.Count() &&
-		   Plat_FloatTime() - flStart < 0.0005 && iNumProcessed <= 10 )
+	while( m_nLastProcessedPotentialFriend < m_mapKnownFriends.Count() )
 	{
 		PotentialFriend_t potentialFriend = m_mapKnownFriends[ m_nLastProcessedPotentialFriend ];
 
