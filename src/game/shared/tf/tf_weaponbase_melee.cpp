@@ -477,7 +477,7 @@ bool CTFWeaponBaseMelee::DoSwingTraceInternal( trace_t &trace, bool bCleave, CUt
 	// swarm so tightly they hit each other and no-one else
 	bool bDontHitTeammates = pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS && TFGameRules()->IsMannVsMachineMode();
 	CTraceFilterIgnoreTeammates ignoreTeammatesFilter( pPlayer, COLLISION_GROUP_NONE, pPlayer->GetTeamNumber() );
-	bool bEnemyPriority = tf_melee_enemy_priority.GetBool() || !TFGameRules()->IsMannVsMachineMode() && !TFGameRules()->IsInMedievalMode();
+	bool bEnemyPriority = !friendlyfire.GetBool() && ( tf_melee_enemy_priority.GetBool() || !TFGameRules()->IsMannVsMachineMode() && !TFGameRules()->IsInMedievalMode() );
 
 	if ( bCleave )
 	{
