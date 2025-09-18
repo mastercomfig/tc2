@@ -514,7 +514,7 @@ bool CVoteController::SetupVote( int iEntIndex )
 //-----------------------------------------------------------------------------
 bool CVoteController::CreateVote( int iEntIndex, const char *pszTypeString, const char *pszDetailString )
 {
-	// Terrible Hack:  Dedicated servers pass 99 as the EntIndex
+	// Terrible Hack:  Dedicated servers pass 0 as the EntIndex
 	bool bDedicatedServer = ( iEntIndex == DEDICATED_SERVER ) ? true : false;
 
 	if ( !IsVoteSystemEnabled() )
