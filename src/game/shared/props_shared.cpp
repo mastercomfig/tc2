@@ -27,7 +27,7 @@ ConVar props_break_max_pieces_perframe( "props_break_max_pieces_perframe", "-1",
 #ifdef GAME_DLL
 extern ConVar breakable_multiplayer;
 #else
-ConVar cl_burninggibs( "cl_burninggibs", "0", 0, "A burning player that gibs has burning gibs." );
+ConVar cl_burninggibs( "cl_burninggibs", "1", 0, "A burning player that gibs has burning gibs." );
 #endif // GAME_DLL
 
 extern bool PropBreakableCapEdictsOnCreateAll(int modelindex, IPhysicsObject *pPhysics, const breakablepropparams_t &params, CBaseEntity *pEntity, int iPrecomputedBreakableCount = -1 );
