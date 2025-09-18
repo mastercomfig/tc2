@@ -32,6 +32,10 @@ public:
 	virtual void Reset() OVERRIDE;
 	int GetPreviousTeam( void ) { return m_iTeam; }
 	int GetPreviousClass(void) { return m_iPrevClass; }
+	void SetHugeClassCount(int iClassCount) { m_iHugeClassCount = iClassCount; }
+	int GetHugeClassCount(void) { return m_iHugeClassCount; }
+
+	bool IsHugeTeam(void);
 
 private:
 
@@ -40,6 +44,7 @@ private:
 	vgui::Panel *m_pClassImageBG;
 	vgui::ImagePanel *m_pDeathFlag;
 	int m_iTeam;
+	int m_iHugeClassCount;
 
 	CPanelAnimationVar( Color, m_ColorPortraitBGRedLocalPlayer, "color_portrait_bg_red_local_player", "195 169 168 255" );
 	CPanelAnimationVar( Color, m_ColorPortraitBGBlueLocalPlayer, "color_portrait_bg_blue_local_player", "168 169 195 255" );

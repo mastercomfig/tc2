@@ -15,6 +15,8 @@
 #include "c_tf_playerresource.h"
 #include "tf_playerpanel.h"
 #include "tf_teamstatus.h"
+#include "c_team.h"
+
 #include "tf_matchmaking_shared.h"
 #include "tf_match_description.h"
 #include "tf_hud_match_status.h"
@@ -24,6 +26,18 @@ using namespace vgui;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+bool GIsHugeTeam( int iTeam )
+{
+	if ( iTeam == TEAM_UNASSIGNED )
+		return false;
+
+	if ( TFGameRules() && TFGameRules()->GetTeamSize( iTeam ) > 16 )
+	{
+		return true;
+	}
+
+	return GetGlobalTeam( iTeam ) && GetGlobalTeam( iTeam )->GetNumPlayers() > 16;
+}
 
 CTFTeamStatusPlayerPanel::CTFTeamStatusPlayerPanel( vgui::Panel *parent, const char *name ) : CTFPlayerPanel( parent, name )
 {
@@ -75,6 +89,8 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 
 	if ( bVisible && g_TF_PR )
 	{
+		const bool bIsHugeTeam = IsHugeTeam();
+
 		bool bSameTeamAsLocalPlayer = ( GetTeam() == g_TF_PR->GetTeam( pLocalPlayer->entindex() ) );
 
 		// are we connected with a class?
@@ -84,22 +100,27 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		bool bFeigned = false;
 		int iHealth = -1;
 		bool bIsLocalPlayer = false;
-		if ( m_iPlayerIndex > 0 )
+		bool bHasPlayer = m_iPlayerIndex > 0;
+		if ( bHasPlayer || bIsHugeTeam )
 		{
-			bIsLocalPlayer = pLocalPlayer->entindex() == m_iPlayerIndex;
+			bIsLocalPlayer = bIsHugeTeam ? false : pLocalPlayer->entindex() == m_iPlayerIndex;
 
-			iClass = g_TF_PR->GetPlayerClass( m_iPlayerIndex );
+			iClass = bIsHugeTeam ? m_iPlayerIndex : g_TF_PR->GetPlayerClass( m_iPlayerIndex );
 
-			if ( iClass != TF_CLASS_UNDEFINED )
+			if ( bIsHugeTeam )
+			{
+				bAlive = true;
+			}
+			else if ( iClass != TF_CLASS_UNDEFINED )
 			{
 				bAlive = g_TF_PR->IsAlive( m_iPlayerIndex );
 			}
 
-			C_TFPlayer* pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( m_iPlayerIndex ) );
+			C_TFPlayer* pTFPlayer = bIsHugeTeam ? NULL : ToTFPlayer( UTIL_PlayerByIndex( m_iPlayerIndex ) );
 
 			// Josh: Not sure if this halloween logic can ever trigger, but it was missing
 			// replication from the scoreboard either way.
-			if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_Halloween ) && TFGameRules()->ArePlayersInHell() )
+			if ( !bIsHugeTeam && TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_Halloween ) && TFGameRules()->ArePlayersInHell() )
 			{
 				if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
 				{
@@ -109,7 +130,7 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 			}
 
 			// Josh: Are they a Spy that's feigning death? Mark them as dead on the status UI.
-			if ( g_TF_PR->GetPlayerClass( m_iPlayerIndex ) == TF_CLASS_SPY )
+			if ( !bIsHugeTeam && g_TF_PR->GetPlayerClass( m_iPlayerIndex ) == TF_CLASS_SPY )
 			{
 				if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_FEIGN_DEATH ) )
 				{
@@ -118,13 +139,36 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				}
 			}
 
-			if ( bAlive )
+			if ( !bIsHugeTeam && bAlive )
 			{
 				iHealth = g_TF_PR->GetHealth( m_iPlayerIndex );
 			}
 
 			// calc respawn time remaining
-			if ( !bAlive && ( iClass != TF_CLASS_UNDEFINED ) )
+			if ( bIsHugeTeam )
+			{
+				if ( bSameTeamAsLocalPlayer )
+				{
+					if ( !bHasPlayer )
+					{
+						iRespawnWait = Floor2Int( TFGameRules()->GetNextRespawnWave( m_iTeam, NULL ) - gpGlobals->curtime );
+					}
+					else
+					{
+						iRespawnWait = m_iHugeClassCount;
+						if ( iRespawnWait <= 0 )
+						{
+							iRespawnWait = 0;
+							bAlive = false;
+						}
+					}
+				}
+				else
+				{
+					bAlive = false;
+				}
+			}
+			else if ( !bAlive && ( iClass != TF_CLASS_UNDEFINED ) )
 			{
 				float flRespawnAt = g_TF_PR->GetNextRespawnTime( m_iPlayerIndex );
 				iRespawnWait = ( flRespawnAt - gpGlobals->curtime );
@@ -176,7 +220,21 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 
 				m_pDeathFlag->SetImage( ( m_iTeam == TF_TEAM_RED ) ? "../HUD/comp_player_status" : "../HUD/comp_player_status_blue" );
 
-				if ( bAlive )
+				if ( bIsHugeTeam )
+				{
+					if ( !bHasPlayer )
+					{
+						if ( bSameTeamAsLocalPlayer )
+						{
+							g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "TeamStatus_PlayerDead", false);
+						}
+						else
+						{
+							g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "TeamStatus_PlayerAlive", false);
+						}
+					}
+				}
+				else if ( bAlive )
 				{
 					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "TeamStatus_PlayerAlive", false );
 				}
@@ -195,7 +253,11 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				{
 					m_pClassImage->SetImage( "hud_connecting" );
 				}
-				else if ( iClass == TF_CLASS_UNDEFINED || !bSameTeamAsLocalPlayer )
+				else if ( bIsHugeTeam && iClass == TF_CLASS_UNDEFINED )
+				{
+					m_pClassImage->SetImage( "hud_connecting" );
+				}
+				else if ( !bIsHugeTeam && ( iClass == TF_CLASS_UNDEFINED || !bSameTeamAsLocalPlayer ) )
 				{
 					// hide class info from the other team, unless dead
 					int iDeadClass = bFeigned ? g_TF_PR->GetPlayerClass( m_iPlayerIndex ) : g_TF_PR->GetPlayerClassWhenKilled( m_iPlayerIndex );
@@ -217,7 +279,6 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 					else
 					{
 						m_pClassImage->SetImage( VarArgs( "%s_alpha", ( m_iTeam == TF_TEAM_RED ) ? g_pszItemClassImagesRed[iClass + 9] : g_pszItemClassImagesBlue[iClass + 9] ) );
-
 					}
 				}
 			}
@@ -306,17 +367,17 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		}
 
 		// charge
-		int iCharge = ( iClass == TF_CLASS_MEDIC && bSameTeamAsLocalPlayer ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : -1;
-		if (iCharge != m_iPrevCharge)
+		int iCharge = ( iClass == TF_CLASS_MEDIC && bSameTeamAsLocalPlayer && !bIsHugeTeam ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : -1;
+		if ( iCharge != m_iPrevCharge )
 		{
-			if (iCharge >= 0)
+			if ( iCharge >= 0 )
 			{
-				SetDialogVariable("chargeamount", VarArgs("%d%%", iCharge));
+				SetDialogVariable( "chargeamount", VarArgs( "%d%%", iCharge ) );
 				bChanged = true;
 			}
 			else
 			{
-				SetDialogVariable("chargeamount", "");
+				SetDialogVariable( "chargeamount", "" );
 			}
 			m_iPrevCharge = iCharge;
 		}
@@ -335,6 +396,14 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 void CTFTeamStatusPlayerPanel::Reset()
 {
 	BaseClass::Reset();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFTeamStatusPlayerPanel::IsHugeTeam()
+{
+	return GIsHugeTeam(m_iTeam);
 }
 
 //-----------------------------------------------------------------------------
@@ -446,19 +515,20 @@ void CTFTeamStatus::PerformLayout( void )
 
 	int iTeam1Processed = 0;
 	int iTeam2Processed = 0;
-
 	const bool bClassOrder = IsClassOrder();
 
 	for ( int i = 0; i < m_PlayerPanels.Count(); i++ )
 	{
-		if ( m_PlayerPanels[i]->GetPlayerIndex() <= 0 )
+		int iTeam = m_PlayerPanels[i]->GetTeam();
+		const bool bIsHugeTeam = GIsHugeTeam( iTeam );
+
+		if ( !bIsHugeTeam && m_PlayerPanels[i]->GetPlayerIndex() <= 0 )
 		{
 			m_PlayerPanels[i]->SetVisible( false );
 			continue;
 		}
 
-		bool bIsLocalPlayerPanel = nLocalPlayerIndex == m_PlayerPanels[i]->GetPlayerIndex();
-		int iTeam = m_PlayerPanels[i]->GetTeam();
+		bool bIsLocalPlayerPanel = bIsHugeTeam ? false : nLocalPlayerIndex == m_PlayerPanels[i]->GetPlayerIndex();
 		int iXPos = 0;
 
 		// Setup vars
@@ -471,7 +541,7 @@ void CTFTeamStatus::PerformLayout( void )
 
 		// Local player is always the innermost panel, unless we're using class order
 		int nTeamPanelIndex = iProcessed;
-		if ( !bClassOrder )
+		if ( !bIsHugeTeam && !bClassOrder )
 		{
 			if (bIsLocalPlayerPanel)
 			{
@@ -510,7 +580,7 @@ void CTFTeamStatus::PerformLayout( void )
 			}
 		}
 
-		if ( !bIsLocalPlayerPanel || bClassOrder )
+		if ( !bIsLocalPlayerPanel || bClassOrder || bIsHugeTeam )
 		{
 			++iProcessed;
 		}
@@ -612,50 +682,112 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	int iPanel = 0;
 	bool bNeedsLayout = false;
 	int iLocalTeam = g_TF_PR->GetTeam( pPlayer->entindex() );
-	const bool bClassOrder = IsClassOrder();
 	if ( iLocalTeam >= FIRST_GAME_TEAM )
 	{
-		// doing this so we can share between the two.
-		const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS : TF_FIRST_NORMAL_CLASS;
-		for (int nClass = iFirstClass; nClass >= TF_FIRST_NORMAL_CLASS; nClass--)
+		const bool bIsRedHugeTeam = GIsHugeTeam( TF_TEAM_RED );
+		const bool bIsBluHugeTeam = GIsHugeTeam( TF_TEAM_BLUE );
+		const bool bIsBothHugeTeam = bIsRedHugeTeam && bIsBluHugeTeam;
+
+		if ( bIsRedHugeTeam || bIsBluHugeTeam )
 		{
-			// we want to sort the images to match the class menu selections
-			int nCurrentClass = g_ClassDefinesRemap[nClass];
-
-			for (int i = 1; i <= MAX_PLAYERS; i++)
+			for ( int iTeam = TF_TEAM_RED; iTeam <= TF_TEAM_BLUE; iTeam++ )
 			{
-				if (!g_TF_PR->IsConnected(i))
+				if ( iTeam == TF_TEAM_RED && !bIsRedHugeTeam )
 					continue;
-
-				int iTeam = g_TF_PR->GetTeam(i);
-
-				if (iTeam < FIRST_GAME_TEAM)
+				if ( iTeam == TF_TEAM_BLUE && !bIsBluHugeTeam )
 					continue;
-
-				if (bClassOrder && g_TF_PR->GetPlayerClass(i) != nCurrentClass)
-					continue;
-
-				// Add an entry
-				CTFTeamStatusPlayerPanel* pPanel = GetOrAddPanel(iPanel);
-
-				if (bClassOrder && pPanel->GetPreviousClass() != nCurrentClass)
+				for ( int nClass = TF_LAST_NORMAL_CLASS - 1; nClass >= TF_CLASS_UNDEFINED; nClass-- )
 				{
-					bNeedsLayout = true;
-				}
+					int nCurrentClass = g_ClassDefinesRemap[nClass];
+					// Add an entry for each class
+					CTFTeamStatusPlayerPanel *pPanel = GetOrAddPanel( iPanel );
+					if ( pPanel->GetPlayerIndex() != nCurrentClass )
+					{
+						bNeedsLayout = true;
+					}
+					pPanel->Setup( nCurrentClass, CSteamID(), "", TFGameRules()->GetGCTeamForGameTeam( iTeam ) );
+					if ( pPanel->GetPreviousTeam() != pPanel->GetTeam() )
+					{
+						bNeedsLayout = true;
+					}
+					int iClassCount = 0;
+					if (nClass > TF_CLASS_UNDEFINED)
+					{
+						for (int i = 1; i <= MAX_PLAYERS; i++)
+						{
+							if (!g_TF_PR->IsConnected(i))
+								continue;
 
-				if (pPanel->GetPlayerIndex() != i)
+							int iPlayerTeam = g_TF_PR->GetTeam(i);
+
+							if (iPlayerTeam != iTeam)
+								continue;
+
+							if (g_TF_PR->GetPlayerClass(i) != nCurrentClass)
+								continue;
+
+							if (!g_TF_PR->IsAlive(i))
+								continue;
+
+							iClassCount++;
+						}
+					}
+					pPanel->SetHugeClassCount(iClassCount);
+					++iPanel;
+				}
+			}
+		}
+
+		if ( !bIsBothHugeTeam )
+		{
+			// doing this so we can share between the two.
+			const bool bClassOrder = IsClassOrder();
+			const int iFirstClass = bClassOrder ? TF_LAST_NORMAL_CLASS - 1 : TF_FIRST_NORMAL_CLASS;
+			for ( int nClass = iFirstClass; nClass >= TF_FIRST_NORMAL_CLASS; nClass-- )
+			{
+				// we want to sort the images to match the class menu selections
+				int nCurrentClass = g_ClassDefinesRemap[nClass];
+				for ( int i = 1; i <= MAX_PLAYERS; i++ )
 				{
-					bNeedsLayout = true;
+					if ( !g_TF_PR->IsConnected( i ) )
+						continue;
+
+					int iTeam = g_TF_PR->GetTeam( i );
+
+					if ( iTeam < FIRST_GAME_TEAM )
+						continue;
+
+					if ( ( iTeam == TF_TEAM_RED ) && bIsRedHugeTeam )
+						continue;
+
+					if ( ( iTeam == TF_TEAM_BLUE ) && bIsBluHugeTeam )
+						continue;
+
+					if ( bClassOrder && g_TF_PR->GetPlayerClass( i ) != nCurrentClass )
+						continue;
+
+					// Add an entry 
+					CTFTeamStatusPlayerPanel *pPanel = GetOrAddPanel( iPanel );
+
+					if ( bClassOrder && pPanel->GetPreviousClass() != nCurrentClass )
+					{
+						bNeedsLayout = true;
+					}
+
+					if ( pPanel->GetPlayerIndex() != i )
+					{
+						bNeedsLayout = true;
+					}
+
+					pPanel->SetPlayerIndex( i );
+
+					if ( pPanel->GetPreviousTeam() != pPanel->GetTeam() )
+					{
+						bNeedsLayout = true;
+					}
+
+					++iPanel;
 				}
-
-				pPanel->SetPlayerIndex(i);
-
-				if (pPanel->GetPreviousTeam() != pPanel->GetTeam())
-				{
-					bNeedsLayout = true;
-				}
-
-				++iPanel;
 			}
 		}
 	}
@@ -663,12 +795,12 @@ void CTFTeamStatus::RecalculatePlayerPanels( void )
 	// Clear out any extra panels
 	for ( int i = iPanel; i < m_PlayerPanels.Count(); i++ )
 	{
-		if ( m_PlayerPanels[i]->GetPlayerIndex() != 0 )
+		if ( m_PlayerPanels[i]->GetPlayerIndex() >= 0 )
 		{
 			bNeedsLayout = true;
 		}
 
-		m_PlayerPanels[i]->SetPlayerIndex( 0 );
+		m_PlayerPanels[i]->SetPlayerIndex( -1 );
 	}
 
 	UpdatePlayerPanels();

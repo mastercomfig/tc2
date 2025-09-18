@@ -1170,7 +1170,7 @@ void CTFSpectatorGUI::RecalculatePlayerPanels( void )
 
 	for ( int i = iPanel; i < m_PlayerPanels.Count(); i++  )
 	{
-		m_PlayerPanels[i]->SetPlayerIndex( 0 );
+		m_PlayerPanels[i]->SetPlayerIndex( -1 );
 	}
 
 	UpdatePlayerPanels();

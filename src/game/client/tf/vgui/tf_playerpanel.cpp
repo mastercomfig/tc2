@@ -49,7 +49,7 @@ extern ConVar tf_max_health_boost;
 //-----------------------------------------------------------------------------
 CTFPlayerPanel::CTFPlayerPanel( vgui::Panel *parent, const char *name ) : vgui::EditablePanel( parent, name )
 {
-	m_iPlayerIndex = 0;
+	m_iPlayerIndex = -1;
 	m_pHealthIcon = new CTFPlayerPanelGUIHealth( this, "HealthIcon" );
 	m_pClassImage = NULL;
 	m_bPlayerReadyModeActive = false;
@@ -73,7 +73,6 @@ void CTFPlayerPanel::Reset( void )
 	m_bPrevReady = true;
 	m_iPrevState = GR_STATE_PREGAME;
 	m_bPlayerReadyModeActive = false;
-	m_nGCTeam = TEAM_INVALID;
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +89,6 @@ bool CTFPlayerPanel::Update( void )
 
 	bool bChanged = false;
 	bool bObserver = pLocalPlayer->GetObserverMode() != OBS_MODE_NONE;
-	bool bVisible = GetTeam() >= FIRST_GAME_TEAM;
 	int iRespawnWait = -1;
 	m_bPlayerReadyModeActive = ( !bObserver &&
 								 TFGameRules()->UsePlayerReadyStatusMode() &&
@@ -107,7 +105,7 @@ bool CTFPlayerPanel::Update( void )
 			m_nGCTeam = member.GetTeam();
 
 			RTime32 rtLastConnect = member.GetLastConnectTime();
-			if ( !m_iPlayerIndex && rtLastConnect != 0 )
+			if ( m_iPlayerIndex <= 0 && rtLastConnect != 0 )
 			{
 				iRespawnWait = CRTime::RTime32DateAdd( rtLastConnect, 180, k_ETimeUnitSecond ) - CRTime::RTime32TimeCur();
 				if ( iRespawnWait <= 0 )
@@ -115,6 +113,12 @@ bool CTFPlayerPanel::Update( void )
 			}
 		}
 	}
+	else
+	{
+		m_nGCTeam = TEAM_INVALID;
+	}
+
+	bool bVisible = GetTeam() >= FIRST_GAME_TEAM;
 
 	if ( IsVisible() != bVisible )
 	{
@@ -265,7 +269,7 @@ bool CTFPlayerPanel::Update( void )
 
 				if ( m_bPlayerReadyModeActive )
 				{
-					if ( m_iPlayerIndex && g_TF_PR->IsConnected( m_iPlayerIndex ) )
+					if ( m_iPlayerIndex > 0 && g_TF_PR->IsConnected( m_iPlayerIndex ) )
 					{
 						bPlayerReady = TFGameRules()->IsPlayerReady( m_iPlayerIndex );
 					}
@@ -334,7 +338,8 @@ void CTFPlayerPanel::Setup( int iPlayerIndex, CSteamID steamID, const char *pszP
 		pszPlayerName = "";
 	if ( m_iPlayerIndex != iPlayerIndex
 		|| m_steamID != steamID
-		|| Q_strcmp( m_sPlayerName, pszPlayerName ) )
+		|| Q_strcmp( m_sPlayerName, pszPlayerName )
+		|| m_nGCTeam != nLobbyTeam )
 	{
 		Reset();
 		m_iPlayerIndex = iPlayerIndex;
@@ -344,7 +349,7 @@ void CTFPlayerPanel::Setup( int iPlayerIndex, CSteamID steamID, const char *pszP
 		m_nGCTeam = nLobbyTeam;
 	}
 
-	if ( m_iPlayerIndex > 0 || m_steamID.IsValid() )
+	if ( m_iPlayerIndex >= 0 || m_steamID.IsValid() )
 	{
 		UpdateBorder();
 	}
@@ -402,7 +407,8 @@ int	CTFPlayerPanel::GetTeam( void )
 	{
 		return TFGameRules()->GetGameTeamForGCTeam( (TF_GC_TEAM)m_nGCTeam );
 	}
-	else if ( GetPlayerIndex() && g_TF_PR )
+
+	if ( GetPlayerIndex() > 0 && g_TF_PR )
 	{
 		return  g_TF_PR->GetTeam( GetPlayerIndex() );
 	}

@@ -893,7 +893,7 @@ void CHudTournament::RecalculatePlayerPanels( void )
 	// Clear out any extra panels
 	for ( int i = iPanel; i < m_PlayerPanels.Count(); i++  )
 	{
-		m_PlayerPanels[i]->SetPlayerIndex( 0 );
+		m_PlayerPanels[i]->SetPlayerIndex( -1 );
 	}
 
 	UpdatePlayerPanels();
@@ -938,9 +938,9 @@ void CHudTournament::UpdatePlayerPanels( void )
 	// Try and always put the local player's team on team1, if he's in a team
 	int iTeam1 = TF_TEAM_BLUE;
 	int iTeam2 = TF_TEAM_RED;
-	int iLocalTeam = g_TF_PR->GetTeam( pPlayer->entindex() );
 	// UNDONE: let's just make this consistent across the board
 #if 0
+	int iLocalTeam = g_TF_PR->GetTeam( pPlayer->entindex() );
 	if ( ( iLocalTeam == TF_TEAM_RED || iLocalTeam == TF_TEAM_BLUE ) && !TFGameRules()->IsCompetitiveGame() )	// Blue always on left in comp
 	{
 		iTeam1 = iLocalTeam;
@@ -982,7 +982,7 @@ void CHudTournament::UpdatePlayerPanels( void )
 	{
 		int iTeam = m_PlayerPanels[i]->GetTeam();
 
-		if ( !m_PlayerPanels[i]->GetPlayerIndex() && iTeam == TEAM_INVALID )
+		if ( m_PlayerPanels[i]->GetPlayerIndex() <= 0 && iTeam == TEAM_INVALID )
 			continue;
 
 		int iXPos = ( m_bCompetitiveMode ) ? -XRES( 30 ) : 0;	// Hack to make space for the season image
