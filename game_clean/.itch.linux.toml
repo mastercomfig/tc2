@@ -2,10 +2,8 @@
 name = "play"
 path = "tc2.sh"
 platform = "linux"
-args = ["-steam", "-noborder", "-particles", "1"]
 
 [[actions]]
 name = "tf2_og"
-path = "tc2.sh"
+path = "tf2_og.sh"
 platform = "linux"
-args = ["-steam", "-game", "tf2_og", "-noborder", "-particles", "1"]

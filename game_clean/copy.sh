@@ -71,6 +71,7 @@ if [ $PLATFORM = "win" ]; then
 
   FILES_REP+=(
     start_dedicated_tc2.bat
+    start_dedicated_tf2_og.bat
     tc2.bat
     tc2_vulkan.bat
     tf2_og.bat
@@ -86,6 +87,8 @@ elif [ $PLATFORM = "linux" ]; then
   )
 
   FILES_REP+=(
+    start_dedicated_tc2.sh
+    start_dedicated_tf2_og.sh
     tc2.sh
     tf2_og.sh
   )
