@@ -10698,7 +10698,7 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 					const char *pszTracerEffect = GetTracerType();
 
 					bool bIsHeadshot = false;
-					if (nDamageType & DMG_USE_HITLOCATIONS)
+					if ( nDamageType & DMG_USE_HITLOCATIONS && trace.m_pEnt && OnOpposingTFTeams( GetTeamNumber(), trace.m_pEnt->GetTeamNumber() ) )
 					{
 						if (trace.hitgroup == HITGROUP_HEAD)
 						{
