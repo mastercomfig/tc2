@@ -837,8 +837,13 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	}
 	else
 	{
+#if defined(MCOMS_BALANCE_PACK)
 		// start at max, so we decay down if we don't maintain accuracy
 		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y } );
+#else
+		// start at half accuracy
+		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, 50.0f } );
+#endif
 	}
 }
 
