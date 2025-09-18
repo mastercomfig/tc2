@@ -169,7 +169,7 @@ public:
 	ETFClass GetPresetClassToSpawn() const;	// return next class from preset table to spawn
 	bool CanChangeClass() const;
 	
-	const char *GetNextSpawnClassname( void ) const;
+	const char *GetNextSpawnClassname( void );
 
 	float GetThreatDanger( CBaseCombatCharacter *who ) const;		// return perceived danger of threat (0=none, 1=immediate deadly danger)
 	float GetMaxAttackRange( void ) const;							// return the max range at which we can effectively attack
@@ -489,7 +489,7 @@ public:
 	int GetUberHealthThreshold();
 	float GetUberDeployDelayDuration();
 
-	bool ShouldReEvaluateCurrentClass( void ) const;
+	bool ShouldReEvaluateCurrentClass( void );
 	void ReEvaluateCurrentClass( void );
 
 private:
@@ -501,6 +501,9 @@ private:
 
 	CTFNavArea *m_spawnArea;			// where we spawned
 	CountdownTimer m_justLostPointTimer;
+
+	int m_iClassSelection;
+	bool m_bHasEvaluatedClass;
 	
 	int m_weaponRestrictionFlags;
 	int m_attributeFlags;

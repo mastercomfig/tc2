@@ -1210,7 +1210,7 @@ bool CTFBot::CanChangeClass() const
 /**
  * NOTE: Assumes bot's difficulty has been set, and the bot is on a team.
  */
-const char *CTFBot::GetNextSpawnClassname( void ) const
+const char *CTFBot::GetNextSpawnClassname( void )
 {
 	ETFClass iNextClass = TF_CLASS_UNDEFINED;
 
@@ -1224,7 +1224,7 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 	{
 		iNextClass = GetPresetClassToSpawn();
 	}
-	else if ( iNextClass == TF_CLASS_UNDEFINED )
+	if ( iNextClass == TF_CLASS_UNDEFINED )
 	{
 		CUtlVector< ETFClass > desiredClassVector;
 		GetWeightDesiredClassToSpawn( desiredClassVector );
@@ -1235,7 +1235,12 @@ const char *CTFBot::GetNextSpawnClassname( void ) const
 			return "auto";
 		}
 
-		int which = RandomInt( 0, desiredClassVector.Count() - 1 );
+		// this will introduce a little bit of stability
+		if ( m_iClassSelection < 0 )
+		{
+			m_iClassSelection = RandomInt( 0, TF_LAST_NORMAL_CLASS );
+		}
+		int which = ( m_iClassSelection + 1 ) % desiredClassVector.Count();
 
 		// if we need to destroy a sentry, pick a class that can do so
 		if ( GetEnemySentry() )
@@ -1288,6 +1293,9 @@ CTFBot::CTFBot()
 	m_locomotor = new CTFBotLocomotion( this );
 	m_vision = new CTFBotVision( this );
 	ALLOCATE_INTENTION_INTERFACE( CTFBot );
+
+	m_iClassSelection = -1;
+	m_bHasEvaluatedClass = false;
 
 	m_spawnArea = NULL;
 	m_weaponRestrictionFlags = 0;
@@ -1410,8 +1418,12 @@ void CTFBot::SetMission( MissionType mission, bool resetBehaviorSystem )
 }
 
 //-----------------------------------------------------------------------------------------------------
-bool CTFBot::ShouldReEvaluateCurrentClass( void ) const
+bool CTFBot::ShouldReEvaluateCurrentClass( void )
 {
+	if ( m_bHasEvaluatedClass )
+	{
+		return false;
+	}
 	ETFClass iCurrentClass = ( ETFClass )GetPlayerClass()->GetClassIndex();
 	Assert( iCurrentClass != TF_CLASS_UNDEFINED );
 	TFPlayerClassData_t *classData = GetPlayerClassData( iCurrentClass );
@@ -1424,6 +1436,7 @@ bool CTFBot::ShouldReEvaluateCurrentClass( void ) const
 //-----------------------------------------------------------------------------------------------------
 void CTFBot::ReEvaluateCurrentClass( void )
 {
+	m_bHasEvaluatedClass = true;
 	// having the bot die will trigger them to
 	// re-evaluate their class in PhysicsSimulate() below
 	CommitSuicide( false, true );
@@ -1464,6 +1477,8 @@ void CTFBot::PhysicsSimulate( void )
 	{
 		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 			return;
+
+		m_iClassSelection = -1;
 
 		HandleCommand_JoinClass( GetNextSpawnClassname() );
 
@@ -1608,6 +1623,9 @@ int CTFBot::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 //-----------------------------------------------------------------------------------------------------
 void CTFBot::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAutoBalance /*= false*/  )
 {
+	m_bHasEvaluatedClass = false;
+	m_iClassSelection = -1;
+
 	BaseClass::ChangeTeam( iTeamNum, bAutoTeam, bSilent, bAutoBalance );
 	
 	if ( TFGameRules()->IsMannVsMachineMode() )
