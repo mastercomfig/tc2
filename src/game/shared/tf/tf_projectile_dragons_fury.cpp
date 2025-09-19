@@ -140,7 +140,7 @@ public:
 
 				// Put the projectile to sleep while we wait for the client interp window to expire (keeps the dlight effect in sync)
 				CTFPlayer* pTFOwner = ToTFPlayer(GetOwnerPlayer());
-				SetContextThink( &CTFProjectile_BallOfFire::ExpireDelayThink, gpGlobals->curtime + pTFOwner->m_fLerpTime, "ExpireDelayThink" );
+				SetContextThink( &CTFProjectile_BallOfFire::ExpireDelayThink, gpGlobals->curtime + Max(pTFOwner->m_fLerpTime, 0.1f), "ExpireDelayThink" );
 			}
 			else
 			{
