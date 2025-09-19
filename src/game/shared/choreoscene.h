@@ -56,6 +56,7 @@ class CChoreoScene : public ICurveDataAccessor
 
 public:
 	// Construction
+					CChoreoScene( void );
 					CChoreoScene( IChoreoEventCallback *callback );
 					~CChoreoScene( void );
 

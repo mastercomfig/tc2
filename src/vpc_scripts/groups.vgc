@@ -16,6 +16,7 @@ $Group "gamedlls"
 
 $Group "game"
 {
+	"choreoobjects"
 	"client"
 	"launcher_main"
 	"mathlib"
@@ -34,6 +35,7 @@ $Group "shaders"
 
 $Group "everything"
 {
+	"choreoobjects"
 	"captioncompiler"
 	"client"
 	"fgdlib"

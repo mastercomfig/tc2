@@ -60,6 +60,8 @@ C_SceneEntity::C_SceneEntity( void )
 
 	m_hOwner = NULL;
 	m_bClientOnly = false;
+
+	SetDefLessFunc( m_mapSceneMemCache );
 }
 
 C_SceneEntity::~C_SceneEntity( void )
@@ -756,6 +758,14 @@ CChoreoScene *C_SceneEntity::LoadScene( const char *filename )
 	Q_SetExtension( loadfile, ".vcd", sizeof( loadfile ) );
 	Q_FixSlashes( loadfile );
 
+	auto iCacheIdx = m_mapSceneMemCache.Find(loadfile);
+	if ( iCacheIdx != m_mapSceneMemCache.InvalidIndex() )
+	{
+		CChoreoScene* pScene = new CChoreoScene(NULL);
+		*pScene = *m_mapSceneMemCache.Element(iCacheIdx);
+		return pScene;
+	}
+
 	char *pBuffer = NULL;
 	size_t bufsize = scenefilecache->GetSceneBufferSize( loadfile );
 	if ( bufsize <= 0 )
@@ -790,6 +800,10 @@ CChoreoScene *C_SceneEntity::LoadScene( const char *filename )
 		g_TokenProcessor.SetBuffer( pBuffer );
 		pScene = ChoreoLoadScene( loadfile, this, &g_TokenProcessor, Scene_Printf );
 	}
+
+	CChoreoScene* pCachedScene = new CChoreoScene(NULL);
+	*pCachedScene = *pScene;
+	m_mapSceneMemCache.Insert(loadfile, pCachedScene);
 
 	delete[] pBuffer;
 	return pScene;

@@ -114,6 +114,14 @@ CChoreoScene::CChoreoScene( IChoreoEventCallback *callback )
 	Init( callback );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+CChoreoScene::CChoreoScene( void )
+{
+	Init( NULL );
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: // Assignment

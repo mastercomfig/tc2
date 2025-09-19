@@ -115,6 +115,8 @@ private:
 	};
 
 	CUtlVector< QueuedEvents_t > m_QueuedEvents;
+
+	CUtlMap<CUtlString, CChoreoScene*> m_mapSceneMemCache;
 };
 
 //-----------------------------------------------------------------------------
