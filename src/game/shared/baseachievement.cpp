@@ -28,6 +28,7 @@
 //=============================================================================
 
 CBaseAchievementHelper *CBaseAchievementHelper::s_pFirst = NULL;
+bool CBaseAchievement::s_bIsTrackingAnyAchievements = false;
 
 BEGIN_DATADESC_NO_BASE( CBaseAchievement )
 DEFINE_FIELD( m_iCount,						FIELD_INTEGER ),
@@ -268,6 +269,11 @@ void CBaseAchievement::SetShowOnHUD( bool bShow )
  	if ( m_bShowOnHUD != bShow )
 	{
  		m_pAchievementMgr->SetDirty( true );
+	}
+
+	if ( bShow )
+	{
+		s_bIsTrackingAnyAchievements = true;
 	}
 
 	m_bShowOnHUD = bShow;

@@ -170,36 +170,40 @@ void CHudBaseAchievementTracker::UpdateAchievementItems()
 	if ( !pAchievementMgr )
 		return;
 
-	int iCount = pAchievementMgr->GetAchievementCount();
 	int iShown = 0;
-	for ( int i = 0; i < iCount; ++i )
-	{		
-		IAchievement* pCur = pAchievementMgr->GetAchievementByIndex( i );
-		if ( !ShouldShowAchievement( pCur ) )
-		{
-			// don't remove achievements that are still glowing (typically a just completed achievement)
-			if ( pCur && m_AchievementItem.Count() > iShown && m_AchievementItem[iShown]->GetAchievementID() == pCur->GetAchievementID() 
-					&& m_AchievementItem[iShown]->GetGlow() > 0 )
+
+	if ( CBaseAchievement::s_bIsTrackingAnyAchievements )
+	{
+		int iCount = pAchievementMgr->GetAchievementCount();
+		for ( int i = 0; i < iCount; ++i )
+		{		
+			IAchievement* pCur = pAchievementMgr->GetAchievementByIndex( i );
+			if ( !ShouldShowAchievement( pCur ) )
 			{
-				iShown++;
+				// don't remove achievements that are still glowing (typically a just completed achievement)
+				if ( pCur && m_AchievementItem.Count() > iShown && m_AchievementItem[iShown]->GetAchievementID() == pCur->GetAchievementID() 
+						&& m_AchievementItem[iShown]->GetGlow() > 0 )
+				{
+					iShown++;
+				}
+				continue;
 			}
-			continue;
+
+			if ( m_AchievementItem.Count() < iShown+1 )
+			{
+				CAchievementTrackerItem *pNewItem = CreateAchievementPanel();
+				SETUP_PANEL( pNewItem );
+				m_AchievementItem.AddToTail( pNewItem );
+			}
+
+			m_AchievementItem[iShown]->SetAchievement( pCur );
+			m_AchievementItem[iShown]->SetSlot( iShown );
+			m_AchievementItem[iShown]->SetVisible( true );
+			iShown++;
+
+			if ( iShown >= GetMaxAchievementsShown() )
+				break;
 		}
-
-		if ( m_AchievementItem.Count() < iShown+1 )
-		{
-			CAchievementTrackerItem *pNewItem = CreateAchievementPanel();
-			SETUP_PANEL( pNewItem );
-			m_AchievementItem.AddToTail( pNewItem );
-		}
-
-		m_AchievementItem[iShown]->SetAchievement( pCur );
-		m_AchievementItem[iShown]->SetSlot( iShown );
-		m_AchievementItem[iShown]->SetVisible( true );
-		iShown++;
-
-		if ( iShown >= GetMaxAchievementsShown() )
-			break;
 	}
 
 	// hide any extra panels we may have created from when the list was longer
