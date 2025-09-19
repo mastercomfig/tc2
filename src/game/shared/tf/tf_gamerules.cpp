@@ -956,10 +956,10 @@ ConVar tf_mvm_respec_credit_goal( "tf_mvm_respec_credit_goal", "2000", FCVAR_CHE
 ConVar tf_mvm_buybacks_method( "tf_mvm_buybacks_method", "0", FCVAR_REPLICATED | FCVAR_HIDDEN, "When set to 0, use the traditional, currency-based system.  When set to 1, use finite, charge-based system.", true, 0.0, true, 1.0 );
 ConVar tf_mvm_buybacks_per_wave( "tf_mvm_buybacks_per_wave", "3", FCVAR_REPLICATED | FCVAR_HIDDEN, "The fixed number of buybacks players can use per-wave." );
 
-ConVar tf_team_size("tf_team_size", "12", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players per team");
+ConVar tf_team_size("tf_team_size", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players per team");
 
-ConVar tf_team_size_red("tf_team_size_red", "12", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players on RED");
-ConVar tf_team_size_blu("tf_team_size_blu", "12", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players on BLU");
+ConVar tf_team_size_red("tf_team_size_red", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players on RED");
+ConVar tf_team_size_blu("tf_team_size_blu", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of players on BLU");
 
 #ifdef GAME_DLL
 enum { kMVM_CurrencyPackMinSize = 1, };
@@ -18668,13 +18668,28 @@ int CTFGameRules::GetTeamSize( int iTeam )
 		return iSize;
 	}
 
+	// if the server operator set a non-default symmetrical team size, use that
 	int iDefaultSize = tf_team_size.GetInt();
-	if ( iDefaultSize != 12 )
+	if ( iDefaultSize >= 0 )
 	{
 		return iDefaultSize;
 	}
 
-	return iTeam == TF_TEAM_RED ? tf_team_size_red.GetInt() : tf_team_size_blu.GetInt();
+	// if the server operator set a non-default asymmetrical team size, use that
+	iDefaultSize = iTeam == TF_TEAM_RED ? tf_team_size_red.GetInt() : tf_team_size_blu.GetInt();
+	if ( iDefaultSize >= 0 )
+	{
+		return iDefaultSize;
+	}
+
+	// if the server operator increased the max players, then default to no restriction.
+	if (gpGlobals->maxClients > 33)
+	{
+		return 0;
+	}
+
+	// otherwise, default to 12v12
+	return 12;
 }
 
 
