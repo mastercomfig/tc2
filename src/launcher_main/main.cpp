@@ -715,14 +715,25 @@ int main( int argc, char *argv[] )
 
 	pBinaryGameDir = szGameInstallDir;
 
-	// if you try to re-enable this again, you will have to fix LD_LIBRARY_PATH or else the dedicated lib can't find the others
-#if 0
-	if (bLaunchDedicated)
+#if 1
+	if ( bLaunchDedicated )
 	{
+		#define TIER0_DLL_PATH		"%s/" PLATFORM_BIN_DIR "/libtier0_srv.so"
+		#define VSTDLIB_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/libvstdlib_srv.so"
 		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
 
-		char szBuffer[8192];
-		snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, szGameInstallDir );
+		char szTier0[8192];
+		snprintf(szTier0, sizeof(szTier0), TIER0_DLL_PATH, szGameInstallDir);
+
+		Launcher_LoadModule(szTier0);
+
+		char szVstdlib[8192];
+		snprintf(szVstdlib, sizeof(szVstdlib), VSTDLIB_DLL_PATH, szGameInstallDir);
+
+		Launcher_LoadModule(szVstdlib);
+
+		char szExecutable[8192];
+		snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, szGameInstallDir );
 
 		void* launcher = Launcher_LoadModule(szBuffer);
 		if (!launcher)
