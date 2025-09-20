@@ -8108,6 +8108,14 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 
 		// make sure the chat window has been restored to the appropriate place
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_RestoreChatWindow", false );
+
+		// weapon specific config
+		if ( GetActiveWeapon() )
+		{
+			char szCmd[256];
+			Q_snprintf(szCmd, sizeof(szCmd), "exec %s.cfg", GetActiveWeapon()->GetClassname());
+			engine->ExecuteClientCmd(szCmd);
+		}
 	}
 
 	UpdateVisibility();

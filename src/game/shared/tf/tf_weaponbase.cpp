@@ -1348,6 +1348,16 @@ bool CTFWeaponBase::Deploy( void )
 
 		pPlayer->SetNextAttack( m_flNextPrimaryAttack );
 
+#ifdef CLIENT_DLL
+		if ( GetOwner() == C_BasePlayer::GetLocalPlayer() )
+		{
+			// weapon specific config
+			char szCmd[256];
+			Q_snprintf( szCmd, sizeof( szCmd ), "exec %s.cfg", GetClassname() );
+			engine->ExecuteClientCmd( szCmd );
+		}
+#endif
+
 		m_flLastDeployTime = gpGlobals->curtime;
 		m_flLastReadyTime = gpGlobals->curtime + flDeployTime;
 

@@ -708,7 +708,7 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 			// have the player to exec a <class>.cfg file for the class they have selected
 			char szCmd[128];
 			Q_snprintf( szCmd, sizeof( szCmd ), "exec %s.cfg", GetPlayerClassData( iClass )->m_szClassName );
-			engine->ExecuteClientCmd( szCmd ); 
+			engine->ExecuteClientCmd( szCmd );
 		}
 	}
 	
