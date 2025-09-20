@@ -5,4 +5,4 @@ pushd "$(dirname -- "$script")" > /dev/null
 
 ./tc2.sh -game $PWD/tf2_og "$@"
 
-popd
+popd > /dev/null

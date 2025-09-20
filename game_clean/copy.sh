@@ -127,3 +127,8 @@ for F in "${FILES[@]}"; do
   ORIG=$(basename ${F})
   cp -f ${F} ${CLEAN_DIR}/${ORIG}
 done
+
+# make executable
+if [ $PLATFORM = "linux" ]; then
+  chmod +x ${CLEAN_DIR}/*.sh ${CLEAN_DIR}/tc2_linux64
+fi

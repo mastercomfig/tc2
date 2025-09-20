@@ -87,6 +87,7 @@ static void *Launcher_GetProcAddress( void *pHandle, const char *pszName )
 #endif
 
 static const AppId_t k_unSDK2013MPAppId = 243750;
+static const AppId_t k_unSDK2013DSAppId = 244310;
 
 #ifdef MOD_LAUNCHER
 static const AppId_t k_unMyModAppid = MOD_APPID;
@@ -217,7 +218,21 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 	}
 
 	uint32_t unLength = 0;
-	if ( pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+	// if we're running dedicated, first check for dedicated app ID
+	if ( bDedicated )
+	{
+		if ( pSteamApps->BIsAppInstalled( k_unSDK2013DSAppId ) )
+		{
+			unLength = pSteamApps->GetAppInstallDir( k_unSDK2013DSAppId, pszBuf, nBufSize );
+		}
+	}
+#ifdef POSIX
+	// dedicated is required on posix servers
+	else if ( pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+#else
+	// only search for MP if we didn't find dedicated (or we weren't looking)
+	if ( unLength == 0 && pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+#endif
 	{
 		unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
 	}
@@ -229,7 +244,18 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 
 	if ( unLength == 0 )
 	{
-		MessageBox( 0, "Source SDK 2013 Multiplayer (243750) must be installed to launch this mod.", "Launcher Error", MB_OK );
+		if ( bDedicated )
+		{
+			MessageBox( 0, "Source SDK 2013 Dedicated Server (244310) must be installed to launch this mod.", "Launcher Error", MB_OK );
+		}
+		else
+		{
+			MessageBox( 0, "Source SDK 2013 Multiplayer (243750) must be installed to launch this mod.", "Launcher Error", MB_OK );
+		}
+		if ( bDedicated )
+		{
+			UnloadSteam();
+		}
 		return false;
 	}
 

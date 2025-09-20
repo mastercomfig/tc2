@@ -5,4 +5,4 @@ pushd "$(dirname -- "$script")" > /dev/null
 
 ./tc2.sh -console -dedicated +sv_pure 1 "$@"
 
-popd
+popd > /dev/null
