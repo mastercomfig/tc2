@@ -101,7 +101,9 @@ void CHudBaseAchievementTracker::LevelInit()
 	}
 	m_AchievementItem.Purge();
 
-	for ( int i=0; i < GetMaxAchievementsShown(); i++ )
+	const int iMaxAchievements = GetMaxAchievementsShown();
+
+	for ( int i=0; i < iMaxAchievements; i++ )
 	{
 		CAchievementTrackerItem *pNewItem = CreateAchievementPanel();
 		pNewItem->SetAchievement( NULL );
