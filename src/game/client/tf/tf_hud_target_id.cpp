@@ -84,14 +84,14 @@ bool ShouldHealthBarBeVisible( CBaseEntity *pTarget, CTFPlayer *pLocalPlayer )
 	const int iDisableFloatingHealth = tf_hud_target_id_disable_floating_health.GetInt();
 
 	// always disable
-	if ( iDisableFloatingHealth == 1 )
+	if ( iDisableFloatingHealth == 2 )
 		return false;
 
 	if ( pTarget->IsHealthBarVisible() )
 		return true;
 
 	// only disable if HealthBar not visible
-	if ( iDisableFloatingHealth == 2 )
+	if ( iDisableFloatingHealth == 1 )
 		return false;
 
 	if ( !pTarget->IsPlayer() )
