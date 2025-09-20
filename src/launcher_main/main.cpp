@@ -715,7 +715,7 @@ int main( int argc, char *argv[] )
 
 	if (bLaunchDedicated)
 	{
-		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated.so"
+		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
 
 		char szBuffer[4096];
 		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, pBinaryGameDir);
