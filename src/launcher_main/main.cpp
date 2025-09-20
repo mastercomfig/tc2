@@ -715,17 +715,19 @@ int main( int argc, char *argv[] )
 
 	pBinaryGameDir = szGameInstallDir;
 
+	// if you try to re-enable this again, you will have to fix LD_LIBRARY_PATH or else the dedicated lib can't find the others
+#if 0
 	if (bLaunchDedicated)
 	{
 		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
 
-		char szBuffer[4096];
-		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, szGameInstallDir );
+		char szBuffer[8192];
+		snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, szGameInstallDir );
 
 		void* launcher = Launcher_LoadModule(szBuffer);
 		if (!launcher)
 		{
-			fprintf(stderr, "Failed to load the launcher %s\n", szBuffer);
+			fprintf(stderr, "Failed to load the launcher: %s\n", szBuffer);
 			return 0;
 		}
 
@@ -738,10 +740,17 @@ int main( int argc, char *argv[] )
 
 		return main(argc, argv);
 	}
-
+#endif
 	
 	char szExecutable[8192];
-	snprintf(szExecutable, sizeof(szExecutable), "%s/hl2.sh", szGameInstallDir );
+	if ( bLaunchDedicated )
+	{
+		snprintf(szExecutable, sizeof(szExecutable), "%s/srcds_run", szGameInstallDir );
+	}
+	else
+	{
+		snprintf(szExecutable, sizeof(szExecutable), "%s/hl2.sh", szGameInstallDir );
+	}
 
 	std::vector<char *> new_argv;
 
