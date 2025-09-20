@@ -14417,29 +14417,7 @@ bool CTFPlayer::SetObserverMode(int mode)
 		m_flLastAction = gpGlobals->curtime;
 	}
 
-	// this is the old behavior, still supported for community servers
-	bool bAllowSpecModeChange = TFGameRules()->IsInTournamentMode() ? TFGameRules()->IsMannVsMachineMode() : true;
-
-	// new behavior for Valve casual, competitive, and mvm matches
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-	if ( pMatchDesc )
-	{
-		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
-	}
-
-	if ( TFGameRules()->IsEmulatingMatch() == 1 )
-	{
-		bAllowSpecModeChange = true;
-	}
-
-	// TODO(mcoms)
-#if 0
-	// competitive games now allow spec mode changes due to visibility checks
-	if ( TFGameRules()->IsCompetitiveGame() == 1 )
-	{
-		bAllowSpecModeChange = true;
-	}
-#endif
+	const bool bAllowSpecModeChange = TFGameRules()->AllowSpectatorModeChange();
 
 	if ( !bAllowSpecModeChange )
 	{
@@ -14503,8 +14481,9 @@ bool CTFPlayer::SetObserverMode(int mode)
 //-----------------------------------------------------------------------------
 void CTFPlayer::StateEnterOBSERVER( void )
 {
-	// Always start a spectator session in chase mode
-	m_iObserverLastMode = OBS_MODE_CHASE;
+	const bool bStrictMode = !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
+	// Always start a spectator session in chase mode, unless in strict mode
+	m_iObserverLastMode = bStrictMode ? OBS_MODE_DEATHCAM : OBS_MODE_CHASE;
 
 	if( m_hObserverTarget == NULL )
 	{
@@ -14638,6 +14617,9 @@ void CTFPlayer::StateThinkDYING( void )
 			}
 		}
 
+		// TODO(mcoms): is it this or strict spectator rules? or maybe both?
+		const bool bStrictMode = !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
+
 		if ( GetObserverMode() == OBS_MODE_FREEZECAM )
 		{
 			// If we're in freezecam, and we want out, abort.  (only if server is not using mp_fadetoblack)
@@ -14651,7 +14633,18 @@ void CTFPlayer::StateThinkDYING( void )
 
 				FindInitialObserverTarget();
 
-				if ( TFGameRules() && TFGameRules()->IsPasstimeMode() )
+				if ( bStrictMode )
+				{
+					if ( IsValidObserverTarget( GetObserverTarget() ) )
+					{
+						SetObserverMode( OBS_MODE_IN_EYE );
+					}
+					else
+					{
+						SetObserverMode( OBS_MODE_DEATHCAM );
+					}
+				}
+				else if ( TFGameRules() && TFGameRules()->IsPasstimeMode() )
 				{
 					SetObserverMode( OBS_MODE_POI );
 				}
@@ -14660,6 +14653,17 @@ void CTFPlayer::StateThinkDYING( void )
 					SetObserverMode( OBS_MODE_CHASE );
 				}
 				ShowViewPortPanel( "specgui" , ModeWantsSpectatorGUI(OBS_MODE_CHASE) );
+			}
+		}
+		else if ( bStrictMode )
+		{
+			if ( IsValidObserverTarget( GetObserverTarget() ) )
+			{
+				SetObserverMode( OBS_MODE_IN_EYE );
+			}
+			else
+			{
+				SetObserverMode( OBS_MODE_DEATHCAM );
 			}
 		}
 
@@ -14673,6 +14677,14 @@ void CTFPlayer::StateThinkDYING( void )
 		StopAnimation();
 
 		IncrementInterpolationFrame();
+
+		if ( bStrictMode && m_hObserverTarget && m_hObserverTarget->GetTeamNumber() >= FIRST_GAME_TEAM && m_hObserverTarget->GetTeamNumber() != GetTeamNumber() )
+		{
+			// spectate our death since there isn't anything else to spectate in strict mode.
+			// maybe better to upgrade our observer target find logic to not linger in this case, but this works for now
+			m_hObserverTarget.Set( this );
+			SetObserverMode( OBS_MODE_DEATHCAM );
+		}
 
 		if ( GetMoveType() != MOVETYPE_NONE && (GetFlags() & FL_ONGROUND) )
 			SetMoveType( MOVETYPE_NONE );
@@ -17085,25 +17097,7 @@ bool CTFPlayer::IsValidObserverTarget( CBaseEntity * target )
 
 	if ( !target->IsPlayer() )
 	{
-		bool bStrictRules = false;
-		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
-		if ( pMatchDesc )
-		{
-			bStrictRules = pMatchDesc->BUsesStrictSpectatorRules();
-		}
-		else
-		{
-			bStrictRules = ( TFGameRules()->IsInTournamentMode() && !TFGameRules()->IsMannVsMachineMode() );
-		}
-
-		// TODO(mcoms)
-#if 0
-		if ( TFGameRules()->IsCompetitiveGame() )
-		{
-			// no longer need strict rules in competitive
-			bStrictRules = false;
-		}
-#endif
+		const bool bStrictRules = TFGameRules()->IsStrictSpectatorRules();
 
 		if ( bStrictRules )
 		{

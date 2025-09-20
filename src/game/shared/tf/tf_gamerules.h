@@ -553,6 +553,9 @@ public:
 
 	bool			InMatchStartCountdown() { return BInMatchStartCountdown(); }
 
+	bool			IsStrictSpectatorRules();
+	bool			AllowSpectatorModeChange();
+
 protected:
 
 	virtual void LoadMapCycleFile( void ) OVERRIDE;

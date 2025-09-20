@@ -10386,6 +10386,66 @@ void CTFGameRules::RecalculateTruce( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFGameRules::IsStrictSpectatorRules()
+{
+	bool bStrictRules;
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(GetCurrentMatchGroupWithEmulation());
+	if (pMatchDesc)
+	{
+		bStrictRules = pMatchDesc->BUsesStrictSpectatorRules();
+	}
+	else
+	{
+		bStrictRules = IsInTournamentMode() && !IsMannVsMachineMode();
+	}
+
+	// TODO(mcoms)
+#if 0
+	if (TFGameRules()->IsCompetitiveGame())
+	{
+		// no longer need strict rules in competitive
+		bStrictRules = false;
+	}
+#endif
+
+	return bStrictRules;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFGameRules::AllowSpectatorModeChange()
+{
+	// this is the old behavior, still supported for community servers
+	bool bAllowSpecModeChange = TFGameRules()->IsInTournamentMode() ? TFGameRules()->IsMannVsMachineMode() : true;
+
+	// new behavior for Valve casual, competitive, and mvm matches
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(TFGameRules()->GetCurrentMatchGroup());
+	if (pMatchDesc)
+	{
+		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
+	}
+
+	if (TFGameRules()->IsEmulatingMatch() == 1)
+	{
+		bAllowSpecModeChange = true;
+	}
+
+	// TODO(mcoms)
+#if 0
+	// competitive games now allow spec mode changes due to visibility checks
+	if (TFGameRules()->IsCompetitiveGame())
+	{
+		bAllowSpecModeChange = true;
+	}
+#endif
+
+	return bAllowSpecModeChange;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CTFGameRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAttacker, const CTakeDamageInfo &info )
 {
 	// guard against NULL pointers if players disconnect
