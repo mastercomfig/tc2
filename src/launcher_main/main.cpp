@@ -713,17 +713,19 @@ int main( int argc, char *argv[] )
 		return 1;
 	}
 
+	pBinaryGameDir = szGameInstallDir;
+
 	if (bLaunchDedicated)
 	{
 		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
 
 		char szBuffer[4096];
-		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, pBinaryGameDir);
+		_snprintf(szBuffer, sizeof(szBuffer), DEDICATED_DLL_PATH, szGameInstallDir );
 
 		void* launcher = Launcher_LoadModule(szBuffer);
 		if (!launcher)
 		{
-			fprintf(stderr, "Failed to load the launcher %s\n", szBuffer);
+			fprintf(stderr, "Failed to load the launcher\n", szBuffer);
 			return 0;
 		}
 
