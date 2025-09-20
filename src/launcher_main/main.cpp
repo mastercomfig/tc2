@@ -725,7 +725,7 @@ int main( int argc, char *argv[] )
 		void* launcher = Launcher_LoadModule(szBuffer);
 		if (!launcher)
 		{
-			fprintf(stderr, "Failed to load the launcher\n", szBuffer);
+			fprintf(stderr, "Failed to load the launcher %s\n", szBuffer);
 			return 0;
 		}
 
