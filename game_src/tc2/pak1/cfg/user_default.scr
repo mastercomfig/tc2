@@ -175,6 +175,14 @@ DESCRIPTION INFO_OPTIONS
 		{ SLIDER 1 255 }
 		{ "50.1" }
 	}
+
+	"cl_hitmarker"
+	{
+		"#TF_Hitmarker"
+		"#Tooltip_Hitmarker"
+		{ BOOL }
+		{ "1" }
+	}
 	
 	"hud_combattext"
 	{
