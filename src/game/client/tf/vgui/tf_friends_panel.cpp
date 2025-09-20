@@ -522,7 +522,12 @@ void CSteamFriendsListPanel::ProcessFriends()
 
 void CSteamFriendsListPanel::PruneKnownFriends()
 {
+	// TODO(mcoms): optimize this later
+#if 0
 	const uint32 knMaxFriendPanels = 64;
+#else
+	const uint32 knMaxFriendPanels = 24;
+#endif
 
 	// Everyone gets to show, initially
 	FOR_EACH_MAP_FAST( m_mapKnownFriends, i )
