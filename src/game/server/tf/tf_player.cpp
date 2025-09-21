@@ -7076,6 +7076,9 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 		ResetPlayerClass();
 	}
 
+	// reset spawn point
+	m_pSpawnPoint = NULL;
+
 	RemoveNemesisRelationships();
 
 	if ( iTeamNum == TEAM_UNASSIGNED )
@@ -7124,9 +7127,6 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 			}
 		}
 	}
-
-	// reset spawn point
-	m_pSpawnPoint = NULL;
 	
 	m_Shared.RemoveAllCond();
 	DuelMiniGame_NotifyPlayerChangedTeam( this, iTeamNum, false );
