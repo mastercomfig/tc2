@@ -295,7 +295,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_nocrosshaironscopezoom"
 		"#Tooltip_nocrosshaironscopezoomn"
 		{ BOOL }
-		{ "1" }
+		{ "0" }
 	}	
 	
 	"tf_medigun_autoheal"
