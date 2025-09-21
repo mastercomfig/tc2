@@ -22,7 +22,6 @@ declare -a DLLS=(
 
 declare -a FILES_REP=(
   #
-  tc2/cfg/vscript_convar_allowlist.txt
   tf2_og/cfg/vscript_convar_allowlist.txt
   #
   tf2_og/pak1
@@ -118,6 +117,11 @@ done
 
 for F in "${FILES_REP[@]}"; do
   cp -rf ${DEV_DIR}/${F} ${CLEAN_DIR}/${F}
+done
+
+# cfg files
+for F in $(cd ${DEV_DIR}/tc2/cfg && git ls-files .); do
+  cp -rf ${DEV_DIR}/tc2/cfg/${F} ${CLEAN_DIR}/tc2/cfg/${F}
 done
 
 # pak1.vpk
