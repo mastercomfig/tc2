@@ -735,10 +735,10 @@ int main( int argc, char *argv[] )
 		char szExecutable[8192];
 		snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, szGameInstallDir );
 
-		void* launcher = Launcher_LoadModule(szBuffer);
+		void* launcher = Launcher_LoadModule(szExecutable);
 		if (!launcher)
 		{
-			fprintf(stderr, "Failed to load the launcher: %s\n", szBuffer);
+			fprintf(stderr, "Failed to load the launcher: %s\n", szExecutable);
 			return 0;
 		}
 
