@@ -14585,7 +14585,13 @@ void CTFPlayer::StateThinkDYING( void )
 	static ConVarRef mp_disable_respawn_times("mp_disable_respawn_times");
 	float flTimeInFreeze = mp_disable_respawn_times.GetInt() == 2 ? ( 0.01f ) : ( spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
 	float flFreezeEnd = (m_flDeathTime + TF_DEATH_ANIMATION_TIME + flTimeInFreeze );
-	if ( !m_bPlayedFreezeCamSound  && GetObserverTarget() && GetObserverTarget() != this )
+
+	if ( !m_bPlayedFreezeCamSound && mp_disable_respawn_times.GetInt() == 2 )
+	{
+		m_bPlayedFreezeCamSound = true;
+	}
+
+	if ( !m_bPlayedFreezeCamSound && GetObserverTarget() && GetObserverTarget() != this )
 	{
 		// Start the sound so that it ends at the freezecam lock on time
 		float flFreezeSoundLength = 0.3f;
