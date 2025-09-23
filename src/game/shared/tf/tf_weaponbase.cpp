@@ -2548,7 +2548,8 @@ void CTFWeaponBase::ItemPostFrame( void )
 	bool bNeedsReload = NeedsReloadForAmmo1( GetMaxClip1() ) || ( IsEnergyWeapon() && !Energy_FullyCharged() );
 
 	// If we're not shooting, and we want to autoreload, press our reload key
-	if ( !AutoFiresFullClip() && pOwner->ShouldAutoReload() && UsesClipsForAmmo1() && !(pOwner->m_nButtons & (IN_ATTACK|IN_ATTACK2)) && bNeedsReload )
+	// also check for frozen since this theory blocks our buttons
+	if ( !AutoFiresFullClip() && pOwner->ShouldAutoReload() && UsesClipsForAmmo1() && !(pOwner->m_nButtons & (IN_ATTACK|IN_ATTACK2)) && bNeedsReload && ( pOwner->GetFlags() & FL_FROZEN ) == 0 )
 	{
 		pOwner->m_nButtons |= IN_RELOAD;
 	}
