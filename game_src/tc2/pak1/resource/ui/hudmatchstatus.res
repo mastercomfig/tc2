@@ -555,7 +555,7 @@
 			{
 				"ControlName"	"CExLabel"
 				"fieldName"		"chargeamount"
-				"font"			"PlayerPanelPlayerName"
+				"font"			"PlayerPanelChargeAmount"
 				"xpos"			"cs-0.4"
 				"ypos"			"9"
 				"zpos"			"6"
@@ -568,24 +568,6 @@
 				"textAlignment"	"center"
 				"proportionaltoparent"	"1"
 				"fgcolor"		"0 255 0 255"
-			}
-			"chargeamount_shadow"
-			{
-				"ControlName"	"CExLabel"
-				"fieldName"		"chargeamount_shadow"
-				"font"			"PlayerPanelPlayerName"
-				"xpos"			"cs-0.4"
-				"ypos"			"10"
-				"zpos"			"5"
-				"wide"			"25"
-				"tall"			"15"
-				"autoResize"	"0"
-				"pinCorner"		"0"
-				"visible"		"1"
-				"labelText"		"%chargeamount%"
-				"textAlignment"	"center"
-				"proportionaltoparent"	"1"
-				"fgcolor"		"0 0 0 255"
 			}
 			"specindex"
 			{

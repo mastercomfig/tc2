@@ -297,6 +297,14 @@ DESCRIPTION INFO_OPTIONS
 		{ BOOL }
 		{ "0" }
 	}	
+
+	"tf_revolver_dynamic_crosshair"
+	{
+		"#TF_revolverdynamiccrosshair"
+		"#Tooltip_revolverdynamiccrosshair"
+		{ BOOL }
+		{ "1" }
+	}
 	
 	"tf_medigun_autoheal"
 	{
