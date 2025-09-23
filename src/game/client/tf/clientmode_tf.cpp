@@ -772,17 +772,16 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( "player_death", eventname ) )
 	{
-		int nVictimTeam = g_TF_PR->GetTeam( nVictimIndex );
-		// Make sure they're not doing a dead ringer fake death, nor on a non-game team
-		if ( ( nVictimTeam >= FIRST_GAME_TEAM ) && ( event->GetInt( "death_flags" ) & TF_DEATH_FEIGN_DEATH ) == 0 )
+		// Make sure they're not doing a dead ringer fake death
+		if ( ( event->GetInt( "death_flags" ) & TF_DEATH_FEIGN_DEATH ) == 0 )
 		{
 			if ( TFGameRules() && ( TFGameRules()->State_Get() == GR_STATE_RND_RUNNING ) && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsInTournamentMode() ) )
 			{
+				int nVictimIndex = event->GetInt( "victim_entindex" );
+				int nVictimTeam = g_TF_PR->GetTeam( nVictimIndex );
 				C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-				if ( pLocalPlayer )
+				if ( ( nVictimTeam >= FIRST_GAME_TEAM ) && pLocalPlayer )
 				{
-					int nVictimIndex = event->GetInt( "victim_entindex" );
-
 					// See if there are any other players still alive
 					bool bSomeAlive = false;
 					for ( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
