@@ -16312,14 +16312,11 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "+inspect_server" ) )
 		{
-			bool bDoStrandedSpawn;
+			// in competitive, always override the inspect if we're in spawn
+			bool bDoStrandedSpawn = false;
 			if ( IsCompetitiveGame() )
 			{
 				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() == 2;
-			}
-			else
-			{
-				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() || ( pTFPlayer->m_Shared.GetRespawnTouchCount() > 0 && PointInRespawnRoom( pTFPlayer, pTFPlayer->WorldSpaceCenter(), true ) );
 			}
 			if ( bDoStrandedSpawn )
 			{
@@ -16336,6 +16333,20 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		}
 		else if ( FStrEq( pszCommand, "-inspect_server" ) )
 		{
+			// if we're in a casual game, do it at the end if we didn't hold for too long
+			bool bDoStrandedSpawn = false;
+			if ( !IsCompetitiveGame() && !IsMannVsMachineMode() && !InSetup() && !pTFPlayer->IsInspecting() )
+			{
+				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() || ( pTFPlayer->m_Shared.GetRespawnTouchCount() > 0 && PointInRespawnRoom( pTFPlayer, pTFPlayer->WorldSpaceCenter(), true ) );
+			}
+			if ( bDoStrandedSpawn )
+			{
+				pTFPlayer->SetStrandedSpawnSwitch(true);
+				pTFPlayer->ForceRespawn();
+				pTFPlayer->SetStrandedSpawnSwitch(false);
+				// lower tier stranded spawn
+				pTFPlayer->m_Shared.SetInStrandedSpawn(1);
+			}
 			pTFPlayer->InspectButtonReleased();
 		}
 		else if ( FStrEq( pszCommand, "+helpme_server" ) )
@@ -22007,7 +22018,7 @@ void CTFGameRules::StartGame_Think( void )
 	// TODO: there is a better way to do this for sure. this doesn't even respect ready up.
 
 	// can't do this without everyone connected and spawned.
-	if ( GetGlobalTeam(TF_TEAM_BLUE)->GetAliveMembers() < 6 || GetGlobalTeam(TF_TEAM_RED)->GetAliveMembers() < 6 )
+	if ( GetGlobalTeam(TF_TEAM_BLUE) && GetGlobalTeam(TF_TEAM_BLUE)->GetAliveMembers() < 6 || GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_RED)->GetAliveMembers() < 6 )
 	{
 		return;
 	}
