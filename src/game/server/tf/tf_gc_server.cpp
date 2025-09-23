@@ -4257,7 +4257,7 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 	WebapiEquipmentState_t& state = FindOrCreateWebapiEquipmentState( steamID );
 
 	// If they have a pending request we haven't acted on, it's now stale.
-	if( state.m_pKVNextRequest )
+	if ( state.m_pKVNextRequest )
 	{
 		state.m_pKVNextRequest->deleteThis();
 		state.m_pKVNextRequest = nullptr;
@@ -4265,6 +4265,22 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 
 	// Clone off their existing request for processing
 	state.m_pKVNextRequest = pKVRequest->MakeCopy();
+
+	RTime32 iSecsLeft = state.m_rtNextRequest - CRTime::RTime32TimeCur();
+	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 )
+	{
+		CTFPlayer* pTFPlayer = ToTFPlayer( GetPlayerBySteamID( steamID ) );
+		if ( pTFPlayer )
+		{
+			wchar_t wszSecsLeft[16];
+			_snwprintf( wszSecsLeft, ARRAYSIZE( wszSecsLeft ), L"%u", iSecsLeft );
+			wchar_t wszLocalized[256];
+			g_pVGuiLocalize->ConstructString_safe( wszLocalized, g_pVGuiLocalize->Find("#TF_SDK_InventoryTimer"), 1, wszSecsLeft );
+			char szLocalized[256];
+			g_pVGuiLocalize->ConvertUnicodeToANSI(wszLocalized, szLocalized, sizeof(szLocalized));
+			ClientPrint( pTFPlayer, HUD_PRINTTALK, szLocalized );
+		}
+	}
 }
 
 void CTFGCServerSystem::WebapiEquipmentState_t::OnWebapiEquipmentReceived( HTTPRequestCompleted_t* pInfo, bool bIOFailure )
