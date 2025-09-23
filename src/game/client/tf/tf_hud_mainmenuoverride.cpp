@@ -635,14 +635,19 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	m_pNotificationsScroller->GetScrollbar()->GetButton(1)->SetPaintBackgroundEnabled( false );
 
 	// Add tooltips for various buttons
-	auto lambdaAddTooltip = [&]( const char* pszPanelName, const char* pszTooltipText )
+	auto lambdaAddTooltip = [&]( const char* pszPanelName, const char* pszTooltipText, bool bHide = true )
 	{
 		Panel* pPanelToAddTooltipTipTo = FindChildByName( pszPanelName );
 		if ( pPanelToAddTooltipTipTo)
 		{
 			pPanelToAddTooltipTipTo->SetTooltip( m_pToolTip, pszTooltipText );
 
-			pPanelToAddTooltipTipTo->SetVisible(false);
+#ifdef SOURCESDK
+			if ( bHide )
+			{
+				pPanelToAddTooltipTipTo->SetVisible( false );
+			}
+#endif
 		}
 	};
 
@@ -655,7 +660,10 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	lambdaAddTooltip( "WorkshopButton", "#MMenu_Tooltip_Workshop" );
 	lambdaAddTooltip( "SettingsButton", "#MMenu_Tooltip_Options" );
 	lambdaAddTooltip( "TF2SettingsButton", "#MMenu_Tooltip_AdvOptions" );
-
+#ifdef SOURCESDK
+	lambdaAddTooltip( "SettingsButtonSDK", "#MMenu_Tooltip_Options", false );
+	lambdaAddTooltip( "TF2SettingsButtonSDK", "#MMenu_Tooltip_AdvOptions", false );
+#endif
 
 	LoadCharacterImageFile();
 
