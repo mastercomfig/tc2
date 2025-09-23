@@ -289,6 +289,13 @@ unsigned int CTFGameMovement::PlayerSolidMask( bool brushOnly )
 	return ( uMask | BaseClass::PlayerSolidMask( brushOnly ) );
 }
 
+float ComputeSubTime(float flTime)
+{
+	constexpr float flSubStep = 0.01f;
+	float flActualTime = flTime > flSubStep ? Min(flSubStep, flTime * 0.5f) : flTime;
+	return Max(0.001f, flActualTime);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Overridden to allow players to run faster than the maxspeed
 //-----------------------------------------------------------------------------
@@ -316,27 +323,34 @@ void CTFGameMovement::ProcessMovement( CBasePlayer *pBasePlayer, CMoveData *pMov
 	// The max speed is currently set to the scout - if this changes we need to change this!
 	mv->m_flMaxSpeed = TF_MAX_SPEED;
 
-	// Handle charging demomens
-	ChargeMove();
+	float flTotalTime = gpGlobals->frametime;
 
-	// Handle scouts that can move really fast with buffs
-	HighMaxSpeedMove();
+	while ( flTotalTime >= 0.001f )
+	{
+		flSubTime = ComputeSubTime(flTotalTime);
+		flTotalTime -= flSubTime;
 
-	// Limit diagonal movement
-	CheckParameters();
+		// Handle charging demomens
+		ChargeMove();
 
-	// Handle player stun.
-	StunMove();
+		// Handle scouts that can move really fast with buffs
+		HighMaxSpeedMove();
 
-	// Handle player taunt move
-	TauntMove();
+		// Limit diagonal movement
+		CheckParameters();
 
-	// Handle grappling hook move
-	GrapplingHookMove();
+		// Handle player stun.
+		StunMove();
 
-	// Run the command.
-	PlayerMove();
+		// Handle player taunt move
+		TauntMove();
 
+		// Handle grappling hook move
+		GrapplingHookMove();
+
+		// Run the command.
+		PlayerMove();
+	}
 
 	FinishMove();
 
@@ -447,11 +461,11 @@ bool CTFGameMovement::GrapplingHookMove()
 		float flSpeed = mv->m_vecVelocity.LengthSqr();
 		if ( flSpeed > 0.f ) {
 			flSpeed = FastSqrt( flSpeed );
-			float flDampen = Min( tf_grapplinghook_dampening.GetFloat() * gpGlobals->frametime, flSpeed );
+			float flDampen = Min( tf_grapplinghook_dampening.GetFloat() * GAMEMOVEMENT_FRAMETIME, flSpeed );
 			mv->m_vecVelocity *= ( flSpeed - flDampen ) / flSpeed;
 		}
 
-		mv->m_vecVelocity += vDesiredMove.Normalized() * ( tf_grapplinghook_acceleration.GetFloat() * gpGlobals->frametime );
+		mv->m_vecVelocity += vDesiredMove.Normalized() * ( tf_grapplinghook_acceleration.GetFloat() * GAMEMOVEMENT_FRAMETIME );
 
 		flSpeed = mv->m_vecVelocity.LengthSqr();
 		if ( flSpeed > mv->m_flMaxSpeed * mv->m_flMaxSpeed )
@@ -464,7 +478,7 @@ bool CTFGameMovement::GrapplingHookMove()
 	{
 		// Simple velocity calculation
 		float vDist = vDesiredMove.LengthSqr();
-		float flDistMin = mv->m_flMaxSpeed * gpGlobals->frametime;
+		float flDistMin = mv->m_flMaxSpeed * GAMEMOVEMENT_FRAMETIME;
 		if ( vDist > flDistMin * flDistMin )
 		{
 			vDist = FastSqrt( vDist );
@@ -472,7 +486,7 @@ bool CTFGameMovement::GrapplingHookMove()
 		}
 		else
 		{
-			mv->m_vecVelocity = vDesiredMove / gpGlobals->frametime;
+			mv->m_vecVelocity = vDesiredMove / GAMEMOVEMENT_FRAMETIME;
 		}
 	}
 
@@ -738,7 +752,7 @@ bool CTFGameMovement::TauntMove( void )
 		float flSign = bMoving ? 1.f : -1.f;
 		if ( flAcceleration > 0.f )
 		{
-			m_pTFPlayer->SetCurrentTauntMoveSpeed( clamp( m_pTFPlayer->GetCurrentTauntMoveSpeed() + flSign * ( gpGlobals->frametime / flAcceleration ) * flMaxMoveSpeed, 0.f, flMaxMoveSpeed ) );
+			m_pTFPlayer->SetCurrentTauntMoveSpeed( clamp( m_pTFPlayer->GetCurrentTauntMoveSpeed() + flSign * ( GAMEMOVEMENT_FRAMETIME / flAcceleration ) * flMaxMoveSpeed, 0.f, flMaxMoveSpeed ) );
 		}
 		else
 		{
@@ -904,7 +918,7 @@ void CTFGameMovement::VehicleMove( void )
 		flAcceleration *= tf_halloween_kart_bombhead_scale.GetFloat();
 	}
 
-	float flTargetMoveSpeed = Approach( flTargetSpeed, m_pTFPlayer->GetCurrentTauntMoveSpeed(), flAcceleration * gpGlobals->frametime );
+	float flTargetMoveSpeed = Approach( flTargetSpeed, m_pTFPlayer->GetCurrentTauntMoveSpeed(), flAcceleration * GAMEMOVEMENT_FRAMETIME );
 	float flSmoothMoveSpeed = Bias( fabs( m_pTFPlayer->GetCurrentTauntMoveSpeed() ) / flMaxMoveSpeed, 0.7f ) * flMaxMoveSpeed * Sign( flTargetMoveSpeed );
 
 	// Boost slams the accelerator
@@ -996,7 +1010,7 @@ bool CTFGameMovement::CheckWaterJumpButton( void )
 	// See if we are water jumping.  If so, decrement count and return.
 	if ( player->m_flWaterJumpTime )
 	{
-		player->m_flWaterJumpTime -= gpGlobals->frametime;
+		player->m_flWaterJumpTime -= GAMEMOVEMENT_FRAMETIME;
 		if (player->m_flWaterJumpTime < 0)
 		{
 			player->m_flWaterJumpTime = 0;
@@ -1729,7 +1743,7 @@ void CTFGameMovement::WaterMove( void )
 	speed = VectorNormalize( temp );
 	if ( speed )
 	{
-		newspeed = speed - gpGlobals->frametime * speed * sv_friction.GetFloat() * player->m_surfaceFriction;
+		newspeed = speed - GAMEMOVEMENT_FRAMETIME * speed * sv_friction.GetFloat() * player->m_surfaceFriction;
 		if ( newspeed < 0.1f )
 		{
 			newspeed = 0;
@@ -1746,7 +1760,7 @@ void CTFGameMovement::WaterMove( void )
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
 	{
 		VectorNormalize(vecWishVelocity);
-		accelspeed = sv_accelerate.GetFloat() * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+		accelspeed = sv_accelerate.GetFloat() * wishspeed * GAMEMOVEMENT_FRAMETIME * player->m_surfaceFriction;
 		for ( int i = 0; i < 3; i++)
 		{
 			float deltaSpeed = accelspeed * vecWishVelocity[i];
@@ -1768,7 +1782,7 @@ void CTFGameMovement::WaterMove( void )
 		if (addspeed > 0)
 		{
 			VectorNormalize(vecWishVelocity);
-			accelspeed = sv_accelerate.GetFloat() * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+			accelspeed = sv_accelerate.GetFloat() * wishspeed * GAMEMOVEMENT_FRAMETIME * player->m_surfaceFriction;
 			if (accelspeed > addspeed)
 			{
 				accelspeed = addspeed;
@@ -1787,7 +1801,7 @@ void CTFGameMovement::WaterMove( void )
 
 	// Now move
 	// assume it is a stair or a slope, so press down from stepheight above
-	VectorMA (mv->GetAbsOrigin(), gpGlobals->frametime, mv->m_vecVelocity, dest);
+	VectorMA (mv->GetAbsOrigin(), GAMEMOVEMENT_FRAMETIME, mv->m_vecVelocity, dest);
 	
 	TracePlayerBBox( mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm );
 	if ( pm.fraction == 1.0f )
@@ -1909,7 +1923,7 @@ void CTFGameMovement::WalkMove( void )
 		// Lost footing should not have the ability to gain bonus traction
 		if ( !m_pTFPlayer->m_Shared.InCond( TF_COND_LOST_FOOTING ) )
 		{
-			// accelspeed = accel * gpGlobals->frametime * wishspeed * player->m_surfaceFriction;
+			// accelspeed = accel * GAMEMOVEMENT_FRAMETIME * wishspeed * player->m_surfaceFriction;
 			// accelspeed > drop;
 			// drop = accel * frametime * wish * plFriction
 			// accel > drop / (wish * gametime * plFriction)
@@ -1999,8 +2013,8 @@ void CTFGameMovement::WalkMove( void )
 
 	// Calculate the destination.
 	Vector vecDestination;
-	vecDestination.x = mv->GetAbsOrigin().x + ( mv->m_vecVelocity.x * gpGlobals->frametime );
-	vecDestination.y = mv->GetAbsOrigin().y + ( mv->m_vecVelocity.y * gpGlobals->frametime );	
+	vecDestination.x = mv->GetAbsOrigin().x + ( mv->m_vecVelocity.x * GAMEMOVEMENT_FRAMETIME );
+	vecDestination.y = mv->GetAbsOrigin().y + ( mv->m_vecVelocity.y * GAMEMOVEMENT_FRAMETIME );	
 	vecDestination.z = mv->GetAbsOrigin().z;
 
 #ifdef GAME_DLL
@@ -2055,7 +2069,7 @@ void CTFGameMovement::WalkMove( void )
 			float fInchesToMeters = 0.0254f;
 			float fWorldScale = 0.25;
 			float fMeters = pTFPlayer->GetMetersRan();
-			float fMetersRan = flSpeed*fInchesToMeters*fWorldScale*gpGlobals->frametime;
+			float fMetersRan = flSpeed*fInchesToMeters*fWorldScale*GAMEMOVEMENT_FRAMETIME;
 			pTFPlayer->SetMetersRan( fMeters + fMetersRan, gpGlobals->framecount );
 		}
 #endif
@@ -2260,7 +2274,7 @@ void CTFGameMovement::AirMove( void )
 	if ( m_pTFPlayer->GetGrapplingHookTarget() )
 	{
 		// Try moving to the destination.
-		Vector vecDestination = mv->GetAbsOrigin() + ( mv->m_vecVelocity * gpGlobals->frametime );
+		Vector vecDestination = mv->GetAbsOrigin() + ( mv->m_vecVelocity * GAMEMOVEMENT_FRAMETIME );
 		trace_t trace;
 		TracePlayerBBox( mv->GetAbsOrigin(), vecDestination, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace );
 		if ( trace.fraction != 1.f )
@@ -2510,7 +2524,17 @@ void CTFGameMovement::CategorizePosition( void )
 		return;
 	}
 
+	// TODO(mcoms): CTAPS -- tick specific logic
 	constexpr float flJumpVel = 250.0f;
+
+#if 0
+#ifdef GAME_DLL
+	if (player->GetGroundEntity() == NULL)
+	{
+		DevMsg("ground height: %f\n", mv->GetAbsOrigin().z);
+	}
+#endif
+#endif
 
 	// Check for a jump.
 	if ( mv->m_vecVelocity.z > flJumpVel )
@@ -2523,6 +2547,11 @@ void CTFGameMovement::CategorizePosition( void )
 #endif
 
 		SetGroundEntity( NULL );
+#if 0
+#ifdef GAME_DLL
+		DevMsg("jump vel: %f\n", mv->m_vecVelocity.z);
+#endif
+#endif
 		return;
 	}
 
@@ -2600,6 +2629,11 @@ void CTFGameMovement::CategorizePosition( void )
 			trace.fraction < 1.0f; // must hit something
 		if ( bWillMoveInto )
 		{
+#if 0
+#ifdef GAME_DLL
+			DevMsg("landing: %f -> %f\n", vecStartPos.z, trace.endpos.z);
+#endif
+#endif
 			if ( bMoveToEndPos )
 			{
 				float flDelta = fabsf( mv->GetAbsOrigin().z - trace.endpos.z );
@@ -2620,7 +2654,7 @@ void CTFGameMovement::CategorizePosition( void )
 			{
 				// predict what our projected velocity would be if we were to land on this surface
 				Vector vPredictedVel = mv->m_vecVelocity;
-				vPredictedVel.z -= (0.5f * GetActualGravity(player) * gpGlobals->frametime);
+				vPredictedVel.z -= (0.5f * GetActualGravity(player) * GAMEMOVEMENT_FRAMETIME);
 				ClipVelocity(vPredictedVel, trace.plane.normal, vPredictedVel, 1.0f, GetWallSlideCoeff());
 
 				if (vPredictedVel.z > flJumpVel)
@@ -2888,7 +2922,7 @@ void CTFGameMovement::FullWalkMove()
 // 		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SODA_POPPER )
 // 		{
 // 			float speed = VectorLength( mv->m_vecVelocity );
-// 			float fDist = speed*gpGlobals->frametime;
+// 			float fDist = speed*GAMEMOVEMENT_FRAMETIME;
 // 			float fHype = m_pTFPlayer->m_Shared.GetScoutHypeMeter() + (fDist / tf_scout_hype_mod.GetFloat());
 // 			if ( fHype > 100.f )
 // 				fHype = 100.f;
@@ -2974,7 +3008,7 @@ void CTFGameMovement::FullTossMove( void )
 
 	CheckVelocity();
 
-	VectorScale (mv->m_vecVelocity, gpGlobals->frametime, move);
+	VectorScale (mv->m_vecVelocity, GAMEMOVEMENT_FRAMETIME, move);
 	VectorSubtract (mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
 	PushEntity( move, &pm );	// Should this clear basevelocity

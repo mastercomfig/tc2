@@ -123,7 +123,7 @@ public:
 
 	virtual void Simulate( void );
 	virtual void FireEvent( const Vector& origin, const QAngle& angles, int event, const char *options ) OVERRIDE;
-	virtual void UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity ) OVERRIDE;
+	virtual void UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity, float flSubTime = -1.0f ) OVERRIDE;
 
 	CNewParticleEffect *SpawnHalloweenSpellFootsteps( ParticleAttachment_t eParticleAttachment, int iHalloweenFootstepType );
 

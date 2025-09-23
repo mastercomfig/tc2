@@ -507,7 +507,7 @@ surfacedata_t *CBasePlayer::GetLadderSurface( const Vector &origin )
 #endif
 }
 
-void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity )
+void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity, float flSubTime )
 {
 	bool bWalking;
 	float fvol;
@@ -521,7 +521,7 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 
 	if ( m_flStepSoundTime > 0 )
 	{
-		m_flStepSoundTime -= 1000.0f * gpGlobals->frametime;
+		m_flStepSoundTime -= 1000.0f * ( flSubTime > 0.0f ? flSubTime : gpGlobals->frametime );
 		if ( m_flStepSoundTime < 0 )
 		{
 			m_flStepSoundTime = 0;

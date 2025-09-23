@@ -9341,7 +9341,7 @@ void C_TFPlayer::FireEvent( const Vector& origin, const QAngle& angles, int even
 }
 
 
-void C_TFPlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity )
+void C_TFPlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity, float flSubTime )
 {
 	// don't play footstep sound while in kart
 	if ( m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
@@ -9355,7 +9355,7 @@ void C_TFPlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrig
 		return;
 	}
 
-	BaseClass::UpdateStepSound( psurface, vecOrigin, vecVelocity );
+	BaseClass::UpdateStepSound( psurface, vecOrigin, vecVelocity, flSubTime );
 }
 
 

@@ -25,6 +25,12 @@
 #define GAMEMOVEMENT_TIME_TO_UNDUCK			( TIME_TO_UNDUCK * 1000.0f )		// ms
 #define GAMEMOVEMENT_TIME_TO_UNDUCK_INV		( GAMEMOVEMENT_DUCK_TIME - GAMEMOVEMENT_TIME_TO_UNDUCK )
 
+#if 0
+#define GAMEMOVEMENT_FRAMETIME gpGlobals->frametime
+#else
+#define GAMEMOVEMENT_FRAMETIME flSubTime
+#endif
+
 enum
 {
 	SPEED_CROPPED_RESET = 0,
@@ -75,6 +81,8 @@ protected:
 	Vector			m_vecForward;
 	Vector			m_vecRight;
 	Vector			m_vecUp;
+
+	float			flSubTime;
 
 
 	// Does most of the player movement logic.

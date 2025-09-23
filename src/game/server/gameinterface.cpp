@@ -830,7 +830,8 @@ bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
 //-----------------------------------------------------------------------------
 float CServerGameDLL::GetTickInterval( void ) const
 {
-#ifdef TF_DLL
+	// TODO(mcoms): fix movement tick interval bugs
+#if defined(TF_DLL)
 	float tickinterval = DEFAULT_TICK_INTERVAL;
 #else
 	float tickinterval = OLD_TICK_INTERVAL;
