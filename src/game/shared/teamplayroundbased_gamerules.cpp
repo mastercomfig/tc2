@@ -1490,13 +1490,13 @@ void CTeamplayRoundBasedRules::State_Enter_STARTGAME( void )
 	m_bInitialSpawn = true;
 
 	// if the gamerules wants to override and delay start, let it
-	if (StartGame_Start())
+	if ( StartGame_Start() )
 	{
 		CompleteStartGame();
 	}
 	else
 	{
-		m_flStateTransitionTime = 0;
+		m_flStateTransitionTime = -1;
 	}
 }
 
@@ -1510,7 +1510,7 @@ void CTeamplayRoundBasedRules::CompleteStartGame( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::State_Think_STARTGAME()
 {
-	if( m_flStateTransitionTime > 0 && gpGlobals->curtime > m_flStateTransitionTime )
+	if ( m_flStateTransitionTime >= 0 && gpGlobals->curtime >= m_flStateTransitionTime )
 	{
 		if ( !IsInTraining() && !IsInItemTestingMode() )
 		{
