@@ -1343,7 +1343,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		}
 		// we're now in game, so no longer in the startup phase.
 		m_bGameStartup = false;
-		if (m_bPlayingMusic)
+		if ( m_bPlayingMusic )
 		{
 			m_bPlayingMusic = false;
 			m_flPlayMusicTime = -1.0f;
@@ -1361,12 +1361,12 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			m_pCharacterModelPanel->SetVisible(m_bBackgroundUsesCharacterImages);
 		}
 		// no longer in the startup phase, try playing music!
-		if (!m_bGameStartup && !m_bPlayingMusic)
+		if ( !m_bGameStartup && !m_bPlayingMusic )
 		{
-			m_flPlayMusicTime = gpGlobals->curtime + 1.5f;
+			m_flPlayMusicTime = gpGlobals->curtime + 4.0f;
 			m_bPlayingMusic = true;
 		}
-		if (m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime)
+		if ( m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime )
 		{
 			m_flPlayMusicTime = -1.0f;
 			PlayMainMenuMusic();
