@@ -1363,7 +1363,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		// no longer in the startup phase, try playing music!
 		if (!m_bGameStartup && !m_bPlayingMusic)
 		{
-			m_flPlayMusicTime = gpGlobals->curtime + 0.5f;
+			m_flPlayMusicTime = gpGlobals->curtime + 1.5f;
 			m_bPlayingMusic = true;
 		}
 		if (m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime)
