@@ -15334,7 +15334,7 @@ void CTFPlayer::ForceRespawn( void )
 
 	// Prevent bypassing class limits. Whoever wins on the draw can spawn as this class,
 	// and anyone who comes after will get swapped back to their old class.
-	if (!TFGameRules()->CanPlayerChooseClass(this, iDesiredClass))
+	if ( !TFGameRules()->CanPlayerChooseClass(this, iDesiredClass) )
 	{
 		iDesiredClass = GetPlayerClass()->GetClassIndex();
 		ClientPrint( this, HUD_PRINTCENTER, "#TF_ClassLimitReached" ); // NOTE: Add localization string 
