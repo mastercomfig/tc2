@@ -151,6 +151,9 @@ private:
 	virtual void ModifyFireBulletsDamage( CTakeDamageInfo* dmgInfo );
 
 	int GetBaseTurnRate( void );
+	float GetBaseFireRate( void );
+
+	void CalcFireRate( void );
 	
 	virtual void	MakeDisposableBuilding( CTFPlayer *pPlayer );
 

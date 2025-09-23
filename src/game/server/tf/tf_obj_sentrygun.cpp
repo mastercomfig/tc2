@@ -173,7 +173,7 @@ CObjectSentrygun::CObjectSentrygun()
 	m_flAutoAimStartTime = 0.f;
 	m_bPlayerControlled = false;
 	m_iLifetimeShieldedDamage = 0;
-	m_flFireRate = 1.f;
+	m_flFireRate = 0.225f;
 	m_flNextAttack = -1.0f;
 	m_flSentryRange = SENTRY_MAX_RANGE;
 	m_nShieldLevel.Set( SHIELD_NONE );
@@ -292,6 +292,9 @@ void CObjectSentrygun::SentryThink( void )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), m_flSentryRange, mult_sentry_range );
 	}
+
+	// first calculate fire rate so everything can be aware of our speed.
+	CalcFireRate();
 
 	switch( m_iState )
 	{
@@ -1292,96 +1295,21 @@ void CObjectSentrygun::Attack()
 	MoveTurret();
 
 	// Fire on the target if it's within 10 units of being aimed right at it
-	if ( m_flNextAttack <= gpGlobals->curtime && (m_vecGoalAngles - m_vecCurAngles).Length() <= 10 )
+	if ( m_flNextAttack <= gpGlobals->curtime && ( m_vecGoalAngles - m_vecCurAngles ).Length() <= 10 )
 	{
-		m_flFireRate = 1.f;
-
-		// ==== BASE FIRE INTERVAL ====
-		if (m_iUpgradeLevel == 1)
-		{
-			// Level 1 sentries fire slower
-			m_flFireRate = 0.225f;
-		}
-		else
-		{
-			m_flFireRate = 0.135f;
-		}
-
-		if (IsMiniBuilding() && !IsDisposableBuilding())
-		{
-			m_flFireRate *= 0.8f;
-		}
-		// ==== END BASE FIRE INTERVAL ====
-
-		std::list<float> vecFireRateBoosts;
-
-		// ==== FIRING SPEED BOOSTS ====
-
-		// Firing speed upgrade
-		float flFireSpeedUpgrade = 1.0f;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), flFireSpeedUpgrade, mult_sentry_firerate);
-
-		// Only calculate it within our firing speed boost stack if it boosts.
-		if (flFireSpeedUpgrade < 1.0f)
-		{
-			vecFireRateBoosts.push_back(flFireSpeedUpgrade);
-		}
-	    else
-		{
-			m_flFireRate *= flFireSpeedUpgrade;
-		}
-
-		// Wrangler "double" firing speed
-		// This is different for each type because of how the boost worked before the firing speed fix.
-		if ( m_bPlayerControlled )
-		{
-#if defined(MCOMS_BALANCE_PACK)
-			vecFireRateBoosts.push_back(0.5f);
-#else
-			if (IsMiniBuilding())
-			{
-				vecFireRateBoosts.push_back(0.5f);
-			}
-			else if (m_iUpgradeLevel == 1)
-			{
-				vecFireRateBoosts.push_back(0.6f);
-			}
-			else
-			{
-				vecFireRateBoosts.push_back(2.0f / 3.0f);
-			}
-#endif
-		}
-
-		// Crit canteen 2x boost
-		if (GetBuilder() && GetBuilder()->m_Shared.InCond(TF_COND_CRITBOOSTED_USER_BUFF))
-		{
-			vecFireRateBoosts.push_back(0.5f);
-		}
-		// ==== END FIRING SPEED BOOSTS ====
-
-		// Diminishing returns on firing speed boost
-		int iStacks = 0;
-		while (!vecFireRateBoosts.empty())
-		{
-			m_flFireRate *= (1.0f / powf(SENTRYGUN_FIRE_BOOST_DECAY, iStacks)) * vecFireRateBoosts.front();
-			iStacks++;
-			vecFireRateBoosts.pop_front();
-		}
-
-		if (!m_bPlayerControlled || m_bFireNextFrame)
+		if ( !m_bPlayerControlled || m_bFireNextFrame )
 		{
 			m_bFireNextFrame = false;
 			Fire();
 		}
 		else
 		{
-			m_flNextAttack = max(m_flNextAttack, gpGlobals->curtime);
+			m_flNextAttack = max( m_flNextAttack, gpGlobals->curtime );
 		}
 	}
 	else
 	{
-		m_flNextAttack = max(m_flNextAttack, gpGlobals->curtime);
+		m_flNextAttack = max( m_flNextAttack, gpGlobals->curtime );
 		// SetSentryAnim( TFTURRET_ANIM_SPIN );
 	}
 
@@ -1896,6 +1824,70 @@ void CObjectSentrygun::OnEndDisabled( void )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+void CObjectSentrygun::CalcFireRate( void )
+{
+	// ==== BASE FIRE INTERVAL ====
+	m_flFireRate = GetBaseFireRate();
+
+	// ==== FIRING SPEED BOOSTS ====
+	std::list<float> vecFireRateBoosts;
+
+	// Firing speed upgrade
+	float flFireSpeedUpgrade = 1.0f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flFireSpeedUpgrade, mult_sentry_firerate );
+
+	// Only calculate it within our firing speed boost stack if it boosts.
+	if ( flFireSpeedUpgrade < 1.0f )
+	{
+		vecFireRateBoosts.push_back(flFireSpeedUpgrade);
+	}
+    else
+	{
+		m_flFireRate *= flFireSpeedUpgrade;
+	}
+
+	// Wrangler "double" firing speed
+	// This is different for each type because of how the boost worked before the firing speed fix.
+	if ( m_bPlayerControlled )
+	{
+#if defined(MCOMS_BALANCE_PACK)
+		vecFireRateBoosts.push_back( 0.5f );
+#else
+		if ( IsMiniBuilding() )
+		{
+			vecFireRateBoosts.push_back( 0.5f );
+		}
+		else if (m_iUpgradeLevel == 1)
+		{
+			vecFireRateBoosts.push_back( 0.6f );
+		}
+		else
+		{
+			vecFireRateBoosts.push_back( 2.0f / 3.0f );
+		}
+#endif
+	}
+
+	// Crit canteen 2x boost
+	if ( GetBuilder() && GetBuilder()->m_Shared.InCond( TF_COND_CRITBOOSTED_USER_BUFF ) )
+	{
+		vecFireRateBoosts.push_back( 0.5f );
+	}
+	// ==== END FIRING SPEED BOOSTS ====
+
+	// Diminishing returns on firing speed boost
+	int iStacks = 0;
+	while ( !vecFireRateBoosts.empty() )
+	{
+		m_flFireRate *= ( 1.0f / powf( SENTRYGUN_FIRE_BOOST_DECAY, iStacks ) ) * vecFireRateBoosts.front();
+		iStacks++;
+		vecFireRateBoosts.pop_front();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 int CObjectSentrygun::GetBaseTurnRate( void )
 {
 	if ( m_bPlayerControlled )
@@ -1906,6 +1898,31 @@ int CObjectSentrygun::GetBaseTurnRate( void )
 	{
 		return m_iBaseTurnRate;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+float CObjectSentrygun::GetBaseFireRate(void)
+{
+	float flFireRate;
+
+	if ( m_iUpgradeLevel == 1 )
+	{
+		// Level 1 sentries fire slower
+		flFireRate = 0.225f;
+	}
+	else
+	{
+		flFireRate = 0.135f;
+	}
+
+	if ( IsMiniBuilding() && !IsDisposableBuilding() )
+	{
+		flFireRate *= 0.8f;
+	}
+
+	return flFireRate;
 }
 
 //-----------------------------------------------------------------------------
@@ -2312,15 +2329,17 @@ void CObjectSentrygun::EmitSentrySound( IRecipientFilter& filter, int iEntIndex,
 	params.m_flSoundTime = 0;
 	params.m_pflSoundDuration = 0;
 	params.m_bWarnOnDirectWaveReference = true;
+
+	const float flRelativeFireRate = m_flFireRate / GetBaseFireRate();
 	
-	if ( IsMiniBuilding() )
+	if ( IsMiniBuilding() || fabsf( 1.0f - flRelativeFireRate ) > FLT_EPSILON )
 	{
 		StopSound( soundname );
-		params.m_nPitch = PITCH_HIGH;
+		params.m_nPitch = IsMiniBuilding() ? PITCH_HIGH : RoundFloatToInt( RemapValClamped( m_flFireRate, 1.0f, 0.5f, 100.f, 120.f ) );
 		params.m_nFlags = SND_CHANGE_PITCH;
 	}
 
-	EmitSound( filter, entindex(), params );
+	EmitSound( filter, iEntIndex, params );
 }
 
 //-----------------------------------------------------------------------------
@@ -2335,11 +2354,13 @@ void CObjectSentrygun::EmitSentrySound( const char* soundname )
 	params.m_flSoundTime = 0;
 	params.m_pflSoundDuration = 0;
 	params.m_bWarnOnDirectWaveReference = true;
+
+	const float flRelativeFireRate = m_flFireRate / GetBaseFireRate();
 	
-	if ( IsMiniBuilding() || m_flFireRate != 1.f )
+	if ( IsMiniBuilding() || fabsf( 1.0f - flRelativeFireRate ) > FLT_EPSILON )
 	{
 		StopSound( soundname );
-		params.m_nPitch = IsMiniBuilding() ? PITCH_HIGH : RemapValClamped( m_flFireRate, 1.0f, 0.5f, 100.f, 120.f );
+		params.m_nPitch = IsMiniBuilding() ? PITCH_HIGH : RoundFloatToInt( RemapValClamped( m_flFireRate, 1.0f, 0.5f, 100.f, 120.f ) );
 		params.m_nFlags = SND_CHANGE_PITCH;
 	}
 
