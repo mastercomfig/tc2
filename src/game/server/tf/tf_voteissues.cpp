@@ -1657,7 +1657,7 @@ bool CClassLimitsIssue::IsEnabled( void )
 			return false;
 
 		// Manages class limits already
-		if ( TFGameRules()->IsInHighlanderMode() )
+		if ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsInSixesMode() )
 			return false;
 
 		if ( TFGameRules()->IsMannVsMachineMode() )
