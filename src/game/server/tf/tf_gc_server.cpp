@@ -4266,7 +4266,7 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 	// Clone off their existing request for processing
 	state.m_pKVNextRequest = pKVRequest->MakeCopy();
 
-	RTime32 iSecsLeft = state.m_rtNextRequest - CRTime::RTime32TimeCur();
+	RTime32 iSecsLeft = state.m_rtNextRequest > CRTime::RTime32TimeCur() ? state.m_rtNextRequest - CRTime::RTime32TimeCur() : 0;
 	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 )
 	{
 		CTFPlayer* pTFPlayer = ToTFPlayer( GetPlayerBySteamID( steamID ) );
