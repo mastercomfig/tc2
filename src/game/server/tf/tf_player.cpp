@@ -6956,8 +6956,12 @@ void CTFPlayer::ForceChangeTeam( int iTeamNum, bool bFullTeamSwitch )
 			{
 				CommitSuicide( false, true );
 			}
-
+		
+			// UNDONE(mcoms): i don't think is needed anymore. we block player class selections from spawning if they're over the limit.
+			// and it's causing issues for people since team selection is delayed with latency, maybe after the client is selecting their class in the menu.
+#if 0
 			ResetPlayerClass();
+#endif
 		}
 	}
 	
@@ -7075,7 +7079,11 @@ void CTFPlayer::ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAu
 			CommitSuicide( false, true );
 		}
 
+		// UNDONE(mcoms): i don't think is needed anymore. we block player class selections from spawning if they're over the limit.
+		// and it's causing issues for people since team selection is delayed with latency, maybe after the client is selecting their class in the menu.
+#if 0
 		ResetPlayerClass();
+#endif
 	}
 
 	// reset spawn point
