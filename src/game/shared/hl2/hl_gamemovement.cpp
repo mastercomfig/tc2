@@ -211,7 +211,7 @@ void CHL2GameMovement::StartForcedMove( bool mounting, float transit_speed, cons
 	lm->m_bForceLadderMove	= true;
 	lm->m_bForceMount		= mounting;
 
-	lm->m_flStartTime		= gpGlobals->curtime;
+	lm->m_flStartTime		= GAMEMOVEMENT_CURTIME;
 	lm->m_flArrivalTime		= lm->m_flStartTime + transit_time;
 
 	lm->m_hForceLadder		= ladder;
@@ -241,7 +241,7 @@ bool CHL2GameMovement::ContinueForcedMove()
 	mv->m_flUpMove = 0.0f;
 
 	// How far along are we
-	float frac = ( gpGlobals->curtime - lm->m_flStartTime ) / ( lm->m_flArrivalTime - lm->m_flStartTime );
+	float frac = ( GAMEMOVEMENT_CURTIME - lm->m_flStartTime ) / ( lm->m_flArrivalTime - lm->m_flStartTime );
 	if ( frac > 1.0f )
 	{
 		lm->m_bForceLadderMove = false;

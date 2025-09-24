@@ -39,7 +39,7 @@ extern IFileSystem *filesystem;
 #endif
 
 
-// tickcount currently isn't set during prediction, although gpGlobals->curtime and
+// tickcount currently isn't set during prediction, although GAMEMOVEMENT_CURTIME and
 // GAMEMOVEMENT_FRAMETIME are. We should probably set tickcount (to player->m_nTickBase),
 // but we're REALLY close to shipping, so we can change that later and people can use
 // player->CurrentCommandNumber() in the meantime.
@@ -622,6 +622,9 @@ CGameMovement::CGameMovement( void )
 
 	mv					= NULL;
 
+	m_flSubTime = -1.0f;
+	m_flSubCurTime = -1.0f;
+
 	memset( m_flStuckCheckTime, 0, sizeof(m_flStuckCheckTime) );
 }
 
@@ -800,7 +803,7 @@ CBaseHandle CGameMovement::TestPlayerPosition( const Vector& pos, int collisionG
 // FIXME FIXME:  Does this need to be hooked up?
 bool CGameMovement::IsWet() const
 {
-	return ((pev->flags & FL_INRAIN) != 0) || (m_WetTime >= gpGlobals->time);
+	return ((pev->flags & FL_INRAIN) != 0) || (m_WetTime >= GAMEMOVEMENT_CURTIME);
 }
 
 //-----------------------------------------------------------------------------
@@ -883,12 +886,12 @@ void CBasePlayer::UpdateWetness()
 		{
 			// Transition...
 			// Figure out how wet we are now (we were drying off...)
-			float wetness = (m_WetTime - gpGlobals->time) / DRY_TIME;
+			float wetness = (m_WetTime - GAMEMOVEMENT_CURTIME) / DRY_TIME;
 			if (wetness < 0.0f)
 				wetness = 0.0f;
 
 			// Here, wet time represents the time at which we get totally wet
-			m_WetTime = gpGlobals->time + (1.0 - wetness) * WET_TIME; 
+			m_WetTime = GAMEMOVEMENT_CURTIME + (1.0 - wetness) * WET_TIME; 
 
 			pev->flags |= FL_INRAIN;
 		}
@@ -899,12 +902,12 @@ void CBasePlayer::UpdateWetness()
 		{
 			// Transition...
 			// Figure out how wet we are now (we were getting more wet...)
-			float wetness = 1.0f + (gpGlobals->time - m_WetTime) / WET_TIME;
+			float wetness = 1.0f + (GAMEMOVEMENT_CURTIME - m_WetTime) / WET_TIME;
 			if (wetness > 1.0f)
 				wetness = 1.0f;
 
 			// Here, wet time represents the time at which we get totally dry
-			m_WetTime = gpGlobals->time + wetness * DRY_TIME; 
+			m_WetTime = GAMEMOVEMENT_CURTIME + wetness * DRY_TIME; 
 
 			pev->flags &= ~FL_INRAIN;
 		}
@@ -1137,6 +1140,9 @@ void CGameMovement::ProcessMovement( CBasePlayer *pPlayer, CMoveData *pMove )
 	//!!Blame Yahn for this one.
 	GAMEMOVEMENT_FRAMETIME *= pPlayer->GetLaggedMovementValue();
 
+	// reset jump peaks for this simulation frame
+	m_iJumpPeaks = 0;
+
 	ResetGetPointContentsCache();
 
 	// Cropping movement speed scales mv->m_fForwardSpeed etc. globally
@@ -1238,23 +1244,6 @@ void CGameMovement::DecayPunchAngle( void )
 		player->m_Local.m_vecPunchAngle.Init( 0, 0, 0 );
 		player->m_Local.m_vecPunchAngleVel.Init( 0, 0, 0 );
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CGameMovement::StartGravity( void )
-{
-	// Add gravity so they'll be in the correct position during movement
-	// yes, this 0.5 looks wrong, but it's not.  
-	mv->m_vecVelocity[2] -= ( GetActualGravity( player ) * 0.5f * GAMEMOVEMENT_FRAMETIME );
-	mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * GAMEMOVEMENT_FRAMETIME;
-
-	Vector temp = player->GetBaseVelocity();
-	temp[ 2 ] = 0;
-	player->SetBaseVelocity( temp );
-
-	CheckVelocity();
 }
 
 //-----------------------------------------------------------------------------
@@ -1669,18 +1658,102 @@ void CGameMovement::Friction( void )
  	mv->m_outWishVel -= (1.f-newspeed) * mv->m_vecVelocity;
 }
 
+ConVar sv_force_jump_peak_iterations("sv_force_jump_peak_iterations", "4", FCVAR_REPLICATED);
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CGameMovement::StartGravity( void )
+{
+	// Add gravity so they'll be in the correct position during movement
+	ApplyGravity( false );
+	mv->m_vecVelocity.z += player->GetBaseVelocity().z * GAMEMOVEMENT_FRAMETIME;
+
+	Vector temp = player->GetBaseVelocity();
+	temp.z = 0;
+	player->SetBaseVelocity( temp );
+
+	CheckVelocity();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishGravity( void )
 {
 	if ( player->m_flWaterJumpTime )
+	{
 		return;
+	}
 
-	// Get the correct velocity for the end of the dt 
-  	mv->m_vecVelocity[2] -= (GetActualGravity( player ) * GAMEMOVEMENT_FRAMETIME * 0.5f);
+	const float flGravity = GetActualGravity( player );
+
+	// no gravity to apply
+	if ( flGravity == 0.0f )
+	{
+		return;
+	}
+
+	ApplyGravity( true );
 
 	CheckVelocity();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CGameMovement::JumpGravity()
+{
+	if ( player->m_flWaterJumpTime )
+	{
+		return;
+	}
+
+	const float flGravity = GetActualGravity( player );
+
+	// no gravity to apply
+	if ( flGravity == 0.0f )
+	{
+		return;
+	}
+
+	ApplyGravity( false );
+
+	CheckVelocity();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CGameMovement::ApplyGravity( bool bFinish )
+{
+	const float flOldZVel = mv->m_vecVelocity.z;
+
+	// yes, this 0.5 looks wrong, but it's not.
+	const float flGravityStep = -GetActualGravity( player ) * 0.5f;
+
+	// Get the correct velocity for the end of the dt
+	mv->m_vecVelocity.z += flGravityStep * GAMEMOVEMENT_FRAMETIME;
+
+	// are we falling and did we reach apex this step?
+	if ( m_iJumpPeaks < sv_force_jump_peak_iterations.GetInt() && flGravityStep < 0.0f && flOldZVel > 0.0f && mv->m_vecVelocity.z <= 0.0f )
+	{
+		// we limit jump peaks per simulation frame because some cases (like collision) can get us into an apparent apex state, and we don't want to break that up too much.
+		if ( bFinish )
+		{
+			m_iJumpPeaks++;
+		}
+		const float flTimeToApex = flOldZVel / -flGravityStep;
+		// make sure it's actually in the bounds of our substep.
+		if ( flTimeToApex >= 0.0001f && flTimeToApex < GAMEMOVEMENT_FRAMETIME )
+		{
+			// TODO(mcoms): do we need to move our whole substep back here?
+			// might be fine to just adjust the jump arc for the apex,
+			// and keep the rest of the substep how it is.
+			// always apply our apex at gravity start, not gravity end
+			mv->m_vecVelocity.z = bFinish ? flTimeToApex * -flGravityStep : 0.0f;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2479,7 +2552,7 @@ bool CGameMovement::CheckJumpButton( void )
 	}
 #endif
 
-	FinishGravity();
+	JumpGravity();
 
 	CheckV( player->CurrentCommandNumber(), "CheckJump", mv->m_vecVelocity );
 
@@ -3581,7 +3654,7 @@ bool CGameMovement::CheckWater( void )
 	// if we just transitioned from not in water to in water, record the time it happened
 	if ( ( WL_NotInWater == m_nOldWaterLevel ) && ( player->GetWaterLevel() >  WL_NotInWater ) )
 	{
-		m_flWaterEntryTime = gpGlobals->curtime;
+		m_flWaterEntryTime = GAMEMOVEMENT_CURTIME;
 	}
 
 	return ( player->GetWaterLevel() > WL_Feet );
@@ -4596,12 +4669,12 @@ void CGameMovement::PlayerMove( void )
 	// If we are not on ground, store off how fast we are moving down
 	if ( player->GetGroundEntity() == NULL )
 	{
-		player->m_Local.m_flFallVelocity = -mv->m_vecVelocity[ 2 ];
+		player->m_Local.m_flFallVelocity = -mv->m_vecVelocity.z;
 	}
 
 	m_nOnLadder = 0;
 
-	player->UpdateStepSound( player->m_pSurfaceData, mv->GetAbsOrigin(), mv->m_vecVelocity, flSubTime );
+	player->UpdateStepSound( player->m_pSurfaceData, mv->GetAbsOrigin(), mv->m_vecVelocity, m_flSubTime );
 
 	UpdateDuckJumpEyeOffset();
 	Duck();

@@ -8133,6 +8133,7 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 	m_hSpawnedGibs.Purge();
 
 	m_fMetersRan = 0;
+	m_flLastRanFrame = 0.0f;
 
 	SetShowHudMenuTauntSelection( false );
 
@@ -10293,11 +10294,11 @@ void C_TFPlayer::CreateOverhealEffect( int iTeam )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void C_TFPlayer::SetMetersRan( float fMeters, int iFrame )
+void C_TFPlayer::SetMetersRan( float fMeters, float flFrameTime )
 {
-	if ( iFrame != m_iLastRanFrame )
+	if ( flFrameTime > m_flLastRanFrame )
 	{
-		m_iLastRanFrame = iFrame;
+		m_flLastRanFrame = flFrameTime;
 		m_fMetersRan = fMeters;
 	}
 }

@@ -424,7 +424,7 @@ public:
 	C_CaptureZone *GetClosestCaptureZone( void );
 
 	float			GetMetersRan( void )	{ return m_fMetersRan; }
-	void			SetMetersRan( float fMeters, int iFrame );
+	void			SetMetersRan( float fMeters, float flFrame );
 
 	CEconItemView *GetInspectItem( int *iLastItem );
 
@@ -577,7 +577,7 @@ private:
 	int					m_nOldMaxHealth;
 
 	float				m_fMetersRan;
-	int					m_iLastRanFrame;
+	float				m_flLastRanFrame;
 
 	HPARTICLEFFECT		m_pEyeEffect;
 
