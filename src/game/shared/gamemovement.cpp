@@ -4678,10 +4678,24 @@ void CGameMovement::PlayerMove( void )
 	// Store off the starting water level
 	m_nOldWaterLevel = player->GetWaterLevel();
 
-	// If we are not on ground, store off how fast we are moving down
 	if ( player->GetGroundEntity() == NULL )
 	{
+		// If we are not on ground, store off how fast we are moving down
 		player->m_Local.m_flFallVelocity = -mv->m_vecVelocity.z;
+		player->m_Local.m_bBrakingFrameTolerated = false;
+		player->m_Local.m_flBrakingTime = 0.0f;
+	}
+	else
+	{
+		if ( !player->m_Local.m_bBrakingFrameTolerated )
+		{
+			constexpr float k_flBrakingTimeWindow = 0.015f;
+			player->m_Local.m_flBrakingTime += GAMEMOVEMENT_FRAMETIME;
+			if ( player->m_Local.m_flBrakingTime >= k_flBrakingTimeWindow )
+			{
+				player->m_Local.m_bBrakingFrameTolerated = true;
+			}
+		}
 	}
 
 	m_nOnLadder = 0;

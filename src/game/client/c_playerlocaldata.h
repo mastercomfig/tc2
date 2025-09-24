@@ -72,6 +72,8 @@ public:
 	bool					m_bPrevForceLocalPlayerDraw;
 	float					m_flStepSize;
 	bool					m_bAllowAutoMovement;
+	bool					m_bBrakingFrameTolerated;
+	float					m_flBrakingTime;
 
 	// 3d skybox
 	sky3dparams_t			m_skybox3d;
