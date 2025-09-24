@@ -3408,6 +3408,7 @@ void CTFPlayer::PrecacheTFPlayer()
 	PrecacheModel( "models/props_mvm/mvm_revive_tombstone.mdl" );
 
 	PrecacheScriptSound( "General.banana_slip" ); // Used for SodaPopper Hype Jumps
+	PrecacheScriptSound( "General.hop_boing" );
 
 
 	PrecacheScriptSound( "Parachute_open" );

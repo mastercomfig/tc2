@@ -1469,6 +1469,7 @@ bool CTFGameMovement::CheckJumpButton()
 	float flMul = ( 289.0f * flJumpMod ) * flGroundFactor;
 
 	// jumping during duck transition.
+	// TODO(mcoms): we can use duck time here to control the window.
 	if ( player->m_Local.m_bDucking && !( player->m_Local.m_bDucked || player->GetFlags() & FL_DUCKING ) )
 	{
 		m_bIsCrouchTapping = true;
@@ -1497,6 +1498,29 @@ bool CTFGameMovement::CheckJumpButton()
 		// reverse gravity step while jumping off surface.
 		mv->m_vecVelocity[2] += flMul;  // 2 * gravity * jump_height * ground_factor
 	}
+
+#ifdef GAME_DLL
+	// market gardener effect
+	if ( !TFGameRules() || !TFGameRules()->IsPowerupMode() )
+	{
+		int iCritWhileAirborne = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pTFPlayer->GetActiveWeapon(), iCritWhileAirborne, crit_while_airborne );
+		if ( iCritWhileAirborne )
+		{
+			if ( m_pTFPlayer->m_iBlastJumpState != 0 )
+			{
+				EmitSound_t params;
+				params.m_pSoundName = "General.hop_boing";
+				params.m_flSoundTime = 0;
+				params.m_pflSoundDuration = 0;
+				//params.m_bWarnOnDirectWaveReference = true;
+				CPASFilter filter(m_pTFPlayer->GetAbsOrigin());
+				m_pTFPlayer->StopSound("General.hop_boing");
+				m_pTFPlayer->EmitSound(filter, m_pTFPlayer->entindex(), params);
+			}
+		}
+	}
+#endif
 
 	// Apply gravity.
 	JumpGravity();

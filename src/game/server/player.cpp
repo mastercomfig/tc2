@@ -3113,7 +3113,7 @@ int CBasePlayer::DetermineSimulationTicks( void )
 }
 
 // 2 ticks ahead or behind current clock means we need to fix clock on client
-static ConVar sv_clockcorrection_msecs( "sv_clockcorrection_msecs", "31.25", 0, "The server tries to keep each player's m_nTickBase withing this many msecs of the server absolute tickcount" );
+static ConVar sv_clockcorrection_msecs( "sv_clockcorrection_msecs", "35", 0, "The server tries to keep each player's m_nTickBase withing this many msecs of the server absolute tickcount" );
 static ConVar sv_playerperfhistorycount( "sv_playerperfhistorycount", "20", 0, "Number of samples to maintain in player perf history", true, 1.0f, true, 128.0 );
 
 //-----------------------------------------------------------------------------
@@ -3440,7 +3440,7 @@ void CBasePlayer::PhysicsSimulate( void )
 	MoveHelperServer()->SetHost( NULL );
 
 	// Copy in final origin from simulation
-	CPlayerSimInfo *pi = NULL;
+	CPlayerSimInfo *pi;
 	if ( m_vecPlayerSimInfo.Count() > 0 )
 	{
 		pi = &m_vecPlayerSimInfo[ m_vecPlayerSimInfo.Tail() ];
