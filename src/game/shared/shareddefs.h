@@ -104,13 +104,13 @@ public:
 #define MAX_CLIMB_SPEED		200
 
 #if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-	#define TIME_TO_DUCK		0.2
+	#define TIME_TO_DUCK		0.2f
 	#define TIME_TO_DUCK_MS		200.0f
 #else
-	#define TIME_TO_DUCK		0.4
+	#define TIME_TO_DUCK		0.4f
 	#define TIME_TO_DUCK_MS		400.0f
 #endif 
-#define TIME_TO_UNDUCK		0.2
+#define TIME_TO_UNDUCK		0.2f
 #define TIME_TO_UNDUCK_MS	200.0f
 
 #define MAX_WEAPON_SLOTS		6	// hud item selection slots

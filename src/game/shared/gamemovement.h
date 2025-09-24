@@ -95,6 +95,9 @@ protected:
 	float 			m_flSubCurTime;
 	int				m_iJumpPeaks;
 
+	bool		m_bIsCrouchTapping;
+	float		m_flCrouchTapEndTime;
+
 	// Does most of the player movement logic.
 	// Returns with origin, angles, and velocity modified in place.
 	// were contacted during the move.
@@ -241,6 +244,7 @@ protected:
 	virtual void	FinishUnDuck( void );
 	virtual void	FinishDuck( void );
 	virtual bool	CanUnduck();
+	Vector			GetAirDuckOffset( bool bUnduck = false );
 	void			UpdateDuckJumpEyeOffset( void );
 	bool			CanUnDuckJump( trace_t &trace );
 	void			StartUnDuckJump( void );

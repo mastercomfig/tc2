@@ -189,7 +189,6 @@ CTFGameMovement::CTFGameMovement()
 {
 	m_pTFPlayer = NULL;
 	m_isPassingThroughEnemies = false;
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -369,13 +368,13 @@ void CTFGameMovement::ProcessMovement( CBasePlayer *pBasePlayer, CMoveData *pMov
 
 		// Run the command.
 		PlayerMove();
-	}
 
-	FinishMove();
+		FinishMove();
 
 #if defined(GAME_DLL)
-	m_pTFPlayer->m_bTakenBlastDamageSinceLastMovement = false;
+		m_pTFPlayer->m_bTakenBlastDamageSinceLastMovement = false;
 #endif
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1470,6 +1469,14 @@ bool CTFGameMovement::CheckJumpButton()
 	}
 	
 	float flMul = ( 289.0f * flJumpMod ) * flGroundFactor;
+
+	// jumping during duck transition.
+	if ( player->m_Local.m_bDucking && !( player->m_Local.m_bDucked || player->GetFlags() & FL_DUCKING ) )
+	{
+		m_bIsCrouchTapping = true;
+		// cancel this when we're due to pass 20 units
+		m_flCrouchTapEndTime = GAMEMOVEMENT_CURTIME + 0.063605f;
+	}
 
 	// Save the current z velocity.
 	float flStartZ = mv->m_vecVelocity[2];
@@ -3568,7 +3575,7 @@ void CTFGameMovement::OnUnDuck( int nButtonsReleased )
 		}
 
 		// Check to see if we are capable of unducking.
-		if ( CanUnduck() )
+		if ( !m_bIsCrouchTapping && CanUnduck() )
 		{
 			// or unducking
 			if ( ( player->m_Local.m_bDucking || player->m_Local.m_bDucked ) )
@@ -3594,13 +3601,16 @@ void CTFGameMovement::OnUnDuck( int nButtonsReleased )
 		{
 			// Still under something where we can't unduck, so make sure we reset this timer so
 			//  that we'll unduck once we exit the tunnel, etc.
-			if ( player->m_Local.m_flDucktime != GAMEMOVEMENT_DUCK_TIME )
+			if ( m_bIsCrouchTapping || player->m_Local.m_flDucktime != GAMEMOVEMENT_DUCK_TIME )
 			{
 				SetDuckedEyeOffset(1.0f);
 				player->m_Local.m_flDucktime = GAMEMOVEMENT_DUCK_TIME;
 				player->m_Local.m_bDucked = true;
 				player->m_Local.m_bDucking = false;
 				player->AddFlag( FL_DUCKING );
+				// this is the original 1 tick ctap that players used before holding a crouch transition during a jump was allowed.
+				m_bIsCrouchTapping = false;
+				m_flCrouchTapEndTime = -1.0f;
 			}
 		}
 	}

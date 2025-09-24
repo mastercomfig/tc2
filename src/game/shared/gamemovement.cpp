@@ -625,6 +625,9 @@ CGameMovement::CGameMovement( void )
 	m_flSubTime = -1.0f;
 	m_flSubCurTime = -1.0f;
 
+	m_bIsCrouchTapping = false;
+	m_flCrouchTapEndTime = -1.0f;
+
 	memset( m_flStuckCheckTime, 0, sizeof(m_flStuckCheckTime) );
 }
 
@@ -3699,6 +3702,9 @@ void CGameMovement::SetGroundEntity( trace_t *pm )
 		}
 
 		mv->m_vecVelocity.z = 0.0f;
+
+		m_bIsCrouchTapping = false;
+		m_flCrouchTapEndTime = -1.0f;
 	}
 }
 
@@ -4130,10 +4136,7 @@ bool CGameMovement::CanUnduck()
 	{
 		// If in air an letting go of crouch, make sure we can offset origin to make
 		//  up for uncrouching
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
-		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
-		viewDelta.Negate();
+		Vector viewDelta = GetAirDuckOffset(true);
 		VectorAdd( newOrigin, viewDelta, newOrigin );
 	}
 
@@ -4148,12 +4151,26 @@ bool CGameMovement::CanUnduck()
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+Vector CGameMovement::GetAirDuckOffset( bool bUnduck )
+{
+	Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
+	Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
+	Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
+	if ( bUnduck )
+	{
+		viewDelta.Negate();
+	}
+	return viewDelta;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Stop ducking
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishUnDuck( void )
 {
 	int i;
-	trace_t trace;
 	Vector newOrigin;
 
 	VectorCopy( mv->GetAbsOrigin(), newOrigin );
@@ -4169,10 +4186,7 @@ void CGameMovement::FinishUnDuck( void )
 	{
 		// If in air an letting go of crouch, make sure we can offset origin to make
 		//  up for uncrouching
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
-		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
-		viewDelta.Negate();
+		Vector viewDelta = GetAirDuckOffset(true);
 		VectorAdd( newOrigin, viewDelta, newOrigin );
 	}
 
@@ -4224,10 +4238,7 @@ void CGameMovement::FinishUnDuckJump( trace_t &trace )
 	VectorCopy( mv->GetAbsOrigin(), vecNewOrigin );
 
 	//  Up for uncrouching.
-	Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-	Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
-	Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
-
+	Vector viewDelta = GetAirDuckOffset();
 	float flDeltaZ = viewDelta.z;
 	viewDelta.z *= trace.fraction;
 	flDeltaZ -= viewDelta.z;
@@ -4275,11 +4286,9 @@ void CGameMovement::FinishDuck( void )
 			mv->SetAbsOrigin( org );
 		}
 	}
-	else
+	else if ( !m_bIsCrouchTapping )
 	{
-		Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-		Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
-		Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
+		Vector viewDelta = GetAirDuckOffset();
 		Vector out;
    		VectorAdd( mv->GetAbsOrigin(), viewDelta, out );
 		mv->SetAbsOrigin( out );
@@ -4287,6 +4296,11 @@ void CGameMovement::FinishDuck( void )
 #ifdef CLIENT_DLL
 		player->ResetLatched();
 #endif // CLIENT_DLL
+	}
+	else
+	{
+		m_bIsCrouchTapping = false;
+		m_flCrouchTapEndTime = -1.0f;
 	}
 
 	// See if we are stuck?
@@ -4307,9 +4321,7 @@ void CGameMovement::StartUnDuckJump( void )
 
 	player->SetViewOffset( GetPlayerViewOffset( true ) );
 
-	Vector hullSizeNormal = VEC_HULL_MAX_SCALED( player ) - VEC_HULL_MIN_SCALED( player );
-	Vector hullSizeCrouch = VEC_DUCK_HULL_MAX_SCALED( player ) - VEC_DUCK_HULL_MIN_SCALED( player );
-	Vector viewDelta = ( hullSizeNormal - hullSizeCrouch );
+	Vector viewDelta = GetAirDuckOffset();
 	Vector out;
 	VectorAdd( mv->GetAbsOrigin(), viewDelta, out );
 	mv->SetAbsOrigin( out );
@@ -4677,6 +4689,14 @@ void CGameMovement::PlayerMove( void )
 	player->UpdateStepSound( player->m_pSurfaceData, mv->GetAbsOrigin(), mv->m_vecVelocity, m_flSubTime );
 
 	UpdateDuckJumpEyeOffset();
+
+	// if the crouch tap time expired, or if we're falling down, we aren't crouch tapping anymore.
+	if ( m_flCrouchTapEndTime >= 0.0f && GAMEMOVEMENT_CURTIME > m_flCrouchTapEndTime || mv->m_vecVelocity.z <= 0.0f )
+	{
+		m_bIsCrouchTapping = false;
+		m_flCrouchTapEndTime = -1.0f;
+	}
+
 	Duck();
 
 	// Don't run ladder code if dead on on a train
