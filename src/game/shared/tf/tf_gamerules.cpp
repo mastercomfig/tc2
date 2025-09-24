@@ -19832,6 +19832,10 @@ convar_tags_t convars_to_check_for_tags[] =
 	{ "tf_tournament_classlimit_pyro", "classlimits", NULL },
 	{ "tf_tournament_classlimit_spy", "classlimits", NULL },
 	{ "tf_tournament_classlimit_engineer", "classlimits", NULL },
+	{ "tf_damage_critmod_damage", "critmod", NULL },
+	{ "tf_damage_critmod_damage_melee", "critmod", NULL },
+	{ "tf_damage_critmod_maxmult", "critmod", NULL },
+	{ "tf_damage_critmod_maxmult_melee", "critmod", NULL },
 };
 
 //-----------------------------------------------------------------------------

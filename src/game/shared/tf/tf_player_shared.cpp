@@ -109,6 +109,28 @@ static ConVar tf_demoman_charge_frametime_scaling( "tf_demoman_charge_frametime_
 static const float YAW_CAP_SCALE_MIN = 0.2f;
 static const float YAW_CAP_SCALE_MAX = 2.f;
 
+#ifdef TF2_OG
+#define DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE			"1600"
+#define DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE_MELEE		"1600"
+#else
+#define DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE			"800"
+#define DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE_MELEE		"1600"
+#endif
+
+#ifdef TF2_OG
+#define DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT			"4"
+#define DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT_MELEE		"4"
+#else
+#define DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT			"6"
+#define DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT_MELEE		"4"
+#endif
+
+ConVar tf_damage_critmod_damage("tf_damage_critmod_damage", DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE, FCVAR_CHEAT | FCVAR_REPLICATED);
+ConVar tf_damage_critmod_damage_melee("tf_damage_critmod_damage_melee", DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE_MELEE, FCVAR_CHEAT | FCVAR_REPLICATED);
+ConVar tf_damage_critmod_maxmult("tf_damage_critmod_maxmult", DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT, FCVAR_CHEAT | FCVAR_REPLICATED);
+ConVar tf_damage_critmod_maxmult_melee("tf_damage_critmod_maxmult_melee", DEFAULT_TF_DAMAGE_CRITMOD_MAXMULT_MELEE, FCVAR_CHEAT | FCVAR_REPLICATED);
+
+
 ConVar tf_halloween_kart_boost_recharge( "tf_halloween_kart_boost_recharge", "5.0f", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_halloween_kart_boost_duration( "tf_halloween_kart_boost_duration", "1.5f", FCVAR_REPLICATED | FCVAR_CHEAT );
 
@@ -9583,7 +9605,7 @@ void CTFPlayerShared::SetAirDash( int iAirDash )
 float CTFPlayerShared::GetCritMult( const bool bMelee )
 {
 	const int iCritMult = bMelee ? m_iCritMultMelee.Get() : m_iCritMult.Get();
-	const float flMaxMult = bMelee ? TF_DAMAGE_CRITMOD_MAXMULT_MELEE : TF_DAMAGE_CRITMOD_MAXMULT;
+	const float flMaxMult = bMelee ? tf_damage_critmod_maxmult_melee.GetFloat() : tf_damage_critmod_maxmult.GetFloat();
 	float flRemapCritMul = RemapValClamped( iCritMult, 0, 255, 1.0, flMaxMult );
 /*#ifdef CLIENT_DLL
 	Msg("CLIENT: Crit mult %.2f - %d\n",flRemapCritMul, iCritMult );
@@ -9601,8 +9623,8 @@ float CTFPlayerShared::GetCritMult( const bool bMelee )
 void CTFPlayerShared::UpdateCritMult( void )
 {
 	const float flMinMult = 1.0;
-	const float flMaxMult = TF_DAMAGE_CRITMOD_MAXMULT;
-	const float flMaxMultMelee = TF_DAMAGE_CRITMOD_MAXMULT_MELEE;
+	const float flMaxMult = tf_damage_critmod_maxmult.GetFloat();
+	const float flMaxMultMelee = tf_damage_critmod_maxmult_melee.GetFloat();
 
 	if ( m_DamageEvents.Count() == 0 )
 	{
@@ -9642,8 +9664,8 @@ void CTFPlayerShared::UpdateCritMult( void )
 		flTotalDamage += m_DamageEvents[i].flDamage * m_DamageEvents[i].flDamageCritScaleMultiplier;
 	}
 
-	float flMult = RemapValClamped( flTotalDamage, 0, TF_DAMAGE_CRITMOD_DAMAGE, flMinMult, flMaxMult );
-	float flMultMelee = RemapValClamped( flTotalDamage, 0, TF_DAMAGE_CRITMOD_DAMAGE_MELEE, flMinMult, flMaxMultMelee );
+	float flMult = RemapValClamped( flTotalDamage, 0, tf_damage_critmod_damage.GetFloat(), flMinMult, flMaxMult );
+	float flMultMelee = RemapValClamped( flTotalDamage, 0, tf_damage_critmod_damage_melee.GetFloat(), flMinMult, flMaxMultMelee );
 
 //	Msg( "   TotalDamage: %.2f   -> Mult %.2f | Melee %.2f\n", flTotalDamage, flMult, flMultMelee );
 
@@ -9774,7 +9796,8 @@ void CTFPlayerShared::AddTempCritBonus( float flAmount )
 	}
 
 	int iIndex = m_DamageEvents.AddToTail();
-	m_DamageEvents[iIndex].flDamage = RemapValClamped( flAmount, 0, 1, 0, TF_DAMAGE_CRITMOD_DAMAGE ) / (TF_DAMAGE_CRITMOD_MAXMULT - 1.0);
+	// TODO(mcoms): do we need to be aware of scaling (max) here? what is the flAmount supposed to do?
+	m_DamageEvents[iIndex].flDamage = RemapValClamped( flAmount, 0, 1, 0, tf_damage_critmod_damage.GetFloat() ) / ( tf_damage_critmod_maxmult.GetFloat() - 1.0f);
 	m_DamageEvents[iIndex].flDamageCritScaleMultiplier = 1.0f;
 	m_DamageEvents[iIndex].nDamageType = DMG_GENERIC;
 	m_DamageEvents[iIndex].flTime = gpGlobals->curtime;
