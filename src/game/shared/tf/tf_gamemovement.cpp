@@ -91,7 +91,7 @@ extern ConVar mp_tournament_readymode_countdown;
 
 #define TF_WATERJUMP_FORWARD	30
 #define TF_WATERJUMP_UP			300
-#define TF_TIME_TO_DUCK			(TICK_INTERVAL * 2.0f) // TODO HACK(mastercoms): testing a fix
+#define TF_TIME_TO_DUCK			0.3f
 #define TF_AIRDUCKED_COUNT		2
 //ConVar	tf_waterjump_up( "tf_waterjump_up", "300", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 //ConVar	tf_waterjump_forward( "tf_waterjump_forward", "30", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
@@ -340,7 +340,7 @@ void CTFGameMovement::ProcessMovement( CBasePlayer *pBasePlayer, CMoveData *pMov
 
 	int Iterations = 0;
 	float flTotalTime = GAMEMOVEMENT_NONSUB_FRAMETIME;
-	m_flSubCurTime = gpGlobals->curtime - flTotalTime;
+	m_flSubCurTime = GAMEMOVEMENT_NONSUB_CURTIME - flTotalTime;
 
 	while ( flTotalTime >= 0.001f )
 	{
@@ -1329,13 +1329,13 @@ bool CTFGameMovement::CheckJumpButton()
 	if ( !m_pTFPlayer->CanJump() )
 		return false;
 
-	// Check to see if the player is a scout.
-	bool bScout = m_pTFPlayer->GetPlayerClass()->IsClass( TF_CLASS_SCOUT );
 	bool bAirDash = false;
 	bool bOnGround = ( player->GetGroundEntity() != NULL );
 
 	ToggleParachute();
 
+	// UNDONE: players are using this feature anyways
+#if 0
 	// Cannot jump will ducked.
 	if ( player->GetFlags() & FL_DUCKING )
 	{
@@ -1345,6 +1345,7 @@ bool CTFGameMovement::CheckJumpButton()
 		if ( !bAllow )
 			return false;
 	}
+#endif
 
 	// Cannot jump while in the unduck transition.
 	if ( ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) ) || ( player->m_Local.m_flDuckJumpTime > 0.0f ) )
@@ -3716,7 +3717,7 @@ void CTFGameMovement::Duck( void )
 		engine->Con_NPrintf( 5, "m_bInDuckJump %d", player->m_Local.m_bInDuckJump.Get() );
 		engine->Con_NPrintf( 6, "viewoffset %3.2f, %3.2f, %3.2f", player->GetViewOffset().x, player->GetViewOffset().y, player->GetViewOffset().z );
 		engine->Con_NPrintf( 7, "IN_DUCK %d", mv->m_nButtons & IN_DUCK );
-		engine->Con_NPrintf( 8, "GetDuckTimer %3.2f", Max( 0.f, m_pTFPlayer->m_Shared.GetDuckTimer() - gpGlobals->curtime ) );
+		engine->Con_NPrintf( 8, "GetDuckTimer %3.2f", Max( 0.f, m_pTFPlayer->m_Shared.GetDuckTimer() - GAMEMOVEMENT_CURTIME ) );
 #else 
 		engine->Con_NPrintf( 10 + 0, "CLIENT" );
 		engine->Con_NPrintf( 10 + 1, "m_flDucktime %3.2f", player->m_Local.m_flDucktime );
@@ -3726,7 +3727,7 @@ void CTFGameMovement::Duck( void )
 		engine->Con_NPrintf( 10 + 5, "m_bInDuckJump %d", player->m_Local.m_bInDuckJump );
 		engine->Con_NPrintf( 10 + 6, "viewoffset %3.2f, %3.2f, %3.2f", player->GetViewOffset().x, player->GetViewOffset().y, player->GetViewOffset().z );
 		engine->Con_NPrintf( 10 + 7, "IN_DUCK %d", mv->m_nButtons & IN_DUCK );
-		engine->Con_NPrintf( 10 + 8, "GetDuckTimer %3.2f", Max( 0.f, m_pTFPlayer->m_Shared.GetDuckTimer() - gpGlobals->curtime )  );
+		engine->Con_NPrintf( 10 + 8, "GetDuckTimer %3.2f", Max( 0.f, m_pTFPlayer->m_Shared.GetDuckTimer() - GAMEMOVEMENT_CURTIME )  );
 #endif
 	}
 }
