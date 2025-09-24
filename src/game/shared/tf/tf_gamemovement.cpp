@@ -1333,18 +1333,16 @@ bool CTFGameMovement::CheckJumpButton()
 
 	ToggleParachute();
 
-	// UNDONE: players are using this feature anyways
-#if 0
-	// Cannot jump will ducked.
+	// Cannot jump while ducked.
 	if ( player->GetFlags() & FL_DUCKING )
 	{
-		// Let a scout do it.
-		bool bAllow = ( bScout && !bOnGround );
+		// Let a scout do it (while in air).
+		const bool bScout = m_pTFPlayer->GetPlayerClass()->IsClass( TF_CLASS_SCOUT );
+		const bool bAllow = ( bScout && !bOnGround );
 
 		if ( !bAllow )
 			return false;
 	}
-#endif
 
 	// Cannot jump while in the unduck transition.
 	if ( ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) ) || ( player->m_Local.m_flDuckJumpTime > 0.0f ) )
