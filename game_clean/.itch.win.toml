@@ -2,22 +2,22 @@
 name = "play"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-particles", "1"]
+args = ["-steam", "-particles", "1", "+ip", "127.0.0.1"]
 
 [[actions]]
 name = "vulkan"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-vulkan", "-particles", "1"]
+args = ["-steam", "-vulkan", "-particles", "1", "+ip", "127.0.0.1"]
 
 [[actions]]
 name = "tf2_og"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-game", "tf2_og", "-particles", "1"]
+args = ["-steam", "-game", "tf2_og", "-particles", "1", "+ip", "127.0.0.1"]
 
 [[actions]]
 name = "tf2_og_vulkan"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-game", "tf2_og", "-vulkan", "-particles", "1"]
+args = ["-steam", "-game", "tf2_og", "-vulkan", "-particles", "1", "+ip", "127.0.0.1"]
