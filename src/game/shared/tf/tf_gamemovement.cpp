@@ -1515,6 +1515,7 @@ bool CTFGameMovement::CheckJumpButton()
 				params.m_pflSoundDuration = 0;
 				//params.m_bWarnOnDirectWaveReference = true;
 				CPASFilter filter(m_pTFPlayer->GetAbsOrigin());
+				params.m_SoundLevel = SNDLVL_25dB;
 				m_pTFPlayer->StopSound("General.hop_boing");
 				m_pTFPlayer->EmitSound(filter, m_pTFPlayer->entindex(), params);
 			}
