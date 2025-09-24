@@ -112,7 +112,8 @@ void CTFReviveMarker::Spawn( void )
 	SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 	// SetCollisionBounds( VEC_HULL_MIN, VEC_HULL_MAX );
 	SetBlocksLOS( false );
-	AddEffects( EF_NOSHADOW );
+	// UNDONE(mcoms): adding shadows
+	//AddEffects( EF_NOSHADOW );
 	ResetSequence( LookupSequence( "idle" ) );
 
 #ifdef GAME_DLL

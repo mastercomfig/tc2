@@ -234,7 +234,8 @@ void CTFProjectile_Arrow::Spawn()
 	SetSolid( SOLID_BBOX );	
 
 	SetCollisionGroup( TFCOLLISION_GROUP_ROCKETS );
-	AddEffects( EF_NOSHADOW );
+	// UNDONE(mcoms): adding shadows
+	//AddEffects( EF_NOSHADOW );
 	AddFlag( FL_GRENADE );
 
 	SetTouch( &CTFProjectile_Arrow::ArrowTouch );
