@@ -134,8 +134,7 @@ void ClientsideProjectileSyringeCallback( const CEffectData &data )
 			GetSyringeTrailParticleName( pPlayer, &attrParticleName, bCritical );
 
 			pSyringe->AddParticleEffect( attrParticleName.value().c_str() );
-			// UNDONE(mcoms): adding shadows
-			//pSyringe->AddEffects( EF_NOSHADOW );
+			pSyringe->AddEffects( EF_NOSHADOW );
 			pSyringe->flags |= FTENT_USEFASTCOLLISIONS;
 		}
 	}
