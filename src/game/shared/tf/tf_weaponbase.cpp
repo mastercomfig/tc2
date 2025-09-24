@@ -1349,7 +1349,7 @@ bool CTFWeaponBase::Deploy( void )
 		pPlayer->SetNextAttack( m_flNextPrimaryAttack );
 
 #ifdef CLIENT_DLL
-		if ( GetOwner() == C_BasePlayer::GetLocalPlayer() )
+		if ( GetOwner() == C_BasePlayer::GetLocalPlayer() && prediction->IsFirstTimePredicted() )
 		{
 			// weapon specific config
 			char szCmd[256];
