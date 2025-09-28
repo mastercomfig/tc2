@@ -2,7 +2,7 @@
 name = "play"
 path = "tc2.sh"
 platform = "linux"
-args = ["-steam" "-particles", "1", "+ip", "127.0.0.1"]
+args = ["-steam", "-particles", "1", "+ip", "127.0.0.1"]
 
 [[actions]]
 name = "tf2_og"
