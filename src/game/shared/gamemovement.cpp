@@ -3456,7 +3456,7 @@ int CGameMovement::CheckStuck( void )
 	}
 
 	// Deal with stuckness...
-#ifndef DEDICATED
+#if !defined(DEDICATED) && defined(DEV_BUILD)
 	if ( developer.GetBool() )
 	{
 		bool isServer = player->IsServer();

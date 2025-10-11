@@ -612,7 +612,7 @@ typedef unsigned int *LPDWORD;
 	#define FMTFUNCTION( a, b )
 #elif defined(GNUC)
 	#define SELECTANY __attribute__((weak))
-	#if defined(LINUX) && !defined(DEDICATED)
+	#if defined(LINUX) && !defined(DEDICATED) && defined(DEV_BUILD)
 		#define RESTRICT
 	#else
 		#define RESTRICT __restrict

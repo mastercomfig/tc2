@@ -41,7 +41,7 @@ $Configuration
 		// Using -l will ask the linker to use it, but if there are no references
 		// to malloc/free then it may not actually use it. Wrapping the flag in the
 		// as-needed controls forces it to be pulled in (from libmimalloc.so).
-		$GCC_ExtraLinkerFlags			"-Wl,--no-as-needed -lmimalloc -Wl,--as-needed" [$LINUXALL&&!$DEDICATED&&!$ENABLE_ASAN&&!$SOURCESDK]
+		$GCC_ExtraLinkerFlags			"-Wl,--no-as-needed -lmimalloc -Wl,--as-needed" [$LINUXALL&&!$ENABLE_ASAN&&!$SOURCESDK]
 	}
 }
 
@@ -67,7 +67,7 @@ $Project
 		$File	"$ROOTSCRIPT"
 	}
 
-	$Folder	"Link Libraries" [$LINUXALL&&!$DEDICATED&&!$ENABLE_ASAN&&!$SOURCESDK]
+	$Folder	"Link Libraries" [$LINUXALL&&!$ENABLE_ASAN&&!$SOURCESDK]
 	{
 		$ImpLibExternal	"$LIBPUBLIC\mimalloc"
 	}
