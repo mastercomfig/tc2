@@ -22,7 +22,7 @@ $Macro NINJA_WARN_FLAGS_C \
     "-Wno-float-equal -Werror=return-type " \
     "-Wformat -Wformat-security"
 
-$Macro NINJA_WARN_FLAGS_CXX "-Wno-overloaded-virtual -Wno-placement-new -Wno-c++20-compat -Wno-mismatched-new-delete -Wno-class-memaccess -Wno-conversion-null -Wno-invalid-offsetof -Wno-reorder "
+$Macro NINJA_WARN_FLAGS_CXX "-Wno-overloaded-virtual -Wno-placement-new -Wno-c++20-compat -Wno-class-memaccess -Wno-conversion-null -Wno-invalid-offsetof -Wno-reorder "
 
 $Macro NINJA_C_DEV_FLAGS			"-fstack-protector -fcf-protection"	[$DEVELOPMENT_ONLY && $LINUX64]
 

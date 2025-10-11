@@ -82,7 +82,7 @@ $Configuration
 							":BuildEventOK" "\n" 
 
 		$CommandLine		"$BASE" "\n" \
-							"$SRCDIR\devtools\signservice\signclient.exe $VSIGN_SERVER $OUTBINDIR\$(TargetFileName)" "\n" [$RETAIL && $PUBLISH && !$JOSH]
+							"$SRCDIR\devtools\signservice\signclient.exe $VSIGN_SERVER $OUTBINDIR\$(TargetFileName)" "\n" [$RETAIL && $PUBLISH && !$SOURCESDK && !$JOSH]
 
 		$CommandLine		"$BASE" "\n" \
 							"call $SRCDIR\devtools\bin\vsign.bat -signvalve $OUTBINDIR\$(TargetFileName)" "\n" [!$RETAIL && !$PUBLISH && !$SOURCESDK && !$JOSH]
