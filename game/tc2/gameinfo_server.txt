@@ -1,0 +1,94 @@
+"GameInfo"
+{
+	game					"Team Comtress 2"
+	type 					multiplayer_only
+	nomodels				1
+	nohimodel 				1
+	nocrosshair				0
+	hidden_maps
+	{
+		"test_speakers"		1
+		"test_hardware"		1
+	}
+	nodegraph 				0
+	GameData				"tf.fgd"
+	AdditionalLocalization	"tf"
+	InstancePath			"maps/instances/"
+	advcrosshair 			1
+	supportsvr				0
+	ReplayRequired 			1
+
+	DependsOnAppID 			440
+
+	FileSystem
+	{
+		SteamAppId				243750
+		
+		SearchPaths
+		{
+			// First, mount all user customizations.  This will search for VPKs and subfolders
+			// and mount them in alphabetical order.  The easiest way to distribute a mod is to
+			// pack up the custom content into a VPK.  To "install" a mod, just drop it in this
+			// folder.
+			//
+			// Note that this folder is scanned only when the game is booted.
+			game+mod+custom_mod	|gameinfo_path|custom/*
+			// Enable this if you want to load your TF custom content.
+			game+mod+custom_mod	|gameinfo_path|../../tf2/tf/custom/*
+			// Adding pak folder for tc2 specifically
+			game+mod+custom_mod |gameinfo_path|loose
+			game+mod+vgui |gameinfo_path|pak1.vpk
+
+			// Now search loose files.  We'll set the directory containing the gameinfo.txt file
+			// as the first "mod" search path (after any user customizations).  This is also the one
+			// that's used when writing to the "mod" path.
+			mod+mod_write		|gameinfo_path|.
+			game+game_write		|gameinfo_path|.
+			default_write_path	|gameinfo_path|.
+			vgui	|gameinfo_path|.
+			gamebin				|gameinfo_path|bin
+
+			// We search VPK files before ordinary folders, because most files will be found in
+			// VPK and we can avoid making thousands of file system calls to attempt to open files
+			// in folders where they don't exist.  (Searching a VPK is much faster than making an operating
+			// system call.)
+			game_lv				|gameinfo_path|../../tf2/tf/tf2_lv.vpk
+			game+mod			|gameinfo_path|../../tf2/tf/tf2_textures.vpk
+			game+mod			|gameinfo_path|../../tf2/tf/tf2_sound_vo_english.vpk
+			game+mod			|gameinfo_path|../../tf2/tf/tf2_sound_misc.vpk
+			game+mod+vgui		|gameinfo_path|../../tf2/tf/tf2_misc.vpk
+			game				|gameinfo_path|../../tf2/hl2/hl2_textures.vpk
+			game				|gameinfo_path|../../tf2/hl2/hl2_sound_vo_english.vpk
+			game				|gameinfo_path|../../tf2/hl2/hl2_sound_misc.vpk
+			game+vgui			|gameinfo_path|../../tf2/hl2/hl2_misc.vpk
+			platform+vgui		|gameinfo_path|../../tf2/platform/platform_misc.vpk
+
+			// Last, mount in shared HL2 and TF2 loose files
+			game				|gameinfo_path|../../tf2/tf
+			game				|gameinfo_path|../../tf2/hl2
+			platform			|gameinfo_path|../../tf2/platform
+
+			// Random files downloaded from gameservers go into a seperate directory, so
+			// that it's easy to keep those files segregated from the official game files
+			// or customizations intentially installed by the user.
+			//
+			// This directory is searched LAST.  If you visit a server and download
+			// a custom model, etc, we don't want that file to override the default
+			// game file indefinitely (after you have left the server).  Servers CAN have
+			// custom content that overrides the default game files, it just needs to be
+			// packed up in the .bsp file so that it will be mounted as a map search pack.
+			// The map search pack is mounted at the top of the search path list,
+			// but only while you are connected that server and on that map.
+			game+download		|gameinfo_path|../../tf2/tf/download
+			game+download		|gameinfo_path|download
+		}
+	}
+
+	ToolsEnvironment
+	{
+		"Engine"			"Source"
+		"UseVPLATFORM"		"1"
+		"PythonVersion"		"2.7"
+		"PythonHomeDisable"	"1"
+	}
+}

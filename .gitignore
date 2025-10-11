@@ -576,5 +576,6 @@ pak1*.vpk
 
 pak.zip
 
-/tf2ds/
+/tf2
+gameinfo_client.txt
 # END TC2 MOD
