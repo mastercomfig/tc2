@@ -195,7 +195,7 @@ void CKickIssue::ExecuteCommand( void )
 	// also ban by user ID since the steam ID isn't working atm.
 	if ( m_hPlayerTarget )
 	{
-		engine->ServerCommand(CFmtStr("banid %d \"%s\"\n", sv_vote_kick_ban_duration.GetInt(), m_hPlayerTarget->GetUserID() ) );
+		engine->ServerCommand(CFmtStr("banid %d %d\n", sv_vote_kick_ban_duration.GetInt(), m_hPlayerTarget->GetUserID() ) );
 	}
 
 	// Band-aid: Hacks are able to avoid kick+ban, and we're not yet sure how they're doing it.  This code checks to see
