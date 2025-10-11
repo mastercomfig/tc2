@@ -1,0 +1,429 @@
+#!/bin/sh
+#
+#       Copyright (c) 2004, Valve LLC. All rights reserved.
+#
+#	a wrapper script for the main Source engine dedicated server binary.
+#	Performs auto-restarting of the server on crash. You can
+#	extend this to log crashes and more.
+#
+
+GAMEROOT=$(cd "${0%/*}" && echo $PWD)
+
+# setup the libraries, local dir first!
+UNAME=`uname`
+ARCH=`uname -m`
+PLATFORM_DIR=""
+if [ $UNAME = "Linux" ]; then
+	# prepend our lib path to LD_LIBRARY_PATH
+	PLATFORM_DIR="linux"
+	if [ $ARCH = "aarch64" ]; then
+		PLATFORM_DIR="$PLATFORM_DIR"_arm64
+	else
+		PLATFORM_DIR="$PLATFORM_DIR"64
+	fi
+
+	export LD_LIBRARY_PATH="${GAMEROOT}"/tc2/bin/"$PLATFORM_DIR":"${GAMEROOT}"/bin/"$PLATFORM_DIR":$LD_LIBRARY_PATH
+fi
+
+# The srcds_run script should be at the top level of the game tree
+# Make sure we are in that directory since the script assumes this is the case
+
+cd "`dirname \"$0\"`"
+
+if test `id -u` -eq 0; then
+	echo
+	echo
+	echo "************** WARNING ***************"
+	echo "Running the dedicated server as root  "
+	echo "is highly discouraged. It is generally"
+	echo "unnecessary to use root privileges to "
+	echo "execute the dedicated server.         "
+	echo "**************************************"
+	echo
+	echo
+	timeout=10
+	while test $timeout -gt 0; do
+		echo -n "The server will continue to launch in $timeout seconds\r"
+		timeout=`expr $timeout - 1`
+		sleep 1
+	done
+fi
+
+init() {
+	# Initialises the various variables
+	# Set up the defaults
+	GAME=""
+	DEBUG=""
+	RESTART="yes"
+	HL=./srcds_linux64
+	HL_DETECT=1
+	DSDIR="${GAMEROOT}"
+	TIMEOUT=10 # time to wait after a crash (in seconds)
+	CRASH_DEBUG_MSG="email debug.log to linux@valvesoftware.com"
+	GDB="gdb" # the gdb binary to run
+	DEBUG_LOG="debug.log"
+	PID_FILE="" # only needed it DEBUG is set so init later
+	STEAM=""
+	PID_FILE_SET=0
+	STEAMERR=""
+	SIGINT_ACTION="quit 0" # exit normally on sig int
+	NO_TRAP=0
+	AUTO_UPDATE=""
+	STEAM_DIR=""
+	STEAMCMD_SCRIPT=""
+	PARAMS=$*
+
+	# Remove any old default pid files
+	# Cant do this as they may be still running
+	#rm -f hlds.*.pid
+
+	# use the $FORCE environment variable if its set
+	if test -n "$FORCE" ; then
+		# Note: command line -binary will override this
+		HL=$FORCE
+		HL_DETECT=0
+	fi
+
+	while test $# -gt 0; do
+		case "$1" in
+		"+map")
+			MAP="$2"
+			shift;;
+		"-game")
+			GAME="$2"
+			shift ;;
+		"-debug")
+			DEBUG=1
+			# Ensure that PID_FILE is set
+			PID_FILE_SET=1
+			if test -z "$PID_FILE"; then
+				PID_FILE="hlds.$$.pid"
+			fi ;;
+		"-norestart")
+			RESTART="" ;;
+		"-pidfile")
+			PID_FILE="$2"
+			PID_FILE_SET=1
+			shift ;;
+		"-binary")
+			HL="$2"
+			HL_DETECT=0
+			shift ;;
+		"-dsdir")
+			DSDIR="$2"
+			if [ $UNAME = "Linux" ]; then
+				export LD_LIBRARY_PATH="${DSDIR}"/bin/"$PLATFORM_DIR":$LD_LIBRARY_PATH
+			fi
+			shift ;;
+		"-timeout")
+			TIMEOUT="$2"
+			shift ;;
+		"-gdb")
+			GDB="$2"
+			shift ;;
+		"-debuglog")
+			DEBUG_LOG="$2"
+			shift ;;
+		"-consolelog")
+			CONSOLE_LOG="$2"
+			shift ;;			
+		"-autoupdate")
+			AUTO_UPDATE="yes"
+			RESTART="yes" ;;
+		"-steamerr")
+			STEAMERR=1 ;;
+		"-ignoresigint")
+			SIGINT_ACTION="" ;;
+		"-notrap")
+			NO_TRAP=1 ;;
+		"-steam_dir")
+			STEAM_DIR=$2
+			shift ;;
+		"-steamcmd_script")
+			STEAMCMD_SCRIPT=$2
+			shift ;;
+		"-help")
+			# quit with syntax
+			quit 2
+			;;
+		esac
+		shift
+	done
+
+	# Ensure we have a game specified
+	if test -z "$GAME"; then
+		GAME="tf"
+		PARAMS="$PARAMS -game $GAME"
+	fi
+
+	# Check game directory
+	if test ! -d "$GAME"; then
+		echo "ERROR: Invalid game type '$GAME' specified."
+		quit 1
+	fi
+
+	if test -z "$MAP"; then
+		echo "WARNING: No map specified! Server may not heartbeat."
+	fi
+
+	if test 0 -eq "$NO_TRAP"; then
+		# Set up the int handler
+		# N.B. Dont use SIGINT symbolic value
+		#  as its just INT under ksh
+		trap "$SIGINT_ACTION" 2
+	fi
+
+	# Only detect the CPU if it hasnt been set with
+	# either environment or command line
+	if test "$HL_DETECT" -eq 1; then
+		detectcpu
+	fi
+
+	if test ! -f "$HL"; then
+		echo "ERROR: Source Engine binary '$HL' not found, exiting"
+		quit 1
+	elif test ! -x "$HL"; then
+		# Could try chmod but dont know what we will be
+		# chmoding so just fail.
+		echo "ERROR: Source engine binary '$HL' not executable, exiting"
+		quit 1
+	fi
+
+	# Setup debugging
+	if test -n "$DEBUG" ; then
+		#turn on core dumps :) (if possible)
+		echo "Enabling debug mode"
+		if test "unlimited" != `ulimit -c` && test "`ulimit -c`" -eq 0 ; then
+			ulimit -c 2000
+		fi
+		GDB_TEST=`$GDB -v`
+		if test -z "$GDB_TEST"; then
+			echo "WARNING: Please install gdb first."
+			echo "	goto http://www.gnu.org/software/gdb/ "
+			DEBUG="" # turn off debugging cause gdb isn't installed
+		fi
+	fi
+
+	if test -n "$STEAM_DIR" && test -z "$STEAMCMD_SCRIPT"; then
+		echo "ERROR: You must set both the steam_dir and steamcmd_script."
+		quit 1
+	fi
+
+	HL_CMD="$HL $PARAMS"
+	if test -n "$CONSOLE_LOG" -a -x "bin/logger"; then
+		HL_CMD="bin/logger $CONSOLE_LOG $HL_CMD"
+	fi
+}
+
+syntax () {
+	# Prints script syntax
+
+	echo "Syntax:"
+	echo "$0 [-game <game>] [-debug] [-norestart] [-pidfile]"
+	echo "	[-binary <binary>]"
+	echo "	[-timeout <number>] [-gdb <gdb>] [-autoupdate]"
+	echo "	[-steam_dir <path>] [-steamcmd_script <path>] [-steamerr] [-ignoresigint]"
+	echo "	[-debuglog <logname>]"
+	echo "Params:"
+	echo "-game <game>        	Specifies the <game> to run. [Default: $DEFAULT_GAME]"
+	echo "-debug              	Run debugging on failed servers if possible."
+	echo "-debuglog <logname>	Log debug output to this file."
+	echo "-consolelog <logname>	Log console output to this file."
+	echo "-norestart          	Don't attempt to restart failed servers."
+	echo "-pidfile <pidfile>  	Use the specified <pidfile> to store the server pid."
+	echo "-binary <binary>    	Use the specified binary ( no auto detection ). [Default: $HL]"
+	echo "-dsdir <dir>    		Use the specified directory ( no auto detection ). [Default: $DSDIR]"
+	echo "-timeout <number>   	Sleep for <number> seconds before restarting"
+	echo "			a failed server."
+	echo "-gdb <gdb>          	Use <dbg> as the debugger of failed servers."
+	echo "-steam_dir <path>		Dir that steam.sh resides in. Example: ~/Steam"
+	echo "-steamcmd_script <path>	Path to the steam script to execute. Example: ~/Steam/csgo_ds.txt"
+
+	echo "-steamerr     	  	Quit on steam update failure."
+	echo "-ignoresigint       	Ignore signal INT ( prevents CTRL+C quitting"
+	echo "			the script )."
+	echo "-notrap             	Don't use trap. This prevents automatic"
+	echo "			removal of old lock files."
+	echo ""
+	echo "Note: All parameters specified as passed through to the server"
+	echo "including any not listed."
+}
+
+debugcore () {
+	# Debugs any core file if DEBUG is set and
+	# the exitcode is none 0
+
+	exitcode=$1
+
+	if test $exitcode -ne 0; then
+		if test -n "$DEBUG" ; then 
+			echo "bt" > debug.cmds;
+			echo "info locals" >> debug.cmds;
+			echo "info registers" >> debug.cmds
+			echo "info sharedlibrary" >> debug.cmds
+			echo "disassemble" >> debug.cmds
+			echo "info frame" >> debug.cmds;  # works, but gives an error... must be last
+			echo "----------------------------------------------" >> $DEBUG_LOG
+			echo "CRASH: `date`" >> $DEBUG_LOG
+			echo "Start Line: $HL_CMD" >> $DEBUG_LOG
+
+			# check to see if a core was dumped
+			if test -f core ; then
+				CORE="core"
+			elif test -f core.`cat $PID_FILE`; then
+				CORE=core.`cat $PID_FILE`
+			elif test -f "$HL.core" ; then
+				CORE="$HL.core"
+			fi
+			
+			if test -n "$CORE"; then
+				$GDB $HL $CORE -x debug.cmds -batch >> $DEBUG_LOG
+			fi
+		
+			echo "End of Source crash report" >> $DEBUG_LOG
+			echo "----------------------------------------------" >> $DEBUG_LOG
+			echo $CRASH_DEBUG_MSG
+			rm debug.cmds
+		else
+			echo "Add \"-debug\" to the $0 command line to generate a debug.log to help with solving this problem"
+		fi
+	fi
+}
+
+detectcpu() {
+	# Attempts to auto detect the CPU
+	echo "Auto detecting CPU"
+
+	if test "Linux" = `uname`; then
+		HL=./srcds_linux64
+		echo "Using default binary: $HL"
+	elif test "FreeBSD" = `uname`; then
+		HL=./srcds_linux64
+		echo "Using default binary: $HL"
+	else
+		echo "Using default binary: $HL"
+	fi
+}
+
+update() {
+	updatesingle
+}
+
+updatesingle() {
+	# Run the steam update
+	# exits on failure if STEAMERR is set
+
+	if test -n "$AUTO_UPDATE"; then
+		if test -z "$STEAM_DIR" || test -z "$STEAMCMD_SCRIPT" ; then
+			echo "ERROR: -autoupdate requires -steam_dir and -steamcmd_script.";
+			quit 1
+		fi
+
+		if test -d "$STEAM_DIR"; then
+			echo "Updating server using Steam."
+			echo "----------------------------"
+			OLDWD=$(pwd)
+			eval "cd $STEAM_DIR"
+			eval "./steamcmd.sh +runscript $STEAMCMD_SCRIPT +quit"
+			eval "cd $OLDWD"
+			echo "----------------------------"
+		else
+			if test -n "$STEAMERR"; then
+				echo "ERROR: Could not locate steam dir:$STEAM_DIR, exiting.";
+				quit 1
+			else
+				echo "WARNING: Could not locate steam dir:$STEAM_DIR, ignoring."
+				return 0
+			fi
+		fi
+	fi
+
+	return 1
+}
+	
+run() {
+	# Runs the steam update and server
+	# Loops if RESTART is set
+	# Debugs if server failure is detected
+	# Note: if RESTART is not set then
+	# 1. DEBUG is set then the server is NOT exec'd
+	# 2. DEBUG is not set the the server is exec'd
+
+	if test -n "$RESTART" ; then
+		echo "Server will auto-restart if there is a crash."
+
+		#loop forever
+		while true
+		do
+			# Update if needed
+			update
+
+			# Run the server
+			$HL_CMD
+			retval=$?
+			if test $retval -eq 0 && test -z "$AUTO_UPDATE"; then
+				break; # if 0 is returned then just quit
+			fi
+
+			debugcore $retval
+
+			echo "`date`: Server restart in $TIMEOUT seconds"
+
+			# don't thrash the hard disk if the server dies, wait a little
+			sleep $TIMEOUT
+		done # while true 
+	else
+		# Update if needed
+		update
+
+		# Run the server
+		if test -z "$DEBUG"; then
+			# debug not requested we can exec
+			exec $HL_CMD
+		else
+			# debug requested we can't exec
+			$HL_CMD
+			debugcore $?
+		fi
+	fi
+}
+
+quit() {
+	# Exits with the give error code, 1
+	# if none specified.
+	# exit code 2 also prints syntax
+	exitcode="$1"
+
+	# default to failure
+	if test -z "$exitcode"; then
+		exitcode=1
+	fi
+
+	case "$exitcode" in
+	0)
+		echo "`date`: Server Quit" ;;
+	2)
+		syntax ;;
+	*)
+		echo "`date`: Server Failed" ;;
+	esac
+
+	# Remove pid file
+	if test -n "$PID_FILE" && test -f "$PID_FILE" ; then
+		# The specified pid file
+		rm -f $PID_FILE
+	fi
+
+	# reset SIGINT and then kill ourselves properly
+	trap - 2
+	kill -2 $$
+}
+
+# Initialise
+init "$@"
+
+# Run
+run
+
+# Quit normally
+quit 0

@@ -42,7 +42,7 @@ if [[ ! -e "$solution_out.ninja" ]]; then
     ninja -f "$solution_out.ninja" -t compdb > compile_commands.json
     # Remove some unsupported clang commands.
     sed -i 's/-fpredictive-commoning//g; s/-fvar-tracking-assignments//g' compile_commands.json
-    sed -i 's|/my_mod/src|.|g' compile_commands.json
+    sed -i 's|/tc2/src|.|g' compile_commands.json
 fi
 
 ninja -f "$solution_out.ninja" -j$(nproc)

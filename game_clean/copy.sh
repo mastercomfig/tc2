@@ -112,7 +112,13 @@ for F in "${DLLS[@]}"; do
 done
 
 for F in "${DLLS_LIB[@]}"; do
+  lib_name=${F}${DLL_EXT}
   cp -f ${DEV_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}${DLL_EXT}
+  # dedicated server DLL
+  if [ $PLATFORM = "linux" && $lib_name == "server.so" ]; then
+    cp ${CLEAN_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+    patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+  fi
 done
 
 for F in "${FILES_REP[@]}"; do

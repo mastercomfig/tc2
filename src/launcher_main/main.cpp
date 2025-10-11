@@ -504,18 +504,27 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		}
 	}
 
-	// Get the root directory the .exe is in
-	char* pRootDir = GetBaseDir( moduleName );
-	const char *pBinaryGameDir = pRootDir;
-	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated && !bForceNoSteamClient ) )
+	// cannot use dedicated launch options on non-dedicated
+	if ( !bLaunchDedicated && bForceNoSteamClient )
 	{
 		return 1;
 	}
 
-	pBinaryGameDir = szGameInstallDir;
+	// Get the root directory the .exe is in
+	char* pRootDir = GetBaseDir( moduleName );
+	const char *pBinaryGameDir = pRootDir;
+	char szGameInstallDir[4096];
+	if ( !bForceNoSteamClient )
+	{
+		if ( !bForceNoSteamClient && !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
+		{
+			return 1;
+		}
 
-	SetEnvironmentVariableA( "SDK_EXEC_DIR", szGameInstallDir );
+		pBinaryGameDir = szGameInstallDir;
+	}
+
+	SetEnvironmentVariableA( "SDK_EXEC_DIR", pBinaryGameDir );
 
 #define LAUNCHER_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\launcher.dll"
 #define DEDICATED_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\dedicated.dll"
@@ -690,17 +699,34 @@ int main( int argc, char *argv[] )
 	}
 
 	bool bLaunchDedicated = false;
+	bool bGatherDedicated = false;
 	bool bForceNoSteamClient = false;
 	for (int i = 1; i < argc; i++)
 	{
-		if (!strcmp(argv[i], "-dedicated"))
+		if ( !strcmp(argv[i], "-dedicated") )
 		{
 			bLaunchDedicated = true;
 		}
-		else if (!strcmp(argv[i], "-nosteamclient"))
+		else if ( !strcmp(argv[i], "-gatherdedi") )
+		{
+			bGatherDedicated = true;
+		}
+		else if ( !strcmp(argv[i], "-nosteamclient") )
 		{
 			bForceNoSteamClient = true;
 		}
+	}
+
+	// cannot use dedicated launch options on non-dedicated
+	if ( !bLaunchDedicated && ( bGatherDedicated || bForceNoSteamClient ) )
+	{
+		return 1;
+	}
+
+	// in order to gather, we must use steam client
+	if ( bGatherDedicated && bForceNoSteamClient )
+	{
+		return 1;
 	}
 
 	char* pRootDir = GetBaseDir( moduleName );
@@ -708,32 +734,26 @@ int main( int argc, char *argv[] )
 	const char *pBinaryGameDir = pRootDir;
 
 	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated && !bForceNoSteamClient) )
+	if ( !bForceNoSteamClient )
 	{
-		return 1;
+		if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
+		{
+			return 1;
+		}
+
+		pBinaryGameDir = szGameInstallDir;
+	}
+	else if ( bLaunchDedicated )
+	{
+		// get ../tf2ds/ hard coded path... this is used for gameinfo_server.txt
 	}
 
-	pBinaryGameDir = szGameInstallDir;
-
-#if 1
-	if ( bLaunchDedicated )
+	// if we don't need to gather anymore, we just run dedicated
+	if ( bLaunchDedicated && !bGatherDedicated )
 	{
-		#define TIER0_DLL_PATH		"%s/" PLATFORM_BIN_DIR "/libtier0_srv.so"
-		#define VSTDLIB_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/libvstdlib_srv.so"
 		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
-
-		char szTier0[8192];
-		snprintf(szTier0, sizeof(szTier0), TIER0_DLL_PATH, szGameInstallDir);
-
-		Launcher_LoadModule(szTier0);
-
-		char szVstdlib[8192];
-		snprintf(szVstdlib, sizeof(szVstdlib), VSTDLIB_DLL_PATH, szGameInstallDir);
-
-		Launcher_LoadModule(szVstdlib);
-
 		char szExecutable[8192];
-		snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, szGameInstallDir );
+		snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, pBinaryGameDir );
 
 		void* launcher = Launcher_LoadModule(szExecutable);
 		if (!launcher)
@@ -751,16 +771,15 @@ int main( int argc, char *argv[] )
 
 		return main(argc, argv);
 	}
-#endif
 	
 	char szExecutable[8192];
 	if ( bLaunchDedicated )
 	{
-		snprintf(szExecutable, sizeof(szExecutable), "%s/srcds_run", szGameInstallDir );
+		snprintf( szExecutable, sizeof(szExecutable), "%s/srcds_run_64", pRootDir );
 	}
 	else
 	{
-		snprintf(szExecutable, sizeof(szExecutable), "%s/hl2.sh", szGameInstallDir );
+		snprintf( szExecutable, sizeof(szExecutable), "%s/hl2.sh", pBinaryGameDir );
 	}
 
 	std::vector<char *> new_argv;
@@ -773,6 +792,11 @@ int main( int argc, char *argv[] )
 		if ( !strcmp( argv[i], "-game" ) )
 		{
 			bHasGame = true;
+		}
+
+		if ( !strcmp( argv[i], "-gatherdedi" ) )
+		{
+			continue;
 		}
 
 		new_argv.push_back(argv[i]);
@@ -789,6 +813,14 @@ int main( int argc, char *argv[] )
 		printf( "[Source Mod Launcher] Launching default game: %s\n", pModName );
 
 		new_argv.push_back(szGamePath);
+	}
+
+	if ( bLaunchDedicated )
+	{
+		new_argv.push_back("-binary");
+		new_argv.push_back(moduleName);
+		new_argv.push_back("-dsdir");
+		new_argv.push_back(szGameInstallDir);
 	}
 
 	new_argv.push_back(NULL);

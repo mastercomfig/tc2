@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+# make sure ccache dir is available
+my_ccache_dir=${CCACHE_DIR:-$HOME/.ccache}
+mkdir -p ${my_ccache_dir}
+
 function run_in_sniper() {
     script_file=$(basename -- "$script")
     check_env=$(sha256sum -- "$script" | cut -d " " -f 1)
@@ -13,8 +17,8 @@ function run_in_sniper() {
             exit 1
         fi
 
-        # Let's say we run as /home/misyl/my_mod/src/myscript
-        # We want to mount /home/misyl/my_mod, and then launch
+        # Let's say we run as /home/mcoms/tc2/src/myscript
+        # We want to mount /home/mcoms/tc2, and then launch
         # src/myscript inside of that.
         #
         # The below achieves that.
@@ -24,15 +28,16 @@ function run_in_sniper() {
 
         image="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest"
         echo "Running script inside $image"
+        # you need a recent version of podman, tested on 5.6
         exec podman run \
             --env "$check_env=$script_file" \
-            --env "CCACHE_DIR=${CCACHE_DIR:-$HOME/.ccache}" \
+            --env "CCACHE_DIR=${my_ccache_dir}" \
             --userns=keep-id \
             --rm -it \
-            --mount type=bind,\"source="${CCACHE_DIR:-$HOME/.ccache}"\",\"target="${CCACHE_DIR:-$HOME/.ccache}"\" \
-            --mount type=bind,\"source="$mod_base_dir"\",target=/my_mod/ \
+            --mount type=bind,\"source="${my_ccache_dir}"\",\"target="${my_ccache_dir}"\" \
+            --mount type=bind,\"source="${mod_base_dir}"\",\"target="/tc2/"\" \
             "$image" \
-            /my_mod/"$mod_src_dir_name"/"$script_file" \
+            /tc2/"$mod_src_dir_name"/"$script_file" \
             "$@"
     fi
 

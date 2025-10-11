@@ -3444,8 +3444,17 @@ class CServerDLLSharedAppSystems : public IServerDLLSharedAppSystems
 public:
 	CServerDLLSharedAppSystems()
 	{
-		AddAppSystem( "soundemittersystem" DLL_EXT_STRING, SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
-		AddAppSystem( "scenefilecache" DLL_EXT_STRING, SCENE_FILE_CACHE_INTERFACE_VERSION );
+#if LINUX && defined(SOURCESDK)
+		// kind of a hack to check the parm instead of something else
+		const bool bDedicated = CommandLine()->HasParm("-dedicated");
+		const char* soundemittersystem_dll = bDedicated ? "soundemittersystem_srv" DLL_EXT_STRING : "soundemittersystem" DLL_EXT_STRING;
+		const char* scenefilecache_dll = bDedicated ? "scenefilecache_srv" DLL_EXT_STRING : "scenefilecache" DLL_EXT_STRING;
+#else
+		const char* soundemittersystem_dll = "soundemittersystem" DLL_EXT_STRING;
+		const char* scenefilecache_dll = "scenefilecache" DLL_EXT_STRING;
+#endif
+		AddAppSystem( soundemittersystem_dll, SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
+		AddAppSystem( scenefilecache_dll, SCENE_FILE_CACHE_INTERFACE_VERSION );
 	}
 
 	virtual int	Count()
