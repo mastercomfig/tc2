@@ -987,7 +987,7 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 			}
 			else
 			{
-				V_snprintf(pszSuffix, sizeof(pszSuffix), "");
+				V_snprintf(pszSuffix, sizeof(pszSuffix), "%s", "");
 			}
 
 			V_snprintf(pszDynamicVCD, sizeof(pszDynamicVCD), "%s%02d%s", "taunt", bIsRobot ? 1 : iSlot + 1, pszSuffix);
