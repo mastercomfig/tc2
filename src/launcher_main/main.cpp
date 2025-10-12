@@ -150,7 +150,7 @@ static bool LoadSteam( const char *pRootDir )
 	#define STEAM_API_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/libsteam_api.so"
 #endif
 
-	char szBuffer[4096];
+	char szBuffer[8192];
 	// Assemble the full path to our "steam_api.dll"
 	_snprintf( szBuffer, sizeof( szBuffer ), STEAM_API_DLL_PATH, pRootDir );
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
@@ -270,9 +270,8 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 //-----------------------------------------------------------------------------
 #if !defined( _X360 )
 
-static char *GetBaseDir( const char *pszBuffer )
+void GetBaseDir( const char *pszBuffer, char *basedir )
 {
-	static char	basedir[ MAX_PATH ];
 	char szBuffer[ MAX_PATH ];
 	size_t j;
 	char *pBuffer = NULL;
@@ -300,8 +299,6 @@ static char *GetBaseDir( const char *pszBuffer )
 			basedir[ j-1 ] = 0;
 		}
 	}
-
-	return basedir;
 }
 
 #ifdef WIN32
@@ -511,7 +508,8 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	}
 
 	// Get the root directory the .exe is in
-	char* pRootDir = GetBaseDir( moduleName );
+	char pRootDir[MAX_PATH];
+	GetBaseDir( moduleName, pRootDir );
 	const char *pBinaryGameDir = pRootDir;
 	char szGameInstallDir[4096];
 	if ( !bForceNoSteamClient )
@@ -690,6 +688,19 @@ static const char *GetExecutableModName( char *pszExePath )
 	return s_szFinalFilename;
 }
 
+void var_snprintf(std::string& dst, const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    int required_len = std::vsnprintf(nullptr, 0, format, args);
+    va_end(args);
+    std::vector<char> buffer(required_len + 1);
+    va_start(args, format);
+    std::vsnprintf(buffer.data(), buffer.size(), format, args);
+    va_end(args);
+
+	dst.assign(buffer.data());
+}
+
 int main( int argc, char *argv[] )
 {
 	char moduleName[MAX_PATH];
@@ -723,19 +734,15 @@ int main( int argc, char *argv[] )
 		return 1;
 	}
 
-	// in order to gather, we must use steam client
-	if ( bGatherDedicated && bForceNoSteamClient )
-	{
-		return 1;
-	}
+	char pRootDir[MAX_PATH];
+	GetBaseDir( moduleName, pRootDir );
 
-	char* pRootDir = GetBaseDir( moduleName );
+	char *pBinaryGameDir = pRootDir;
 
-	const char *pBinaryGameDir = pRootDir;
-
-	char szGameInstallDir[4096];
+	std::string strGameInstallDir;
 	if ( !bForceNoSteamClient )
 	{
+		char szGameInstallDir[4096];
 		if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
 		{
 			return 1;
@@ -745,7 +752,12 @@ int main( int argc, char *argv[] )
 	}
 	else if ( bLaunchDedicated )
 	{
-		// get ../tf2ds/ hard coded path... this is used for gameinfo_server.txt
+		// get ../tf2ds hard coded path... this is used for gameinfo_server.txt
+		char pTempDir[MAX_PATH];
+		GetBaseDir( pRootDir, pTempDir );
+		var_snprintf(strGameInstallDir, "%s/tf2ds", pTempDir);
+		// i promise to be very very good with this string.
+		pBinaryGameDir = (char*) strGameInstallDir.c_str();
 	}
 
 	// if we don't need to gather anymore, we just run dedicated
@@ -802,7 +814,7 @@ int main( int argc, char *argv[] )
 		new_argv.push_back(argv[i]);
 	}
 
-	char szGamePath[8192];
+	char szGamePath[8193];
 	if ( !bHasGame )
 	{
 		new_argv.push_back("-game");
@@ -820,7 +832,7 @@ int main( int argc, char *argv[] )
 		new_argv.push_back("-binary");
 		new_argv.push_back(moduleName);
 		new_argv.push_back("-dsdir");
-		new_argv.push_back(szGameInstallDir);
+		new_argv.push_back(pBinaryGameDir);
 	}
 
 	new_argv.push_back(NULL);
