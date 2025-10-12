@@ -23,7 +23,7 @@ jobs:
       # - name: Setup Butler
       #   id: setup-butler
       #   run: |
-      #     sudo apt-get install p7zip-full
+      #     sudo apt-get install 7zip
       #     mkdir -p ~/.local/bin
       #     curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
       #     7z x -y butler.zip -o$HOME/.local/bin/
@@ -34,7 +34,7 @@ jobs:
       - name: Setup Butler
         id: setup-butler
         run: |
-          sudo apt-get install p7zip-full
+          sudo apt-get install 7zip
           mkdir -p ~/.local/bin
           7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
           chmod +x ~/.local/bin/butler
