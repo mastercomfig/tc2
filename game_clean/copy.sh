@@ -29,6 +29,7 @@ declare -a FILES_REP=(
   tc2/loose
   #
   tc2/gameinfo.txt
+  tc2/gameinfo_server.txt
   tf2_og/gameinfo.txt
   #
   tc2/steam.inf
@@ -88,6 +89,7 @@ elif [ $PLATFORM = "linux" ]; then
   FILES_REP+=(
     start_dedicated_tc2.sh
     start_dedicated_tf2_og.sh
+    srcds_run_64
     tc2.sh
     tf2_og.sh
   )
@@ -108,17 +110,16 @@ for F in "${DLLS[@]}"; do
     cp -f ${CLEAN_DIR}/${DLL} ${CLEAN_DEBUG_DIR}/${DLL}.dbg
     objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${DLL}.dbg ${CLEAN_DIR}/${DLL}
     strip ${CLEAN_DIR}/${DLL}
+    # dedicated server DLL
+    if [ -z ${DLL##*server.so} ]; then
+      cp ${CLEAN_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+      patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+    fi
   fi
 done
 
 for F in "${DLLS_LIB[@]}"; do
-  lib_name=${F}${DLL_EXT}
   cp -f ${DEV_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}${DLL_EXT}
-  # dedicated server DLL
-  if [ $PLATFORM = "linux" && $lib_name == "server.so" ]; then
-    cp ${CLEAN_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
-    patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${CLEAN_DIR}/${F}_srv${DLL_EXT}
-  fi
 done
 
 for F in "${FILES_REP[@]}"; do
