@@ -923,8 +923,10 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 			pClassKV->AddSubKey(pSlotKV);
 
 			pSlotKV->SetInt("slot", iSlot);
-			pSlotKV->SetInt("idHigh", pItemView->GetID() >> 32);
-			pSlotKV->SetInt("idLow", pItemView->GetID() & 0xFFFFFFFF);
+			uint32 iItemIDHigh = pItemView->GetID() >> 32;
+			pSlotKV->SetInt("idHigh", iItemIDHigh);
+			uint32 iItemIDLow = pItemView->GetID() & 0xFFFFFFFF;
+			pSlotKV->SetInt("idLow", iItemIDLow);
 		}
 	}
 	pKV->AddSubKey(pLoadoutKV);
