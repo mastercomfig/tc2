@@ -4462,10 +4462,10 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 
 		FOR_EACH_SUBKEY(pClassKey, pLoadoutEntry)
 		{
-			const int iSlot = V_atoi(pLoadoutEntry->GetName());
-			const itemid_t uItemId = pLoadoutEntry->GetUint64();
+			const int iSlot = pLoadoutEntry->GetInt("slot");
+			const itemid_t uItemId = ( ( (int64) pLoadoutEntry->GetInt("idHigh") ) << 32 ) | pLoadoutEntry->GetInt("idLow");
 
-			if (uItemId == INVALID_ITEM_ID || uItemId == 0)
+			if ( uItemId == INVALID_ITEM_ID || uItemId == 0 )
 				continue;
 
 			CEconItem soIndex;

@@ -919,7 +919,12 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 			char szSlot[256];
 			V_snprintf(szSlot, sizeof(szSlot), "%i", iSlot);
 
-			pClassKV->SetUint64(szSlot, pItemView->GetID());
+			KeyValues *pSlotKV = new KeyValues(szSlot);
+			pClassKV->AddSubKey(pSlotKV);
+
+			pSlotKV->SetInt("slot", iSlot);
+			pSlotKV->SetInt("idHigh", pItemView->GetID() >> 32);
+			pSlotKV->SetInt("idLow", pItemView->GetID() & 0xFFFFFFFF);
 		}
 	}
 	pKV->AddSubKey(pLoadoutKV);
