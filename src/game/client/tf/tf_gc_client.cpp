@@ -897,7 +897,7 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 		return;
 
 	// Extract our current loadout information and record it in the key values.
-	KeyValues *pLoadoutKV = new KeyValues("local_loadout");
+	KeyValues *pLoadoutKV = new KeyValues("o");
 	for (int iClass = TF_FIRST_NORMAL_CLASS; iClass < TF_LAST_NORMAL_CLASS; iClass++)
 	{
 		char szClass[256];
@@ -922,11 +922,10 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 			KeyValues *pSlotKV = new KeyValues(szSlot);
 			pClassKV->AddSubKey(pSlotKV);
 
-			pSlotKV->SetInt("slot", iSlot);
 			uint32 iItemIDHigh = pItemView->GetID() >> 32;
-			pSlotKV->SetInt("idHigh", iItemIDHigh);
+			pSlotKV->SetInt("h", iItemIDHigh);
 			uint32 iItemIDLow = pItemView->GetID() & 0xFFFFFFFF;
-			pSlotKV->SetInt("idLow", iItemIDLow);
+			pSlotKV->SetInt("l", iItemIDLow);
 		}
 	}
 	pKV->AddSubKey(pLoadoutKV);

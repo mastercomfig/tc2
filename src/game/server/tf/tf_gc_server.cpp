@@ -4448,7 +4448,7 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 	}
 
 	// Extract loadout information from the keyvalues and apply it to each item.
-	KeyValues* pLoadoutKV = pKVRequest->FindKey("local_loadout");
+	KeyValues* pLoadoutKV = pKVRequest->FindKey("o");
 	if (!pLoadoutKV)
 	{
 		Warning("Failed to find a loadout in SDK inventory message.\n");
@@ -4462,9 +4462,9 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 
 		FOR_EACH_SUBKEY(pClassKey, pLoadoutEntry)
 		{
-			const int iSlot = pLoadoutEntry->GetInt("slot");
-			const uint32 iItemIDHigh = (uint32)pLoadoutEntry->GetInt("idHigh");
-			const uint32 iItemIDLow = (uint32)pLoadoutEntry->GetInt("idLow");
+			const int iSlot = V_atoi(pLoadoutEntry->GetName());
+			const uint32 iItemIDHigh = (uint32)pLoadoutEntry->GetInt("h");
+			const uint32 iItemIDLow = (uint32)pLoadoutEntry->GetInt("l");
 			const uint64 iTmp = (((int64)iItemIDHigh) << 32) | iItemIDLow;
 			const itemid_t uItemId = iTmp;
 
