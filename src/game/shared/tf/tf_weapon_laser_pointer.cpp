@@ -426,7 +426,7 @@ int CLaserDot::DrawModel( int flags )
 		{
 			// Take the owning player eye position and direction.
 			vecAttachment = pPlayer->EyePosition();
-			QAngle angles = pPlayer->EyeAngles();
+			QAngle angles = pPlayer->GetNetworkEyeAngles();
 			AngleVectors( angles, &vecDir );
 		}
 
