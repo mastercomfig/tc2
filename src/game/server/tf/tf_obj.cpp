@@ -2875,13 +2875,15 @@ void CBaseObject::DoWrenchHitEffect( Vector hitLoc, bool bRepairHit, bool bUpgra
 	{
 		// Play a repair hit effect.
 		CPVSFilter filter( hitLoc );
-		TE_TFParticleEffect( filter, 0.0f, "nutsnbolts_repair", hitLoc, QAngle(0,0,0) );
+		// TODO(mcoms): was nutsnbolts_repair, testing this for now
+		TE_TFParticleEffect( filter, 0.0f, "nutsnbolts_build", hitLoc, QAngle(0,0,0) );
 	}
 	else if ( bUpgradeHit )
 	{
 		// Play an upgrade hit effect.
 		CPVSFilter filter( hitLoc );
-		TE_TFParticleEffect( filter, 0.0f, "nutsnbolts_upgrade", hitLoc, QAngle(0,0,0) );
+		// TODO(mcoms): was nutsnbolts_upgrade, testing this for now
+		TE_TFParticleEffect( filter, 0.0f, "nutsnbolts_build", hitLoc, QAngle(0,0,0) );
 	}
 }
 

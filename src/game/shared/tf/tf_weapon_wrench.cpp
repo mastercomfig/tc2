@@ -104,6 +104,8 @@ void CTFWrench::Spawn()
 #ifdef GAME_DLL
 void CTFWrench::OnFriendlyBuildingHit( CBaseObject *pObject, CTFPlayer *pPlayer, Vector hitLoc )
 {
+	CDisablePredictionFiltering disabler;
+
 	bool bHelpTeammateBuildStructure = pObject->IsBuilding() && pObject->GetOwner() != GetOwner();
 
 	// Did this object hit do any work? repair or upgrade?
@@ -118,8 +120,6 @@ void CTFWrench::OnFriendlyBuildingHit( CBaseObject *pObject, CTFPlayer *pPlayer,
 			pOwner->AwardAchievement( ACHIEVEMENT_TF_ENGINEER_HELP_BUILD_STRUCTURE );
 		}
 	}
-
-	CDisablePredictionFiltering disabler;
 
 	if ( pObject->IsDisposableBuilding() )
 	{
