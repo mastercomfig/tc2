@@ -1704,11 +1704,6 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 
 	UpdateAutoFire();
 
-	//Track the duration of the fire
-	//FIXME: Check for IN_ATTACK2 as well?
-	//FIXME: What if we're calling ItemBusyFrame? FIXED
-	m_fFireDuration = ( pOwner->m_nButtons & IN_ATTACK ) ? ( m_fFireDuration + gpGlobals->frametime ) : 0.0f;
-
 	if ( UsesClipsForAmmo1() )
 	{
 		CheckReload();
@@ -1761,8 +1756,20 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 			}
 		}
 	}
+
+	//Track the duration of the fire
+	//FIXME: Check for IN_ATTACK2 as well? FIXED
+	//FIXME: What if we're calling ItemBusyFrame? FIXED
+	// If we are starting to fire, we need to check if we would actually fire this frame.
+	// If we already ARE firing, it's totally fair game to track our continuance of wanting to fire.
+	const bool bStartingFire = m_fFireDuration == 0.0f;
+	const bool bIsFiring = bStartingFire ? (m_flNextPrimaryAttack <= gpGlobals->curtime) : true;
+	// 1) if we fired an interrupting secondary, reset our firing time since it interrupted our fire rate
+	// 2) if this is the first frame of us firing, but we cannot fire, then don't increment our firing time. we'll track our fire start when we actually can start firing.
+	// 3) we need to want to fire, so yeah..
+	m_fFireDuration = ( !bFired && bIsFiring && pOwner->m_nButtons & IN_ATTACK ) ? ( m_fFireDuration + gpGlobals->frametime ) : 0.0f;
 	
-	if ( !bFired && (pOwner->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack <= gpGlobals->curtime))
+	if ( !bFired && (pOwner->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack <= gpGlobals->curtime) )
 	{
 		// Clip empty? Or out of ammo on a no-clip weapon?
 		if ( !IsMeleeWeapon() &&  
@@ -2327,7 +2334,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 	// To make the firing framerate independent, we may have to fire more than one bullet here on low-framerate systems, 
 	// especially if the weapon we're firing has a really fast rate of fire.
 	float fireRate = GetFireRate();
-	int32 fireTimes = fireRate > 0.0f ? (int)((gpGlobals->curtime - m_flNextPrimaryAttack) / fireRate) + 1 : 1;
+	int32 fireTimes = fireRate > 0.0f ? Ceil2Int((gpGlobals->curtime - m_flNextPrimaryAttack) / fireRate) : 1;
 
 	for (info.m_iShots = 1; info.m_iShots <= fireTimes; info.m_iShots++)
 	{

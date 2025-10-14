@@ -278,13 +278,6 @@ bool CTFRocketLauncher::CheckReloadMisfire( void )
 	return false;
 }
 
-
-//-----------------------------------------------------------------------------
-bool CTFRocketLauncher::ShouldBlockPrimaryFire()
-{
-	return !AutoFiresFullClip();
-}
-
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -725,6 +718,14 @@ void CTFCrossbow::SecondaryAttack( void )
 			m_flLastUsedTimestamp = gpGlobals->curtime;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool CTFCrossbow::ShouldBlockPrimaryFire()
+{
+	int iMilkBolt = 0;
+	CALL_ATTRIB_HOOK_INT( iMilkBolt, fires_milk_bolt );
+	return iMilkBolt != 0;
 }
 
 //-----------------------------------------------------------------------------

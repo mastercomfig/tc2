@@ -174,7 +174,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	int32 fireTimes = flFireDelay > 0.0f ? (int)((gpGlobals->curtime - m_flNextPrimaryAttack) / flFireDelay) + 1 : 1;
+	int32 fireTimes = flFireDelay > 0.0f ? Ceil2Int((gpGlobals->curtime - m_flNextPrimaryAttack) / flFireDelay) : 1;
 	const int32 iFireTimes = fireTimes;
 	if (fireTimes == 1)
 	{

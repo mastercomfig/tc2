@@ -66,7 +66,7 @@ public:
 
 	virtual bool	CheckReloadMisfire( void ) OVERRIDE;
 
-	virtual bool	ShouldBlockPrimaryFire() OVERRIDE;
+	virtual bool	ShouldBlockPrimaryFire() OVERRIDE { return false; }
 
 #ifdef CLIENT_DLL
 	virtual void CreateMuzzleFlashEffects( C_BaseEntity *pAttachEnt, int nIndex );
@@ -120,6 +120,8 @@ public:
 
 	CTFRocketLauncher_AirStrike();
 
+	//virtual bool	ShouldBlockPrimaryFire() OVERRIDE { return true; }
+
 	virtual int		GetWeaponID( void ) const		{ return TF_WEAPON_ROCKETLAUNCHER; }
 	const char*		GetEffectLabelText( void )		{ return "#TF_KILLS"; }
 	virtual int		GetCount( void );
@@ -145,6 +147,8 @@ public:
 	//CTFRocketLauncher_Mortar();
 
 	virtual int		GetWeaponID( void ) const			{ return TF_WEAPON_ROCKETLAUNCHER; }
+
+	virtual bool	ShouldBlockPrimaryFire() OVERRIDE { return true; }
 
 	virtual CBaseEntity *FireProjectile( CTFPlayer *pPlayer );
 
@@ -181,6 +185,8 @@ public:
 	virtual float	GetProjectileSpeed( void );
 	virtual float	GetProjectileGravity( void );
 	virtual bool	IsViewModelFlipped( void );
+
+	virtual bool	ShouldBlockPrimaryFire() OVERRIDE;
 
 	virtual void	ItemPostFrame( void );
 	virtual void	ModifyProjectile( CBaseEntity* pProj );
