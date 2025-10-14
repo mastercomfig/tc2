@@ -1757,7 +1757,18 @@ void C_BasePlayer::CalcInEyeCamView(Vector& eyeOrigin, QAngle& eyeAngles, float&
 
 	m_flObserverChaseDistance = 0.0;
 
-	eyeAngles = target->EyeAngles();
+#ifdef TF_CLIENT_DLL
+	if ( target->IsPlayer() )
+	{
+		C_TFPlayer* pTFTarget = ToTFPlayer( target );
+		eyeAngles = pTFTarget->GetNetworkEyeAngles();
+	}
+	else
+#endif
+	{
+		eyeAngles = target->EyeAngles();
+	}
+
 	eyeOrigin = target->GetAbsOrigin();
 
 	// Apply punch angle

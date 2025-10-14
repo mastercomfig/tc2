@@ -1561,6 +1561,7 @@ bool CSniperDot::GetRenderingPositions( C_TFPlayer *pPlayer, Vector &vecAttachme
 			C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 			if ( pLocalPlayer && pLocalPlayer->GetObserverTarget() == pPlayer )
 			{
+				// TODO(mcoms): can we match up the in eye view better?
 				// match up to the view that the local player is observing.
 				QAngle anglesEye = pPlayer->EyeAngles();
 				AngleVectors( anglesEye, &vecDir );
