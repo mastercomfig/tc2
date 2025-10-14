@@ -9,6 +9,7 @@
 #include "effect_dispatch_data.h"
 #include "in_buttons.h"
 #include "tf_gamerules.h"
+#include "debugoverlay_shared.h"
 
 // Server specific.
 #if !defined( CLIENT_DLL )
@@ -906,30 +907,24 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 	CALL_ATTRIB_HOOK_INT( iCritFromBehind, crit_from_behind );
 	if ( iCritFromBehind > 0 )
 	{
-		// Get a vector from owner origin to target origin
-		Vector vecToTarget;
-		vecToTarget = ent->WorldSpaceCenter() - pPlayer->WorldSpaceCenter();
-		vecToTarget.z = 0.0f;
-		vecToTarget.NormalizeInPlace();
+		bool bIsBehind;
+		CTFPlayer* pTarget = ToTFPlayer( ent );
+		if ( pTarget )
+		{
+			bIsBehind = IsBehindAndFacingTarget( pTarget );
+		}
+		else
+		{
+			Vector entForward;
+			AngleVectors( ent->EyeAngles(), &entForward );
 
-		// Get owner forward view vector
-		Vector vecOwnerForward;
-		AngleVectors(pPlayer->EyeAngles(), &vecOwnerForward);
-		vecOwnerForward.z = 0.0f;
-		vecOwnerForward.NormalizeInPlace();
+			Vector toEnt = ent->GetAbsOrigin() - pPlayer->GetAbsOrigin();
+			toEnt.NormalizeInPlace();
 
-		// Get target forward view vector
-		Vector vecTargetForward;
-		AngleVectors(ent->GetAbsAngles(), &vecTargetForward);
-		vecTargetForward.z = 0.0f;
-		vecTargetForward.NormalizeInPlace();
+			bIsBehind = DotProduct( toEnt, entForward ) > 0.7071f;
+		}
 
-		// Make sure owner is behind, facing and aiming at target's back
-		float flPosVsTargetViewDot = DotProduct(vecToTarget, vecTargetForward);	// Behind?
-		float flPosVsOwnerViewDot = DotProduct(vecToTarget, vecOwnerForward);		// Facing?
-		float flViewAnglesDot = DotProduct(vecTargetForward, vecOwnerForward);	// Facestab?
-
-		if (flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5 && flViewAnglesDot > -0.3f)
+		if ( bIsBehind )
 		{
 			iDmgType |= DMG_CRITICAL;
 		}
@@ -1067,6 +1062,130 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 #endif
 		m_bConnected = true;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Determine if we are reasonably facing our target.
+//-----------------------------------------------------------------------------
+bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget )
+{
+	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
+	if ( !pOwner )
+		return false;
+
+	// Get a vector from owner origin to target origin
+	Vector vecToTarget = pTarget->WorldSpaceCenter() - pOwner->WorldSpaceCenter();
+	vecToTarget.z = 0.0f;
+	vecToTarget.NormalizeInPlace();
+
+	// Get owner forward view vector
+	Vector vecOwnerForward;
+	AngleVectors(pOwner->EyeAngles(), &vecOwnerForward, NULL, NULL);
+	vecOwnerForward.z = 0.0f;
+	vecOwnerForward.NormalizeInPlace();
+
+	// Get target forward view vector, lag compensated for the owner.
+	Vector vecTargetForward;
+#ifdef CLIENT_DLL
+	AngleVectors(pTarget->EyeAngles(), &vecTargetForward, NULL, NULL);
+#else
+	AngleVectors(pTarget->GetNetworkEyeAngles(), &vecTargetForward, NULL, NULL);
+#endif
+	vecTargetForward.z = 0.0f;
+	vecTargetForward.NormalizeInPlace();
+
+	// Make sure owner is behind, facing and aiming at target's back
+	float flPosVsTargetViewDot = DotProduct( vecToTarget, vecTargetForward );	// Behind?
+	float flPosVsOwnerViewDot = DotProduct( vecToTarget, vecOwnerForward );		// Facing?
+	float flViewAnglesDot = DotProduct( vecTargetForward, vecOwnerForward );	// Facestab?
+
+	// Debug
+#if 0
+	NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pTarget->WorldSpaceCenter(), 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+#ifdef GAME_DLL
+	DevMsg( "[server] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f SightDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
+#else
+	DevMsg( "[client] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
+#endif
+#endif
+
+	// must get a backstab on the owner's view.
+#if CLIENT_DLL
+	if ( flPosVsTargetViewDot > 0.f && flPosVsOwnerViewDot > 0.5f && flViewAnglesDot > -0.3f )
+#else
+	// corrected for lag comp angle error
+	if ( flPosVsTargetViewDot > -0.001746f && flPosVsOwnerViewDot > 0.498488f && flViewAnglesDot > -0.30237f )
+#endif
+	{
+		return VerifyBehindPosition( pTarget );
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------------
+// Purpose: Verify if owner perspective backstab was reasonably fair for the victim.
+//-----------------------------------------------------------------------------------
+bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
+{
+#ifdef GAME_DLL
+	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
+	if ( !pOwner )
+		return false;
+
+	// this code essentially checks if the victim was signifying they were
+	// sufficiently aware of the attacker's position. if so, they can't get
+	// backstabbed. 
+
+	// unwind lag comp, lag comp the victim, and then restore prior lag comp.
+	// this isn't great. but this is what we need to do for now. perhaps
+	// lag comp could support forcing recursion. 
+	lagcompensation->FinishLagCompensation( pOwner );
+	// TODO(mcoms): do we need the cmd here? our best guess is probably fine?
+	lagcompensation->StartLagCompensation( pTarget, NULL );
+	// ======================================
+
+	// Get a vector from owner origin to target origin
+	Vector vecToTarget3D = pTarget->WorldSpaceCenter() - pOwner->WorldSpaceCenter();
+	Vector vecToTarget = vecToTarget3D;
+	vecToTarget.z = 0.0f;
+	const float flDist2D = vecToTarget.NormalizeInPlace();
+
+	Vector vecTargetSight;
+	AngleVectors( pTarget->EyeAngles(), &vecTargetSight, NULL, NULL );
+
+	// If the attacker is too close, our 2D angles are not going to be accurate. consider a full 3D check
+	const float flMax = pTarget->WorldAlignSize().x;
+	float flSightAnglesDot;
+	if ( flDist2D < flMax * flMax )
+	{
+		flSightAnglesDot = DotProduct( -vecToTarget3D, vecTargetSight );
+	}
+	else
+	{
+		// make it 2D
+		vecTargetSight.z = 0.0f;
+		vecTargetSight.NormalizeInPlace();
+		flSightAnglesDot = DotProduct( -vecToTarget, vecTargetSight );
+	}
+
+	// ======================================
+	// snap back to reality.
+	lagcompensation->FinishLagCompensation( pTarget );
+	lagcompensation->StartLagCompensation( pOwner, pOwner->GetCurrentCommand() );
+
+	// Looking at attacker?
+#if 0
+	return flSightAnglesDot <= 0.61f;
+#else
+	// corrected for angle error
+	return flSightAnglesDot <= 0.611389f;
+#endif
+#else
+	return true;
+#endif
 }
 
 #ifndef CLIENT_DLL
