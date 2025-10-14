@@ -8113,7 +8113,7 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 		if ( GetActiveWeapon() )
 		{
 			char szCmd[256];
-			Q_snprintf(szCmd, sizeof(szCmd), "exec %s.cfg", GetActiveWeapon()->GetClassname());
+			Q_snprintf( szCmd, sizeof(szCmd), "exec %s.cfg", GetActiveWeapon()->GetClassname() );
 			engine->ExecuteClientCmd(szCmd);
 		}
 	}

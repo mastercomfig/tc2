@@ -16316,7 +16316,7 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 			bool bDoStrandedSpawn = false;
 			if ( IsCompetitiveGame() )
 			{
-				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() == 2;
+				bDoStrandedSpawn = pTFPlayer->m_Shared.IsInStrandedSpawn() == STRANDED_SPAWN_SWITCHABLE;
 			}
 			if ( bDoStrandedSpawn )
 			{
@@ -16324,7 +16324,7 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 				pTFPlayer->ForceRespawn();
 				pTFPlayer->SetStrandedSpawnSwitch(false);
 				// lower tier stranded spawn
-				pTFPlayer->m_Shared.SetInStrandedSpawn( 1 );
+				pTFPlayer->m_Shared.SetInStrandedSpawn( STRANDED_SPAWN_ANCHORED );
 			}
 			else
 			{
@@ -16345,7 +16345,7 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 				pTFPlayer->ForceRespawn();
 				pTFPlayer->SetStrandedSpawnSwitch(false);
 				// lower tier stranded spawn
-				pTFPlayer->m_Shared.SetInStrandedSpawn(1);
+				pTFPlayer->m_Shared.SetInStrandedSpawn( STRANDED_SPAWN_ANCHORED );
 			}
 			pTFPlayer->InspectButtonReleased();
 		}

@@ -639,6 +639,8 @@ public:
 	void SetInstantClassSpawn( bool bInstant ) { m_bInstantClassSpawn = bInstant; }
 	void SetStrandedSpawnSwitch( bool bSwitch ) { m_bStrandedSpawnSwitch = bSwitch; }
 
+	void StartStrandedSpawnCheck();
+
 	static bool m_bTFPlayerNeedsPrecache;
 
 	// IHasAttributes

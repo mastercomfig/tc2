@@ -709,6 +709,14 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 			char szCmd[128];
 			Q_snprintf( szCmd, sizeof( szCmd ), "exec %s.cfg", GetPlayerClassData( iClass )->m_szClassName );
 			engine->ExecuteClientCmd( szCmd );
+
+			// weapon specific config
+			if ( GetActiveWeapon() )
+			{
+				char szWeaponCmd[256];
+				Q_snprintf( szWeaponCmd, sizeof(szWeaponCmd), "exec %s.cfg", GetActiveWeapon()->GetClassname() );
+				engine->ExecuteClientCmd(szWeaponCmd);
+			}
 		}
 	}
 	

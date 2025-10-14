@@ -604,7 +604,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	SendPropEHandle( SENDINFO( m_hCarriedObject ) ),
 	SendPropBool( SENDINFO( m_bCarryingObject ) ),
 	SendPropFloat( SENDINFO( m_flNextNoiseMakerTime ) ),
-	SendPropBool( SENDINFO( m_iStrandedSpawn ) ),
+	SendPropInt( SENDINFO( m_iStrandedSpawn ) ),
 	SendPropInt( SENDINFO( m_iSpawnRoomTouchCount ) ),
 	SendPropInt( SENDINFO( m_iKillCountSinceLastDeploy ) ),
 	SendPropFloat( SENDINFO( m_flFirstPrimaryAttack ) ),
@@ -887,7 +887,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_iStrandedSpawn = 0;
+	m_iStrandedSpawn = STRANDED_SPAWN_SWITCHABLE;
 
 	m_flNextNoiseMakerTime = 0;
 	m_iSpawnRoomTouchCount = 0;
@@ -998,7 +998,7 @@ void CTFPlayerShared::Init( CTFPlayer *pPlayer )
 	m_iOldKillStreak = 0;
 	m_iOldKillStreakWepSlot = 0;
 
-	m_iStrandedSpawn = 0;
+	m_iStrandedSpawn = STRANDED_SPAWN_SWITCHABLE;
 
 	SetJumping( false );
 	SetAssist( NULL );
@@ -14577,6 +14577,42 @@ void CTFPlayerShared::Heal_Radius( bool bActive )
 		m_pOuter->m_pRadiusHealEffect = NULL;
 #endif	// CLIENT_DLL
 	}
+}
+
+void CTFPlayerShared::IncrementRespawnTouchCount()
+{
+	++m_iSpawnRoomTouchCount;
+
+#ifdef GAME_DLL
+	// In Casual modes, players can switch spawns upon re-entering their spawn room.
+	if ( m_pOuter && !m_iStrandedSpawn && !TFGameRules()->IsCompetitiveGame() )
+	{
+		m_pOuter->StartStrandedSpawnCheck();
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CTFPlayerShared::IsInStrandedSpawn() const
+{
+	if ( !m_pOuter )
+	{
+		return 0;
+	}
+
+	if ( !m_pOuter->IsAlive() )
+	{
+		return 0;
+	}
+
+	if ( m_pOuter->GetTeamNumber() <= LAST_SHARED_TEAM )
+	{
+		return 0;
+	}
+
+	return m_iStrandedSpawn;
 }
 
 //-----------------------------------------------------------------------------

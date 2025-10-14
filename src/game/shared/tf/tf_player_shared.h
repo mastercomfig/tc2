@@ -223,6 +223,13 @@ enum TFCYOAPDAAnimState_t
 	CYOA_PDA_ANIM_OUTRO
 };
 
+enum TFStrandedSpawnState_t
+{
+	STRANDED_SPAWN_DETACHED = 0,
+	STRANDED_SPAWN_ANCHORED,
+	STRANDED_SPAWN_SWITCHABLE,
+};
+
 //=============================================================================
 //
 // Shared player class.
@@ -676,9 +683,9 @@ public:
 
 	void	Heal_Radius ( bool bActive );
 
-	void IncrementRespawnTouchCount() { ++m_iSpawnRoomTouchCount; }
+	void IncrementRespawnTouchCount();
 	void DecrementRespawnTouchCount() { m_iSpawnRoomTouchCount = Max( m_iSpawnRoomTouchCount - 1, 0 ); }
-	int IsInStrandedSpawn() const { return m_iStrandedSpawn; }
+	int IsInStrandedSpawn() const;
 	void SetInStrandedSpawn( int iStrandedSpawn ) { m_iStrandedSpawn = iStrandedSpawn; }
 	int GetRespawnTouchCount() const { return m_iSpawnRoomTouchCount; }
 

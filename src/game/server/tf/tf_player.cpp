@@ -2285,7 +2285,7 @@ void CTFPlayer::StrandedSpawnThink(void)
 	if ( !iResult )
 	{
 		// if we left, then we can't be stranded anymore
-		m_Shared.m_iStrandedSpawn = 0;
+		m_Shared.m_iStrandedSpawn = STRANDED_SPAWN_DETACHED;
 		return;
 	}
 
@@ -2350,10 +2350,10 @@ int CTFPlayer::CheckStrandedSpawn(void)
 		return 0;
 	}
 
-#if 0
+#if 1
 	// tighter check for leaving respawn room
 	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
-	if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 72.0f * 72.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 72.0f )
+	if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 300.0f * 300.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 300.0f )
 	{
 		return 0;
 	}
@@ -2368,7 +2368,7 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	// just allow players to respawn during first 7 seconds
 #if 1
 	// don't upgrade from 1 to 2
-	return m_Shared.m_iStrandedSpawn == 1 ? 1 : 2;
+	return m_Shared.m_iStrandedSpawn == STRANDED_SPAWN_ANCHORED ? STRANDED_SPAWN_ANCHORED : STRANDED_SPAWN_SWITCHABLE;
 #else
 	CFuncRespawnRoom* pLastRespawnRoom;
 	GetMyRespawnRoom(NULL, vLastSpawnPos, pLastRespawnRoom);
@@ -3701,6 +3701,21 @@ void CTFPlayer::ApplyGenericPushbackImpulse( const Vector &vecImpulse, CTFPlayer
 	ApplyAbsVelocityImpulse( vForce );
 }
 
+void CTFPlayer::StartStrandedSpawnCheck()
+{
+	if ( !IsAlive() )
+	{
+		return;
+	}
+
+	if ( GetTeamNumber() <= LAST_SHARED_TEAM )
+	{
+		return;
+	}
+
+	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.1f, "StrandedSpawnThink" );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Go between for Setting Local Punch Impulses. Checks item attributes
 // Use this instead of directly calling m_Local.m_vecPunchAngle.SetX( value );
@@ -4256,7 +4271,7 @@ void CTFPlayer::Spawn()
 	}
 
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
-	SetContextThink( &CTFPlayer::StrandedSpawnThink, gpGlobals->curtime + 0.1f, "StrandedSpawnThink" );
+	StartStrandedSpawnCheck();
 }
 
 //-----------------------------------------------------------------------------
@@ -13415,7 +13430,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	m_iHealth = 0;
 
 	// Reset stranded spawn state
-	m_Shared.m_iStrandedSpawn = 0;
+	m_Shared.m_iStrandedSpawn = STRANDED_SPAWN_SWITCHABLE;
 
 	// Reset spawn point
 	m_pSpawnPoint = NULL;
@@ -15268,6 +15283,12 @@ void CTFPlayer::ForceRegenerateAndRespawn( void )
 	m_bRegenerating.Set( true );
 	ForceRespawn();
 	m_bRegenerating.Set( false );
+	// if we left a spawn room, and then respawned using a resupply cabinet outside of a spawn room,
+	// this will reset our stranded spawn state appropriately in time for the data change on the client
+	if ( !m_Shared.m_iStrandedSpawn )
+	{
+		m_Shared.m_iStrandedSpawn = TFGameRules()->IsCompetitiveGame() ? STRANDED_SPAWN_ANCHORED : STRANDED_SPAWN_SWITCHABLE;
+	}
 }
 
 //-----------------------------------------------------------------------------
