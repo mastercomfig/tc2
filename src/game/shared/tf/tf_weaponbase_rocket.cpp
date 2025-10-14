@@ -6,6 +6,7 @@
 #include "cbase.h"
 #include "tf_weaponbase_rocket.h"
 
+#include "inetchannelinfo.h"
 #include "movevars_shared.h"
 
 // Server specific.
@@ -26,6 +27,7 @@ extern void SendProxy_Angles( const SendProp *pProp, const void *pStruct, const 
 #include "props_shared.h"
 #include "usermessages.h"
 #include "cdll_bounded_cvars.h"
+#include "c_tf_player.h"
 #endif
 
 //w_rocket_airstrike\w_rocket_airstrike.mdl
@@ -320,9 +322,24 @@ void CTFBaseRocket::OnDataChanged(DataUpdateType_t updateType)
 //-----------------------------------------------------------------------------
 int CTFBaseRocket::DrawModel( int flags )
 {
-	// During the first 0.2 seconds of our life, don't draw ourselves.
-	if ( gpGlobals->curtime - m_flSpawnTime < 0.01f )
-		return 0;
+	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if (pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	{
+		// During the first 0.05 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.05f;
+		INetChannelInfo* nci = engine->GetNetChannelInfo();
+		if ( nci )
+		{
+			// reduce by the latency
+			flBaseTime -= nci->GetAvgLatency( FLOW_INCOMING );
+			if ( flBaseTime < 0.0f )
+			{
+				flBaseTime = 0.0f;
+			}
+		}
+		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+			return 0;
+	}
 
 	return BaseClass::DrawModel( flags );
 }

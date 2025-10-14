@@ -9,6 +9,8 @@
 #include "npcevent.h"
 #include "engine/IEngineSound.h"
 #include "tf_weapon_grenade_pipebomb.h"
+
+#include "inetchannelinfo.h"
 #include "tf_weapon_pipebomblauncher.h"
 #include "tf_weapon_grenadelauncher.h"
 
@@ -378,9 +380,25 @@ void CTFGrenadePipebombProjectile::Simulate( void )
 //-----------------------------------------------------------------------------
 int CTFGrenadePipebombProjectile::DrawModel( int flags )
 {
-	// m_flCreationTime?
-	if ( gpGlobals->curtime - m_flSpawnTime < 0.01f )
-		return 0;
+	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	{
+		// During the first 0.05 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.05f;
+		INetChannelInfo* nci = engine->GetNetChannelInfo();
+		if ( nci )
+		{
+			// reduce by the latency
+			flBaseTime -= nci->GetAvgLatency( FLOW_INCOMING );
+			if (flBaseTime < 0.0f)
+			{
+				flBaseTime = 0.0f;
+			}
+		}
+		// m_flCreationTime?
+		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+			return 0;
+	}
 
 	return BaseClass::DrawModel( flags );
 }

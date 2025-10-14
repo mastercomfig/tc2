@@ -7,6 +7,7 @@
 #include "tf_projectile_base.h"
 
 #include "effect_dispatch_data.h"
+#include "inetchannelinfo.h"
 #include "tf_shareddefs.h"
 #include "tf_gamerules.h"
 
@@ -310,9 +311,24 @@ void CTFBaseProjectile::PostDataUpdate( DataUpdateType_t type )
 //-----------------------------------------------------------------------------
 int CTFBaseProjectile::DrawModel( int flags )
 {
-	// During the first 0.2 seconds of our life, don't draw ourselves.
-	if ( gpGlobals->curtime - m_flSpawnTime < 0.01f )
-		return 0;
+	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	{
+		// During the first 0.05 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.05f;
+		INetChannelInfo* nci = engine->GetNetChannelInfo();
+		if ( nci )
+		{
+			// reduce by the latency
+			flBaseTime -= nci->GetAvgLatency( FLOW_INCOMING );
+			if (flBaseTime < 0.0f)
+			{
+				flBaseTime = 0.0f;
+			}
+		}
+		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+			return 0;
+	}
 
 	return BaseClass::DrawModel( flags );
 }
