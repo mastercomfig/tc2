@@ -570,7 +570,7 @@ const ConCommandBase *Cmd_ExecuteString (const char *text, cmd_source_t src)
 			{
 				g_pServerPluginHandler->SetCommandClient( -1 );
 						
-#ifndef SWDS
+#ifndef DEDICATED
 				// Special processing for listen server player
 				if ( isServerCommand )
 				{
