@@ -225,11 +225,14 @@ void CTFWrench::ItemPostFrame()
 		CALL_ATTRIB_HOOK_INT( iAltFireTeleportToSpawn, alt_fire_teleport_to_spawn );
 		if ( iAltFireTeleportToSpawn )
 		{
-			// Tell the teleport menu to show
-			CHudEurekaEffectTeleportMenu *pTeleportMenu = ( CHudEurekaEffectTeleportMenu * )GET_HUDELEMENT( CHudEurekaEffectTeleportMenu );
-			if ( pTeleportMenu )
+			if ( gpGlobals->curtime >= GetLastReadyTime() )
 			{
-				pTeleportMenu->WantsToTeleport();
+				// Tell the teleport menu to show
+				CHudEurekaEffectTeleportMenu *pTeleportMenu = ( CHudEurekaEffectTeleportMenu * )GET_HUDELEMENT( CHudEurekaEffectTeleportMenu );
+				if ( pTeleportMenu )
+				{
+					pTeleportMenu->WantsToTeleport();
+				}
 			}
 		}
 	}
