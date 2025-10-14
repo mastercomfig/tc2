@@ -2334,7 +2334,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 	// To make the firing framerate independent, we may have to fire more than one bullet here on low-framerate systems, 
 	// especially if the weapon we're firing has a really fast rate of fire.
 	float fireRate = GetFireRate();
-	int32 fireTimes = fireRate > 0.0f ? Ceil2Int((gpGlobals->curtime - m_flNextPrimaryAttack) / fireRate) : 1;
+	int32 fireTimes = fireRate > 0.0f ? Max( Ceil2Int( ( gpGlobals->curtime - m_flNextPrimaryAttack ) / fireRate ), 1 ) : 1;
 
 	for (info.m_iShots = 1; info.m_iShots <= fireTimes; info.m_iShots++)
 	{

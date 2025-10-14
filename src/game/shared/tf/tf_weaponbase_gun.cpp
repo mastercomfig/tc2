@@ -174,7 +174,7 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	int32 fireTimes = flFireDelay > 0.0f ? Ceil2Int((gpGlobals->curtime - m_flNextPrimaryAttack) / flFireDelay) : 1;
+	int32 fireTimes = flFireDelay > 0.0f ? Max( Ceil2Int( ( gpGlobals->curtime - m_flNextPrimaryAttack ) / flFireDelay ), 1 ) : 1;
 	const int32 iFireTimes = fireTimes;
 	if (fireTimes == 1)
 	{
@@ -185,15 +185,15 @@ void CTFWeaponBaseGun::PrimaryAttack( void )
 	{
 		while (fireTimes-- > 0)
 		{
-			if ((UsesClipsForAmmo1() && m_iClip1 <= 0) || (!UsesClipsForAmmo1() && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0))
+			if ( ( UsesClipsForAmmo1() && m_iClip1 <= 0 ) || ( !UsesClipsForAmmo1() && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) <= 0 ) )
 			{
 				HandleFireOnEmpty();
 				break;
 			}
 			else
 			{
-				CBaseEntity* pProj = FireProjectile(pPlayer);
-				ModifyProjectile(pProj);
+				CBaseEntity *pProj = FireProjectile( pPlayer );
+				ModifyProjectile( pProj );
 			}
 		}
 	}
