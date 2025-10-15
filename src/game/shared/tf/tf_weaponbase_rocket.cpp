@@ -278,7 +278,7 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 //-----------------------------------------------------------------------------
 void CTFBaseRocket::ClientPredictThink()
 {
-	if (!m_bPredicting)
+	if ( !m_bPredicting )
 	{
 		return;
 	}
@@ -290,8 +290,8 @@ void CTFBaseRocket::ClientPredictThink()
 
 	// sucky position function for now
 	m_vecPredLoc += m_vInitialVelocity * gpGlobals->interval_per_tick * 3.0f * gpGlobals->frametime;
-	m_vecPredLoc.z -= 0.5f * GetActualGravity(this) * gpGlobals->frametime * gpGlobals->frametime;
-	SetLocalOrigin(m_vecPredLoc);
+	m_vecPredLoc.z -= 0.5f * GetActualGravity( this ) * gpGlobals->frametime * gpGlobals->frametime;
+	SetLocalOrigin( m_vecPredLoc );
 }
 
 //-----------------------------------------------------------------------------
@@ -322,11 +322,12 @@ void CTFBaseRocket::OnDataChanged(DataUpdateType_t updateType)
 //-----------------------------------------------------------------------------
 int CTFBaseRocket::DrawModel( int flags )
 {
-	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if (pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	CTFPlayer *pTFOwner = ToTFPlayer( GetOwnerEntity() );
+	if ( pPlayer == pTFOwner || pPlayer->GetObserverTarget() == GetOwnerEntity() )
 	{
-		// During the first 0.05 seconds of our life, don't draw ourselves.
-		float flBaseTime = 0.05f;
+		// During the first 0.01 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.01f;
 		INetChannelInfo* nci = engine->GetNetChannelInfo();
 		if ( nci )
 		{

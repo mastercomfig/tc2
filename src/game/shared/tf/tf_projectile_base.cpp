@@ -311,17 +311,18 @@ void CTFBaseProjectile::PostDataUpdate( DataUpdateType_t type )
 //-----------------------------------------------------------------------------
 int CTFBaseProjectile::DrawModel( int flags )
 {
-	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	CTFPlayer *pTFOwner = ToTFPlayer( GetOwnerEntity() );
+	if ( pPlayer == pTFOwner || pPlayer->GetObserverTarget() == GetOwnerEntity() )
 	{
-		// During the first 0.05 seconds of our life, don't draw ourselves.
-		float flBaseTime = 0.05f;
+		// During the first 0.01 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.01f;
 		INetChannelInfo* nci = engine->GetNetChannelInfo();
 		if ( nci )
 		{
 			// reduce by the latency
 			flBaseTime -= nci->GetAvgLatency( FLOW_INCOMING );
-			if (flBaseTime < 0.0f)
+			if ( flBaseTime < 0.0f )
 			{
 				flBaseTime = 0.0f;
 			}

@@ -380,11 +380,12 @@ void CTFGrenadePipebombProjectile::Simulate( void )
 //-----------------------------------------------------------------------------
 int CTFGrenadePipebombProjectile::DrawModel( int flags )
 {
-	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( pPlayer && pPlayer == GetOwnerEntity() || pPlayer->GetObserverTarget() == GetOwnerEntity() )
+	CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	CTFPlayer *pTFOwner = ToTFPlayer( GetOwnerEntity() );
+	if ( pPlayer == pTFOwner || pPlayer->GetObserverTarget() == GetOwnerEntity() )
 	{
-		// During the first 0.05 seconds of our life, don't draw ourselves.
-		float flBaseTime = 0.05f;
+		// During the first 0.01 seconds of our life, don't draw ourselves.
+		float flBaseTime = 0.01f;
 		INetChannelInfo* nci = engine->GetNetChannelInfo();
 		if ( nci )
 		{
