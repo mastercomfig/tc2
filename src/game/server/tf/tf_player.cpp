@@ -2280,12 +2280,15 @@ void CTFPlayer::PostSpawnThink( void )
 
 	// this used to be in PostInventoryApplication, but that would happen too early for the client to catch up.
 	// so, now it's here.
-	// Notify the client.
-	IGameEvent *event = gameeventmanager->CreateEvent( "post_inventory_application" );
-	if ( event )
+	if ( GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
-		event->SetInt( "userid", GetUserID() );
-		gameeventmanager->FireEvent( event ); 
+		// Notify the client.
+		IGameEvent *event = gameeventmanager->CreateEvent( "post_inventory_application" );
+		if ( event )
+		{
+			event->SetInt( "userid", GetUserID() );
+			gameeventmanager->FireEvent( event ); 
+		}
 	}
 }
 
