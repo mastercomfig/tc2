@@ -1851,6 +1851,7 @@ void CBasePlayer::SharedSpawn()
 	m_Local.m_flStepSize = sv_stepsize.GetFloat();
 	m_Local.m_bAllowAutoMovement = true;
 	m_Local.m_bBrakingFrameTolerated = true;
+	m_Local.m_bBrakingFrameTolerated = 0.5f;
 
 	m_nRenderFX = kRenderFxNone;
 	m_flNextAttack	= gpGlobals->curtime;

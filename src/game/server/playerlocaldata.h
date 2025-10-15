@@ -76,8 +76,8 @@ public:
 	CNetworkVar( bool, m_bForceLocalPlayerDraw );
 	CNetworkVar( float, m_flStepSize );
 	CNetworkVar( bool, m_bAllowAutoMovement );
-	CNetworkVar(bool, m_bBrakingFrameTolerated );
-	CNetworkVar(bool, m_flBrakingTime );
+	CNetworkVar( bool, m_bBrakingFrameTolerated );
+	CNetworkVar( float, m_flBrakingTime );
 
 	// 3d skybox
 	CNetworkVarEmbedded( sky3dparams_t, m_skybox3d );
