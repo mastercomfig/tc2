@@ -690,12 +690,15 @@ bool CBaseObject::EstimateValidBuildPos( void )
 	if ( !pPlayer )
 		return false;
 
+	// TODO(mcoms): temporarily disabling nobuild brushes to uncover exploits that can be covered by game checks here.
+#if 0
 	// Cannot build inside a nobuild brush
 	if ( PointInNoBuild( m_vecBuildOrigin, this ) )
 		return false;
 
 	if ( PointInNoBuild( m_vecBuildCenterOfMass, this ) )
 		return false;
+#endif
 
 	// If we're receiving trigger hurt damage, don't allow building here.
 	if ( IsTakingTriggerHurtDamageAtPoint( m_vecBuildOrigin ) )
