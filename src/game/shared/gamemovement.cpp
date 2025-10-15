@@ -4137,6 +4137,7 @@ bool CGameMovement::CanUnduck()
 		// If in air an letting go of crouch, make sure we can offset origin to make
 		//  up for uncrouching
 		Vector viewDelta = GetAirDuckOffset(true);
+		viewDelta.z -= 2.0f;
 		VectorAdd( newOrigin, viewDelta, newOrigin );
 	}
 
@@ -4285,6 +4286,9 @@ void CGameMovement::FinishDuck( void )
 			org[ i ]-= ( VEC_DUCK_HULL_MIN_SCALED( player )[i] - VEC_HULL_MIN_SCALED( player )[i] );
 			mv->SetAbsOrigin( org );
 		}
+
+		m_bIsCrouchTapping = false;
+		m_flCrouchTapEndTime = -1.0f;
 	}
 	else if ( !m_bIsCrouchTapping )
 	{
@@ -4695,6 +4699,10 @@ void CGameMovement::PlayerMove( void )
 			{
 				player->m_Local.m_bBrakingFrameTolerated = true;
 			}
+		}
+		else if ( player->m_Local.m_flBrakingTime < 0.5f )
+		{
+			player->m_Local.m_flBrakingTime += GAMEMOVEMENT_FRAMETIME;
 		}
 	}
 
