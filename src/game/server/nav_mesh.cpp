@@ -2676,10 +2676,10 @@ void CommandNavMarkWalkable( void )
 //--------------------------------------------------------------------------------------------------------
 void CNavMesh::CommandNavMarkWalkable( void )
 {
-	Vector pos;
-
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
+	
+	Vector pos;
 
 	if (nav_edit.GetBool())
 	{

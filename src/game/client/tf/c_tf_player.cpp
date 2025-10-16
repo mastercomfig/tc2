@@ -9508,7 +9508,7 @@ extern ConVar tf_tournament_hide_domination_icons;
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::ShouldShowDuelingIcon()
 {
-	if ( TFGameRules() && TFGameRules()->IsInTournamentMode() && tf_tournament_hide_domination_icons.GetBool() )
+	if ( ( TFGameRules() && TFGameRules()->IsCompetitiveGame() ) || tf_tournament_hide_domination_icons.GetBool() )
 		return false;
 
 	if ( m_PlayerClass.HasCustomModel() )
@@ -9534,7 +9534,7 @@ bool C_TFPlayer::ShouldShowDuelingIcon()
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::ShouldShowNemesisIcon()
 {
-	if ( TFGameRules() && TFGameRules()->IsInTournamentMode() && tf_tournament_hide_domination_icons.GetBool() )
+	if ( ( TFGameRules() && TFGameRules()->IsCompetitiveGame() ) || tf_tournament_hide_domination_icons.GetBool() )
 		return false;
 
 	if ( m_PlayerClass.HasCustomModel() )

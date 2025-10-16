@@ -19,7 +19,7 @@ static CTFDemoSupport g_DemoSupport;
 
 extern ConVar mp_tournament;
 
-ConVar ds_enable( "ds_enable", "4", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - enable automatic .dem file recording and features. 0 - Manual, 1 - Auto-record matchmaking matches, 2 - Auto-record all matches, 3 - Auto-record tournament (mp_tournament) matches, 4 - Auto-record competitive matches", true, 0, true, 3 ); 
+ConVar ds_enable( "ds_enable", "4", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - enable automatic .dem file recording and features. 0 - Manual, 1 - Auto-record matchmaking matches, 2 - Auto-record all matches, 3 - Auto-record tournament (mp_tournament) matches, 4 - Auto-record competitive matches", true, 0, true, 4 ); 
 ConVar ds_dir( "ds_dir", "demos", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - will put all files into this folder under the gamedir. 24 characters max." );
 ConVar ds_prefix( "ds_prefix", "", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - will prefix files with this string. 24 characters max." );
 ConVar ds_min_streak( "ds_min_streak", "4", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - minimum kill streak count before being recorded. 0 to disable.", true, 0, false, 0 );
@@ -136,11 +136,18 @@ void CTFDemoSupport::Update( float frametime )
 	if ( engine->IsPlayingDemo() )
 		return;
 
-	if ( ds_enable.GetInt() > 0 )
+	static ConVarRef tf_tournament_force_ds("tf_tournament_force_ds");
+	const bool bForceRecord = tf_tournament_force_ds.IsValid() && tf_tournament_force_ds.GetBool();
+
+	if ( bForceRecord || ds_enable.GetInt() > 0 )
 	{
-		if ( !m_bRecording && !m_bAlreadyAutoRecordedOnce )
+		if ( !m_bRecording && ( bForceRecord || !m_bAlreadyAutoRecordedOnce ) )
 		{
-			if ( ds_enable.GetInt() == 1 )
+			if ( bForceRecord )
+			{
+				// no condition
+			}
+			else if ( ds_enable.GetInt() == 1 )
 			{
 				// IsCompetitiveMode got updated to include Casual. So ds_enable 1 just means "if we're in a matchmaking match"
 				if ( TFGameRules() && !TFGameRules()->IsCompetitiveMode() )
@@ -162,7 +169,7 @@ void CTFDemoSupport::Update( float frametime )
 					return;
 			}
 
-			if (ds_rounds_only.GetBool())
+			if ( ds_rounds_only.GetBool() )
 			{
 				if ( !TFGameRules() )
 					return;

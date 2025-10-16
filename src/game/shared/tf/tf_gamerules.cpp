@@ -751,7 +751,9 @@ ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_m
 #endif // GAME_DLL
 ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "15", FCVAR_REPLICATED );
 
-ConVar tf_match_emulation("tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
+ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
+ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_REPLICATED | FCVAR_HIDDEN );
 
 
 static float g_fEternaweenAutodisableTime = 0.0f;
@@ -848,6 +850,8 @@ ConVar tf_tournament_classlimit_spy( "tf_tournament_classlimit_spy", "-1", FCVAR
 ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Engineers.\n" );
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_REPLICATED, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_REPLICATED, "Allow players to change class after they are READY?.\n" );
+
+ConVar tf_tournament_force_ds( "tf_tournament_force_ds", "0", FCVAR_REPLICATED, "Force Demo Support to record on clients" );
 
 ConVar tf_classlimit( "tf_classlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Limit on how many players can be any class (i.e. tf_class_limit 2 would limit 2 players per class).\n", true, 0.f, false, 0.f );
 ConVar tf_player_movement_restart_freeze( "tf_player_movement_restart_freeze", "1", FCVAR_REPLICATED, "When set, prevent player movement during round restart" );
@@ -1230,12 +1234,12 @@ static bool g_bRandomMap = false;
 
 void cc_RandomMap( const CCommand& args )
 {
+	if ( !UTIL_IsCommandIssuedByServerAdmin() )
+		return;
+
 	CTFGameRules *pRules = TFGameRules();
 	if ( pRules )
 	{
-		if ( !UTIL_IsCommandIssuedByServerAdmin() )
-			return;
-
 		g_bRandomMap = true;
 	}
 	else
@@ -3826,20 +3830,6 @@ bool CTFGameRules::FlagsMayBeCapped( void )
 //-----------------------------------------------------------------------------
 bool CTFGameRules::ShouldDrawHeadLabels()
 {
-	if ( IsInTournamentMode() )
-	{
-		bool bConnectedToMatchServer = false;
-#ifdef CLIENT_DLL
-		bConnectedToMatchServer = GTFGCClientSystem() && GTFGCClientSystem()->BConnectedToMatchServer( false );
-#else
-		bConnectedToMatchServer = GTFGCClientSystem() && GTFGCClientSystem()->GetMatch();
-#endif
-		if ( !bConnectedToMatchServer )
-		{
-			return false;
-		}
-	}
-
 	return BaseClass::ShouldDrawHeadLabels();
 }
  
@@ -8661,14 +8651,14 @@ void CTFGameRules::Think()
 					pMatchDesc->PostMatchClearServerSettings();
 					return;
 				}
-				else if ( IsEmulatingMatch() )
+				else if ( IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
 					MatchSummaryEnd();
 					
 					if ( nTimePassed >= tf_mm_next_map_vote_time.GetInt() )
 					{
 						static ConVarRef nextlevel("nextlevel");
-						if ( nextlevel.IsValid() && nextlevel.GetString() && *nextlevel.GetString() )
+						if ( !tf_match_emulation_randommap.GetBool() || ( nextlevel.IsValid() && nextlevel.GetString() && *nextlevel.GetString() ) )
 						{
 							ChangeLevel();
 						}
@@ -8678,10 +8668,10 @@ void CTFGameRules::Think()
 						}
 					}
 					
-					if (!IsCommunityGameMode())
+					if ( !IsCommunityGameMode() )
 						m_bAllowBetweenRounds = true;
 
-					if (!g_bRandomMap)
+					if ( !g_bRandomMap )
 						return;
 				}
 				else

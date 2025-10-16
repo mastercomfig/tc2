@@ -2603,7 +2603,7 @@ void CC_CH_ForceRespawn( void )
 }
 static ConCommand mp_forcerespawnplayers("mp_forcerespawnplayers", CC_CH_ForceRespawn, "Force all players to respawn.", FCVAR_CHEAT );
 
-static ConVar mp_tournament_allow_non_admin_restart( "mp_tournament_allow_non_admin_restart", "1", FCVAR_NONE, "Allow mp_tournament_restart command to be issued by players other than admin.");
+static ConVar mp_tournament_allow_non_admin_restart( "mp_tournament_allow_non_admin_restart", "0", FCVAR_NONE, "Allow mp_tournament_restart command to be issued by players other than admin.");
 void CC_CH_TournamentRestart( void )
 {
 	if ( mp_tournament_allow_non_admin_restart.GetBool() == false )

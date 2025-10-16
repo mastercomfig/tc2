@@ -3767,7 +3767,7 @@ public:
 //--------------------------------------------------------------------------------------------------------------
 CON_COMMAND_F( nav_select_radius, "Adds all areas in a radius to the selection set", FCVAR_CHEAT )
 {
-	if ( !UTIL_IsCommandIssuedByServerAdmin() || engine->IsDedicatedServer() )
+	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
 
 	if ( args.ArgC() < 2 )
