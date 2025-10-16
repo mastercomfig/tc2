@@ -13,6 +13,9 @@
 #include "tier0/dbg.h"
 #include "dt_utlvector_common.h"
 
+#include "enginecallback.h"
+#include "hltvdirector.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -184,6 +187,27 @@ static void SendProxy_Empty( const SendProp *pProp, const void *pStruct, const v
 {
 }
 
+void SendProxy_AddHLTV( CSendProxyRecipients *pRecipients )
+{
+	// also send to the HLTV slot
+	if ( engine->IsDedicatedServer() )
+	{
+		IHLTVServer *pHLTVServer = HLTVDirector()->GetHLTVServer();
+		if ( pHLTVServer )
+		{
+			int iSlot = pHLTVServer->GetHLTVSlot();
+			if ( iSlot >= 0 )
+			{
+				pRecipients->SetRecipient( iSlot );
+			}
+		}
+	}
+	else
+	{
+		pRecipients->SetRecipient( 0 );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: If the recipient is the same as objectID, go ahead and iterate down
 //  the m_Local stuff, otherwise, act like it wasn't there at all.
@@ -196,6 +220,7 @@ static void SendProxy_Empty( const SendProp *pProp, const void *pStruct, const v
 void* SendProxy_SendLocalDataTable( const SendProp *pProp, const void *pStruct, const void *pVarData, CSendProxyRecipients *pRecipients, int objectID )
 {
 	pRecipients->SetOnly( objectID - 1 );
+	SendProxy_AddHLTV( pRecipients );
 	return ( void * )pVarData;
 }
 

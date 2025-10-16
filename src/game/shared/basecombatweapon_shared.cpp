@@ -2742,6 +2742,7 @@ void* SendProxy_SendActiveLocalWeaponDataTable( const SendProp *pProp, const voi
 		if ( pPlayer /*&& pPlayer->GetActiveWeapon() == pWeapon*/ )
 		{
 			pRecipients->SetOnly( pPlayer->GetClientIndex() );
+			SendProxy_AddHLTV( pRecipients );
 			return (void*)pVarData;
 		}
 	}
@@ -2764,6 +2765,7 @@ void* SendProxy_SendLocalWeaponDataTable( const SendProp *pProp, const void *pSt
 		if ( pPlayer )
 		{
 			pRecipients->SetOnly( pPlayer->GetClientIndex() );
+			SendProxy_AddHLTV( pRecipients );
 			return (void*)pVarData;
 		}
 	}
