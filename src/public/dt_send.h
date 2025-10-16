@@ -626,8 +626,6 @@ void SendProxy_Int64ToInt64		( const SendProp *pProp, const void *pStruct, const
 #endif
 void SendProxy_StringToString	( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID );
 
-void SendProxy_AddHLTV( CSendProxyRecipients *pRecipients );
-
 // pData is the address of a data table.
 void* SendProxy_DataTableToDataTable( const SendProp *pProp, const void *pStructBase, const void *pData, CSendProxyRecipients *pRecipients, int objectID );
 

@@ -784,14 +784,6 @@
 		"z"	"float"
 	}
 
-	"scout_slamdoll_landed"
-	{
-		"target_index" "short"
-		"x"	"float"
-		"y"	"float"
-		"z"	"float"
-	}
-
 	"arrow_impact"
 	{
 		"attachedEntity" "short"

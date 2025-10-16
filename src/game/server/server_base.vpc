@@ -698,6 +698,7 @@ $Project
 		$File	"$SRCDIR\public\bone_setup.cpp"					\
 				"$SRCDIR\public\collisionutils.cpp"					\
 				"$SRCDIR\public\dt_send.cpp"						\
+				"$SRCDIR\public\dt_send_hltv.cpp"						\
 				"$SRCDIR\public\dt_utlvector_common.cpp"			\
 				"$SRCDIR\public\dt_utlvector_send.cpp"				\
 				"$SRCDIR\public\editor_sendcommand.cpp"				\
@@ -852,6 +853,7 @@ $Project
 		$File	"$SRCDIR\public\dt_common.h"
 		$File	"$SRCDIR\public\dt_recv.h"
 		$File	"$SRCDIR\public\dt_send.h"
+		$File	"$SRCDIR\public\dt_send_hltv.h"
 		$File	"$SRCDIR\public\dt_utlvector_common.h"
 		$File	"$SRCDIR\public\dt_utlvector_send.h"
 		$File	"$SRCDIR\game\shared\effect_dispatch_data.h"

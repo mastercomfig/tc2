@@ -16,6 +16,8 @@
 #include <ihltvdirector.h>
 #include <ihltv.h>
 #include <utlrbtree.h>
+#include <shareddefs.h>
+#include <networkvar.h>
 
 #define	HLTV_MIN_DIRECTOR_DELAY		10	// minimum delay if director is enabled
 #define	HLTV_MAX_DELAY				120	// maximum delay

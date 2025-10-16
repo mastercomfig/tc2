@@ -12,9 +12,7 @@
 #include "mathlib/vector.h"
 #include "tier0/dbg.h"
 #include "dt_utlvector_common.h"
-
-#include "enginecallback.h"
-#include "hltvdirector.h"
+#include "dt_send_hltv.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -185,27 +183,6 @@ void* SendProxy_DataTablePtrToDataTable( const SendProp *pProp, const void *pStr
 
 static void SendProxy_Empty( const SendProp *pProp, const void *pStruct, const void *pData, DVariant *pOut, int iElement, int objectID)
 {
-}
-
-void SendProxy_AddHLTV( CSendProxyRecipients *pRecipients )
-{
-	// also send to the HLTV slot
-	if ( engine->IsDedicatedServer() )
-	{
-		IHLTVServer *pHLTVServer = HLTVDirector()->GetHLTVServer();
-		if ( pHLTVServer )
-		{
-			int iSlot = pHLTVServer->GetHLTVSlot();
-			if ( iSlot >= 0 )
-			{
-				pRecipients->SetRecipient( iSlot );
-			}
-		}
-	}
-	else
-	{
-		pRecipients->SetRecipient( 0 );
-	}
 }
 
 //-----------------------------------------------------------------------------

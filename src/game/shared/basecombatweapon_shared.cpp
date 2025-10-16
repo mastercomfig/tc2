@@ -31,6 +31,7 @@
 #include "eventqueue.h"
 #include "fmtstr.h"
 #include "gameweaponmanager.h"
+#include "dt_send_hltv.h"
 
 #ifdef HL2MP
 	#include "hl2mp_gamerules.h"
