@@ -23,7 +23,7 @@
 
 static ConVar tv_delay( "tv_delay", "30", 0, "SourceTV broadcast delay in seconds", true, 0, true, HLTV_MAX_DELAY );
 static ConVar tv_allow_static_shots( "tv_allow_static_shots", "1", 0, "Auto director uses fixed level cameras for shots" );
-static ConVar tv_allow_camera_man( "tv_allow_camera_man", "1", 0, "Auto director allows spectators to become camera man" );
+static ConVar tv_allow_camera_man_steamid( "tv_allow_camera_man_steamid", "0", 0, "Auto director allows spectator on specified SteamID to become camera man. Set to 0 to block camera man, set to 1 to allow any spectator (legacy behavior)." );
 
 static bool GameEventLessFunc( CHLTVGameEvent const &e1, CHLTVGameEvent const &e2 )
 {
@@ -653,7 +653,7 @@ int CHLTVDirector::FindFirstEvent( int tick )
 
 bool CHLTVDirector::SetCameraMan( int iPlayerIndex )
 {
-	if ( !tv_allow_camera_man.GetBool() )
+	if ( !tv_allow_camera_man_steamid.GetBool() )
 		return false;
 
 	if ( m_iCameraManIndex == iPlayerIndex )
@@ -670,6 +670,21 @@ bool CHLTVDirector::SetCameraMan( int iPlayerIndex )
 		pPlayer = UTIL_PlayerByIndex( iPlayerIndex );
 		if ( !pPlayer || pPlayer->GetTeamNumber() != TEAM_SPECTATOR )
 			return false;
+
+		CSteamID steamID;
+		if ( !pPlayer->GetSteamID( &steamID ) )
+			return false;
+
+		// if set to 1, then we skip this
+		if ( V_strcmp( tv_allow_camera_man_steamid.GetString(), "1" ) )
+		{
+			CSteamID allowedSteamId( V_atoui64( tv_allow_camera_man_steamid.GetString() ) );
+			if ( !allowedSteamId.IsValid() || !allowedSteamId.BIndividualAccount() || !allowedSteamId.GetAccountID() ||
+				( allowedSteamId.GetAccountID() != steamID.GetAccountID() ) )
+			{
+				return false;
+			}
+		}
 	}
 
 	m_iCameraManIndex = iPlayerIndex;
