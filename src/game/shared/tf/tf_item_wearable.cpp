@@ -352,7 +352,7 @@ bool CTFWearable::ShouldDraw()
 		}
 
 		// don't draw cosmetic while sniper is zoom
-		if ( pOwner == C_TFPlayer::GetLocalTFPlayer() && pOwner->m_Shared.InCond( TF_COND_ZOOMED ) )
+		if ( pOwner == C_TFPlayer::GetLocalTFPlayer() && pOwner->m_Shared.InCond( TF_COND_ZOOMED ) && !engine->IsPlayingDemo() )
 			return false;
 	}
 

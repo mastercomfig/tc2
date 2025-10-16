@@ -8149,11 +8149,8 @@ bool C_TFPlayer::ShouldDraw()
 	{
 		if ( m_PlayerClass.HasCustomModel() && !m_PlayerClass.CustomModelIsVisibleToSelf() )
 			return false;
-	}
 
-	if ( this == C_TFPlayer::GetLocalTFPlayer() )
-	{
-		if ( this->m_Shared.InCond( TF_COND_ZOOMED ) )
+		if ( this->m_Shared.InCond( TF_COND_ZOOMED ) && !engine->IsPlayingDemo() )
 		{
 			return false;
 		}
