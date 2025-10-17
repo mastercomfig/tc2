@@ -59,7 +59,7 @@ init() {
 	HL_DETECT=1
 	DSDIR="${GAMEROOT}"
 	TIMEOUT=10 # time to wait after a crash (in seconds)
-	CRASH_DEBUG_MSG="email debug.log to linux@valvesoftware.com"
+	CRASH_DEBUG_MSG="email debug.log to support@mastercomfig.com"
 	GDB="gdb" # the gdb binary to run
 	DEBUG_LOG="debug.log"
 	PID_FILE="" # only needed it DEBUG is set so init later
