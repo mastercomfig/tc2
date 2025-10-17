@@ -234,6 +234,12 @@ void CTFWrench::ItemPostFrame()
 					pTeleportMenu->WantsToTeleport();
 				}
 			}
+#ifdef CLIENT_DLL
+			else
+			{
+				pOwner->EmitSound( "Player.DenyWeaponSelection" );
+			}
+#endif
 		}
 	}
 	else if ( !(pOwner->m_nButtons & IN_RELOAD) && m_bReloadDown )
