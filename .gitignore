@@ -547,6 +547,7 @@ server.cfg
 mapcycle.txt
 mapcyclecomp.txt
 videoconfig_linux.cfg
+server_official.cfg
 
 .vscode/settings.json
 

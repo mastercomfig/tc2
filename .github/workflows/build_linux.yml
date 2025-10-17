@@ -74,3 +74,9 @@ jobs:
           name: game-debug-info
           path: |
             game_dist_debug
+
+      - name: Push Permalink Rel
+        id: perma-rel
+        run: |
+          cp game.zip game-linux.zip
+          gh release --clobber rel game-linux.zip
