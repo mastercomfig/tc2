@@ -1,0 +1,28 @@
+//-----------------------------------------------------------------------------
+//	CRASHREPORT.VPC
+//-----------------------------------------------------------------------------
+
+$Configuration
+{
+  $Compiler
+  {
+    $AdditionalIncludeDirectories "$BASE;$SRCDIR\thirdparty\sentry\include"
+  }
+}
+
+$Project
+{
+  $Folder "Link Libraries"
+  {
+    $Lib "$SRCDIR\thirdparty\sentry\install\lib\sentry"
+  }
+    
+  $Folder "Source Files"
+  {
+    $Folder "Crash Reporter"
+    {
+        $File "$SRCDIR\game\shared\crashreport\crashreport.cpp"
+        $File "$SRCDIR\game\shared\crashreport\crashreport.h"
+    }
+  }
+}
