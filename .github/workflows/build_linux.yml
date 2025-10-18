@@ -79,4 +79,4 @@ jobs:
         id: perma-rel
         run: |
           7z a game-linux.zip game_dist
-          gh release --clobber rel game-linux.zip
+          gh release upload --clobber rel game-linux.zip
