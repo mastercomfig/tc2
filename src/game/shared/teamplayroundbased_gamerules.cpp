@@ -2681,6 +2681,13 @@ void CTeamplayRoundBasedRules::RespawnPlayers( bool bForceRespawn, bool bTeam /*
 		// players that haven't chosen a team/class can never spawn
 		if ( !pPlayer->IsReadyToPlay() )
 		{
+#ifdef TF_DLL
+			CTFPlayer *pTFPlayer = ToTFPlayer(pPlayer);
+			// if the player has reset their class, we still need to wait the minimum time.
+			if ( pTFPlayer->HasResetClass() && bTeam && !HasPassedMinRespawnTime( pPlayer ) )
+				continue;
+#endif
+
 			// Let the player spawn immediately when they do pick a class
 			if ( pPlayer->ShouldGainInstantSpawn() )
 			{

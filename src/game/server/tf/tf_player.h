@@ -1295,6 +1295,8 @@ public:
 
 	bool				IsGoingFeignDeath( void ) { return m_bGoingFeignDeath; }
 
+	bool				HasResetClass( void ) { return m_bHasResetClass; }
+
 	void					SetDeployingBombState( BombDeployingState_t nDeployingBombState ) { m_nDeployingBombState = nDeployingBombState; }
 	BombDeployingState_t	GetDeployingBombState( void ) const { return m_nDeployingBombState; }
 
@@ -1329,6 +1331,8 @@ private:
 	bool				m_bIsMissionEnemy;
 	bool				m_bIsSupportEnemy;
 	bool				m_bIsLimitedSupportEnemy;
+
+	bool				m_bHasResetClass;
 
 	// In-game currency
 	CNetworkVar( int, m_nCurrency );

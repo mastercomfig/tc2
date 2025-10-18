@@ -1251,6 +1251,8 @@ CTFPlayer::CTFPlayer()
 	m_nPrevRoundTeamNum = TEAM_UNASSIGNED;
 	m_flLastDamageResistSoundTime = -1.f;
 	m_hLastDamageDoneEntity = NULL;
+
+	m_bHasResetClass = false;
 	
 	m_mapCustomAttributes.SetLessFunc( UtlStringCaseInsensitiveLessFunc );
 
@@ -4362,7 +4364,7 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 {
 	// if a class is pending, respawn
 	int iDesiredClass = GetDesiredPlayerClassIndex();
-	if ( GetDesiredPlayerClassIndex() >= TF_CLASS_UNDEFINED && !IsPlayerClass(iDesiredClass) )
+	if ( GetDesiredPlayerClassIndex() > TF_CLASS_UNDEFINED && !IsPlayerClass( iDesiredClass ) )
 	{
 		ForceRegenerateAndRespawn();
 		return;
@@ -4503,6 +4505,8 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 void CTFPlayer::InitClass( void )
 {
 	SetArmorValue( GetPlayerClass()->GetMaxArmor() );
+
+	m_bHasResetClass = false;
 
 	// Init the anim movement vars
 	m_PlayerAnimState->SetRunSpeed( GetPlayerClass()->GetMaxSpeed() );
@@ -6792,6 +6796,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 
 		if ( m_bArenaSpectator == true )
 		{
+			m_bHasResetClass = false;
 			SetDesiredPlayerClassIndex( TF_CLASS_UNDEFINED );
 			TFGameRules()->Arena_ClientDisconnect( GetPlayerName() );
 			TFGameRules()->RemovePlayerFromQueue( this );
@@ -7174,6 +7179,7 @@ void CTFPlayer::ResetPlayerClass( void )
 {
 	if ( GetPlayerClass() )
 	{
+		m_bHasResetClass = GetPlayerClass()->GetClassIndex() > TF_CLASS_UNDEFINED;
 		GetPlayerClass()->Reset();
 	}
 
@@ -15311,6 +15317,7 @@ void CTFPlayer::ForceRespawn( void )
 
 	CTF_GameStats.Event_PlayerForceRespawn( this );
 
+	m_bHasResetClass = false;
 	m_flSpawnTime = gpGlobals->curtime;
 	if ( !m_bStrandedSpawnSwitch && !m_bInstantClassSpawn && !m_bRegenerating )
 	{

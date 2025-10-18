@@ -19729,7 +19729,7 @@ bool CTFGameRules::HasPassedMinRespawnTime( CBasePlayer *pPlayer )
 {
 	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 
-	if ( pTFPlayer && pTFPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED )
+	if ( pTFPlayer && pTFPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED && !pTFPlayer->HasResetClass() )
 		return true;
 
 	float flMinSpawnTime = GetMinTimeWhenPlayerMaySpawn( pPlayer ); 
