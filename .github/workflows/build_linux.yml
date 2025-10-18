@@ -80,5 +80,6 @@ jobs:
         run: |
           7z a game-linux.zip game_dist
           gh release upload --clobber rel game-linux.zip
+          rm -f game-linux.zip
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}
