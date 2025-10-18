@@ -6118,7 +6118,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	// TODO(mcoms): how to prevent out of bounds?
 	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
 	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
-	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && TFGameRules()->IsCompetitiveGame() )
+	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
 		bool bMultiStagePLR = (tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() &&
@@ -6163,8 +6163,15 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 					vecTest.z += 2.0f;
 
 					int32 iGeoTries = 0;
-					while ( iGeoTries++ < 7 )
+					while (iGeoTries++ < 7)
 					{
+						// hack to check if we have a nav mesh, and then check if there is navigatable space in this grid cell
+						const CUtlVector< CTFNavArea* >* areaVector = TheTFNavMesh()->GetSpawnRoomAreas(GetTeamNumber());
+						if ( areaVector->Count() > 0 && !TheTFNavMesh()->GetNavArea(vecTest, 500.0f) )
+						{
+							break;
+						}
+
 						Vector vecEnd = vecTest;
 						vecEnd.z += 1.0f;
 
