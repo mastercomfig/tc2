@@ -1207,8 +1207,9 @@ void CAccountPanel::Paint( void )
 					}
 					else
 					{
+						// UNDONE: yes we do
 						// don't need to check after this.
-						m_AccountDeltaItems[i].m_bEnemy = false;
+						//m_AccountDeltaItems[i].m_bEnemy = false;
 					}
 				}
 			}
