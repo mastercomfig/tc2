@@ -364,7 +364,7 @@ public:
 	Vector EstimateProjectileImpactPosition( float pitch, float yaw, float initVel );	// estimate where a projectile fired will initially hit (it may bounce on from there)
 	Vector EstimateStickybombProjectileImpactPosition( float pitch, float yaw, float charge );	// Estimate where a stickybomb projectile will hit, using given pitch, yaw, and weapon charge (0-1)
 
-	CTFTeamSpawn *GetSpawnPoint( void ){ return m_pSpawnPoint; }
+	CTFTeamSpawn *GetSpawnPoint( void ){ return m_pSpawnPoint ? static_cast<CTFTeamSpawn*>( m_pSpawnPoint.Get() ) : NULL; }
 		
 	void SetAnimation( PLAYER_ANIM playerAnim );
 
@@ -1222,7 +1222,7 @@ private:
 	CPlayerStateInfo		*m_pStateInfo;
 
 	// Spawn Point
-	CTFTeamSpawn			*m_pSpawnPoint;
+	EHANDLE					m_pSpawnPoint;
 
 	// Networked.
 	CNetworkQAngle( m_angEyeAngles );					// Copied from EyeAngles() so we can send it to the client.
