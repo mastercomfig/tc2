@@ -69,6 +69,7 @@ typedef struct
 	int m_nSourceID;		// Can be entindex, etc
 	Color m_color;
 	bool m_bShadows;
+	bool m_bEnemy;
 
 	bool m_bSimulate = false;
 
@@ -664,29 +665,24 @@ public:
 
 			if ( bCombatText )
 			{
-				// Ignore damage events on targets that we can't see, so it's not a cheat
-				trace_t	tr;
-				UTIL_TraceLine( pVictim->WorldSpaceCenter(), MainViewOrigin(), MASK_SOLID_BRUSHONLY, NULL, COLLISION_GROUP_NONE, &tr );
-				if ( tr.fraction >= 1.f )
+				account_delta_t *pNewAccount = OnAccountValueChanged( 0, -iDamage, account_delta_t::ACCOUNT_DELTA_DAMAGE );
+				if ( pNewAccount )
 				{
-					account_delta_t *pNewAccount = OnAccountValueChanged( 0, -iDamage, account_delta_t::ACCOUNT_DELTA_DAMAGE );
-					if ( pNewAccount )
-					{
-						Vector vecPos = pVictim->GetAbsOrigin();
-						Vector vecDistance = vecPos - pLocalPlayer->GetAbsOrigin();
-						int nHeightoffset = RemapValClamped( vecDistance.LengthSqr(), 0.0f, (200.0f * 200.0f), 1.0f, 16.0f );
-						vecPos.z += (VEC_HULL_MAX_SCALED( pVictim ).z + nHeightoffset);
-						pNewAccount->m_nX = vecPos.x;
-						pNewAccount->m_nXEnd = pNewAccount->m_nX + RandomFloat(-32.0f, 32.0f);
-						pNewAccount->m_nY = vecPos.y;
-						pNewAccount->m_nHStart = vecPos.z;
-						pNewAccount->m_nHEnd = pNewAccount->m_nHStart + 32;	// How many units to float up
-						pNewAccount->m_bWorldSpace = true;
-						pNewAccount->m_nSourceID = pVictim->entindex();
-						pNewAccount->m_flBatchWindow = hud_combattext_batching.GetBool() ? hud_combattext_batching_window.GetFloat() : 0.f;
-						pNewAccount->m_bLargeFont = bIsCrit;
-						//	V_swprintf_safe( pNewAccount->m_wzText, L" (%d)", m_nQueuedDamageEvents );
-					}
+					Vector vecPos = pVictim->GetAbsOrigin();
+					Vector vecDistance = vecPos - pLocalPlayer->GetAbsOrigin();
+					int nHeightoffset = RemapValClamped( vecDistance.LengthSqr(), 0.0f, (200.0f * 200.0f), 1.0f, 16.0f );
+					vecPos.z += (VEC_HULL_MAX_SCALED( pVictim ).z + nHeightoffset);
+					pNewAccount->m_nX = vecPos.x;
+					pNewAccount->m_nXEnd = pNewAccount->m_nX + RandomFloat(-32.0f, 32.0f);
+					pNewAccount->m_nY = vecPos.y;
+					pNewAccount->m_nHStart = vecPos.z;
+					pNewAccount->m_nHEnd = pNewAccount->m_nHStart + 32;	// How many units to float up
+					pNewAccount->m_bWorldSpace = true;
+					pNewAccount->m_nSourceID = pVictim->entindex();
+					pNewAccount->m_flBatchWindow = hud_combattext_batching.GetBool() ? hud_combattext_batching_window.GetFloat() : 0.f;
+					pNewAccount->m_bLargeFont = bIsCrit;
+					pNewAccount->m_bEnemy = true;
+					//	V_swprintf_safe( pNewAccount->m_wzText, L" (%d)", m_nQueuedDamageEvents );
 				}
 			}
 
@@ -1129,6 +1125,7 @@ account_delta_t *CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewVa
 		pNewDeltaItem->m_wzText[0] = NULL;
 		pNewDeltaItem->m_color = GetColor( type ); 
 		pNewDeltaItem->m_bShadows = false;
+		pNewDeltaItem->m_bEnemy = false;
 		return &m_AccountDeltaItems[index];
 	}
 
@@ -1183,6 +1180,27 @@ void CAccountPanel::Paint( void )
 		// update all the valid delta items
 		if ( ( m_AccountDeltaItems[i].m_flDieTime - flTimeMod ) > gpGlobals->curtime )
 		{
+			if ( m_AccountDeltaItems[i].m_bEnemy )
+			{
+				Vector vecWorldStart(m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, m_AccountDeltaItems[i].m_nHStart);
+				//C_BaseEntity* pEntity = m_AccountDeltaItems[i].m_nSourceID > 0 ? ClientEntityList().GetEnt( m_AccountDeltaItems[i].m_nSourceID ) : NULL;
+				//if ( pEntity )
+				{
+					trace_t tr;
+					UTIL_TraceLine( vecWorldStart /*pEntity->WorldSpaceCenter()*/, MainViewOrigin(), MASK_OPAQUE, NULL, COLLISION_GROUP_NONE, &tr );
+
+					if ( tr.fraction < 1.0f )
+					{
+						continue;
+					}
+					else
+					{
+						// don't need to check after this.
+						m_AccountDeltaItems[i].m_bEnemy = false;
+					}
+				}
+			}
+
 			// position and alpha are determined from the lifetime
 			Color c = m_AccountDeltaItems[i].m_color;
 
