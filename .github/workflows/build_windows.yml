@@ -134,6 +134,7 @@ jobs:
 
       - name: Push Permalink Rel
         id: perma-rel
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
           rm -f game-win.zip
           Compress-Archive -Path .\game_dist -DestinationPath game-win.zip
