@@ -365,6 +365,17 @@ public:
 	Vector EstimateStickybombProjectileImpactPosition( float pitch, float yaw, float charge );	// Estimate where a stickybomb projectile will hit, using given pitch, yaw, and weapon charge (0-1)
 
 	CTFTeamSpawn *GetSpawnPoint( void ){ return m_pSpawnPoint ? static_cast<CTFTeamSpawn*>( m_pSpawnPoint.Get() ) : NULL; }
+	bool ConsumeSpawnPosOverride(Vector& vecSpawn, QAngle& angSpawn)
+	{
+		if (m_bHasSpawnPosOverride)
+		{
+			vecSpawn = m_vecSpawnPosOverride;
+			angSpawn = m_angSpawnAngOverride;
+			m_bHasSpawnPosOverride = false; // consume override
+			return true;
+		}
+		return false;
+	}
 		
 	void SetAnimation( PLAYER_ANIM playerAnim );
 
@@ -1223,6 +1234,9 @@ private:
 
 	// Spawn Point
 	EHANDLE					m_pSpawnPoint;
+	Vector					m_vecSpawnPosOverride;
+	QAngle					m_angSpawnAngOverride;
+	bool					m_bHasSpawnPosOverride;
 
 	// Networked.
 	CNetworkQAngle( m_angEyeAngles );					// Copied from EyeAngles() so we can send it to the client.

@@ -10600,16 +10600,28 @@ CBaseEntity *CTFGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 	// get valid spawn point
 	CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
 
+	Vector vecSpawn = Vector(0, 0, 500.0f);
+	QAngle angSpawn = QAngle(0, 0, 0);
+	if ( !pTFPlayer->ConsumeSpawnPosOverride(vecSpawn, angSpawn) && pSpawnSpot )
+	{
+		vecSpawn = pSpawnSpot->GetAbsOrigin();
+		angSpawn = pSpawnSpot->GetLocalAngles();
+	}
+	else
+	{
+		pSpawnSpot = NULL;
+	}
+
 	// drop down to ground
-	Vector GroundPos = DropToGround( pPlayer, pSpawnSpot->GetAbsOrigin(), VEC_HULL_MIN_SCALED( pTFPlayer ), VEC_HULL_MAX_SCALED( pTFPlayer ) );
+	Vector GroundPos = DropToGround( pPlayer, vecSpawn, VEC_HULL_MIN_SCALED( pTFPlayer ), VEC_HULL_MAX_SCALED( pTFPlayer ) );
 
 	// Move the player to the place it said.
 	pPlayer->SetLocalOrigin( GroundPos + Vector(0,0,1) );
 	pPlayer->SetAbsVelocity( vec3_origin );
-	pPlayer->SetLocalAngles( pSpawnSpot->GetLocalAngles() );
+	pPlayer->SetLocalAngles( angSpawn );
 	pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
 	pPlayer->m_Local.m_vecPunchAngleVel = vec3_angle;
-	pPlayer->SnapEyeAngles( pSpawnSpot->GetLocalAngles() );
+	pPlayer->SnapEyeAngles( angSpawn );
 
 	return pSpawnSpot;
 }

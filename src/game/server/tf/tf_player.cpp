@@ -6029,6 +6029,11 @@ bool IsValidRaidRespawnTarget( CBaseEntity *entity )
 }
 #endif // TF_RAID_MODE
 
+extern ConVar tf_gamemode_payload;
+extern ConVar tf_gamemode_ctf;
+
+ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "0");
+
 //-----------------------------------------------------------------------------
 // Purpose: Find a spawn point for the player.
 //-----------------------------------------------------------------------------
@@ -6108,6 +6113,110 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	if ( TFGameRules() && m_pSpawnPoint && m_Shared.IsInStrandedSpawn() && ( m_bInstantClassSpawn || m_bRegenerating ) && !m_bStrandedSpawnSwitch )
 	{
 		return m_pSpawnPoint;
+	}
+
+	// TODO(mcoms): how to prevent out of bounds?
+	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
+	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
+	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && TFGameRules()->IsCompetitiveGame() )
+	{
+		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
+		bool bMultiStagePLR = (tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() &&
+			pMaster->GetNumRounds() > 1 && TFGameRules()->HasMultipleTrains());
+		bool bCTF = tf_gamemode_ctf.GetBool();
+		bool bUseStopWatch = TFGameRules()->MatchmakingShouldUseStopwatchMode();
+
+		// TODO(mcoms): handle this for other modes
+		if ( pMaster && !bMultiStagePLR && !bCTF && !bUseStopWatch )
+		{
+			CTeamControlPoint* contestedPoint = NULL;
+			for (int i = 0; i < pMaster->GetNumPoints(); ++i)
+			{
+				contestedPoint = pMaster->GetControlPoint(i);
+				if (contestedPoint && pMaster->IsInRound(contestedPoint))
+				{
+					if (ObjectiveResource()->GetOwningTeam(contestedPoint->GetPointIndex()) != TEAM_UNASSIGNED)
+						continue;
+
+					break;
+				}
+			}
+
+			if ( contestedPoint )
+			{
+				Vector mins = VEC_HULL_MIN_SCALED(this);
+				Vector maxs = VEC_HULL_MAX_SCALED(this);
+
+				Vector vecLocation = contestedPoint->GetAbsOrigin();
+				const float flSize = 2048.0f;
+				const float flSpace = 128.0f;
+				const int32 iCount = Floor2Int(((flSize * 2.0f) / flSpace) + 1);
+				const int32 iCountHalf = iCount / 2;
+				int32 iTries = 0;
+				Vector vecTest;
+				bool bFound = false;
+
+				while ( iTries++ < 19 )
+				{
+					const int32 iSelection = RandomInt(0, iCount - 1);
+					vecTest = vecLocation - Vector(flSpace * (iSelection - iCountHalf), flSpace * (iSelection - iCountHalf), 0.0f);
+					vecTest.z += 2.0f;
+
+					int32 iGeoTries = 0;
+					while ( iGeoTries++ < 7 )
+					{
+						Vector vecEnd = vecTest;
+						vecEnd.z += 1.0f;
+
+						Ray_t ray;
+						ray.Init(vecTest, vecEnd, mins, maxs);
+
+						trace_t tr;
+						UTIL_TraceRay(ray, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_PLAYER_MOVEMENT, &tr);
+
+						if ( tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid )
+						{
+							// mark that we found a valid map spot
+							bFound = true;
+							break;
+						}
+
+						// search upwards to find a place on the map
+						vecTest.z += (maxs.z - mins.z) + 1.0f;
+
+					}
+
+					if ( !bFound )
+					{
+						continue;
+					}
+
+					// reset, so we can check for player next
+					bFound = false;
+
+					Vector vTestMins = vecTest + mins;
+					Vector vTestMaxs = vecTest + maxs;
+
+					if ( UTIL_IsSpaceEmpty( this, vTestMins, vTestMaxs ) )
+					{
+						bFound = true;
+						break;
+					}
+				}
+
+				if (bFound)
+				{
+					m_bHasSpawnPosOverride = true;
+					m_vecSpawnPosOverride = vecTest;
+					QAngle angle;
+					VectorAngles((vecLocation - vecTest).Normalized(), angle);
+					angle[ROLL] = 0.0f;
+					m_angSpawnAngOverride = angle;
+					m_pSpawnPoint = NULL;
+					return NULL;
+				}
+			}
+		}
 	}
 
 	// See if the map is asking to force this player to spawn at a specific location
