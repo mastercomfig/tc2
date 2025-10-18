@@ -89,6 +89,7 @@ elif [ $PLATFORM = "linux" ]; then
   FILES_REP+=(
     start_dedicated_tc2.sh
     start_dedicated_tf2_og.sh
+    update_dedicated.sh
     srcds_run_64
     tc2.sh
     tf2_og.sh
