@@ -2363,12 +2363,16 @@ int CTFPlayer::CheckStrandedSpawn(void)
 		return 0;
 	}
 
-#if 1
-	// tighter check for leaving respawn room
-	Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
-	if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 300.0f * 300.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 300.0f )
+#if 0
+	// TODO(mcoms): it's not safe to call CalcAbsolutePosition for some reason. so we're doing this hack to prevent calc.
+	if ( !pLastSpawnPoint->IsEFlagSet(EFL_DIRTY_ABSTRANSFORM) )
 	{
-		return 0;
+		// tighter check for leaving respawn room
+		Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
+		if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 300.0f * 300.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 300.0f )
+		{
+			return 0;
+		}
 	}
 #endif
 
