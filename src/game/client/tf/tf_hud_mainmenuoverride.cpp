@@ -1377,7 +1377,8 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		{
 			m_flPlayMusicTime = -1.0f;
 			m_iPlayMusicFrame = 0;
-			PlayMainMenuMusic();
+			// TODO(mcoms): main menu music not working
+			//PlayMainMenuMusic();
 		}
 	}
 
