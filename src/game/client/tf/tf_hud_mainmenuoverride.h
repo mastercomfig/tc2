@@ -198,6 +198,7 @@ private:
 	bool					m_bGameStartup;
 	bool					m_bPlayingMusic;
 	float					m_flPlayMusicTime;
+	int32					m_iPlayMusicFrame;
 
 	vgui::ImagePanel		*m_pCharacterImagePanel;
 	int						 m_iCharacterImageIdx;

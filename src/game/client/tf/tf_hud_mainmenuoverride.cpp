@@ -189,6 +189,7 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_bGameStartup = true;
 	m_bPlayingMusic = false;
 	m_flPlayMusicTime = -1.0f;
+	m_iPlayMusicFrame = 0;
 
 	m_iCharacterImageIdx = -1;
 
@@ -1347,6 +1348,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		{
 			m_bPlayingMusic = false;
 			m_flPlayMusicTime = -1.0f;
+			m_iPlayMusicFrame = 0;
 		}
 	}
 	else if ( !bInGame && !bInReplay && !bIsConnected )
@@ -1363,12 +1365,18 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		// no longer in the startup phase, try playing music!
 		if ( !m_bGameStartup && !m_bPlayingMusic )
 		{
-			m_flPlayMusicTime = gpGlobals->curtime + 4.0f;
+			m_flPlayMusicTime = gpGlobals->curtime + 0.5f;
+			m_iPlayMusicFrame = 0;
 			m_bPlayingMusic = true;
 		}
-		if ( m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime )
+		if ( !m_bGameStartup && m_flPlayMusicTime >= 0.0f )
+		{
+			m_iPlayMusicFrame++;
+		}
+		if ( m_iPlayMusicFrame > 10 && m_flPlayMusicTime >= 0.0f && gpGlobals->curtime >= m_flPlayMusicTime )
 		{
 			m_flPlayMusicTime = -1.0f;
+			m_iPlayMusicFrame = 0;
 			PlayMainMenuMusic();
 		}
 	}
