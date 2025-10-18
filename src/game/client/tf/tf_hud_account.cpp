@@ -1182,12 +1182,24 @@ void CAccountPanel::Paint( void )
 		{
 			if ( m_AccountDeltaItems[i].m_bEnemy )
 			{
-				Vector vecWorldStart(m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, m_AccountDeltaItems[i].m_nHStart);
-				//C_BaseEntity* pEntity = m_AccountDeltaItems[i].m_nSourceID > 0 ? ClientEntityList().GetEnt( m_AccountDeltaItems[i].m_nSourceID ) : NULL;
-				//if ( pEntity )
+				// TODO(mcoms): it's hard to decide what should be the condition to show enemy damage numbers.
+				// if we go with enemy visible, then the player can be alerted to an enemy's presence by seeing damage numbers pop up.
+				// if we go with damage number visible, we get to see a trail of numbers even after enemy goes out of sight.
+				//Vector vecWorldStart(m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, m_AccountDeltaItems[i].m_nHStart);
+				C_BaseEntity* pEntity = m_AccountDeltaItems[i].m_nSourceID > 0 ? ClientEntityList().GetEnt( m_AccountDeltaItems[i].m_nSourceID ) : NULL;
+				C_TFPlayer* pEnemyPlayer = pEntity && pEntity->IsPlayer() ? ToTFPlayer( pEntity ) : NULL;
+				if ( pEnemyPlayer )
+				{
+					// check if we can see them
+					if ( pEnemyPlayer->m_Shared.InCond( TF_COND_STEALTHED ) || pEnemyPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
+					{
+						continue;
+					}
+				}
+				if ( pEntity )
 				{
 					trace_t tr;
-					UTIL_TraceLine( vecWorldStart /*pEntity->WorldSpaceCenter()*/, MainViewOrigin(), MASK_OPAQUE, NULL, COLLISION_GROUP_NONE, &tr );
+					UTIL_TraceLine( pEntity->WorldSpaceCenter(), MainViewOrigin(), MASK_OPAQUE, NULL, COLLISION_GROUP_NONE, &tr );
 
 					if ( tr.fraction < 1.0f )
 					{
