@@ -137,3 +137,5 @@ jobs:
         run: |
           Compress-Archive -Path .\game_dist -DestinationPath game-win.zip
           gh release upload --clobber rel game-win.zip
+        env:
+          GH_TOKEN: ${{secrets.REPO_TOKEN}}
