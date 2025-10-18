@@ -1336,9 +1336,9 @@ bool CTFGameMovement::CheckJumpButton()
 	// Cannot jump while ducked.
 	if ( player->GetFlags() & FL_DUCKING )
 	{
-		// Let a scout do it (while in air).
+		// let a scout do it (or while in air)
 		const bool bScout = m_pTFPlayer->GetPlayerClass()->IsClass( TF_CLASS_SCOUT );
-		const bool bAllow = ( bScout && !bOnGround );
+		const bool bAllow = ( bScout || !bOnGround );
 
 		if ( !bAllow )
 			return false;

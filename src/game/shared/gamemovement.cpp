@@ -15,6 +15,7 @@
 #include "coordsize.h"
 #include "rumble_shared.h"
 #ifdef CLIENT_DLL
+#include "iinput.h"
 #include "prediction.h"
 #endif
 
@@ -4201,7 +4202,10 @@ void CGameMovement::FinishUnDuck( void )
 	mv->SetAbsOrigin( newOrigin );
 
 #ifdef CLIENT_DLL
-	player->ResetLatched();
+	if ( !player->IsLocalPlayer() || ::input->CAM_IsThirdPerson() )
+	{
+		player->ResetLatched();
+	}
 #endif // CLIENT_DLL
 
 	// Recategorize position since ducking can change origin
@@ -4298,7 +4302,10 @@ void CGameMovement::FinishDuck( void )
 		mv->SetAbsOrigin( out );
 
 #ifdef CLIENT_DLL
-		player->ResetLatched();
+		if ( !player->IsLocalPlayer() || ::input->CAM_IsThirdPerson() )
+		{
+			player->ResetLatched();
+		}
 #endif // CLIENT_DLL
 	}
 	else
