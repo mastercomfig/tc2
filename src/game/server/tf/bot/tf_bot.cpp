@@ -298,7 +298,7 @@ void CreateBotName( int iTeam, int iClassIndex, CTFBot::DifficultyType skill, ch
 	const char *pFriendlyOrEnemyTitle = "";
 
 	// @note (Tom Bui): it is okay to get localized name in training, since we should be on a listen server
-	if ( TFGameRules()->IsInTraining() )
+	if ( TFGameRules()->IsInTraining() && g_pVGuiLocalize )
 	{
 		// get the friendly/enemy title
 		const char *pBotTitle = NULL;

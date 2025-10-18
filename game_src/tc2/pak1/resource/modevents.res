@@ -1622,6 +1622,12 @@
 	{
 	}
 
+	"sdk_inventory_cooldown"
+	{
+		"userid"	"short"
+		"time"	"long"
+	}
+
 	"rd_player_score_points"
 	{
 		"player"	"short"

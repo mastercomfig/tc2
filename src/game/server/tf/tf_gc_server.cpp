@@ -4272,13 +4272,14 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 		CTFPlayer* pTFPlayer = ToTFPlayer( GetPlayerBySteamID( steamID ) );
 		if ( pTFPlayer )
 		{
-			wchar_t wszSecsLeft[16];
-			_snwprintf( wszSecsLeft, ARRAYSIZE( wszSecsLeft ), L"%u", iSecsLeft );
-			wchar_t wszLocalized[256];
-			g_pVGuiLocalize->ConstructString_safe( wszLocalized, g_pVGuiLocalize->Find( "#TF_SDK_InventoryTimer" ), 1, wszSecsLeft );
-			char szLocalized[256];
-			g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof( szLocalized ) );
-			ClientPrint( pTFPlayer, HUD_PRINTTALK, szLocalized );
+			IGameEvent * event = gameeventmanager->CreateEvent( "sdk_inventory_cooldown" );
+			if ( event )
+			{
+				event->SetInt( "userid", pTFPlayer->GetUserID() );
+				event->SetInt( "time", iSecsLeft );
+
+				gameeventmanager->FireEvent( event );
+			}
 		}
 	}
 }

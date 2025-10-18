@@ -4029,6 +4029,7 @@ C_TFPlayer::C_TFPlayer() :
 	ListenForGameEvent( "player_abandoned_match" );
 	ListenForGameEvent( "rocketpack_launch" );
 	ListenForGameEvent( "rocketpack_landed" );
+	ListenForGameEvent( "sdk_inventory_cooldown" );
 
 	//AddPhonemeFile
 	engine->AddPhonemeFile( "scripts/game_sounds_vo_phonemes.txt" );
@@ -11400,6 +11401,24 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 					g_pVGuiLocalize->ConvertUnicodeToANSI( wzNotification, szLocalized, sizeof( szLocalized ) );
 					pHudChat->ChatPrintf( pLocalPlayer->entindex(), CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 				}
+			}
+		}
+	}
+	else if ( FStrEq( event->GetName(), "sdk_inventory_cooldown" ) )
+	{
+		const int iUserID = event->GetInt( "userid" );
+		if ( pLocalPlayer && GetUserID() == pLocalPlayer->GetUserID() && iUserID == pLocalPlayer->GetUserID() )
+		{
+			wchar_t wszSecsLeft[16];
+			_snwprintf( wszSecsLeft, ARRAYSIZE( wszSecsLeft ), L"%u", event->GetInt( "time" ) );
+			wchar_t wszLocalized[256];
+			g_pVGuiLocalize->ConstructString_safe( wszLocalized, g_pVGuiLocalize->Find( "#TF_SDK_InventoryTimer" ), 1, wszSecsLeft );
+			CBaseHudChat *pHudChat = (CBaseHudChat*)GET_HUDELEMENT( CHudChat );
+			if ( pHudChat )
+			{
+				char szLocalized[256];
+				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalized, szLocalized, sizeof( szLocalized ) );
+				pHudChat->ChatPrintf( pLocalPlayer->entindex(), CHAT_FILTER_SERVERMSG, "%s", szLocalized );
 			}
 		}
 	}
