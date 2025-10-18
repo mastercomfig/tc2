@@ -686,7 +686,7 @@ void C_TFRagdoll::CreateTFRagdoll()
 
 	int nModelIndex = -1;
 
-	if ( pPlayer && pPlayer->GetPlayerClass() && !pPlayer->ShouldDrawSpyAsDisguised() )
+	if ( pPlayer && pPlayer->GetPlayerClass() && pPlayer->GetPlayerClass()->GetClassIndex() > TF_CLASS_UNDEFINED && !pPlayer->ShouldDrawSpyAsDisguised() )
 	{
 		nModelIndex = modelinfo->GetModelIndex( pPlayer->GetPlayerClass()->GetModelName() );
 	}
