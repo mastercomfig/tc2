@@ -4290,7 +4290,7 @@ void CGameMovement::FinishDuck( void )
 		m_bIsCrouchTapping = false;
 		m_flCrouchTapEndTime = -1.0f;
 	}
-	else if ( !m_bIsCrouchTapping )
+	else if ( true || !m_bIsCrouchTapping ) // UNDONE: holding crouch is not a ctap!
 	{
 		Vector viewDelta = GetAirDuckOffset();
 		Vector out;
