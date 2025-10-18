@@ -14512,7 +14512,8 @@ bool CTFPlayer::SetObserverMode(int mode)
 //-----------------------------------------------------------------------------
 void CTFPlayer::StateEnterOBSERVER( void )
 {
-	const bool bStrictMode = !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
+	// TODO(mcoms): UNDONE: need to fix strict behavior.
+	const bool bStrictMode = false && !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
 	// Always start a spectator session in chase mode, unless in strict mode
 	m_iObserverLastMode = bStrictMode ? OBS_MODE_DEATHCAM : OBS_MODE_CHASE;
 
@@ -14654,8 +14655,9 @@ void CTFPlayer::StateThinkDYING( void )
 			}
 		}
 
+		// UNDONE: need to fix this
 		// TODO(mcoms): is it this or strict spectator rules? or maybe both?
-		const bool bStrictMode = !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
+		const bool bStrictMode = false && !( TFGameRules() ? TFGameRules()->AllowSpectatorModeChange() : false );
 
 		if ( GetObserverMode() == OBS_MODE_FREEZECAM )
 		{
