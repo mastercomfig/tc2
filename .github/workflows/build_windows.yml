@@ -1,6 +1,9 @@
 name: Build - Windows
 
-on: [push]
+on:
+  push:
+    branches:
+      - "*"
 # https://github.com/SoopMod/source-sdk-tf-soop/commit/d244e93b5888074e53e1f2f6daba3f14383b575e
 jobs:
   build:
