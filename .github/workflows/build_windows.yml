@@ -44,6 +44,7 @@ jobs:
             !${{ github.workspace }}/src/.vscode/**
             !${{ github.workspace }}/game/**
             !${{ github.workspace }}/game.zip
+            !${{ github.workspace }}/game-win.zip
             !${{ github.workspace }}/game-debug-info.zip
           key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
@@ -134,5 +135,5 @@ jobs:
       - name: Push Permalink Rel
         id: perma-rel
         run: |
-          cp game.zip game-win.zip
+          Compress-Archive -Path .\game_dist -DestinationPath game-win.zip
           gh release --clobber rel game-win.zip

@@ -78,5 +78,5 @@ jobs:
       - name: Push Permalink Rel
         id: perma-rel
         run: |
-          cp game.zip game-linux.zip
+          7z a game-linux.zip game_dist
           gh release --clobber rel game-linux.zip
