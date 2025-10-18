@@ -6,7 +6,7 @@ on:
       - "*"
 # https://github.com/SoopMod/source-sdk-tf-soop/commit/d244e93b5888074e53e1f2f6daba3f14383b575e
 jobs:
-  build:
+  build_win:
     runs-on: windows-latest
     steps:
       # checkout the github actions / workflow
@@ -136,7 +136,6 @@ jobs:
         id: perma-rel
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
-          rm game-win.zip
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
           gh release upload --clobber rel game-win.zip
         env:
