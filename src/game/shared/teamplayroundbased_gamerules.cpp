@@ -2683,8 +2683,9 @@ void CTeamplayRoundBasedRules::RespawnPlayers( bool bForceRespawn, bool bTeam /*
 		{
 #ifdef TF_DLL
 			CTFPlayer *pTFPlayer = ToTFPlayer(pPlayer);
-			// if the player has reset their class, we still need to wait the minimum time.
-			if ( pTFPlayer->HasResetClass() && bTeam && !HasPassedMinRespawnTime( pPlayer ) )
+			// if the player has reset their class (or we're in a competitive match), we still need to wait the minimum time.
+			const bool bNoSpawnBypass = TFGameRules()->IsCompetitiveGame() || pTFPlayer->HasResetClass();
+			if ( bNoSpawnBypass && bTeam && !HasPassedMinRespawnTime( pPlayer ) )
 				continue;
 #endif
 

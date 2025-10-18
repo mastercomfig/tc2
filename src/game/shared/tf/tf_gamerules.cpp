@@ -19729,7 +19729,9 @@ bool CTFGameRules::HasPassedMinRespawnTime( CBasePlayer *pPlayer )
 {
 	CTFPlayer *pTFPlayer = ToTFPlayer( pPlayer );
 
-	if ( pTFPlayer && pTFPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED && !pTFPlayer->HasResetClass() )
+	const bool bNoSpawnBypass = TFGameRules()->IsCompetitiveGame() || pTFPlayer->HasResetClass();
+
+	if ( pTFPlayer && pTFPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_UNDEFINED && !bNoSpawnBypass )
 		return true;
 
 	float flMinSpawnTime = GetMinTimeWhenPlayerMaySpawn( pPlayer ); 
