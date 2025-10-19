@@ -911,7 +911,7 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 		CTFPlayer* pTarget = ToTFPlayer( ent );
 		if ( pTarget )
 		{
-			bIsBehind = IsBehindAndFacingTarget( pTarget );
+			bIsBehind = IsBehindAndFacingTarget( pTarget, true );
 		}
 		else
 		{
@@ -1067,7 +1067,7 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 //-----------------------------------------------------------------------------
 // Purpose: Determine if we are reasonably facing our target.
 //-----------------------------------------------------------------------------
-bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget )
+bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget, bool bInAttack )
 {
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( !pOwner )
@@ -1119,7 +1119,7 @@ bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget )
 	if ( flPosVsTargetViewDot > -0.001746f && flPosVsOwnerViewDot > 0.498488f && flViewAnglesDot > -0.30237f )
 #endif
 	{
-		return VerifyBehindPosition( pTarget );
+		return bInAttack ? VerifyBehindPosition( pTarget ) : true;
 	}
 
 	return false;

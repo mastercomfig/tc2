@@ -62,7 +62,7 @@ public:
 	virtual void	DoMeleeDamage( CBaseEntity* ent, trace_t& trace );
 	virtual void	DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float flDamageMod );
 
-	virtual bool	IsBehindAndFacingTarget( CTFPlayer *pTarget );
+	virtual bool	IsBehindAndFacingTarget( CTFPlayer *pTarget, bool bInAttack = false );
 	virtual bool	VerifyBehindPosition( CTFPlayer *pTarget );
 
 	virtual float	GetMeleeDamage( CBaseEntity *pTarget, int* piDamageType, int* piCustomDamage );

@@ -434,7 +434,7 @@ float CTFKnife::GetMeleeDamage( CBaseEntity *pTarget, int* piDamageType, int* pi
 //-----------------------------------------------------------------------------
 // Purpose: Are we in a backstab position?
 //-----------------------------------------------------------------------------
-bool CTFKnife::CanPerformBackstabAgainstTarget( CTFPlayer *pTarget )
+bool CTFKnife::CanPerformBackstabAgainstTarget( CTFPlayer *pTarget, bool bInAttack )
 {
 	if ( !pTarget )
 		return false;
@@ -463,7 +463,7 @@ bool CTFKnife::CanPerformBackstabAgainstTarget( CTFPlayer *pTarget )
 	}
 	
 	// Behind and facing target's back?
-	if ( IsBehindAndFacingTarget( pTarget ) )
+	if ( IsBehindAndFacingTarget( pTarget, bInAttack ) )
 		return true;
 
 	// Is target (bot) disabled via a sapper?
@@ -477,14 +477,6 @@ bool CTFKnife::CanPerformBackstabAgainstTarget( CTFPlayer *pTarget )
 	}
 
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Determine if we are reasonably facing our target.
-//-----------------------------------------------------------------------------
-bool CTFKnife::IsBehindAndFacingTarget( CTFPlayer *pTarget )
-{
-	return BaseClass::IsBehindAndFacingTarget( pTarget );
 }
 
 //-----------------------------------------------------------------------------
