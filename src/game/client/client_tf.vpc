@@ -987,6 +987,14 @@ $Project "Client (TF)"
 			$File	"tf/tf_replay.cpp"
 			$File	"tf/tf_replay.h"
 		}
+
+		$Folder "Quickplay"
+		{
+			$File	"$SRCDIR\game\shared\tf\tf_quickplay_shared.h"
+			$File	"$SRCDIR\game\shared\tf\tf_quickplay_shared.cpp"
+			$File	"$SRCDIR\game\client\tf\tf_quickplay.h"
+			$File	"$SRCDIR\game\client\tf\tf_quickplay_ui.cpp"
+		}
 	}
 
 	$Folder "Useful non-source files" [!$ANALYZE && !$BUILDBOT && !$SOURCESDK && !$JOSH]
