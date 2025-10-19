@@ -478,7 +478,14 @@ void CTFNavMesh::Update( void )
 
 	UpdateDebugDisplay();
 
-	if ( TheNextBots().GetNextBotCount() > 0 )
+	int iCurBotCount = TheNextBots().GetNextBotCount();
+	// hack to compute nav mesh on competitive games
+	if ( ( m_priorBotCount == 0 || m_recomputeInternalDataTimer.HasStarted() ) && TFGameRules()->IsCompetitiveGame() )
+	{
+		iCurBotCount = 1;
+	}
+
+	if ( iCurBotCount > 0 )
 	{
 		if ( m_priorBotCount == 0 )
 		{
@@ -500,7 +507,7 @@ void CTFNavMesh::Update( void )
 		}
 	}
 
-	m_priorBotCount = TheNextBots().GetNextBotCount();
+	m_priorBotCount = iCurBotCount;
 }
 
 

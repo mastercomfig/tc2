@@ -968,7 +968,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 									if (point && pMaster->IsInRound(point))
 									{
 										// TODO(mcoms): what on earth can we do but this...
-										if ( iNumPoints == 1 || ( point->WorldSpaceCenter() - pPoint->WorldSpaceCenter() ).LengthSqr() < 200.0f )
+										if ( iNumPoints == 1 || ( point->GetAbsOrigin() - pPoint->WorldSpaceCenter() ).LengthSqr() < 200.0f )
 										{
 											iTargetTeam = point->GetOwner();
 											bHandled = true;
@@ -6032,7 +6032,7 @@ bool IsValidRaidRespawnTarget( CBaseEntity *entity )
 extern ConVar tf_gamemode_payload;
 extern ConVar tf_gamemode_ctf;
 
-ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "0");
+ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "1");
 
 //-----------------------------------------------------------------------------
 // Purpose: Find a spawn point for the player.
@@ -6121,21 +6121,20 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
-		bool bMultiStagePLR = (tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() &&
-			pMaster->GetNumRounds() > 1 && TFGameRules()->HasMultipleTrains());
+		bool bPLR = tf_gamemode_payload.GetBool() && TFGameRules()->HasMultipleTrains();
 		bool bCTF = tf_gamemode_ctf.GetBool();
 		bool bUseStopWatch = TFGameRules()->MatchmakingShouldUseStopwatchMode();
 
 		// TODO(mcoms): handle this for other modes
-		if ( pMaster && !bMultiStagePLR && !bCTF && !bUseStopWatch )
+		if ( pMaster && !bPLR && !bCTF )
 		{
 			CTeamControlPoint* contestedPoint = NULL;
-			for (int i = 0; i < pMaster->GetNumPoints(); ++i)
+			for ( int i = 0; i < pMaster->GetNumPoints(); ++i )
 			{
 				contestedPoint = pMaster->GetControlPoint(i);
-				if (contestedPoint && pMaster->IsInRound(contestedPoint))
+				if ( contestedPoint && pMaster->IsInRound(contestedPoint) )
 				{
-					if (ObjectiveResource()->GetOwningTeam(contestedPoint->GetPointIndex()) != TEAM_UNASSIGNED)
+					if ( !bUseStopWatch && ObjectiveResource()->GetOwningTeam( contestedPoint->GetPointIndex() ) != TEAM_UNASSIGNED )
 						continue;
 
 					break;
@@ -6144,11 +6143,15 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 
 			if ( contestedPoint )
 			{
-				Vector mins = VEC_HULL_MIN_SCALED(this);
-				Vector maxs = VEC_HULL_MAX_SCALED(this);
+				Vector mins = VEC_HULL_MIN_SCALED( this );
+				Vector maxs = VEC_HULL_MAX_SCALED( this );
+
+				const CUtlVector< CTFNavArea* >* areaVector = TheTFNavMesh()->GetSpawnRoomAreas(GetTeamNumber());
+				const bool bHasNavData = areaVector->Count();
 
 				Vector vecLocation = contestedPoint->GetAbsOrigin();
-				const float flSize = 2048.0f;
+				vecLocation.z += 2.0f;
+				const float flSize = bHasNavData ? 2048.0f : 1024.0f;
 				const float flSpace = 128.0f;
 				const int32 iCount = Floor2Int(((flSize * 2.0f) / flSpace) + 1);
 				const int32 iCountHalf = iCount / 2;
@@ -6156,42 +6159,90 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 				Vector vecTest;
 				bool bFound = false;
 
+				constexpr bool bDebug = false;
+
+				auto testSelection = [&](int x, int y)
+					{
+						vecTest = vecLocation - Vector(flSpace * (x - iCountHalf), flSpace * (y - iCountHalf), 0.0f);
+
+						int32 iGeoTries = 0;
+						while (iGeoTries++ < 7)
+						{
+							// hack to check if we have a nav mesh, and then check if there is navigatable space in this grid cell
+							if ( bHasNavData && !TheTFNavMesh()->GetNavArea(vecTest, 500.0f) )
+							{
+								break;
+							}
+
+							Vector vecEnd = vecTest;
+							vecEnd.z += 1.0f;
+
+							Ray_t ray;
+							ray.Init(vecTest, vecEnd, mins, maxs);
+
+							trace_t tr;
+							UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+
+							if ( tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid )
+							{
+								// if we don't have nav data, we must do a LoS check with the first valid geo spot
+								if ( !bHasNavData )
+								{
+									trace_t bounds_tr;
+									Vector vecSightCheck = vecLocation;
+									vecSightCheck.z = vecTest.z + 65.0f;
+									UTIL_TraceHull(vecTest, vecSightCheck, mins, maxs, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &bounds_tr);
+									if (bounds_tr.fraction < 1.0f || bounds_tr.allsolid || bounds_tr.startsolid)
+									{
+										// exit out, because our only valid candidate did not pass this check. we cannot continue onwards.
+										break;
+									}
+								}
+
+								// mark that we found a valid map spot
+								bFound = true;
+								break;
+							}
+
+							if (!bHasNavData && iGeoTries >= 2)
+							{
+								// unfortunately, we cannot be so loose without the nav check.
+								break;
+							}
+
+							// search upwards to find a place on the map
+							vecTest.z += (maxs.z - mins.z) + 1.0f;
+						}
+					};
+
+				if (bDebug)
+				{
+					int x = iCount;
+					while (--x >= 0)
+					{
+						int y = iCount;
+						while (--y >= 0)
+						{
+							testSelection(x, y);
+
+							if ( bFound )
+							{
+								NDebugOverlay::Box(vecTest, mins, maxs, 0, 255, 0, 255, 180.0f);
+							}
+							else
+							{
+								NDebugOverlay::Box(vecTest, mins, maxs, 255, 0, 0, 255, 180.0f);
+							}
+						}
+						bFound = false;
+					}
+				}
+
 				while ( iTries++ < 19 )
 				{
-					const int32 iSelection = RandomInt(0, iCount - 1);
-					vecTest = vecLocation - Vector(flSpace * (iSelection - iCountHalf), flSpace * (iSelection - iCountHalf), 0.0f);
-					vecTest.z += 2.0f;
-
-					int32 iGeoTries = 0;
-					while (iGeoTries++ < 7)
-					{
-						// hack to check if we have a nav mesh, and then check if there is navigatable space in this grid cell
-						const CUtlVector< CTFNavArea* >* areaVector = TheTFNavMesh()->GetSpawnRoomAreas(GetTeamNumber());
-						if ( areaVector->Count() > 0 && !TheTFNavMesh()->GetNavArea(vecTest, 500.0f) )
-						{
-							break;
-						}
-
-						Vector vecEnd = vecTest;
-						vecEnd.z += 1.0f;
-
-						Ray_t ray;
-						ray.Init(vecTest, vecEnd, mins, maxs);
-
-						trace_t tr;
-						UTIL_TraceRay(ray, MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_PLAYER_MOVEMENT, &tr);
-
-						if ( tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid )
-						{
-							// mark that we found a valid map spot
-							bFound = true;
-							break;
-						}
-
-						// search upwards to find a place on the map
-						vecTest.z += (maxs.z - mins.z) + 1.0f;
-
-					}
+					const int32 iSelectionX = RandomInt(0, iCount - 1);
+					const int32 iSelectionY = RandomInt(0, iCount - 1);
+					testSelection(iSelectionX, iSelectionY);
 
 					if ( !bFound )
 					{
