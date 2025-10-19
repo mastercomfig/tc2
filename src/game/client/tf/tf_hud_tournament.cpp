@@ -128,6 +128,7 @@ void CHudTournament::Init( void )
 	SetVisible( false );
 	CHudElement::Init();
 	m_flNextUpdate = gpGlobals->curtime;
+	m_bCountDownVisible = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -665,6 +666,7 @@ void CHudTournament::OnTick( void )
 void CHudTournament::LevelInit( void )
 {
 	m_bShouldBeVisible = false;
+	m_bCountDownVisible = false;
 	SetVisible( false );
 	Init();
 }
