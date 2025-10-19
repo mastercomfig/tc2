@@ -5981,7 +5981,7 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 		UTIL_TraceLine( vecSrc, vecMainSpot, MASK_RADIUS_DAMAGE, &filterSelf, &tr );
 	}
 
-	bool bDebug = false;
+	constexpr bool bDebug = false;
 	if (bDebug)
 	{
 		NDebugOverlay::Box( 
@@ -10926,8 +10926,7 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 	// keep track of their tf_remember_lastswitched value
 	pTFPlayer->SetRememberActiveWeapon( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf_remember_activeweapon" ) ) > 0 );
 	pTFPlayer->SetRememberLastWeapon( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf_remember_lastswitched" ) ) > 0 );
-	pTFPlayer->SetRememberLastWeapon(Q_atoi(engine->GetClientConVarValue(pPlayer->entindex(), "tf_remember_lastswitched")) > 0);
-	pTFPlayer->SetRespawnOnLoadoutChanges(V_atoi(engine->GetClientConVarValue(pPlayer->entindex(), "tf_respawn_on_loadoutchanges")) > 0);
+	pTFPlayer->SetRespawnOnLoadoutChanges( Q_atoi( engine->GetClientConVarValue(pPlayer->entindex(), "tf_respawn_on_loadoutchanges" ) ) > 0);
 
 	const char *pszFov = engine->GetClientConVarValue( pPlayer->entindex(), "fov_desired" );
 	int iFov = atoi(pszFov);
