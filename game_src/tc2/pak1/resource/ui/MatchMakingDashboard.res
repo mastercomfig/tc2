@@ -705,7 +705,8 @@
 		{
 			"ControlName"	"CExImageButton"
 			"fieldName"		"ResumeButton"
-			"xpos"			"rs1-31-130"
+			"xpos"			"rs1-31-91" [!$POSIX]
+			"xpos"			"rs1-31-96" [$POSIX]
 			"ypos"			"0"
 			"zpos"			"100"
 			"wide"			"90" [!$POSIX]

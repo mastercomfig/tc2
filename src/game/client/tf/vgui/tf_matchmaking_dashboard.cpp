@@ -1304,7 +1304,7 @@ void CTFMatchmakingDashboard::UpdateDisconnectAndResume()
 	Panel* pOffsetPanel = bInGame ? m_pDisconnectButton : m_pQuitButton;
 
 	m_pPlayButton->SetPos( pOffsetPanel->GetXPos() - m_pPlayButton->GetWide() - 1, m_pPlayButton->GetYPos() );
-	m_pResumeButton->SetPos( m_pPlayButton->GetXPos() - m_pResumeButton->GetWide() - 1, m_pResumeButton->GetYPos() );
+	m_pResumeButton->SetPos( m_pPlayButton->GetXPos() - m_pResumeButton->GetWide(), m_pResumeButton->GetYPos() );
 }
 
 bool CTFMatchmakingDashboard::BAnySidePanelsShowing() const
