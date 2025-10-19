@@ -701,7 +701,8 @@ void CClassLoadoutPanel::OnKeyCodePressed( vgui::KeyCode code )
 //-----------------------------------------------------------------------------
 void CClassLoadoutPanel::OnKeyCodeTyped(vgui::KeyCode code)
 {
-	if ( code == KEY_ESCAPE )
+	// HACK: we can only escape key out of the menu if we're in game
+	if ( code == KEY_ESCAPE && engine->IsInGame() )
 	{
 		OnClosing();
 	}
