@@ -8165,6 +8165,12 @@ bool C_TFPlayer::ShouldDraw()
 //-----------------------------------------------------------------------------
 int C_TFPlayer::GetVisionFilterFlags( bool bWeaponsCheck /*= false */  )
 {
+	// disable vision filters in competitive
+	if ( TFGameRules()->IsCompetitiveGame() )
+	{
+		return 0x00;
+	}
+
 #if defined( REPLAY_ENABLED )
 	extern IEngineClientReplay *g_pEngineClientReplay;
 	if ( g_pEngineClientReplay->IsPlayingReplayDemo() )

@@ -981,7 +981,7 @@ class CAchievementTF_KillBalloonicornOwners : public CBaseTFAchievement
 				CALL_ATTRIB_HOOK_INT_ON_OTHER( pLocalPlayer, nVisionOptInFlags, vision_opt_in_flags );
 
 				// Does the local player have PyroVision on?
-				if ( nVisionOptInFlags & TF_VISION_FILTER_PYRO )
+				if ( !TFGameRules()->IsCompetitiveGame() && nVisionOptInFlags & TF_VISION_FILTER_PYRO )
 				{
 					// Is the victim wearing the Balloonicorn?
 					for ( int i = 0 ; i < pTFVictim->GetNumWearables() ; ++i )
@@ -1083,7 +1083,7 @@ class CAchievementTF_MultipleBFF : public CBaseTFAchievement
 				int nVisionOptInFlags = 0;
 				CALL_ATTRIB_HOOK_INT_ON_OTHER( pLocalPlayer, nVisionOptInFlags, vision_opt_in_flags );
 
-				if ( nVisionOptInFlags & TF_VISION_FILTER_PYRO )
+				if ( !TFGameRules()->IsCompetitiveGame() && nVisionOptInFlags & TF_VISION_FILTER_PYRO )
 				{
 					int index = m_hBFFs.Find( pTFVictim );
 					if ( index == m_hBFFs.InvalidIndex() )
@@ -1134,7 +1134,7 @@ class CAchievementTF_TeamPyrovision : public CBaseTFAchievement
 			int nVisionOptInFlags = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pLocalPlayer, nVisionOptInFlags, vision_opt_in_flags );
 			
-			if ( nVisionOptInFlags & TF_VISION_FILTER_PYRO )
+			if ( !TFGameRules()->IsCompetitiveGame() && nVisionOptInFlags & TF_VISION_FILTER_PYRO )
 			{
 				int nCount = 0;
 

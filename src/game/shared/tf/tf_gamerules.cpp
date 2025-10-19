@@ -18454,6 +18454,9 @@ bool CTFGameRules::AllowWeatherParticles( void )
 
 bool CTFGameRules::AllowMapVisionFilterShaders( void )
 {
+	if ( IsCompetitiveGame() )
+		return false;
+
 	if ( !m_pkvVisionFilterShadersMapWhitelist )
 		return false;
 
