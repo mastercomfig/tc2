@@ -13621,8 +13621,8 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				if ( GetGlobalTeam( pVictim->GetTeamNumber() ) && GetGlobalTeam( pVictim->GetTeamNumber() )->GetNumPlayers() > 1 )
 #endif // !DEBUG
 				{
-					float flFastTime = IsCompetitiveGame() ? 45.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
-					float flSlowTime = IsCompetitiveGame() ? 90.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
+					float flFastTime = IsCompetitiveGame() ? 35.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
+					float flSlowTime = IsCompetitiveGame() ? 75.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
 
 					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
 					{
