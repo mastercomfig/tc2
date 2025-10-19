@@ -5506,6 +5506,7 @@ void CTFGameRules::SetSetup( bool bSetup )
 }
 
 ConVar tf_casual_spawn_bots("tf_casual_spawn_bots", "0");
+ConVar tf_comp_spawn_bots("tf_comp_spawn_bots", "1");
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when a new round is off and running
@@ -5622,7 +5623,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 	const bool bIsCompMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2;
 	const bool bIsCasualMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 1;
-	if ( !IsMannVsMachineMode() && ( bIsCompMatch || ( tf_casual_spawn_bots.GetBool() && bIsCasualMatch ) ) )
+	if ( !IsMannVsMachineMode() && ( ( tf_comp_spawn_bots.GetBool() && bIsCompMatch ) || ( tf_casual_spawn_bots.GetBool() && bIsCasualMatch ) ) )
 	{
 		const bool bIsCompetitive = IsCompetitiveGame();
 		// Highest difficulty bots for comp
