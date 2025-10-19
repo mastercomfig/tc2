@@ -474,9 +474,9 @@ int CTFInventoryManager::GetNumItemPickedUpItems( void )
 //-----------------------------------------------------------------------------
 bool CTFInventoryManager::ShowItemsPickedUp( bool bForce, bool bReturnToGame, bool bNoPanel )
 {
-	// don't show new items in training or a competitive game, unless forced to do so
+	// don't show new items, unless forced to do so
 	// i.e. purchased something or traded...
-	if ( !bForce && TFGameRules() && ( TFGameRules()->IsInTraining() || TFGameRules()->IsCompetitiveGame() ) )
+	if ( !bForce )
 	{
 		return false;
 	}
