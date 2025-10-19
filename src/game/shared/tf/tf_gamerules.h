@@ -400,6 +400,8 @@ public:
 
 	virtual void	RespawnPlayers( bool bForceRespawn, bool bTeam = false, int iTeam = TEAM_UNASSIGNED ) OVERRIDE;
 
+	void			SpawnMatchBots();
+
 	// Called when a new round is being initialized
 	virtual void	SetupOnRoundStart( void );
 

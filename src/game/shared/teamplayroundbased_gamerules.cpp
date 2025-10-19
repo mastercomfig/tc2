@@ -1537,7 +1537,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 {
 	BalanceTeams( false );
 
-	m_flStartBalancingTeamsAt = gpGlobals->curtime + 60.0;
+	m_flStartBalancingTeamsAt = gpGlobals->curtime + 60.0f;
 
 	RoundRespawn();
 
@@ -1609,6 +1609,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 				}
 			}
 		}
+		m_flStateTransitionTime = gpGlobals->curtime + flTransitionTime;
 		if ( flTransitionTime > 0.0f )
 		{
 			// set speed at start of pre-round. previously we only did this if there was an active roundtimer and in competitive
@@ -1628,7 +1629,6 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 			}
 		}
 #endif // TF_DLL
-		m_flStateTransitionTime = gpGlobals->curtime + flTransitionTime;
 	}
 
 	StopWatchModeThink();

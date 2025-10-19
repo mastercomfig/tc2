@@ -1181,6 +1181,8 @@ void cc_competitive_mode( IConVar *pConVar, const char *pOldString, float flOldV
 		gameeventmanager->FireEvent( event, true );
 	}
 }
+// TODO(mcoms) UNDONE: mcoms: we're not going with this for now, just do a full clean run of preround.
+// this is now 5 to allow 2 seconds of uninterrupted medic healing, plus the previous standard of 3 seconds of preround time (after freeze).
 ConVar tf_competitive_preround_duration( "tf_competitive_preround_duration", "3", FCVAR_REPLICATED, "How long we stay in pre-round when in competitive games." );
 ConVar tf_competitive_preround_countdown_duration( "tf_competitive_preround_countdown_duration", "10.5", FCVAR_HIDDEN, "How long we stay in countdown when in competitive games." );
 ConVar tf_competitive_abandon_method( "tf_competitive_abandon_method", "0", FCVAR_HIDDEN );
@@ -5508,6 +5510,39 @@ void CTFGameRules::SetSetup( bool bSetup )
 ConVar tf_casual_spawn_bots("tf_casual_spawn_bots", "0");
 ConVar tf_comp_spawn_bots("tf_comp_spawn_bots", "1");
 
+void CTFGameRules::SpawnMatchBots( void )
+{
+	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
+	const bool bIsCompMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2;
+	const bool bIsCasualMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 1;
+	if ( !IsMannVsMachineMode() && ( ( tf_comp_spawn_bots.GetBool() && bIsCompMatch ) || ( tf_casual_spawn_bots.GetBool() && bIsCasualMatch ) ) )
+	{
+		const bool bIsCompetitive = IsCompetitiveGame();
+		// Highest difficulty bots for comp
+		static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
+		tf_bot_difficulty.SetValue(bIsCompetitive ? 3 : 1);
+		static ConVarRef tf_bot_quota( "tf_bot_quota" );
+		int iBotQuota;
+		if (pMatch)
+		{
+			iBotQuota = (int)pMatch->GetCanonicalMatchSize();
+		}
+		else
+		{
+			iBotQuota = bIsCompetitive ? 12 : 24;
+		}
+		tf_bot_quota.SetValue( iBotQuota );
+		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
+		tf_bot_quota_mode.SetValue( "fill" );
+		// Bots don't taunt on kill in comp
+		if (bIsCompetitive)
+		{
+			static ConVarRef tf_bot_taunt_victim_chance("tf_bot_taunt_victim_chance");
+			tf_bot_taunt_victim_chance.SetValue(0.0f);
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Called when a new round is off and running
 //-----------------------------------------------------------------------------
@@ -5617,36 +5652,6 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		else
 		{
 			BroadcastSound( 255, "Announcer.CompGameBeginsFight" );
-		}
-	}
-
-	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	const bool bIsCompMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 2;
-	const bool bIsCasualMatch = ( pMatch && IsMatchTypeCompetitive() ) || IsEmulatingMatch() == 1;
-	if ( !IsMannVsMachineMode() && ( ( tf_comp_spawn_bots.GetBool() && bIsCompMatch ) || ( tf_casual_spawn_bots.GetBool() && bIsCasualMatch ) ) )
-	{
-		const bool bIsCompetitive = IsCompetitiveGame();
-		// Highest difficulty bots for comp
-		static ConVarRef tf_bot_difficulty("tf_bot_difficulty");
-		tf_bot_difficulty.SetValue(bIsCompetitive ? 3 : 1);
-		static ConVarRef tf_bot_quota( "tf_bot_quota" );
-		int iBotQuota;
-		if (pMatch)
-		{
-			iBotQuota = (int)pMatch->GetCanonicalMatchSize();
-		}
-		else
-		{
-			iBotQuota = bIsCompetitive ? 12 : 24;
-		}
-		tf_bot_quota.SetValue( iBotQuota );
-		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
-		tf_bot_quota_mode.SetValue( "fill" );
-		// Bots don't taunt on kill in comp
-		if (bIsCompetitive)
-		{
-			static ConVarRef tf_bot_taunt_victim_chance("tf_bot_taunt_victim_chance");
-			tf_bot_taunt_victim_chance.SetValue(0.0f);
 		}
 	}
 
@@ -8850,6 +8855,11 @@ void CTFGameRules::Think()
 			// Handle re-spawning the players after the doors have shut at the beginning of a match
 			if ( ( m_flCompModeRespawnPlayersAtMatchStart > 0 ) && ( m_flCompModeRespawnPlayersAtMatchStart <= gpGlobals->curtime ) )
 			{
+				if ( ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) && ( GetRoundsPlayed() == 0 ) )
+				{
+					SpawnMatchBots();
+				}
+
 				bool bClassOrder = IsCompetitiveGame();
 				// spawn order won't be very relevant for old maps... but at least it's consistent
 				int ClassSpawnOrder[] = {

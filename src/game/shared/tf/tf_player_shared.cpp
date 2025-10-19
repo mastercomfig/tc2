@@ -10980,6 +10980,8 @@ bool CTFPlayer::CanPlayerMove() const
 			// it's intended that for the extra tf_competitive_preround_duration (3 seconds),
 			// we unfreeze, to give all classes a chance to walk out of their
 			// random spawn position to the doors.
+			// addendum: this seems even MORE likely now, competitive logic entities were hooked up
+			// by valve to disable tf_player_movement_restart_freeze on preround start.
 			bFreezeOnRestart = false;
 		}
 	}
@@ -12478,6 +12480,14 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 
 	if ( IsViewingCYOAPDA() )
 		return false;
+
+	if ( pRules->BInMatchStartCountdown() )
+		return false;
+
+	if ( gpGlobals->curtime < pRules->GetPreroundCountdownTime() )
+	{
+		return false;
+	}
 
 	if ( m_Shared.HasPasstimeBall() ) 
 	{
