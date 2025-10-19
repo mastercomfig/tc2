@@ -241,7 +241,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_CombatText_Large"
 		"#Tooltip_CombatTextLarge"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 	
 	"tf_remember_activeweapon"
