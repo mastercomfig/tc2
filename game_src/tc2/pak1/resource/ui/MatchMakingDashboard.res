@@ -705,7 +705,7 @@
 		{
 			"ControlName"	"CExImageButton"
 			"fieldName"		"ResumeButton"
-			"xpos"			"rs1-31-131"
+			"xpos"			"rs1-31-130"
 			"ypos"			"0"
 			"zpos"			"100"
 			"wide"			"90" [!$POSIX]
@@ -826,7 +826,8 @@
 			"xpos"			"rs1-145"
 			"ypos"			"0"
 			"zpos"			"100"
-			"wide"			"115"
+			"wide"			"120" [!$POSIX]
+			"wide"			"125" [$POSIX]
 			"tall"			"f6"
 			"autoResize"	"0"
 			"pinCorner"		"3"
@@ -845,7 +846,7 @@
 			"actionsignallevel"	"2"
 			"roundedcorners"	"1"
 			"textinsety"	"2.5"
-			"textinsetx"	"15"
+			"textinsetx"	"26"
 			"use_proportional_insets"	"1"
 
 
@@ -859,6 +860,23 @@
 			"armedFgColor_override" "TanLight"
 			"image_drawcolor"	"235 226 202 255"
 			"image_armedcolor"	"235 226 202 255"
+
+			"SubImage"
+			{
+				"ControlName"	"ImagePanel"
+				"fieldName"		"SubImage"
+				"xpos"			"6"
+				"ypos"			"10"
+				"zpos"			"1"
+				"wide"			"14"
+				"tall"			"14"
+				"visible"		"1"
+				"enabled"		"1"
+				"scaleImage"	"1"
+				"proportionaltoparent"	"1"
+				"image"			"glyph_create"
+				"drawcolor_override" "TanLight"
+			}
 
 		}
 	}

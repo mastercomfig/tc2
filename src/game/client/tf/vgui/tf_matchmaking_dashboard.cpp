@@ -379,13 +379,22 @@ void CTFMatchmakingDashboard::OnCommand( const char *command )
 	}
 	else if ( FStrEq( command, "find_game" ) )
 	{
-		OnPlayCommunity();
-		return;
+#ifdef SOURCESDK
+		OnQuickplay();
+#else
 		PopStack( 100, k_eSideRight ); // All y'all
 		PushSlidePanel( GetDashboardPanel().GetTypedPanel< CMatchMakingDashboardSidePanel >( k_ePlayList ) );
 		CHudMainMenuOverride *pMMOverride = (CHudMainMenuOverride*)( gViewPortInterface->FindPanelByName( PANEL_MAINMENUOVERRIDE ) );
 		pMMOverride->CheckTrainingStatus();
+
+#endif
 	}
+#ifdef SOURCESDK
+	else if ( FStrEq( command, "play_community" ) )
+	{
+		OnPlayCommunity();
+	}
+#endif
 	else if ( FStrEq( command, "quit" ) )
 	{
 		if ( engine->IsInGame() )
@@ -913,12 +922,18 @@ void CTFMatchmakingDashboard::OnPlayTraining()
 	}
 }
 
-
 void CTFMatchmakingDashboard::OnPlayCommunity()
 {
 	ClearAllStacks();
 	// Just call the command directly
 	engine->ClientCmd_Unrestricted( "gamemenucommand openserverbrowser" );
+}
+
+void CTFMatchmakingDashboard::OnQuickplay()
+{
+	ClearAllStacks();
+	// Just call the command directly
+	engine->ClientCmd_Unrestricted("OpenQuickplayDialog");
 }
 
 void CTFMatchmakingDashboard::OnCreateServer()

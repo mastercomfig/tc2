@@ -113,7 +113,7 @@ static int FindRecentlyMatchedServer( uint32 ip, uint16 port )
 }
 
 ConVar tf_quickplay_pref_increased_maxplayers( "tf_quickplay_pref_increased_maxplayers", "2", FCVAR_ARCHIVE, "0=Default only, 1=Yes, 2=Don't care" );
-ConVar tf_quickplay_pref_disable_random_crits( "tf_quickplay_pref_disable_random_crits", "2", FCVAR_ARCHIVE, "0=Random crits enabled, 1=Random crits disabled, 2=Don't care" );
+ConVar tf_quickplay_pref_disable_random_crits( "tf_quickplay_pref_disable_random_crits", "0", FCVAR_ARCHIVE, "0=Random crits enabled, 1=Random crits disabled, 2=Don't care" );
 ConVar tf_quickplay_pref_enable_damage_spread( "tf_quickplay_pref_enable_damage_spread", "0", FCVAR_ARCHIVE, "0=Damage spread disabled, 1=Damage spread enabled, 2=Don't care" );
 ConVar tf_quickplay_pref_respawn_times( "tf_quickplay_pref_respawn_times", "0", FCVAR_ARCHIVE, "0=Default respawn times only, 1=Instant respawn times ('norespawn' tag), 2=Don't care" );
 ConVar tf_quickplay_pref_advanced_view( "tf_quickplay_pref_advanced_view", "0", FCVAR_NONE, "0=Default to simplified view, 1=Default to more detailed options view" );
@@ -579,13 +579,13 @@ void CQuickListPanel::SetImage( const char *pMapName )
 	char map[ 512 ];
 	Q_snprintf( map, sizeof( map ), "maps/%s.bsp", pMapName );
 
-	if ( g_pFullFileSystem->FileExists( map, "MOD" ) == false  )
+	if ( g_pFullFileSystem->FileExists( map, "GAME" ) == false  )
 	{
 		pMapName = "default_download";
 	}
 	else
 	{
-		if ( g_pFullFileSystem->FileExists( path, "MOD" ) == false  )
+		if ( g_pFullFileSystem->FileExists( path, "GAME" ) == false  )
 		{
 			pMapName = "default";
 		}
@@ -756,6 +756,7 @@ public:
 		if ( GetUniverse() == k_EUniversePublic )
 		{
 			AddFilter( vecServerFilters, "secure", "1" );
+			// TODO(mcoms): TODOQUICKPLAY: allow p2p servers to be listed
 			//AddFilter( vecServerFilters, "dedicated", "1" );
 		}
 		AddFilter( vecServerFilters, "full", "1" ); // actually means "not full"
@@ -2299,7 +2300,7 @@ void CQuickplayPanelBase::ApplySchemeSettings( vgui::IScheme *pScheme )
 	}
 #endif
 	if ( m_bShowRandomOption )
-		AddItem(kGameCategory_Quickplay, "#Gametype_Quickplay", "#TF_GameModeDesc_Quickplay", "#TF_GameModeDetail_Quickplay", "#TF_Quickplay_Complexity2", "illustrations/quickplay", "illustrations/quickplay_beta");
+		AddItem( kGameCategory_Quickplay, "#Gametype_Quickplay", "#TF_GameModeDesc_Quickplay", "#TF_GameModeDetail_Quickplay", "#TF_Quickplay_Complexity1", "illustrations/quickplay", "illustrations/quickplay_beta" );
 //	AddItem( kGameType_Community_Update,"#GameType_Community_Update",	"#TF_GameModeDesc_Community_Update",	"#TF_GameModeDetail_Community_Update",	"#TF_Quickplay_Complexity1",	m_szCommunityUpdateImage,						NULL );
 //	AddItem( kGameType_Featured,		"#GameType_Featured",			"#TF_GameModeDesc_Featured",			"#TF_GameModeDetail_Featured",			"#TF_Quickplay_Complexity1",	"illustrations/gamemode_operation_tough_break",	NULL );
 	AddItem( kGameCategory_Escort, 			"#Gametype_Escort", 			"#TF_GameModeDesc_Escort",				"#TF_GameModeDetail_Escort", 			"#TF_Quickplay_Complexity1",	"illustrations/gamemode_payload",				"illustrations/gamemode_payload_beta" );
@@ -2392,7 +2393,8 @@ void CQuickplayPanelBase::SetupMoreOptions()
 	pOpt->m_vecOptionNames.AddToTail( "#TF_Quickplay_RandomCrits_Disabled" ); pOpt->m_vecOptionSummaryNames.AddToTail( "#TF_Quickplay_RandomCrits_Disabled_Summary" );
 	pOpt->m_vecOptionNames.AddToTail( "#TF_Quickplay_RandomCrits_DontCare" ); pOpt->m_vecOptionSummaryNames.AddToTail( "#TF_Quickplay_RandomCrits_DontCare_Summary" );
 	pOpt->m_pConvar = &tf_quickplay_pref_disable_random_crits;
-
+	
+#if 0
 	COMPILE_TIME_ASSERT( kEAdvOption_DamageSpread == 4 );
 	pOpt = &m_vecAdvOptions[ m_vecAdvOptions.AddToTail() ];
 	pOpt->m_pszContainerName = "DamageSpreadOption";
@@ -2400,6 +2402,7 @@ void CQuickplayPanelBase::SetupMoreOptions()
 	pOpt->m_vecOptionNames.AddToTail( "#TF_Quickplay_DamageSpread_Enabled" ); pOpt->m_vecOptionSummaryNames.AddToTail( "#TF_Quickplay_DamageSpread_Enabled_Summary" );
 	pOpt->m_vecOptionNames.AddToTail( "#TF_Quickplay_DamageSpread_DontCare" ); pOpt->m_vecOptionSummaryNames.AddToTail( "#TF_Quickplay_DamageSpread_DontCare_Summary" );
 	pOpt->m_pConvar = &tf_quickplay_pref_enable_damage_spread;
+#endif
 
 	FOR_EACH_VEC( m_vecAdvOptions, idxAdvOpt )
 	{
@@ -2862,7 +2865,7 @@ protected:
 					// Check if any of the tags has "beta" as a tag, and tally that if so
 					for( int k = 0; k < pMapDef->vecTags.Count(); ++k )
 					{
-						if (pMapDef->vecTags.HasElement( GetItemSchema()->GetHandleForTag( "beta" ) ) )
+						if ( pMapDef->vecTags.HasElement( GetItemSchema()->GetHandleForTag( "beta" ) ) )
 						{
 							nNumWithBetaContent++;
 						}

@@ -662,6 +662,7 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	lambdaAddTooltip( "SettingsButton", "#MMenu_Tooltip_Options" );
 	lambdaAddTooltip( "TF2SettingsButton", "#MMenu_Tooltip_AdvOptions" );
 #ifdef SOURCESDK
+	lambdaAddTooltip( "ServerBrowserButtonSDK", "#MMenu_BrowseServers", false );
 	lambdaAddTooltip( "SettingsButtonSDK", "#MMenu_Tooltip_Options", false );
 	lambdaAddTooltip( "TF2SettingsButtonSDK", "#MMenu_Tooltip_AdvOptions", false );
 #endif

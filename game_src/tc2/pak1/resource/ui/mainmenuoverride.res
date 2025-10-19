@@ -2441,6 +2441,55 @@
 		}		
 	}
 
+	"ServerBrowserButtonSDK"
+	{
+		"ControlName"	"CExImageButton"
+		"fieldName"		"ServerBrowserButtonSDK"
+		"xpos"			"c-68+273"
+		"ypos"			"437"
+		"zpos"			"4"
+		"wide"			"25"
+		"tall"			"25"
+		"autoResize"	"0"
+		"pinCorner"		"3"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"0"
+		//"labelText"		"#MMenu_Tooltip_Options"
+		"labelText"		""
+		"font"			"HudFontSmallBold"
+		"textAlignment"	"west"
+		"textinsetx"	"25"
+		"use_proportional_insets" "1"
+		"dulltext"		"0"
+		"brighttext"	"0"
+		"default"		"1"
+		"Command"		"OpenServerBrowser"
+
+		"navUp"			"TF2SettingsButtonSDK"
+		"navLeft"		"TF2SettingsButtonSDK"
+		"navRight"		"SettingsButtonSDK"
+
+		"sound_depressed"	"UI/buttonclick.wav"
+		"sound_released"	"UI/buttonclickrelease.wav"
+		
+		"image_drawcolor"	"235 226 202 255"
+		"SubImage"
+		{
+			"ControlName"	"ImagePanel"
+			"fieldName"		"SubImage"
+			"xpos"			"6"
+			"ypos"			"6"
+			"zpos"			"1"
+			"wide"			"14"
+			"tall"			"14"
+			"visible"		"1"
+			"enabled"		"1"
+			"scaleImage"	"1"
+			"image"			"glyph_server"
+		}			
+	}
+
 	"SettingsButtonSDK"
 	{
 		"ControlName"	"CExImageButton"
@@ -2466,8 +2515,8 @@
 		"default"		"1"
 		"Command"		"OpenOptionsDialog"
 
-		"navUp"			"TF2SettingsButtonSDK"
-		"navLeft"		"TF2SettingsButtonSDK"
+		"navUp"			"ServerBrowserButtonSDK"
+		"navLeft"		"ServerBrowserButtonSDK"
 		"navRight"		"TF2SettingsButtonSDK"
 
 		"sound_depressed"	"UI/buttonclick.wav"
@@ -2517,7 +2566,7 @@
 
 		"navUp"			"SettingsButtonSDK"
 		"navLeft"		"SettingsButtonSDK"
-		"navRight"		"SettingsButtonSDK"
+		"navRight"		"ServerBrowserButtonSDK"
 
 		"sound_depressed"	"UI/buttonclick.wav"
 		"sound_released"	"UI/buttonclickrelease.wav"
@@ -2535,7 +2584,7 @@
 			"visible"		"1"
 			"enabled"		"1"
 			"scaleImage"	"1"
-			"image"			"glyph_options"
+			"image"			"glyph_steamworkshop"
 			"scaleImage"	"1"
 		}				
 	}

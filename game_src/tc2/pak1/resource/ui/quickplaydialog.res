@@ -398,72 +398,72 @@
 				}	
 			}
 
-			"ValveServerOption"
-			{
-				"ControlName"	"EditablePanel"
-				"fieldName"		"ValveServerOption"
-				"xpos"		"10"
-				"ypos"		"30"
-				"zpos"		"60"
-				"wide"		"175"
-				"tall"		"60"
+			// "ValveServerOption"
+			// {
+			// 	"ControlName"	"EditablePanel"
+			// 	"fieldName"		"ValveServerOption"
+			// 	"xpos"		"10"
+			// 	"ypos"		"30"
+			// 	"zpos"		"60"
+			// 	"wide"		"175"
+			// 	"tall"		"60"
 
-				"OptionNameLabel"
-				{
-					"ControlName"	"CExLabel"
-					"fieldName"		"OptionNameLabel"
-					"font"			"HudFontSmallBold"
-					"labelText"		"#TF_Quickplay_ServerHost"
-					"textAlignment"	"left"
-					"xpos"			"0"
-					"ypos"			"0"
-					"zpos"			"2"
-					"wide"			"175"
-					"tall"			"15"
-				}
+			// 	"OptionNameLabel"
+			// 	{
+			// 		"ControlName"	"CExLabel"
+			// 		"fieldName"		"OptionNameLabel"
+			// 		"font"			"HudFontSmallBold"
+			// 		"labelText"		"#TF_Quickplay_ServerHost"
+			// 		"textAlignment"	"left"
+			// 		"xpos"			"0"
+			// 		"ypos"			"0"
+			// 		"zpos"			"2"
+			// 		"wide"			"175"
+			// 		"tall"			"15"
+			// 	}
 
-				"RadioButton0"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton0"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"15"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
+			// 	"RadioButton0"
+			// 	{
+			// 		"ControlName"		"RadioButton"
+			// 		"fieldName"			"RadioButton0"
+			// 		"Font"				"HudFontSmallest"
+			// 		"xpos"				"20"
+			// 		"ypos"				"15"
+			// 		"zpos"				"1"
+			// 		"wide"				"165"
+			// 		"tall"				"15"
+			// 	}	
 
-				"RadioButton1"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton1"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"30"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
+			// 	"RadioButton1"
+			// 	{
+			// 		"ControlName"		"RadioButton"
+			// 		"fieldName"			"RadioButton1"
+			// 		"Font"				"HudFontSmallest"
+			// 		"xpos"				"20"
+			// 		"ypos"				"30"
+			// 		"zpos"				"1"
+			// 		"wide"				"165"
+			// 		"tall"				"15"
+			// 	}	
 
-				"RadioButton2"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton2"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"45"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
-			}
+			// 	"RadioButton2"
+			// 	{
+			// 		"ControlName"		"RadioButton"
+			// 		"fieldName"			"RadioButton2"
+			// 		"Font"				"HudFontSmallest"
+			// 		"xpos"				"20"
+			// 		"ypos"				"45"
+			// 		"zpos"				"1"
+			// 		"wide"				"165"
+			// 		"tall"				"15"
+			// 	}	
+			// }
 
 			"IncreasedPlayerCountOption"
 			{
 				"ControlName"	"EditablePanel"
 				"fieldName"		"IncreasedPlayerCountOption"
-				"xpos"		"195"
+				"xpos"		"10"
 				"ypos"		"30"
 				"zpos"		"60"
 				"wide"		"175"
@@ -524,8 +524,8 @@
 			{
 				"ControlName"	"EditablePanel"
 				"fieldName"		"RandomCritsOption"
-				"xpos"		"10"
-				"ypos"		"100"
+				"xpos"		"195"
+				"ypos"		"30"
 				"zpos"		"60"
 				"wide"		"175"
 				"tall"		"60"
@@ -585,7 +585,7 @@
 			{
 				"ControlName"	"EditablePanel"
 				"fieldName"		"RespawnTimesOption"
-				"xpos"		"195"
+				"xpos"		"10"
 				"ypos"		"100"
 				"zpos"		"60"
 				"wide"		"175"
@@ -597,67 +597,6 @@
 					"fieldName"		"OptionNameLabel"
 					"font"			"HudFontSmallBold"
 					"labelText"		"#TF_Quickplay_RespawnTimes"
-					"textAlignment"	"left"
-					"xpos"			"0"
-					"ypos"			"0"
-					"zpos"			"2"
-					"wide"			"180"
-					"tall"			"15"
-				}
-
-				"RadioButton0"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton0"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"15"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
-
-				"RadioButton1"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton1"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"30"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
-
-				"RadioButton2"
-				{
-					"ControlName"		"RadioButton"
-					"fieldName"			"RadioButton2"
-					"Font"				"HudFontSmallest"
-					"xpos"				"20"
-					"ypos"				"45"
-					"zpos"				"1"
-					"wide"				"165"
-					"tall"				"15"
-				}	
-			}
-
-			"DamageSpreadOption"
-			{
-				"ControlName"	"EditablePanel"
-				"fieldName"		"DamageSpreadOption"
-				"xpos"		"10"
-				"ypos"		"170"
-				"zpos"		"60"
-				"wide"		"175"
-				"tall"		"60"
-
-				"OptionNameLabel"
-				{
-					"ControlName"	"CExLabel"
-					"fieldName"		"OptionNameLabel"
-					"font"			"HudFontSmallBold"
-					"labelText"		"#TF_Quickplay_DamageSpread"
 					"textAlignment"	"left"
 					"xpos"			"0"
 					"ypos"			"0"
