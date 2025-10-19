@@ -1100,6 +1100,7 @@ bool CTFBotSpawner::Spawn( const Vector &rawHere, EntityHandleVector_t *result )
 
 		// set name
 		engine->SetFakeClientConVarValue( newBot->edict(), "name", m_name.IsEmpty() ? "TFBot" : m_name.Get() );
+		newBot->SetPlayerName( m_name.IsEmpty() ? "TFBot" : m_name.Get() );
 
 		g_internalSpawnPoint->SetAbsOrigin( here );
 		g_internalSpawnPoint->SetLocalAngles( vec3_angle );
