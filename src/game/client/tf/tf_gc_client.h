@@ -380,7 +380,7 @@ private:
 
 	// SDK expansion points
 	void SDK_SelectItemsToSendToServer( CMsgAuthorizeServerItemRetrieval* /*out*/ pMsg, CGCClientSharedObjectCache* pSOCache );
-	void SDK_AddServerInventoryInfo( KeyValues* /*out*/ pKV, CGCClientSharedObjectCache* pSOCache );
+	void SDK_AddServerInventoryInfo( KeyValues* /*out*/ pKV, CGCClientSharedObjectCache* pSOCache, int32 iPart );
 
 	//
 	// Match logic

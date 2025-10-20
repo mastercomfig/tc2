@@ -596,16 +596,29 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		V_binarytohex( state.m_bufServerAuthToken.Base(), state.m_bufServerAuthToken.Count(), strHexToken.Base(), strHexToken.Count() ); // TODO: Fix V_binarytohex; it's O(n^2) due to repeated uses of strncat.
 
 		// Build KV and send to server
-		KeyValues *kv = new KeyValues( "sdk_inventory" );
-		kv->SetString( "msg", state.m_strMsgItems.Base() );
-		kv->SetString( "ticket", strHexToken.Base() );
-		kv->SetBool( "changed", state.m_bDidApplyLocalChanges );
+		KeyValues *kv0 = new KeyValues( "sdk_inventory_0" );
+		kv0->SetString( "msg", state.m_strMsgItems.Base() );
+		kv0->SetString( "ticket", strHexToken.Base() );
+		kv0->SetBool( "changed", state.m_bDidApplyLocalChanges );
 
 		// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
-		SDK_AddServerInventoryInfo( kv, GetSOCache( SteamUser()->GetSteamID() ) );
+		SDK_AddServerInventoryInfo( kv0, GetSOCache( SteamUser()->GetSteamID() ), 0 );
 
 		// Send to the server
-		engine->ServerCmdKeyValues( kv );
+		engine->ServerCmdKeyValues( kv0 );
+
+		// 2nd part to save space
+		KeyValues* kv1 = new KeyValues( "sdk_inventory_1" );
+		kv1->SetString( "msg", state.m_strMsgItems.Base() );
+		kv1->SetString("ticket", strHexToken.Base() );
+		kv1->SetBool( "changed", state.m_bDidApplyLocalChanges );
+
+		// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
+		SDK_AddServerInventoryInfo( kv1, GetSOCache( SteamUser()->GetSteamID() ), 1 );
+
+		// Send to the server
+		engine->ServerCmdKeyValues( kv1 );
+
 		state.m_eState = kWebapiInventoryState_SentToServer;
 		break;
 	}
@@ -884,7 +897,7 @@ void CTFGCClientSystem::SDK_SelectItemsToSendToServer( CMsgAuthorizeServerItemRe
 	}
 }
 
-void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSharedObjectCache* pSOCache )
+void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSharedObjectCache* pSOCache, int32 iPart )
 {
 	// Here is where we would tell the DS which items we have equipped, along with any other info it needs to correctly update the socache
 
@@ -898,7 +911,10 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 
 	// Extract our current loadout information and record it in the key values.
 	KeyValues *pLoadoutKV = new KeyValues("o");
-	for (int iClass = TF_FIRST_NORMAL_CLASS; iClass < TF_LAST_NORMAL_CLASS; iClass++)
+	constexpr int iPartBoundary = TF_CLASS_MEDIC;
+	const int iFirstClass = iPart == 0 ? TF_FIRST_NORMAL_CLASS : iPartBoundary;
+	const int iLastClass = iPart == 1 ? iPartBoundary : TF_LAST_NORMAL_CLASS;
+	for (int iClass = iFirstClass; iClass < iLastClass; iClass++)
 	{
 		char szClass[256];
 		V_snprintf(szClass, sizeof(szClass), "%i", iClass);

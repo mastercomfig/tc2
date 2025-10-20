@@ -639,6 +639,8 @@ private:
 		// and unchanged, since sdk games cannot mutate the user's actual inventory.
 		KeyValues* m_pKVNextRequest = nullptr;
 
+		int32 iPartsReceived = 0;
+
 		// Backoff
 		RTime32 m_rtNextRequest = 0;
 		int m_nBackoffSec = 0;

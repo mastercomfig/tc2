@@ -4154,10 +4154,11 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 	case kWebapiEquipmentState_WaitingForClientRequest:
 	{
 		Assert( state.m_pKVCurrentRequest == nullptr );
-		if ( state.m_pKVNextRequest == nullptr )
+		if ( state.m_pKVNextRequest == nullptr || state.iPartsReceived != 3 )
 			return;
 
 		V_swap( state.m_pKVCurrentRequest, state.m_pKVNextRequest );
+		state.iPartsReceived = 0;
 
 		state.m_eState = kWebapiEquipmentState_RequestInventory;
 		// fallthrough
@@ -4256,18 +4257,43 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 {
 	WebapiEquipmentState_t& state = FindOrCreateWebapiEquipmentState( steamID );
 
+	int32 iPart;
+	if ( FStrEq( pKVRequest->GetName(), "sdk_inventory_0" ) )
+	{
+		iPart = 1;
+	}
+	else if ( FStrEq( pKVRequest->GetName(), "sdk_inventory_1" ) )
+	{
+		iPart = 2;
+	}
+	else
+	{
+		return;
+	}
+
+	// TODO(mcoms): also compare the msg token in case the 2nd part comes first from a new request
 	// If they have a pending request we haven't acted on, it's now stale.
-	if ( state.m_pKVNextRequest )
+	if ( state.iPartsReceived & iPart )
 	{
 		state.m_pKVNextRequest->deleteThis();
 		state.m_pKVNextRequest = nullptr;
+		state.iPartsReceived = 0;
 	}
 
 	// Clone off their existing request for processing
-	state.m_pKVNextRequest = pKVRequest->MakeCopy();
+	if ( state.iPartsReceived )
+	{
+		state.m_pKVNextRequest->RecursiveMergeKeyValues( pKVRequest->MakeCopy() );
+	}
+	else
+	{
+		state.m_pKVNextRequest = pKVRequest->MakeCopy();
+	}
+
+	state.iPartsReceived |= iPart;
 
 	RTime32 iSecsLeft = state.m_rtNextRequest > CRTime::RTime32TimeCur() ? state.m_rtNextRequest - CRTime::RTime32TimeCur() : 0;
-	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 )
+	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 && iPart == 1 )
 	{
 		CTFPlayer* pTFPlayer = ToTFPlayer( GetPlayerBySteamID( steamID ) );
 		if ( pTFPlayer )
