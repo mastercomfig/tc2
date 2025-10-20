@@ -15,6 +15,8 @@
 #endif
 
 
+ConVar tf_mm_force_high_skill("tf_mm_force_high_skill", "0", FCVAR_REPLICATED);
+
 class CLadderMatchGroupDescription : public IMatchGroupDescription
 {
 public:
@@ -66,6 +68,9 @@ public:
 #if defined( GAME_DLL ) || defined( CLIENT_DLL )
 	bool BMatchIsHighSkill() const
 	{
+		if ( tf_mm_force_high_skill.GetBool() )
+			return true;
+
 		// Get the average rating from the match
 #ifdef GAME_DLL
 		const float flNormalizedRating = GTFGCClientSystem()->GetMatch() ? GTFGCClientSystem()->GetMatch()->m_uInitialAverageMMRating : 0.f;
