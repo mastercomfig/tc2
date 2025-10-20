@@ -595,29 +595,41 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		strHexToken.EnsureCapacity( nBufSize + 1 );
 		V_binarytohex( state.m_bufServerAuthToken.Base(), state.m_bufServerAuthToken.Count(), strHexToken.Base(), strHexToken.Count() ); // TODO: Fix V_binarytohex; it's O(n^2) due to repeated uses of strncat.
 
-		// Build KV and send to server
-		KeyValues *kv0 = new KeyValues( "sdk_inventory_0" );
-		kv0->SetString( "msg", state.m_strMsgItems.Base() );
-		kv0->SetString( "ticket", strHexToken.Base() );
-		kv0->SetBool( "changed", state.m_bDidApplyLocalChanges );
+		if ( state.m_iPart == 0 )
+		{
+			// Build KV and send to server
+			KeyValues *kv0 = new KeyValues( "sdk_inventory_0" );
+			kv0->SetString( "msg", state.m_strMsgItems.Base() );
+			kv0->SetString( "ticket", strHexToken.Base() );
+			kv0->SetBool( "changed", state.m_bDidApplyLocalChanges );
 
-		// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
-		SDK_AddServerInventoryInfo( kv0, GetSOCache( SteamUser()->GetSteamID() ), 0 );
+			// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
+			SDK_AddServerInventoryInfo( kv0, GetSOCache( SteamUser()->GetSteamID() ), 0 );
 
-		// Send to the server
-		engine->ServerCmdKeyValues( kv0 );
+			// Send to the server
+			engine->ServerCmdKeyValues( kv0 );
 
-		// 2nd part to save space
-		KeyValues* kv1 = new KeyValues( "sdk_inventory_1" );
-		kv1->SetString( "msg", state.m_strMsgItems.Base() );
-		kv1->SetString("ticket", strHexToken.Base() );
-		kv1->SetBool( "changed", state.m_bDidApplyLocalChanges );
+			state.m_flNextPartTime = gpGlobals->curtime + TICK_INTERVAL;
+			state.m_iPart++;
+			break;
+		}
+		else if ( state.m_flNextPartTime <= gpGlobals->curtime )
+		{
+			// 2nd part to save space
+			KeyValues* kv1 = new KeyValues( "sdk_inventory_1" );
+			kv1->SetString( "msg", state.m_strMsgItems.Base() );
+			kv1->SetString("ticket", strHexToken.Base() );
+			kv1->SetBool( "changed", state.m_bDidApplyLocalChanges );
 
-		// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
-		SDK_AddServerInventoryInfo( kv1, GetSOCache( SteamUser()->GetSteamID() ), 1 );
+			// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
+			SDK_AddServerInventoryInfo( kv1, GetSOCache( SteamUser()->GetSteamID() ), 1 );
 
-		// Send to the server
-		engine->ServerCmdKeyValues( kv1 );
+			// Send to the server
+			engine->ServerCmdKeyValues( kv1 );
+
+			state.m_iPart = 0;
+			state.m_flNextPartTime = -1.0f;
+		}
 
 		state.m_eState = kWebapiInventoryState_SentToServer;
 		break;
@@ -901,12 +913,12 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 {
 	// Here is where we would tell the DS which items we have equipped, along with any other info it needs to correctly update the socache
 
-	CGCClientSharedObjectTypeCache* pItemCache = pSOCache->FindTypeCache(CEconItem::k_nTypeID);
-	if (!pItemCache)
+	CGCClientSharedObjectTypeCache* pItemCache = pSOCache->FindTypeCache( CEconItem::k_nTypeID );
+	if ( !pItemCache )
 		return;
 
-	CTFPlayerInventory *pLocalInv = dynamic_cast<CTFPlayerInventory*>(TFInventoryManager()->GetLocalInventory());
-	if (pLocalInv == NULL)
+	CTFPlayerInventory *pLocalInv = dynamic_cast<CTFPlayerInventory*>( TFInventoryManager()->GetLocalInventory() );
+	if ( pLocalInv == NULL )
 		return;
 
 	// Extract our current loadout information and record it in the key values.
@@ -917,35 +929,34 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 	for (int iClass = iFirstClass; iClass < iLastClass; iClass++)
 	{
 		char szClass[256];
-		V_snprintf(szClass, sizeof(szClass), "%i", iClass);
+		V_snprintf( szClass, sizeof(szClass), "%i", iClass );
 
 		KeyValues *pClassKV = new KeyValues(szClass);
-		pLoadoutKV->AddSubKey(pClassKV);
+		pLoadoutKV->AddSubKey( pClassKV );
 
-		for (int iSlot = 0; iSlot < CLASS_LOADOUT_POSITION_COUNT; ++iSlot)
+		for ( int iSlot = 0; iSlot < CLASS_LOADOUT_POSITION_COUNT; ++iSlot )
 		{
-			CEconItemView* pItemView = TFInventoryManager()->GetItemInLoadoutForClass(iClass, iSlot);
-			if (!pItemView)
+			CEconItemView* pItemView = TFInventoryManager()->GetItemInLoadoutForClass( iClass, iSlot );
+			if ( !pItemView )
 				continue;
 
 			// todo: investigate why we get zeroes here...?
-			if (pItemView->GetID() == INVALID_ITEM_ID || pItemView->GetID() == 0)
+			if ( pItemView->GetID() == INVALID_ITEM_ID || pItemView->GetID() == 0 )
 				continue;
 
 			char szSlot[256];
-			V_snprintf(szSlot, sizeof(szSlot), "%i", iSlot);
+			V_snprintf( szSlot, sizeof(szSlot), "%i", iSlot );
 
 			KeyValues *pSlotKV = new KeyValues(szSlot);
 			pClassKV->AddSubKey(pSlotKV);
 
 			uint32 iItemIDHigh = pItemView->GetID() >> 32;
-			pSlotKV->SetInt("h", iItemIDHigh);
+			pSlotKV->SetInt( "h", iItemIDHigh );
 			uint32 iItemIDLow = pItemView->GetID() & 0xFFFFFFFF;
-			pSlotKV->SetInt("l", iItemIDLow);
+			pSlotKV->SetInt( "l", iItemIDLow );
 		}
 	}
-	pKV->AddSubKey(pLoadoutKV);
-
+	pKV->AddSubKey( pLoadoutKV );
 }
 
 //-----------------------------------------------------------------------------

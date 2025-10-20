@@ -352,6 +352,9 @@ private:
 		CUtlVector<uint8> m_bufServerAuthToken;
 		CUtlString m_strServerIdentity; // hex-encoded SHA256 of m_bufMsgItems
 
+		int m_iPart = 0;
+		float m_flNextPartTime = -1.0f;
+
 		// Did we make any changes that we need to communicate to a server?
 		bool m_bLocalChangesApplied = false;
 		bool m_bDidApplyLocalChanges = false;
