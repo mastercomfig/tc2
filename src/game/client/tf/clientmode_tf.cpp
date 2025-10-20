@@ -338,6 +338,18 @@ void CTFModeManager::LevelInit( const char *newmap )
 	{
 		cl_interpolate.SetValue(!cl_interpolate_disable.GetBool());
 	}
+
+	static ConVarRef cl_allowdownload("cl_allowdownload");
+	if (cl_allowdownload.IsValid())
+	{
+		cl_allowdownload.SetValue(0);
+	}
+
+	static ConVarRef cl_allowupload("cl_allocl_allowuploadwdownload");
+	if (cl_allowupload.IsValid())
+	{
+		cl_allowupload.SetValue(0);
+	}
 }
 
 void CTFModeManager::LevelShutdown( void )
