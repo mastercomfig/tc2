@@ -64,6 +64,7 @@ private:
 
 	CNetworkVarEmbedded( CEconItemView,	m_Item );
 	CNetworkVar( float, m_flChargeLevel );
+	CNetworkVar( bool, m_bChargeRelease );
 
 #ifdef GAME_DLL
 

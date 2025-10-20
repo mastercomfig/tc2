@@ -46,9 +46,11 @@ BEGIN_NETWORK_TABLE( CTFDroppedWeapon, DT_TFDroppedWeapon )
 #if !defined( CLIENT_DLL )
 	SendPropDataTable( SENDINFO_DT(m_Item), &REFERENCE_SEND_TABLE(DT_ScriptCreatedItem) ),
 	SendPropFloat( SENDINFO( m_flChargeLevel ) ),
+	SendPropBool( SENDINFO( m_bChargeRelease ) ),
 #else
 	RecvPropDataTable( RECVINFO_DT(m_Item), 0, &REFERENCE_RECV_TABLE(DT_ScriptCreatedItem) ),
 	RecvPropFloat( RECVINFO( m_flChargeLevel ) ),
+	RecvPropBool( RECVINFO( m_bChargeRelease ) ),
 #endif
 END_NETWORK_TABLE()
 
@@ -75,6 +77,7 @@ CTFDroppedWeapon::CTFDroppedWeapon()
 #endif // CLIENT_DLL
 
 	m_flChargeLevel.Set( 0.f );
+	m_bChargeRelease.Set( false );
 }
 
 //-----------------------------------------------------------------------------
@@ -597,8 +600,23 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 		else
 		{
 			m_flChargeLevel.Set(pMedigun->GetChargeLevel());
-			if (m_flChargeLevel > 0.f)
+			if ( m_flChargeLevel > 0.f )
 			{
+				const bool bReleasingCharge = pMedigun->IsReleasingCharge();
+				if ( pMedigun->GetMedigunType() == MEDIGUN_RESIST )
+				{
+					// if we are still on the resist medigun, then we haven't actually removed our chunk yet.
+					// stop players from cancelling out their consumption.
+					if ( bReleasingCharge )
+					{
+						pMedigun->DrainCharge();
+						m_flChargeLevel.Set( pMedigun->GetChargeLevel() );
+					}
+				}
+				else
+				{
+					m_bChargeRelease.Set( bReleasingCharge );
+				}
 				SetContextThink(&CTFDroppedWeapon::ChargeLevelDegradeThink, gpGlobals->curtime + 0.1f, "ChargeLevelDegradeThink");
 			}
 		}
@@ -639,6 +657,10 @@ void CTFDroppedWeapon::InitPickedUpWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pW
 	if ( pMedigun )
 	{
 		pMedigun->SetChargeLevel( m_flChargeLevel );
+		if ( m_bChargeRelease )
+		{
+			pMedigun->StartRelease( NULL );
+		}
 	}
 
 	CTFStickBomb *pStickBomb = dynamic_cast< CTFStickBomb* >( pWeapon );
@@ -675,7 +697,8 @@ void CTFDroppedWeapon::InitPickedUpWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pW
 //-----------------------------------------------------------------------------
 void CTFDroppedWeapon::ChargeLevelDegradeThink()
 {
-	m_flChargeLevel.Set( m_flChargeLevel - 0.01f );
+	const float flChargeLossAmount = m_bChargeRelease ? 0.025f : 0.01f;
+	m_flChargeLevel.Set( m_flChargeLevel - flChargeLossAmount );
 
 	if ( m_flChargeLevel < 0.f )
 	{

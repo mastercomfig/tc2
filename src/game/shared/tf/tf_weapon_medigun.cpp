@@ -1871,12 +1871,21 @@ void CWeaponMedigun::SecondaryAttack( void )
 		return;
 	}
 
+	StartRelease( pTFPlayerPatient );
+}
+
+void CWeaponMedigun::StartRelease( CTFPlayer *pTFPlayerPatient )
+{
+	CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+	if ( !pOwner )
+		return;
 
 	// Toggle super charge state
 	m_bChargeRelease = true;
 	m_flReleaseStartedAt = gpGlobals->curtime;
 
 #ifdef GAME_DLL
+	float flChunkSize = GetMinChargeAmount();
 	if( GetMedigunType() == MEDIGUN_RESIST )
 	{
 		// We dont want to give the user a point every time they deploy an uber with the resist medigun.

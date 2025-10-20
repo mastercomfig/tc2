@@ -79,6 +79,7 @@ public:
 	virtual void	WeaponIdle( void );
 	void			DrainCharge( void );
 	virtual void	WeaponReset( void );
+	void			StartRelease( CTFPlayer *pTFPlayerPatient );
 
 	virtual float	GetTargetRange( void );
 	virtual float	GetStickRange( void );
