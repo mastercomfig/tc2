@@ -109,7 +109,7 @@ jobs:
 
       - name: Push to Itch
         id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' && false }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
           PATH="${PATH}:${HOME}/.bin"
           ./game_clean/push.sh

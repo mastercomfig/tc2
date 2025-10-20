@@ -59,7 +59,7 @@ jobs:
 
       - name: Push to Itch
         id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' && false }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: ./game_clean/push.sh
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -85,5 +85,6 @@ jobs:
           7z a game-linux.zip game_dist/*
           gh release upload --clobber rel game-linux.zip
           rm -f game-linux.zip
+          (cd ~ && du -aBM 2>/dev/null | sort -nr | head -n 50 | more)
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}
