@@ -38,7 +38,7 @@
 extern ConVar publish_file_last_dir;
 
 // milliseconds
-ConVar tf_steam_workshop_query_timeout( "tf_steam_workshop_query_timeout", "10", FCVAR_CLIENTDLL, "Time in seconds to allow communication with the Steam Workshop server." );
+ConVar tf_steam_workshop_query_timeout( "tf_steam_workshop_query_timeout", "1", FCVAR_CLIENTDLL, "Time in seconds to allow communication with the Steam Workshop server." );
 ConVar tf_steam_workshop_page_skip( "tf_steam_workshop_page_skip", "10", FCVAR_ARCHIVE, "Number of pages to skip in the Steam Workshop dialog.", true, 1, true, 100 );
 
 //-----------------------------------------------------------------------------
@@ -1068,13 +1068,13 @@ public:
 			switch ( m_publishedFiles.m_state )
 			{
 			case CPublishedFiles::kState_PopulatingFileList:
-				ShowWaitingDialog( new CGenericWaitingDialog( this ), "#TF_SteamWorkshop_PopulatingList", true, false, 30.0f );
+				ShowWaitingDialog( new CGenericWaitingDialog( this ), "#TF_SteamWorkshop_PopulatingList", true, false, tf_steam_workshop_query_timeout.GetFloat() );
 				break;
 			case CPublishedFiles::kState_ErrorOccurred:
 				ShowMessageBox( "#TF_SteamWorkshop_Error", "#TF_SteamWorkshop_ErrorText", "#GameUI_OK" );
 				break;
 			case CPublishedFiles::kState_DeletingFile:
-				ShowWaitingDialog( new CGenericWaitingDialog( this ), "#TF_SteamWorkshop_DeletingFile", true, false, 30.0f );
+				ShowWaitingDialog( new CGenericWaitingDialog( this ), "#TF_SteamWorkshop_DeletingFile", true, false, tf_steam_workshop_query_timeout.GetFloat() );
 				break;
 			case CPublishedFiles::kState_ErrorCannotDeleteFile:
 				ShowMessageBox( "#TF_SteamWorkshop_Error", "#TF_SteamWorkshop_CannotDeleteFile", "#GameUI_OK" );
