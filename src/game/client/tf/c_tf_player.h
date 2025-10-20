@@ -278,6 +278,8 @@ public:
 	void			InitializePoseParams( void );
 	void			UpdateLookAt( void );
 
+	void			UpdateStrandedSpawn( void );
+
 	bool			IsEnemyPlayer( void );
 	void			ShowNemesisIcon( bool bShow );
 	void			ShowDuelingIcon( bool bShow );
@@ -679,6 +681,8 @@ public:
 	bool			m_bSaveMeParity;
 	bool			m_bOldSaveMeParity;
 	bool			m_bIsCoaching;
+
+	float			m_flStrandedSpawnAnchorTime;
 
 private:
 	void			UpdateTauntItem();
