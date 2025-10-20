@@ -1154,8 +1154,8 @@ static void EndUseActionSlotItem( const CCommand &args )
 		}
 	}
 
+	// UNDONE: we always have to say when we let go, because we could have been doing multiple actions while holding.
 	// tell the game server we let go of the button if this wasn't a GC item
-	if ( !g_bUsedGCItem )
 	{
 		KeyValues *kv = new KeyValues( "-use_action_slot_item_server" );
 		engine->ServerCmdKeyValues( kv );
