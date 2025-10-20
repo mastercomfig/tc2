@@ -6032,7 +6032,7 @@ bool IsValidRaidRespawnTarget( CBaseEntity *entity )
 extern ConVar tf_gamemode_payload;
 extern ConVar tf_gamemode_ctf;
 
-ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "1");
+ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "0");
 
 //-----------------------------------------------------------------------------
 // Purpose: Find a spawn point for the player.
