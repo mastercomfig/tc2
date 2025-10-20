@@ -603,7 +603,10 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 
 	// m_pMOTDShowPanel shows that the player has an unread MOTD. Pressing it pops up the MOTD.
 	m_pMOTDShowPanel = dynamic_cast<vgui::EditablePanel*>( FindChildByName("MOTD_ShowButtonPanel") );
-	m_pMOTDShowPanel->SetVisible(false);
+	if (m_pMOTDShowPanel)
+	{
+		m_pMOTDShowPanel->SetVisible( false );
+	}
 
 	vgui::EditablePanel* pHeaderContainer = dynamic_cast<vgui::EditablePanel*>( m_pMOTDPanel->FindChildByName( "MOTD_HeaderContainer" ) );
 	if ( pHeaderContainer )
