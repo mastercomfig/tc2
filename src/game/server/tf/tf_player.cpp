@@ -1603,7 +1603,7 @@ void CTFPlayer::TFPlayerThink()
 	{
 		m_iLeftGroundHealth = -1;
 
-		if ( m_iBlastJumpState && ( m_Local.m_flBrakingTime > 0.06f ) )
+		if ( m_iBlastJumpState && ( m_Local.m_flBrakingTime > TICK_INTERVAL * 3.0f ) )
 		{
 			const char *pszEvent = NULL;
 
