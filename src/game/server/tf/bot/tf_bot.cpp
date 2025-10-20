@@ -1523,6 +1523,18 @@ void CTFBot::AvoidPlayers( CUserCmd *pCmd )
 	if ( !tf_avoidteammates.GetBool() || !tf_avoidteammates_pushaway.GetBool() )
 		return;
 
+	// Not available in competitive
+	if ( TFGameRules()->IsCompetitiveGame() )
+		return;
+
+	// Don't test if the player doesn't exist or is dead.
+	if ( IsAlive() == false )
+		return;
+
+	CTFTeam *pTeam = (CTFTeam*)GetTeam();
+	if ( !pTeam )
+		return;
+
 	Vector forward, right;
 	EyeVectors( &forward, &right );
 

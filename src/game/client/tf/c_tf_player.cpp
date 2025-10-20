@@ -6371,6 +6371,10 @@ void C_TFPlayer::AvoidPlayers( CUserCmd *pCmd )
 	if ( !tf_avoidteammates.GetBool() || !tf_avoidteammates_pushaway.GetBool() )
 		return;
 
+	// Not available in competitive
+	if ( TFGameRules()->IsCompetitiveGame() )
+		return;
+
 	// Don't test if the player doesn't exist or is dead.
 	if ( IsAlive() == false )
 		return;
@@ -7878,7 +7882,8 @@ C_BaseObject *C_TFPlayer::GetObjectOfType( int iObjectType, int iObjectMode ) co
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::ShouldCollide( int collisionGroup, int contentsMask ) const
 {
-	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && tf_avoidteammates.GetBool() ) ||
+	const bool bAvoidTeammates = tf_avoidteammates.GetBool() && !TFGameRules()->IsCompetitiveGame();
+	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && bAvoidTeammates ) ||
 		collisionGroup == TFCOLLISION_GROUP_ROCKETS )
 	{
 		switch( GetTeamNumber() )
