@@ -6045,7 +6045,7 @@ bool IsValidRaidRespawnTarget( CBaseEntity *entity )
 extern ConVar tf_gamemode_payload;
 extern ConVar tf_gamemode_ctf;
 
-ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "0");
+ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "1");
 
 //-----------------------------------------------------------------------------
 // Purpose: Find a spawn point for the player.
@@ -6163,7 +6163,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 				const bool bHasNavData = areaVector->Count();
 
 				Vector vecLocation = contestedPoint->GetAbsOrigin();
-				vecLocation.z += 2.0f;
+				vecLocation.z += 18.0f;
 				const float flSize = bHasNavData ? 2048.0f : 1024.0f;
 				const float flSpace = 128.0f;
 				const int32 iCount = Floor2Int(((flSize * 2.0f) / flSpace) + 1);
@@ -6171,6 +6171,12 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 				int32 iTries = 0;
 				Vector vecTest;
 				bool bFound = false;
+
+				CNavArea* pGoalArea = NULL;
+				if ( bHasNavData )
+				{
+					pGoalArea = TheTFNavMesh()->GetNavArea(vecLocation, 500.0f);
+				}
 
 				constexpr bool bDebug = false;
 
@@ -6181,46 +6187,67 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 						int32 iGeoTries = 0;
 						while (iGeoTries++ < 7)
 						{
-							// hack to check if we have a nav mesh, and then check if there is navigatable space in this grid cell
-							if ( bHasNavData && !TheTFNavMesh()->GetNavArea(vecTest, 500.0f) )
+							bool bSuccess = true;
+
+							if ( IsTakingTriggerHurtDamageAtPoint( vecTest ) )
 							{
-								break;
+								bSuccess = false;
 							}
 
-							Vector vecEnd = vecTest;
-							vecEnd.z += 1.0f;
-
-							Ray_t ray;
-							ray.Init(vecTest, vecEnd, mins, maxs);
-
-							trace_t tr;
-							UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
-
-							if ( tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid )
+							if ( PointInRespawnRoom( NULL, vecTest ) )
 							{
-								// if we don't have nav data, we must do a LoS check with the first valid geo spot
-								if ( !bHasNavData )
+								bSuccess = false;
+							}
+
+							if ( bSuccess )
+							{
+								// hack to check if we have a nav mesh, and then check if there is navigatable space in this grid cell
+								if ( bHasNavData )
 								{
-									trace_t bounds_tr;
-									Vector vecSightCheck = vecLocation;
-									vecSightCheck.z = vecTest.z + 65.0f;
-									UTIL_TraceHull(vecTest, vecSightCheck, mins, maxs, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &bounds_tr);
-									if (bounds_tr.fraction < 1.0f || bounds_tr.allsolid || bounds_tr.startsolid)
-									{
-										// exit out, because our only valid candidate did not pass this check. we cannot continue onwards.
+									CNavArea *pTestArea = TheTFNavMesh()->GetNavArea( vecTest, 500.0f );
+									if ( !pTestArea )
 										break;
-									}
+
+									ShortestPathCost cost;
+									if ( pGoalArea && !NavAreaBuildPath( pTestArea, pGoalArea, NULL, cost ) )
+										break;
 								}
 
-								// mark that we found a valid map spot
-								bFound = true;
-								break;
-							}
+								Vector vecEnd = vecTest;
+								vecEnd.z += 1.0f;
 
-							if (!bHasNavData && iGeoTries >= 2)
-							{
-								// unfortunately, we cannot be so loose without the nav check.
-								break;
+								Ray_t ray;
+								ray.Init(vecTest, vecEnd, mins, maxs);
+
+								trace_t tr;
+								UTIL_TraceRay(ray, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr);
+
+								if ( tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid )
+								{
+									// if we don't have nav data, we must do a LoS check with the first valid geo spot
+									if ( !bHasNavData )
+									{
+										trace_t bounds_tr;
+										Vector vecSightCheck = vecLocation;
+										vecSightCheck.z = vecTest.z + 65.0f;
+										UTIL_TraceHull(vecTest, vecSightCheck, mins, maxs, MASK_PLAYERSOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &bounds_tr);
+										if (bounds_tr.fraction < 1.0f || bounds_tr.allsolid || bounds_tr.startsolid)
+										{
+											// exit out, because our only valid candidate did not pass this check. we cannot continue onwards.
+											break;
+										}
+									}
+
+									// mark that we found a valid map spot
+									bFound = true;
+									break;
+								}
+
+								if ( !bHasNavData && iGeoTries >= 2 )
+								{
+									// unfortunately, we cannot be so loose without the nav check.
+									break;
+								}
 							}
 
 							// search upwards to find a place on the map
