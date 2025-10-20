@@ -596,6 +596,7 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 		if ( bIsSuicide )
 		{
 			m_flChargeLevel = 0.f;
+			m_bChargeRelease = false;
 		}
 		else
 		{
@@ -703,6 +704,7 @@ void CTFDroppedWeapon::ChargeLevelDegradeThink()
 	if ( m_flChargeLevel < 0.f )
 	{
 		m_flChargeLevel.Set( 0.f );
+		m_bChargeRelease.Set( false );
 		SetContextThink( NULL, 0, "ChargeLevelDegradeThink" );
 		return;
 	}
