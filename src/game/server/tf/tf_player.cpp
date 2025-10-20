@@ -1118,6 +1118,7 @@ CTFPlayer::CTFPlayer()
 
 	m_flLastAction = gpGlobals->curtime;
 	m_flTimeInSpawn = 0;
+	m_flTimeInUnassigned = 0;
 
 	m_bInitTaunt = false;
 
@@ -2637,7 +2638,19 @@ void CTFPlayer::CheckForIdle( void )
 			m_flTimeInSpawn += TICK_INTERVAL;
 		}
 		else
+		{
 			m_flTimeInSpawn = 0;
+		}
+
+		// There's not much you can do in this team.
+		if ( GetTeamNumber() == TEAM_UNASSIGNED )
+		{
+			m_flTimeInUnassigned += TICK_INTERVAL;
+		}
+		else
+		{
+			m_flTimeInUnassigned = 0;
+		}
 
 		if ( TFGameRules()->IsInArenaMode() && tf_arena_use_queue.GetBool() == true )
 		{
@@ -2664,7 +2677,7 @@ void CTFPlayer::CheckForIdle( void )
 			}
 
 			m_bIsAFK = ( gpGlobals->curtime - m_flLastAction ) > flIdleTime
-			        || ( m_flTimeInSpawn > flIdleTime ); 
+			        || ( m_flTimeInSpawn > flIdleTime ) || ( m_flTimeInUnassigned > flIdleTime ); 
 		}
 		
 		if ( m_bIsAFK == true )

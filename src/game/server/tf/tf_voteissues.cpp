@@ -302,6 +302,10 @@ bool CKickIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vote_cr
 		}
 	}
 
+	// Allow kicking team unassigned
+	if ( m_hPlayerTarget->IsConnected() && m_hPlayerTarget->GetTeamNumber() == TEAM_UNASSIGNED )
+		return true;
+
 	// MvM
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
@@ -311,10 +315,6 @@ bool CKickIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vote_cr
 			nFailCode = VOTE_FAILED_CANNOT_KICK_DURING_ROUND;
 			return false;
 		}
-
-		// Allow kicking team unassigned
-		if ( m_hPlayerTarget->IsConnected() && m_hPlayerTarget->GetTeamNumber() == TEAM_UNASSIGNED )
-			return true;
 
 		// Don't allow kicking of players connected less than sv_vote_kick_min_connect_time_mvm
 		CTFPlayer *pTFVoteTarget = ToTFPlayer( m_hPlayerTarget );

@@ -1278,6 +1278,7 @@ private:
 
 	float				m_flLastAction;
 	float				m_flTimeInSpawn;
+	float				m_flTimeInUnassigned;
 
 	CUtlVector<EHANDLE>	m_hObservableEntities;
 	CUtlVector<float>	m_aBurnOtherTimes;					// vector of times this player has burned others
