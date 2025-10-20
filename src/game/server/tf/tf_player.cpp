@@ -6118,7 +6118,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	// TODO(mcoms): how to prevent out of bounds?
 	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
 	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
-	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
 		bool bPLR = tf_gamemode_payload.GetBool() && TFGameRules()->HasMultipleTrains();
