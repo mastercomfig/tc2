@@ -4154,7 +4154,8 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 	case kWebapiEquipmentState_WaitingForClientRequest:
 	{
 		Assert( state.m_pKVCurrentRequest == nullptr );
-		if ( state.m_pKVNextRequest == nullptr || state.iPartsReceived != 3 )
+		constexpr int iMaxPart = 1 << ( TF_LAST_NORMAL_CLASS - 1 ) - 1;
+		if ( state.m_pKVNextRequest == nullptr || state.iPartsReceived < iMaxPart )
 			return;
 
 		V_swap( state.m_pKVCurrentRequest, state.m_pKVNextRequest );
@@ -4257,23 +4258,28 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 {
 	WebapiEquipmentState_t& state = FindOrCreateWebapiEquipmentState( steamID );
 
-	int32 iPart;
-	if ( FStrEq( pKVRequest->GetName(), "sdk_inventory_0" ) )
-	{
-		iPart = 1;
-	}
-	else if ( FStrEq( pKVRequest->GetName(), "sdk_inventory_1" ) )
-	{
-		iPart = 2;
-	}
-	else
+	// validate.
+	if ( !pKVRequest->GetString("msg", nullptr) )
 	{
 		return;
 	}
 
-	// TODO(mcoms): also compare the msg token in case the 2nd part comes first from a new request
+	if ( !pKVRequest->GetString("ticket", nullptr) )
+	{
+		return;
+	}
+
+	const int iRequestPart = pKVRequest->GetInt("part", 0);	
+	if ( iRequestPart < TF_FIRST_NORMAL_CLASS || iRequestPart >= TF_LAST_NORMAL_CLASS )
+	{
+		return;
+	}
+	const int iPart = iRequestPart - 1;
+
+	int bit = 1 << iPart;
+
 	// If they have a pending request we haven't acted on, it's now stale.
-	if ( state.iPartsReceived & iPart )
+	if ( state.iPartsReceived != 0 && ( state.iPartsReceived & bit || V_stricmp( state.m_pKVNextRequest->GetString( "ticket" ), pKVRequest->GetString( "ticket" ) ) ) )
 	{
 		state.m_pKVNextRequest->deleteThis();
 		state.m_pKVNextRequest = nullptr;
@@ -4290,10 +4296,10 @@ void CTFGCServerSystem::ProcessPlayerInventoryRequest( CSteamID steamID, KeyValu
 		state.m_pKVNextRequest = pKVRequest->MakeCopy();
 	}
 
-	state.iPartsReceived |= iPart;
+	state.iPartsReceived |= bit;
 
 	RTime32 iSecsLeft = state.m_rtNextRequest > CRTime::RTime32TimeCur() ? state.m_rtNextRequest - CRTime::RTime32TimeCur() : 0;
-	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 && iPart == 1 )
+	if ( state.m_rtNextRequest > 0 && iSecsLeft > 5 && iPart == 0 )
 	{
 		CTFPlayer* pTFPlayer = ToTFPlayer( GetPlayerBySteamID( steamID ) );
 		if ( pTFPlayer )

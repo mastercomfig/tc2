@@ -16373,7 +16373,7 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 		{
 			BroadcastDrawLine( pTFPlayer, pKeyValues );
 		}
-		else if ( FStrEq( pszCommand, "sdk_inventory_0" ) || FStrEq( pszCommand, "sdk_inventory_1" ) )
+		else if ( FStrEq( pszCommand, "sdk_inventory" ) )
 		{
 			CSteamID steamID;
 			if ( !pTFPlayer->GetSteamID( &steamID ) )

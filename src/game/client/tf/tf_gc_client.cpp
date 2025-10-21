@@ -589,49 +589,40 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		if ( !engine->IsInGame() )
 			return;
 
+		if ( gpGlobals->curtime < state.m_flNextPartTime )
+			return;
+
 		// hex-encode the auth token for sending across the wire
 		CUtlMemory<char> strHexToken;
 		int nBufSize = 2 * state.m_bufServerAuthToken.Count();
 		strHexToken.EnsureCapacity( nBufSize + 1 );
 		V_binarytohex( state.m_bufServerAuthToken.Base(), state.m_bufServerAuthToken.Count(), strHexToken.Base(), strHexToken.Count() ); // TODO: Fix V_binarytohex; it's O(n^2) due to repeated uses of strncat.
 
-		if ( state.m_iPart == 0 )
+		if ( ++state.m_iPart < TF_LAST_NORMAL_CLASS )
 		{
+			int i = state.m_iPart;
 			// Build KV and send to server
-			KeyValues *kv0 = new KeyValues( "sdk_inventory_0" );
-			kv0->SetString( "msg", state.m_strMsgItems.Base() );
-			kv0->SetString( "ticket", strHexToken.Base() );
-			kv0->SetBool( "changed", state.m_bDidApplyLocalChanges );
+			KeyValues* kv = new KeyValues( "sdk_inventory" );
+			kv->SetString("msg", state.m_strMsgItems.Base());
+			kv->SetString("ticket", strHexToken.Base());
+			kv->SetBool("changed", state.m_bDidApplyLocalChanges);
+			kv->SetInt("part", i);
 
 			// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
-			SDK_AddServerInventoryInfo( kv0, GetSOCache( SteamUser()->GetSteamID() ), 0 );
+			SDK_AddServerInventoryInfo( kv, GetSOCache( SteamUser()->GetSteamID() ), i );
 
 			// Send to the server
-			engine->ServerCmdKeyValues( kv0 );
+			engine->ServerCmdKeyValues(kv);
 
-			state.m_flNextPartTime = gpGlobals->curtime + TICK_INTERVAL;
-			state.m_iPart++;
-			break;
+			state.m_flNextPartTime = gpGlobals->curtime + TICK_INTERVAL * 2.0f;
+
+			if ( i == TF_LAST_NORMAL_CLASS - 1 )
+			{
+				state.m_iPart = 0;
+				state.m_flNextPartTime = -1.0f;
+				state.m_eState = kWebapiInventoryState_SentToServer;
+			}
 		}
-		else if ( state.m_flNextPartTime <= gpGlobals->curtime )
-		{
-			// 2nd part to save space
-			KeyValues* kv1 = new KeyValues( "sdk_inventory_1" );
-			kv1->SetString( "msg", state.m_strMsgItems.Base() );
-			kv1->SetString("ticket", strHexToken.Base() );
-			kv1->SetBool( "changed", state.m_bDidApplyLocalChanges );
-
-			// Add any server-specific fields so it knows what to do with the given inventory items (per-mod loadout may not match the user's real tf2 loadout)
-			SDK_AddServerInventoryInfo( kv1, GetSOCache( SteamUser()->GetSteamID() ), 1 );
-
-			// Send to the server
-			engine->ServerCmdKeyValues( kv1 );
-
-			state.m_iPart = 0;
-			state.m_flNextPartTime = -1.0f;
-		}
-
-		state.m_eState = kWebapiInventoryState_SentToServer;
 		break;
 	}
 
@@ -923,10 +914,7 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 
 	// Extract our current loadout information and record it in the key values.
 	KeyValues *pLoadoutKV = new KeyValues("o");
-	constexpr int iPartBoundary = TF_CLASS_MEDIC;
-	const int iFirstClass = iPart == 0 ? TF_FIRST_NORMAL_CLASS : iPartBoundary;
-	const int iLastClass = iPart == 1 ? iPartBoundary : TF_LAST_NORMAL_CLASS;
-	for (int iClass = iFirstClass; iClass < iLastClass; iClass++)
+	for ( int iClass = iPart; iClass <= iPart; iClass++ )
 	{
 		char szClass[256];
 		V_snprintf( szClass, sizeof(szClass), "%i", iClass );
