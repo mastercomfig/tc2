@@ -12506,8 +12506,11 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	}
 #endif
 
-	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat();
-	const bool bIsCloaked = m_Shared.InCond(TF_COND_STEALTHED_USER_BUFF);
+	// the main spy cloak buff overrides the general user buff, we cannot benefit from it otherwise.
+	const bool bIsCloaked = m_Shared.InCond( TF_COND_STEALTHED );
+	const bool bCloakUserBuff = m_Shared.InCond( TF_COND_STEALTHED_USER_BUFF ) && !bIsCloaked;
+	// we can attack when decloaking if we're under the cloak user buff status, or if generally cloak allows for this while decloaking.
+	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat() || bCloakUserBuff;
 	float flCurTime = gpGlobals->curtime;
 #if defined(MCOMS_BALANCE_PACK) && 0
 	// Can use the knife earlier in decloak than gun and sapper
@@ -12517,10 +12520,11 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		flCurTime += 0.5f;
 	}
 #endif
-	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= flCurTime;
-	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? (bCanAttackStealthTime) : bCanAttackStealthTime && !bIsCloaked;
-
-	if ( !bCanAttackWhileCloaked && (!bCanAttackForCloak || m_Shared.InCond(TF_COND_STEALTHED)))
+	// either the cloak no attack time has expired, or we're under the cloak user buff which allows us to attack whenever.
+	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= flCurTime || bCloakUserBuff;
+	// if we can attack when decloaking, then just check the stealth no attack condition, otherwise, we also need to make sure we are not cloaked anymore.
+	const bool bCanAttackForCloak = bCanAttackWhenDecloaking ? bCanAttackStealthTime : bCanAttackStealthTime && !bIsCloaked;
+	if ( !bCanAttackWhileCloaked && !bCanAttackForCloak )
 	{
 		if ( !( iCanAttackFlags & TF_CAN_ATTACK_FLAG_GRAPPLINGHOOK ) )
 		{
