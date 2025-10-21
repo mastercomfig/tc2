@@ -345,7 +345,7 @@ void CTFModeManager::LevelInit( const char *newmap )
 		cl_allowdownload.SetValue(0);
 	}
 
-	static ConVarRef cl_allowupload("cl_allocl_allowuploadwdownload");
+	static ConVarRef cl_allowupload("cl_allowupload");
 	if (cl_allowupload.IsValid())
 	{
 		cl_allowupload.SetValue(0);
