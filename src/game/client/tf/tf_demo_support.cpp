@@ -150,7 +150,7 @@ void CTFDemoSupport::Update( float frametime )
 			else if ( ds_enable.GetInt() == 1 )
 			{
 				// IsCompetitiveMode got updated to include Casual. So ds_enable 1 just means "if we're in a matchmaking match"
-				if ( TFGameRules() && !TFGameRules()->IsCompetitiveMode() )
+				if ( TFGameRules() && !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() )
 					return;
 			}
 			else if ( ds_enable.GetInt() == 3 )
@@ -160,12 +160,7 @@ void CTFDemoSupport::Update( float frametime )
 			}
 			else if ( ds_enable.GetInt() == 4 )
 			{
-				if ( !TFGameRules() )
-					return;
-				// If we have mp_tournament enabled, but we're not in MvM or in casual, then we're most likely in a community competitive match.
-				const bool bIsCommunityCompetitive = mp_tournament.GetBool() && !TFGameRules()->IsMannVsMachineMode() && !TFGameRules()->IsMatchTypeCasual();
-				// If it's not competitive matchmaking AND it's not a community competitive match, then we don't auto record.
-				if ( !TFGameRules()->IsMatchTypeCompetitive() && !bIsCommunityCompetitive )
+				if ( TFGameRules() && !TFGameRules()->IsCompetitiveGame() )
 					return;
 			}
 
@@ -174,7 +169,9 @@ void CTFDemoSupport::Update( float frametime )
 				if ( !TFGameRules() )
 					return;
 
-				if ( TFGameRules()->State_Get() != GR_STATE_PREROUND && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
+				const float flRestartTime = TFGameRules()->GetRoundRestartTime();
+				const bool bInCountdown = flRestartTime > 0.0f && flRestartTime <= 10.0f;
+				if ( !bInCountdown && TFGameRules()->State_Get() != GR_STATE_PREROUND && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
 					return;
 			}
 
