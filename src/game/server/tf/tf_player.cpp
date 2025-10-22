@@ -11004,8 +11004,7 @@ void CTFPlayer::DamageEffect(float flDamage, int fDamageType)
 //-----------------------------------------------------------------------------
 bool CTFPlayer::ShouldCollide( int collisionGroup, int contentsMask ) const
 {
-	const bool bAvoidTeammates = tf_avoidteammates.GetBool() && !TFGameRules()->IsCompetitiveGame();
-	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && bAvoidTeammates ) ||
+	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && tf_avoidteammates.GetBool() ) ||
 		collisionGroup == TFCOLLISION_GROUP_ROCKETS || collisionGroup == TFCOLLISION_GROUP_ROCKET_BUT_NOT_WITH_OTHER_ROCKETS )
 	{
 		switch( GetTeamNumber() )

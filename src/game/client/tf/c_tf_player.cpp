@@ -7882,8 +7882,7 @@ C_BaseObject *C_TFPlayer::GetObjectOfType( int iObjectType, int iObjectMode ) co
 //-----------------------------------------------------------------------------
 bool C_TFPlayer::ShouldCollide( int collisionGroup, int contentsMask ) const
 {
-	const bool bAvoidTeammates = tf_avoidteammates.GetBool() && !TFGameRules()->IsCompetitiveGame();
-	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && bAvoidTeammates ) ||
+	if ( ( ( collisionGroup == COLLISION_GROUP_PLAYER_MOVEMENT ) && tf_avoidteammates.GetBool() ) ||
 		collisionGroup == TFCOLLISION_GROUP_ROCKETS )
 	{
 		switch( GetTeamNumber() )
