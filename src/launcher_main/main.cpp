@@ -86,6 +86,7 @@ static void *Launcher_GetProcAddress( void *pHandle, const char *pszName )
 #define MessageBox( x, text, title, y) SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, title, text, NULL )
 #endif
 
+static const AppId_t k_unTF2AppId = 440;
 static const AppId_t k_unSDK2013MPAppId = 243750;
 static const AppId_t k_unSDK2013DSAppId = 244310;
 
@@ -225,16 +226,23 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 		{
 			unLength = pSteamApps->GetAppInstallDir( k_unSDK2013DSAppId, pszBuf, nBufSize );
 		}
+#ifdef _WIN32
+		// on Windows, also allow MP to be used for dedicated
+		if ( unLength == 0 && pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+		{
+			unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
+		}
+#endif
 	}
 #ifdef POSIX
 	// dedicated is required on posix servers
-	else if ( pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+	else if ( pSteamApps->BIsAppInstalled( k_unTF2AppId ) )
 #else
 	// only search for MP if we didn't find dedicated (or we weren't looking)
-	if ( unLength == 0 && pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+	if ( unLength == 0 && pSteamApps->BIsAppInstalled( k_unTF2AppId ) )
 #endif
 	{
-		unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
+		unLength = pSteamApps->GetAppInstallDir( k_unTF2AppId, pszBuf, nBufSize );
 	}
 
 	if ( !bDedicated )
