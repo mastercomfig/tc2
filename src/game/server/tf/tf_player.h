@@ -506,8 +506,10 @@ public:
 	float GetTimeSinceCalledForMedic( void ) const;
 	void NoteMedicCall( void );
 
-	bool ShouldAutoRezoom( void ) { return m_bAutoRezoom; }
-	void SetAutoRezoom( bool bAutoRezoom ) { m_bAutoRezoom = bAutoRezoom; }
+	bool ShouldAutoRezoom( void ) { return m_iZoomMode == 1; }
+	void SetAutoRezoom( bool bAutoRezoom ) { m_iZoomMode = bAutoRezoom ? 1 : 0; }
+	int GetZoomMode( void ) { return m_iZoomMode; }
+	void SetZoomMode( int iZoomMode ) { m_iZoomMode = iZoomMode; }
 	bool ShouldAutoReload( void ){ return m_bAutoReload; }
 	void SetAutoReload( bool bAutoReload ) { m_bAutoReload = bAutoReload; }
 
@@ -1295,7 +1297,7 @@ private:
 	bool				m_bSpeakingConceptAsDisguisedSpy;
 
 	bool 				m_bMedigunAutoHeal;
-	bool				m_bAutoRezoom;	// does the player want to re-zoom after each shot for sniper rifles
+	int					m_iZoomMode;	// 0) toggle zoom 1) does the player want to re-zoom after each shot for sniper rifles 2) hold zoom
 	bool				m_bAutoReload;
 
 	bool				m_bForceItemRemovalOnRespawn;

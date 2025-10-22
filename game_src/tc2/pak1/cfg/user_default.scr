@@ -284,9 +284,13 @@ DESCRIPTION INFO_OPTIONS
 	
 	"cl_autorezoom"
 	{
-		"#TF_autozoom"
-		"#Tooltip_autozoom"
-		{ BOOL }
+		"#TF_zoommode"
+		"#Tooltip_zoommode"
+		{ LIST
+			"#TF_zoommode_toggle"					"0"
+			"#TF_zoommode_auto"								"1"
+			"#TF_zoommode_hold"						"2"
+		}
 		{ "1" }
 	}
 
@@ -650,8 +654,8 @@ DESCRIPTION INFO_OPTIONS
 	
 	"hud_classautokill"
 	{
-		"#TF_classautokill"
-		"#Tooltip_classautokill"
+		"#TC2_classautokill"
+		"#TC2_Tooltip_classautokill"
 		{ BOOL }
 		{ "0" }
 	}
@@ -659,7 +663,7 @@ DESCRIPTION INFO_OPTIONS
 	"tf_respawn_on_loadoutchanges"
 	{
 		"#TF_loadoutrespawn"
-		"#Tooltip_loadoutrespawn"
+		"#TC2_Tooltip_loadoutrespawn"
 		{ BOOL }
 		{ "1" }
 	}
