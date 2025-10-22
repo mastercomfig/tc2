@@ -174,7 +174,7 @@ void CTFDemoSupport::Update( float frametime )
 				if ( !TFGameRules() )
 					return;
 
-				if ( TFGameRules()->State_Get() != GR_STATE_PREROUND || TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
+				if ( TFGameRules()->State_Get() != GR_STATE_PREROUND && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
 					return;
 			}
 
