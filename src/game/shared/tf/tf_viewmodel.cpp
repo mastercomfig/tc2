@@ -61,9 +61,11 @@ CTFViewModel::~CTFViewModel()
 #ifdef CLIENT_DLL
 void DrawEconEntityAttachedModels( CBaseAnimating *pEnt, CEconEntity *pAttachedModelSource, const ClientModelRenderInfo_t *pInfo, int iMatchDisplayFlags );
 
+// UNDONE: TODO(mcoms): this is probably fixed now. will test.
+// TODO: need per character sway, add spring to this
 // TODO:  Turning this off by setting interp 0.0 instead of 0.1 for now since we have a timing bug to resolve
-ConVar cl_wpn_sway_interp( "cl_wpn_sway_interp", "0.0", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar cl_wpn_sway_scale( "cl_wpn_sway_scale", "5.0", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar cl_wpn_sway_interp( "cl_wpn_sway_interp", "0.1", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar cl_wpn_sway_scale( "cl_wpn_sway_scale", "1.34", FCVAR_CLIENTDLL | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 #endif
 
 //-----------------------------------------------------------------------------
@@ -91,6 +93,22 @@ void CTFViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& ori
 	}
 
 	if ( cl_wpn_sway_interp.GetFloat() <= 0.0f )
+	{
+		return;
+	}
+
+	// Fill in one entry
+	if ( !m_LagAnglesHistory.IsValidIndex( 0 ) )
+	{
+		// Prime the history with the current angles so we don't start from zero
+		m_vLagAngles = angles;
+		m_LagAnglesHistory.NoteChanged( gpGlobals->curtime, 0.0f, false );
+		return;
+	}
+
+	float flLastTime = 0.0f;
+	m_LagAnglesHistory.GetHistoryValue( 0, flLastTime );
+	if ( gpGlobals->curtime <= flLastTime )
 	{
 		return;
 	}
