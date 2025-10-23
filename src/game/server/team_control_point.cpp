@@ -482,12 +482,12 @@ void CTeamControlPoint::CaptureStart( int iCapTeam, int iNumCappingPlayers, int 
 		event->SetFloat( "captime", gpGlobals->curtime - flLastOwnershipChangeTime );
 
 		// safety check
-		if ( iNumCappers > 8 )
+		if ( iNumCappers > MAX_AREA_CAPPERS - 1 )
 		{
-			iNumCappers = 8;
+			iNumCappers = MAX_AREA_CAPPERS - 1;
 		}
 
-		char cappers[9];	// pCappingPlayers should be max length 8
+		char cappers[MAX_AREA_CAPPERS];	// pCappingPlayers should be max length 8
 		int i;
 		for( i = 0 ; i < iNumCappers ; i++ )
 		{
@@ -728,12 +728,12 @@ void CTeamControlPoint::SendCapString( int iCapTeam, int iNumCappingPlayers, int
 		event->SetInt( "team", iCapTeam );
 
 		// safety check
-		if ( iNumCappers > 8 )
+		if ( iNumCappers > MAX_AREA_CAPPERS - 1)
 		{
-			iNumCappers = 8;
+			iNumCappers = MAX_AREA_CAPPERS - 1;
 		}
 
-		char cappers[9];	// pCappingPlayers should be max length 8
+		char cappers[MAX_AREA_CAPPERS];	// pCappingPlayers should be max length 8
 		int i;
 		for( i = 0 ; i < iNumCappers ; i++ )
 		{

@@ -441,3 +441,12 @@
 		"wave"			"misc/boing5.wav"
 	}
 }
+
+"General.CaptureRallyPower"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"soundlevel"  	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"music/capture_stinger.mp3"
+}

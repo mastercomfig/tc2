@@ -13,6 +13,10 @@
 #include "team_objectiveresource.h"
 #include "team_control_point_master.h"
 #include "teamplayroundbased_gamerules.h"
+#ifdef TF_DLL
+#include "tf_player.h"
+#include "tf_gamerules.h"
+#endif
 
 extern ConVar mp_capstyle;
 extern ConVar mp_blockstyle;
@@ -846,6 +850,10 @@ void CTriggerAreaCapture::GetNumCappingPlayers( int team, int &numcappers, int *
 	}
 }
 
+#ifdef TF_DLL
+ConVar tf_beta_capture_rally("tf_beta_capture_rally", "0", FCVAR_NONE, "BETA: 1 - give rally bonus to capturing team, others not implemented yet.");
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -906,15 +914,26 @@ void CTriggerAreaCapture::EndCapture( int team )
 	SetNumCappers( 0 );
 
 	// tell all touching players to stop racking up capture points
-	CTeam *pTeam = GetGlobalTeam( m_nCapturingTeam );
+	CTeam *pTeam = GetGlobalTeam( m_nOwningTeam );
 	if ( pTeam )
 	{
 		for ( int i=0;i<pTeam->GetNumPlayers();i++ )
 		{
 			CBaseMultiplayerPlayer *pPlayer = ToBaseMultiplayerPlayer( pTeam->GetPlayer(i) );
 			if ( pPlayer && IsTouching( pPlayer ) )
-			{	
-				pPlayer->StopScoringEscortPoints();					
+			{
+#ifdef TF_DLL
+				if ( tf_beta_capture_rally.GetInt() == 1 )
+				{
+					CTFPlayer* pTFPlayer = ToTFPlayer( pPlayer );
+					pTFPlayer->m_Shared.AddCond( TF_COND_SPEED_BOOST, 8.0f );
+					pTFPlayer->m_Shared.AddCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 8.0f );
+					pTFPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF, 2.0f );
+					pTFPlayer->TakeHealth( 50, DMG_GENERIC );
+					pPlayer->EmitSound("General.CaptureRallyPower");
+				}
+#endif
+				pPlayer->StopScoringEscortPoints();
 			}
 		}
 	}

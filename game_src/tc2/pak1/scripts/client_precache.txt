@@ -76,6 +76,7 @@
 	"scriptsound"	"Player.Spy_UnCloakFeignDeath"
 	"scriptsound"	"Flesh.BulletImpact"
 	"scriptsound"	"General.hop_boing"
+	"scriptsound"	"General.CaptureRallyPower"
 
   "model"			"sprites/white.vmt"
 	"model"			"sprites/physbeam.vmt"
