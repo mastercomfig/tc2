@@ -170,7 +170,7 @@ void CTFDemoSupport::Update( float frametime )
 					return;
 
 				const float flRestartTime = TFGameRules()->GetRoundRestartTime();
-				const bool bInCountdown = flRestartTime > 0.0f && flRestartTime <= 10.0f;
+				const bool bInCountdown = flRestartTime > 0.0f && flRestartTime - gpGlobals->curtime <= 10.0f;
 				if ( !bInCountdown && TFGameRules()->State_Get() != GR_STATE_PREROUND && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
 					return;
 			}
