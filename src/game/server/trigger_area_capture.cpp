@@ -929,7 +929,7 @@ void CTriggerAreaCapture::EndCapture( int team )
 					pTFPlayer->m_Shared.AddCond( TF_COND_SPEED_BOOST, 8.0f );
 					pTFPlayer->m_Shared.AddCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 8.0f );
 					pTFPlayer->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF, 2.0f );
-					pTFPlayer->TakeHealth( 50, DMG_GENERIC );
+					pTFPlayer->TakeHealth( 50, DMG_GENERIC | DMG_IGNORE_MAXHEALTH );
 					pPlayer->EmitSound("General.CaptureRallyPower");
 				}
 #endif
