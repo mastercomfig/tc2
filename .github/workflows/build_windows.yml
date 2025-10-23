@@ -30,21 +30,9 @@ jobs:
           # and just bloats the cache
           # also ignore archives from releases
           path: |
-            ${{ github.workspace }}/*
-            !${{ github.workspace }}/.git
-            !${{ github.workspace }}/.github
-            !${{ github.workspace }}/.vscode
-            !${{ github.workspace }}/game_clean
-            !${{ github.workspace }}/game_dist
-            !${{ github.workspace }}/game_dist_debug
-            !${{ github.workspace }}/team-comtress-2.png
-            !${{ github.workspace }}/.gitattributes
-            !${{ github.workspace }}/.gitignore
-            !${{ github.workspace }}/CONTRIBUTING
-            !${{ github.workspace }}/LICENSE
-            !${{ github.workspace }}/README.md
-            !${{ github.workspace }}/thirdpartylegalnotices.txt
-            !${{ github.workspace }}/game-win.zip
+            ${{ github.workspace }}/game/**
+            ${{ github.workspace }}/src/**
+            ${{ github.workspace }}/build/**
           key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-mscache-${{ github.ref_name }}-
