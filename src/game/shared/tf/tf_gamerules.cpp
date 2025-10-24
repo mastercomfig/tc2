@@ -85,6 +85,7 @@
 	#include "halloween/eyeball_boss/eyeball_boss.h"
 	#include "halloween/merasmus/merasmus.h"
 	#include "halloween/merasmus/merasmus_dancer.h"
+	#include "entity_bird.h"
 	#include "tf_extra_map_entity.h"
 	#include "tf_weapon_grenade_pipebomb.h"
 	#include "tf_weapon_flaregun.h"
@@ -4617,6 +4618,7 @@ void CTFGameRules::Activate()
 
  	if ( !IsCompetitiveGame() )
  	{
+		CEntityBird::SpawnRandomBirds();
  		CExtraMapEntity::SpawnExtraModel();
  	}
 
