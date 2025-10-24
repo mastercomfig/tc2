@@ -261,8 +261,8 @@ void CTFWeaponBaseMelee::SecondaryAttack()
 		m_bInAttack2 = true;
 	}
 
-#if 0
-	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay(); // default: 0.5f
+#if 1
+	m_flNextSecondaryAttack = gpGlobals->curtime + GetNextSecondaryAttackDelay(); // default: 0.1f
 #else
 	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1f; // since this is used for the special skill, make it more responsive.
 #endif

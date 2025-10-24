@@ -2728,6 +2728,8 @@ void CTFWeaponBase::HandleInspect()
 //-----------------------------------------------------------------------------
 float CTFWeaponBase::GetNextSecondaryAttackDelay( void )
 {
+	// UNDONE: since this is used for the special skill, make it more responsive.
+#if 0
 	// This is a little gross.  The demo needs fast-cycle secondary
 	// attacks while holding down +attack2 and switching weapons
 	// in order to properly handle timely sticky detonation.
@@ -2738,6 +2740,9 @@ float CTFWeaponBase::GetNextSecondaryAttackDelay( void )
 	}
 
 	return BaseClass::GetNextSecondaryAttackDelay();
+#else
+	return 0.1f;
+#endif
 }
 
 //-----------------------------------------------------------------------------
