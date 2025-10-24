@@ -125,7 +125,9 @@ jobs:
         id: perma-rel
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
+          Remove-Item -Force game-win.zip
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
           gh release upload --clobber rel game-win.zip
+          Remove-Item -Force game-win.zip
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}
