@@ -3293,6 +3293,11 @@ void CTFPlayerShared::ConditionThink( void )
 #endif
 				}
 			}
+			else
+			{
+				// RocketPack not found, may have been unequipped, or we may be a Medic who inherited the cond
+				RemoveCond( TF_COND_ROCKETPACK );
+			}
 		}
 	}
 
