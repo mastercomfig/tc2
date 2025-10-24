@@ -563,8 +563,13 @@ enc_temp_folder
 
 notes.txt
 *.nav
+*.bsp
 
 /game/tc2/custom/*.vpk
+
+/game/tc2/demos
+
+/game/tc2/download
 
 *.privatekey.vdf
 
