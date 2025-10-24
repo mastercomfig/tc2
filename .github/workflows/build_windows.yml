@@ -30,9 +30,21 @@ jobs:
           # and just bloats the cache
           # also ignore archives from releases
           path: |
-            ${{ github.workspace }}/game/**
-            ${{ github.workspace }}/src/**
-            ${{ github.workspace }}/build/**
+            ${{ github.workspace }}
+            !${{ github.workspace }}/.git/**
+            !${{ github.workspace }}/.github/**
+            !${{ github.workspace }}/.vscode/**
+            !${{ github.workspace }}/game_clean/**
+            !${{ github.workspace }}/game_dist/**
+            !${{ github.workspace }}/game_dist_debug/**
+            !${{ github.workspace }}/team-comtress-2.png
+            !${{ github.workspace }}/.gitattributes
+            !${{ github.workspace }}/.gitignore
+            !${{ github.workspace }}/CONTRIBUTING
+            !${{ github.workspace }}/LICENSE
+            !${{ github.workspace }}/README.md
+            !${{ github.workspace }}/thirdpartylegalnotices.txt
+            !${{ github.workspace }}/game-win.zip
           key: ${{ runner.os }}-mscache-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-mscache-${{ github.ref_name }}-
@@ -113,6 +125,7 @@ jobs:
         id: perma-rel
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
+          rm -f ./game-win.zip
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
           gh release upload --clobber rel game-win.zip
         env:
