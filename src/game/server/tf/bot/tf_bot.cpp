@@ -2343,9 +2343,17 @@ float CTFBot::GetTimeLeftToCapture( void ) const
 			return TFGameRules()->GetKothTeamTimer( GetEnemyTeam( GetTeamNumber() ) )->GetTimeRemaining();
 		}
 	}
-	else if ( TFGameRules()->GetActiveRoundTimer() )
+	else
 	{
-		return TFGameRules()->GetActiveRoundTimer()->GetTimeRemaining();
+		// if we aren't in a supported gamemode, we return FLT_MAX to indicate that
+		if ( TFGameRules()->GetGameType() != TF_GAMETYPE_ESCORT && TFGameRules()->GetGameType() != TF_GAMETYPE_CP )
+		{
+			return FLT_MAX;
+		}
+		if ( TFGameRules()->GetActiveRoundTimer() )
+		{
+			return TFGameRules()->GetActiveRoundTimer()->GetTimeRemaining();
+		}
 	}
 
 	return 0.0f;
