@@ -1928,15 +1928,15 @@ void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /
 	const char *shootsound = GetShootSound( sound_type );
 	if ( !shootsound || !shootsound[0] )
 	{
-		DevMsg("No shoot sound for weapon %s\n", GetClassname());
+		DevMsg( "No shoot sound %d for weapon %s\n", sound_type, GetClassname() );
 		return;
 	}
 	
 	CSoundParameters params;
 	
-	if ( !GetParametersForSound(shootsound, params, NULL) )
+	if ( !GetParametersForSound( shootsound, params, NULL ) )
 	{
-		DevMsg("No parameters for shoot sound %s\n", shootsound);
+		DevMsg( "No parameters for shoot sound %s\n", shootsound );
 		return;
 	}
 
