@@ -1237,6 +1237,13 @@ void CObjectTeleporter::TeleporterThink( void )
 			{
 				m_flCurrentRechargeDuration *= pow(0.9f, iUpgradeLevel - iBaseUpgradeLevel);
 			}
+
+			if ( !m_bWasMapPlaced )
+			{
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBuilder(), m_flCurrentRechargeDuration, mult_teleporter_recharge_rate );
+			}
+
+			m_flRechargeTime = gpGlobals->curtime + m_flCurrentRechargeDuration;
 			m_flMyNextThink = gpGlobals->curtime + m_flCurrentRechargeDuration;
 		}
 		break;
