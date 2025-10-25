@@ -35,6 +35,7 @@
 #include "tf_weapon_rocketpack.h"
 #include "tf_weapon_bonesaw.h"
 #include "tf_weapon_slap.h"
+#include "tf_controls.h"
 
 #include <vgui_controls/ImagePanel.h>
 
@@ -448,8 +449,32 @@ void CHudItemEffectMeter::PerformLayout()
 		{
 			int xPos = 0, yPos = 0;
 			GetPos( xPos, yPos );
-			SetPos( xPos - m_iXOffset, yPos );
+			int xOffset;
+			int yOffset;
+			if ( ConstrainAspect( xOffset, yOffset ) )
+			{
+				int xNew, yNew;
+				OffsetAspect( xPos - m_iXOffset, yPos, xOffset, yOffset, xNew, yNew );
+				SetPos( xNew, yNew );
+			}
+			else
+			{
+				SetPos( xPos - m_iXOffset, yPos );
+			}
+			return;
 		}
+	}
+
+	// fall through to default layout
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
 	}
 }
 

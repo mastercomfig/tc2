@@ -120,6 +120,17 @@ void CDisguiseStatus::ApplySchemeSettings( vgui::IScheme *scheme )
 	m_pDisguiseNameLabel = dynamic_cast<Label *>(FindChildByName("DisguiseNameLabel"));
 	m_pWeaponNameLabel = dynamic_cast<Label *>(FindChildByName("WeaponNameLabel"));
 
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
+	}
+
 	SetPaintBackgroundEnabled( false );
 
 	HideStatus();

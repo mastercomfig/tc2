@@ -2528,3 +2528,22 @@ bool ConstrainAspect( int& nXOffset, int& nYOffset )
 	return false;
 }
 
+void OffsetAspect( int x, int y, int xOffset, int yOffset, int& outX, int& outY )
+{
+	int w, h;
+	vgui::surface()->GetScreenSize(w, h);
+	// TODO(mcoms): a bit of a hack. also needs aspect ratio scaling. but it will do for now.
+	int startOffset = 0;
+	int endOffset = 0;
+	if (x > w / 2)
+	{
+		endOffset = w - x;
+	}
+	else
+	{
+		startOffset = x;
+	}
+	outX = clamp( x, xOffset + startOffset, w - endOffset - xOffset );
+	outY = clamp( y, yOffset, h - yOffset );
+}
+

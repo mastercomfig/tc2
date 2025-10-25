@@ -19,6 +19,7 @@
 #include "tf_weaponbase.h"
 #include "tf_gamerules.h"
 #include "tf_logic_halloween_2014.h"
+#include "tf_controls.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -71,6 +72,17 @@ void CHudDemomanChargeMeter::ApplySchemeSettings( IScheme *pScheme )
 	LoadControlSettings( "resource/UI/HudDemomanCharge.res" );
 
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
+	}
 }
 
 //-----------------------------------------------------------------------------

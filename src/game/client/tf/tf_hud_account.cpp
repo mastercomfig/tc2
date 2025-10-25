@@ -22,6 +22,7 @@
 #include "tf_logic_halloween_2014.h"
 #include "tf_weapon_invis.h"
 #include <vgui_controls/AnimationController.h>
+#include "tf_controls.h"
 
 #include "c_tf_objective_resource.h"
 
@@ -303,6 +304,22 @@ public:
 			return false;
 
 		return CHudElement::ShouldDraw();
+	}
+
+	void ApplySchemeSettings(IScheme* pScheme) OVERRIDE
+	{
+		BaseClass::ApplySchemeSettings(pScheme);
+
+		int xOffset;
+		int yOffset;
+		if ( ConstrainAspect( xOffset, yOffset ) )
+		{
+			int x, y;
+			GetPos( x, y );
+			int xNew, yNew;
+			OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+			SetPos( xNew, yNew );
+		}
 	}
 };
 

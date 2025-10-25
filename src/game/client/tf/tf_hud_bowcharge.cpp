@@ -20,6 +20,7 @@
 #include "c_tf_projectile_arrow.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "tf_controls.h"
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -72,6 +73,17 @@ void CHudBowChargeMeter::ApplySchemeSettings( IScheme *pScheme )
 	LoadControlSettings( "resource/UI/HudBowCharge.res" );
 
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
+	}
 }
 
 //-----------------------------------------------------------------------------

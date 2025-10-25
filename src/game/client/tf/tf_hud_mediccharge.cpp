@@ -20,6 +20,7 @@
 #include <vgui_controls/AnimationController.h>
 #include "tf_imagepanel.h"
 #include "vgui_controls/Label.h"
+#include "tf_controls.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -139,6 +140,17 @@ void CHudMedicChargeMeter::ApplySchemeSettings( IScheme *pScheme )
 	UpdateKnownChargeType( true );
 
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
+	}
 }
 
 //-----------------------------------------------------------------------------

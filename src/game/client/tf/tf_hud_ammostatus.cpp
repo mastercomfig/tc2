@@ -94,22 +94,11 @@ void CTFHudWeaponAmmo::ApplySchemeSettings( IScheme *pScheme )
 	int yOffset;
 	if ( ConstrainAspect( xOffset, yOffset ) )
 	{
-		// TODO(mcoms): could be cleaner
-		int w, h;
-		vgui::surface()->GetScreenSize(w, h);
 		int x, y;
 		GetPos( x, y );
-		int startOffset = 0;
-		int endOffset = 0;
-		if ( x > w / 2 )
-		{
-			endOffset = w - x;
-		}
-		else
-		{
-			startOffset = x;
-		}
-		SetPos( clamp( x, xOffset + startOffset, w - endOffset - xOffset ), clamp( y, yOffset, h - yOffset ) );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
 	}
 
 	m_pInClip = dynamic_cast<CExLabel *>( FindChildByName( "AmmoInClip" ) );

@@ -19,6 +19,7 @@
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/ProgressBar.h>
 #include <vgui_controls/Label.h>
+#include "tf_controls.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -94,6 +95,17 @@ void CHudDemomanPipes::ApplySchemeSettings( IScheme *pScheme )
 	LoadControlSettings( "resource/UI/HudDemomanPipes.res" );
 
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		int xNew, yNew;
+		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
+		SetPos( xNew, yNew );
+	}
 }
 
 //-----------------------------------------------------------------------------
