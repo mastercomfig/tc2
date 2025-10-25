@@ -31,6 +31,8 @@
 #include "filesystem.h"
 #include "hud_controlpointicons.h"
 
+bool g_bUsingCustomHud = false;
+
 using namespace vgui;
 
 wchar_t* LocalizeNumberWithToken( const char* pszLocToken, int nValue )
@@ -343,6 +345,11 @@ void PositionTooltip( const tooltippos_t ePreferredTooltipPosition,
 	
 	// Go with the best we've got
 	pToolTipPanel->SetPos( arResults[ eBestType ].nX, arResults[ eBestType ].nY );
+}
+
+bool IsUsingCustomHud()
+{
+	return g_bUsingCustomHud;
 }
 
 DECLARE_BUILD_FACTORY( CExCheckButton );
@@ -2470,6 +2477,8 @@ void CreateSwoop( int nX, int nY, int nWide, int nTall, float flDelay, bool bDow
 	pSwoop->MakeReadyForUse();
 	pSwoop->SetBounds( nX, nY, nWide, nTall );
 }
+
+ConVar cl_customhud_switch( "cl_customhud_switch", "0", FCVAR_HIDDEN | FCVAR_ARCHIVE );
 
 void HudAspectChanged( IConVar* var, const char* pOldString, float flOldValue )
 {

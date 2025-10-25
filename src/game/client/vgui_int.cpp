@@ -22,6 +22,7 @@
 #include <vgui_controls/Panel.h>
 #include <KeyValues.h>
 #include "filesystem.h"
+#include "tf_controls.h"
 #include "matsys_controls/matsyscontrols.h"
 
 #ifdef SIXENSE
@@ -187,6 +188,23 @@ bool VGui_Startup( CreateInterfaceFn appSystemFactory )
 	{
 		return false;
 	}
+
+	static ConVarRef cl_customhud_switch("cl_customhud_switch");
+	const bool bUsingCustomHud = IsUsingCustomHud();
+	if ( bUsingCustomHud != cl_customhud_switch.GetBool() )
+	{
+		static ConVarRef cl_hud_aspect( "cl_hud_aspect" );
+		cl_customhud_switch.SetValue( bUsingCustomHud );
+		if ( bUsingCustomHud )
+		{
+			cl_hud_aspect.SetValue( 0 );
+		}
+		else
+		{
+			cl_hud_aspect.SetValue( 1 );
+		}
+	}
+
 	return true;
 }
 

@@ -535,20 +535,20 @@ void ClientModeTFNormal::Init()
 	m_bPendingRichPresenceUpdate = true;
 
 	// client defaults for privacy settings (so map command is Friends Only by default)
-	ConVarRef sv_friends_only("sv_friends_only");
+	static ConVarRef sv_friends_only("sv_friends_only");
 	if (sv_friends_only.IsValid())
 	{
 		sv_friends_only.SetValue(true);
 	}
 
-	ConVarRef sv_allow_server_adverisement_to_master_server("sv_allow_server_adverisement_to_master_server");
+	static ConVarRef sv_allow_server_adverisement_to_master_server("sv_allow_server_adverisement_to_master_server");
 	if (sv_allow_server_adverisement_to_master_server.IsValid())
 	{
 		sv_allow_server_adverisement_to_master_server.SetValue(false);
 	}
 
 	// Boost texture streaming time
-	ConVarRef mat_lodin_time("mat_lodin_time");
+	static ConVarRef mat_lodin_time("mat_lodin_time");
 	if (mat_lodin_time.IsValid())
 	{
 		mat_lodin_time.SetValue(0.4f);
@@ -566,6 +566,14 @@ void ClientModeTFNormal::Shutdown()
 		RemoveFilesInPath( "download/user_custom" );
 		RemoveFilesInPath( "sound/temp" );
 	}
+
+	static ConVarRef cl_customhud_switch("cl_customhud_switch");
+	cl_customhud_switch.SetValue( IsUsingCustomHud() );
+	// TODO(mcoms): there must be a better way to do this. but. no time.
+	// need to find a way to write out that we're using AFTER config.cfg loads but before the main menu loads and before host_writeconfig shutdown.
+	// init is too early, shutdown is too late.
+	// so instead, we do this workaround where we force another writeconfig here at shutdown, and just deal with the fact that cl_customhud_switch will be wrong for the session.
+	engine->ClientCmd_Unrestricted("host_writeconfig");
 
 	DestroyStatsSummaryPanel();
 }

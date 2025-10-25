@@ -11,6 +11,7 @@
 #include "vgui/IVGui.h"
 #include "tier2/fileutils.h"
 #include "icommandline.h"
+#include "tf_controls.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -45,6 +46,7 @@ void CheckCustomModSearchPaths()
 			// mod must declare this ConVar
 			if ( tf_ui_version.GetInt() == versionKV->GetInt( "ui_version" ) )
 			{
+				g_bUsingCustomHud = true;
 				continue;
 			}
 
