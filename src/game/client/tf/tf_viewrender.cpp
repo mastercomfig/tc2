@@ -54,6 +54,7 @@ ConVarFlags s_flaggedConVars[] =
 	{ "mat_softwarelighting", FCVAR_CHEAT, "0" },
 	{ "r_dopixelvisibility", FCVAR_CHEAT, "1" },
 	{ "r_shader_srgb", FCVAR_CHEAT, "0" },
+	{ "mod_lock_mdls_on_load", FCVAR_CHEAT, NULL },
 	{ "mat_dxlevel", FCVAR_SPONLY | FCVAR_NOT_CONNECTED, NULL },
 };
 
