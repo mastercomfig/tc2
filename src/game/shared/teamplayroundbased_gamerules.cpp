@@ -88,7 +88,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	RecvPropBool( RECVINFO( m_bInWaitingForPlayers ) ),
 	RecvPropInt( RECVINFO( m_iWinningTeam ) ),
 	RecvPropInt( RECVINFO( m_bInOvertime ) ),
-	RecvPropInt( RECVINFO( m_bInSetup ) ),
+	RecvPropBool( RECVINFO( m_bInSetup ) ),
+	RecvPropInt( RECVINFO( m_iSetupTime ) ),
 	RecvPropInt( RECVINFO( m_bSwitchedTeamsThisRound ) ),
 	RecvPropBool( RECVINFO( m_bAwaitingReadyRestart ) ),
 	RecvPropTime( RECVINFO( m_flRestartRoundTime ) ),
@@ -109,6 +110,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	SendPropInt( SENDINFO( m_iWinningTeam ), 3, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO( m_bInOvertime ) ),
 	SendPropBool( SENDINFO( m_bInSetup ) ),
+	SendPropInt( SENDINFO( m_iSetupTime ) ),
 	SendPropBool( SENDINFO( m_bSwitchedTeamsThisRound ) ),
 	SendPropBool( SENDINFO( m_bAwaitingReadyRestart ) ),
 	SendPropTime( SENDINFO( m_flRestartRoundTime ) ),
@@ -442,6 +444,7 @@ CTeamplayRoundBasedRules::CTeamplayRoundBasedRules( void )
 	m_iRoundState.Set( GR_STATE_INIT );
 	m_bInOvertime.Set( false );
 	m_bInSetup.Set( false );
+	m_iSetupTime.Set( 0 );
 	m_bSwitchedTeamsThisRound.Set( false );
 	m_iWinningTeam.Set( TEAM_UNASSIGNED );
 	m_iWinReason.Set( WINREASON_NONE );
@@ -928,6 +931,10 @@ void CTeamplayRoundBasedRules::SetSetup( bool bSetup )
 		return;
 
 	m_bInSetup = bSetup;
+	if ( bSetup )
+	{
+		m_iSetupTime = GetActiveRoundTimer() ? GetActiveRoundTimer()->GetSetupTimeLength() : 0.0f;
+	}
 }
 
 //-----------------------------------------------------------------------------

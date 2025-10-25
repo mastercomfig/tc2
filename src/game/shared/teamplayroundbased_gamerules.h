@@ -203,6 +203,7 @@ public:
 	void SetOvertime( bool bOvertime );
 
 	bool InSetup( void ){ return m_bInSetup; }
+	int GetSetupTime( void ) { return m_iSetupTime; }
 
 #ifdef GAME_DLL
 	virtual void BalanceTeams( bool bRequireSwitcheesToBeDead );
@@ -591,6 +592,7 @@ protected:
 	CNetworkVar( gamerules_roundstate_t, m_iRoundState );
 	CNetworkVar( bool, m_bInOvertime ); // Are we currently in overtime?
 	CNetworkVar( bool, m_bInSetup ); // Are we currently in setup?
+	CNetworkVar( int, m_iSetupTime ); // The full setup time for this round
 	CNetworkVar( bool, m_bSwitchedTeamsThisRound );
 
 protected:

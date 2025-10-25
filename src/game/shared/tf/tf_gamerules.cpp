@@ -13639,11 +13639,13 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 					float flFastTime = IsCompetitiveGame() ? 35.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
 					float flSlowTime = IsCompetitiveGame() ? 75.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
 
-					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
+					float flCombatStartTime = m_flRoundStartTime + GetSetupTime();
+
+					if ( ( gpGlobals->curtime - flCombatStartTime ) <= flFastTime )
 					{
 						BroadcastSound( 255, "Announcer.AM_FirstBloodFast" );
 					}
-					else if ( ( gpGlobals->curtime - m_flRoundStartTime ) >= flSlowTime )
+					else if ( ( gpGlobals->curtime - flCombatStartTime ) >= flSlowTime )
 					{
 						BroadcastSound( 255, "Announcer.AM_FirstBloodFinally" );
 					}
