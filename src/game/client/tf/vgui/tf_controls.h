@@ -46,6 +46,7 @@ void DrawFilledColoredCircleSegment( float flXPos, float flYPos, float flRadiusO
 void DrawColoredCircle( float flXPos, float flYPos, float flRadius, const Color& color );
 void BrigthenColor( Color& color, int nBrigthenAmount );
 void CreateSwoop( int nX, int nY, int nWide, int nTall, float flDelay, bool bDown );
+bool ConstrainAspect( int& nXOffset, int& nYOffset );
 
 enum tooltippos_t
 {

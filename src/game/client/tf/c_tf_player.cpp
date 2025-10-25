@@ -114,6 +114,7 @@
 #include "econ_paintkit.h"
 #include "soundstartparams.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
+#include "tf_playermodelpanel.h"
 
 
 #if defined( REPLAY_ENABLED )
@@ -1702,6 +1703,7 @@ public:
 	virtual bool		Init( IMaterial *pMaterial, KeyValues* pKeyValues ) OVERRIDE;
 	virtual void		OnBind( C_BaseEntity *pBaseEntity ) OVERRIDE;
 	virtual void		OnBindNotEntity( void *pRenderable ) OVERRIDE;
+	void ApplyParams( int iTeam, float fInvis );
 
 private:
 	IMaterialVar		*m_pCloakColorTint;
@@ -1738,9 +1740,10 @@ ConVar tf_teammate_max_invis( "tf_teammate_max_invis", "0.95", FCVAR_CHEAT | FCV
 //-----------------------------------------------------------------------------
 void CSpyInvisProxy::OnBind( C_BaseEntity *pBaseEntity )
 {
-	if( !m_pPercentInvisible || !m_pCloakColorTint )
+	if ( !m_pPercentInvisible || !m_pCloakColorTint )
 		return;
 
+	int iTeam = 0;
 	float fInvis = 0.0f;
 
 	C_TFPlayer *pPlayer = ToTFPlayer( pBaseEntity );
@@ -1752,46 +1755,56 @@ void CSpyInvisProxy::OnBind( C_BaseEntity *pBaseEntity )
 		C_TFRagdoll *pRagdoll = dynamic_cast< C_TFRagdoll* >( pBaseEntity );
 		if ( pRagdoll && pRagdoll->IsCloaked() )
 		{
+			iTeam = pRagdoll->GetTeamNumber();
 			fInvis = pRagdoll->GetPercentInvisible();
 		}
 		else if ( pOwningPlayer )
 		{
+			iTeam = pOwningPlayer->GetTeamNumber();
 			// mimic the owner's invisibility
 			fInvis = !pOwningPlayer->GetCompetitiveVisibility() ? 1.0f : pOwningPlayer->GetEffectiveInvisibilityLevel();
 		}
 	}
 	else
 	{
-		float r = 1.0f, g = 1.0f, b = 1.0f;
+		iTeam = pPlayer->GetTeamNumber();
 		fInvis = !pPlayer->GetCompetitiveVisibility() ? 1.0f : pPlayer->GetEffectiveInvisibilityLevel();
-
-		switch( pPlayer->GetTeamNumber() )
-		{
-		case TF_TEAM_RED:
-			r = 1.0; g = 0.5; b = 0.4;
-			break;
-
-		case TF_TEAM_BLUE:
-		default:
-			r = 0.4; g = 0.5; b = 1.0;
-			break;
-		}
-
-		m_pCloakColorTint->SetVecValue( r, g, b );
 	}
 
-	m_pPercentInvisible->SetFloatValue( fInvis );
+	ApplyParams( iTeam, fInvis );
 }
 
 void CSpyInvisProxy::OnBindNotEntity( void *pRenderable )
 {
-	CBaseInvisMaterialProxy::OnBindNotEntity( pRenderable );
+	if ( !m_pPercentInvisible || !m_pCloakColorTint )
+		return;
 
-	if ( m_pCloakColorTint )
-	{
-		m_pCloakColorTint->SetVecValue( 1.f, 1.f, 1.f );
-	}
+	float fInvis = 0.0f;
+	int iTeam = 0;
+	CTFPlayerModelPanel::GetPlayerModelRenderInfo( fInvis, iTeam );
+
+	ApplyParams( iTeam, fInvis );
 }
+
+void CSpyInvisProxy::ApplyParams( int iTeam, float fInvis )
+{
+	float r = 1.0f, g = 1.0f, b = 1.0f;
+
+	switch( iTeam )
+	{
+	case TF_TEAM_RED:
+		r = 1.0f; g = 0.5f; b = 0.4f;
+		break;
+
+	case TF_TEAM_BLUE:
+		r = 0.4f; g = 0.5f; b = 1.0f;
+		break;
+	}
+
+	m_pCloakColorTint->SetVecValue( r, g, b );
+	m_pPercentInvisible->SetFloatValue( fInvis );
+}
+
 
 EXPOSE_INTERFACE( CSpyInvisProxy, IMaterialProxy, "spy_invis" IMATERIAL_PROXY_INTERFACE_VERSION );
 

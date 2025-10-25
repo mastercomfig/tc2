@@ -2470,3 +2470,61 @@ void CreateSwoop( int nX, int nY, int nWide, int nTall, float flDelay, bool bDow
 	pSwoop->MakeReadyForUse();
 	pSwoop->SetBounds( nX, nY, nWide, nTall );
 }
+
+void HudAspectChanged( IConVar* var, const char* pOldString, float flOldValue )
+{
+	engine->ClientCmd_Unrestricted("hud_reloadscheme");
+}
+ConVar cl_hud_aspect( "cl_hud_aspect", "1", FCVAR_ARCHIVE, "Force the aspect ratio of the hud. 0 to disable.", HudAspectChanged );
+
+bool ConstrainAspect( int& nXOffset, int& nYOffset )
+{
+	nXOffset = 0;
+	nYOffset = 0;
+
+	int iHudAspect = cl_hud_aspect.GetInt();
+
+	if ( iHudAspect == 0 )
+	{
+		return false;
+	}
+
+	float flDefaultAspect = 4.0f / 3.0f;
+
+	switch ( iHudAspect )
+	{
+		case 2:
+			flDefaultAspect = 1.0f;
+			break;
+		case 3:
+			flDefaultAspect = 16.0f / 9.0f;
+			break;
+		case 4:
+			flDefaultAspect = 16.0f / 10.0f;
+			break;
+	}
+
+	int w, h;
+	vgui::surface()->GetScreenSize(w, h);
+
+	Assert(w != 0 && h != 0);
+
+	float flAspectRatio = ((float)w) / ((float)h);
+
+	if ( flAspectRatio > flDefaultAspect )
+	{
+		if (w > h)
+		{
+			// if width is greater than height, then height is fixed and we base width off of height.
+			nXOffset = RoundFloatToInt((w - (h * flDefaultAspect)) * 0.5f);
+			return true;
+		}
+		else
+		{
+			// TODO(mcoms): support for tall/square monitors?
+		}
+	}
+
+	return false;
+}
+

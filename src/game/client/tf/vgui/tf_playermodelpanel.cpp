@@ -253,6 +253,7 @@ void CTFPlayerModelPanel::SetToPlayerClass( int iClass, bool bForceRefresh /*= f
 	SetTeam( TF_TEAM_RED );
 
 	m_nBody = 0;
+	m_flInvis = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -1133,6 +1134,7 @@ void CTFPlayerModelPanel::ClearCarriedItems( void )
 	RemoveAdditionalModels();
 	m_ItemsToCarry.PurgeAndDeleteElements();
 	m_pHeldItem = NULL;
+	m_flInvis = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -1381,6 +1383,10 @@ void CTFPlayerModelPanel::SetMDL(const char* pMDLName, void* pProxyData)
 //-----------------------------------------------------------------------------
 void CTFPlayerModelPanel::PrePaint3D( IMatRenderContext *pRenderContext )
 {
+	s_flInvis = m_flInvis;
+	s_iTeam = m_iTeam;
+	s_bIsRendering = true;
+
 	if ( g_PlayerPreviewEffect.GetEffect() == C_TFPlayerPreviewEffect::PREVIEW_EFFECT_UBER )
 	{
 		modelrender->ForcedMaterialOverride( *g_PlayerPreviewEffect.GetInvulnMaterialRef() );
@@ -1434,6 +1440,10 @@ void CTFPlayerModelPanel::PostPaint3D( IMatRenderContext *pRenderContext )
 	}
 
 	BaseClass::PostPaint3D( pRenderContext );
+
+	s_bIsRendering = false;
+	s_flInvis = 0.0f;
+	s_iTeam = TF_TEAM_RED;
 }
 
 //-----------------------------------------------------------------------------
@@ -2020,6 +2030,23 @@ void CTFPlayerModelPanel::InvalidateParticleEffects()
 			SafeDeleteParticleData( &m_aParticleSystems[i] );
 		}
 	}
+}
+
+bool CTFPlayerModelPanel::s_bIsRendering = false;
+float CTFPlayerModelPanel::s_flInvis = 0.0f;
+int CTFPlayerModelPanel::s_iTeam = TF_TEAM_RED;
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFPlayerModelPanel::GetPlayerModelRenderInfo(float& flInvis, int& iTeam)
+{
+	if ( s_bIsRendering )
+	{
+		flInvis = s_flInvis;
+		iTeam = s_iTeam;
+	}
+	return s_bIsRendering;
 }
 
 //-----------------------------------------------------------------------------

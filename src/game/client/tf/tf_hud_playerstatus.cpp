@@ -466,6 +466,16 @@ void CTFHudPlayerClass::UpdateModelPanel()
 		m_pPlayerModelPanel->ClearCarriedItems();
 		m_pPlayerModelPanel->SetToPlayerClass( nClass );
 		m_pPlayerModelPanel->SetTeam( nTeam );
+		float flInvis = 0.0f;
+		if ( m_nCloakLevel == 2 )
+		{
+			flInvis = 0.8f;
+		}
+		else if ( m_nCloakLevel == 1 )
+		{
+			flInvis = 0.4f;
+		}
+		m_pPlayerModelPanel->SetInvis( flInvis );
 
 		if ( pWeapon )
 		{
@@ -1058,6 +1068,29 @@ CTFHudPlayerStatus::CTFHudPlayerStatus( const char *pElementName ) : CHudElement
 void CTFHudPlayerStatus::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
+
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		// TODO(mcoms): could be cleaner
+		int w, h;
+		vgui::surface()->GetScreenSize(w, h);
+		int x, y;
+		GetPos( x, y );
+		// TODO(mcoms): a bit of a hack. also needs aspect ratio scaling. but it will do for now.
+		int startOffset = 0;
+		int endOffset = 0;
+		if (x > w / 2)
+		{
+			endOffset = w - x;
+		}
+		else
+		{
+			startOffset = x;
+		}
+		SetPos( clamp( x, xOffset + startOffset, w - endOffset - xOffset ), clamp( y, yOffset, h - yOffset ) );
+	}
 
 	// HACK: Work around the scheme application order failing
 	// to reload the player class hud element's scheme in minmode.

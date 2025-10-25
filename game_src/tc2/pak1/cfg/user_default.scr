@@ -355,6 +355,20 @@ DESCRIPTION INFO_OPTIONS
 		{ BOOL }
 		{ "0" }
 	}
+
+	"cl_hud_aspect"
+	{
+		"#TF_HUDAspect"
+		"#Tooltip_HUDAspect"
+		{ LIST
+			"#TF_hudaspect_default"					"1"
+			"#TF_hudaspect_square"					"2"
+			"#TF_hudaspect_16x9"					"3"
+			"#TF_hudaspect_16x10"					"4"
+			"#TF_hudaspect_full"					"0"
+		}
+		{ "1" }
+	}
 	
 	"tf_colorblindassist"
 	{

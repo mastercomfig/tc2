@@ -836,8 +836,9 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 		// TODO(mcoms): robot
 		//bool bIsRobot = RandomInt(1, 100) <= 1;
 		bool bIsRobot = false;
-
-		m_pCharacterModelPanel->SetTeam(bIsRobot || RandomInt(0, 1) ? TF_TEAM_BLUE : TF_TEAM_RED);
+		int iTeam = bIsRobot || RandomInt(0, 1) ? TF_TEAM_BLUE : TF_TEAM_RED;
+		// SetTeam has to be here so AddCarriedItem has the right team
+		m_pCharacterModelPanel->SetTeam( iTeam );
 
 		if ( !bIsRobot )
 		{
@@ -904,7 +905,10 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 			}
 		}
 
-		m_pCharacterModelPanel->SetToPlayerClass(iClass, false, bIsRobot ? g_szBotModels[iClass] : NULL);
+		// SetToPlayerClass has to be here so we're initialized when we start rendering with all items
+		m_pCharacterModelPanel->SetToPlayerClass( iClass, false, bIsRobot ? g_szBotModels[iClass] : NULL );
+		// have to set again since SetToPlayerClass sets to red
+		m_pCharacterModelPanel->SetTeam( iTeam );
 
 		bool bPlayBaseVCD = !bIsRobot && bCanUseFancyClassSelectAnimation && pszVCD && iSlot == iSlotOrig;
 

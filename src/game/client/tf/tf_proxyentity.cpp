@@ -6,6 +6,8 @@
 //=============================================================================//
 #include "cbase.h"
 #include "tf_proxyentity.h"
+#include "tf_playermodelpanel.h"
+
 #include "materialsystem/imaterialvar.h"
 
 
@@ -40,6 +42,9 @@ void CBaseInvisMaterialProxy::OnBindNotEntity( void *pRenderable )
 {
 	if ( m_pPercentInvisible )
 	{
-		m_pPercentInvisible->SetFloatValue( 0.0f );
+		float fInvis = 0.0f;
+		int iTeam = 0;
+		CTFPlayerModelPanel::GetPlayerModelRenderInfo(fInvis, iTeam);
+		m_pPercentInvisible->SetFloatValue( fInvis );
 	}
 }

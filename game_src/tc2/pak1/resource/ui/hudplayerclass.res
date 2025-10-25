@@ -115,11 +115,11 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"scaleImage"	"1"
-		"image"				"../hud/character_red_bg_clipped"	
-		"teambg_2"			"../hud/character_red_bg_clipped"
-		"teambg_2_lodef"	"../hud/character_red_bg_lodef_clipped"
-		"teambg_3"			"../hud/character_blue_bg_clipped"
-		"teambg_3_lodef"	"../hud/character_blue_bg_lodef_clipped"
+		"image"			"../hud/character_red_bg"	
+		"teambg_2"		"../hud/character_red_bg"
+		"teambg_2_lodef"	"../hud/character_red_bg_lodef"
+		"teambg_3"		"../hud/character_blue_bg"
+		"teambg_3_lodef"	"../hud/character_blue_bg_lodef"
 	}
 
 	"classmodelpanel"

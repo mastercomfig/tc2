@@ -35,6 +35,8 @@ public:
 	void	EquipRequiredLoadoutSlot( int iRequiredLoadoutSlot );
 	CEconItemView	*GetHeldItem() { return m_pHeldItem; }
 
+	void SetInvis( float flInvis ) { m_flInvis = flInvis; } 
+
 	int		AddCarriedItem( CEconItemView *pItem );
 	void	ClearCarriedItems( void );
 
@@ -77,6 +79,8 @@ public:
 	void			SetEyeGlowEffect ( const char *pEffectName, Vector vColor1, Vector vColor2, bool bForceUpdate, bool bPlaySparks );
 
 	void	InvalidateParticleEffects();
+
+	static bool GetPlayerModelRenderInfo( float& flInvis, int& iTeam );
 
 	CPanelAnimationVar(bool, m_bDisableSpeakEvent, "disable_speak_event", "0");
 
@@ -226,6 +230,12 @@ private:
 	bool					RenderStatTrack( CStudioHdr *pStudioHdr, matrix3x4_t *pWorldMatrix );
 	MDLData_t				m_StatTrackModel;
 	float					m_flStatTrackScale;
+
+	float m_flInvis;
+
+	static bool s_bIsRendering;
+	static float s_flInvis;
+	static int s_iTeam;
 };
 
 #endif // TF_PLAYERMODELPANEL_H
