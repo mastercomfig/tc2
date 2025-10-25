@@ -271,7 +271,16 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 	if ( bCombatEntity )
 	{
 		// Bison projectiles shouldn't collide with friendly things
-		if ( ShouldPenetrate() && ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < tf_bison_tick_time.GetFloat() ) )
+		bool bSkipCollide;
+		if ( ShouldPenetrate() )
+		{
+			bSkipCollide = ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < tf_bison_tick_time.GetFloat() );
+		}
+		else
+		{
+			bSkipCollide = pOther->InSameTeam( this ) && pOther->IsPlayer() && !CanCollideWithTeammates();
+		}
+		if ( bSkipCollide )
 			return;
 
 		m_flLastHitTime = gpGlobals->curtime;
