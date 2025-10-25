@@ -87,6 +87,7 @@ CTFPipebombLauncher::CTFPipebombLauncher()
 	m_flLastDenySoundTime = 0.0f;
 	m_bNoAutoRelease = false;
 	m_bWantsToShoot = false;
+	m_iPipebombCount = 0;
 #ifdef CLIENT_DLL
 	m_flNextBombCheckTime = 0;
 	m_bBombThinking = false;
