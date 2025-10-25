@@ -799,7 +799,7 @@ int main( int argc, char *argv[] )
 	}
 	else
 	{
-		snprintf( szExecutable, sizeof(szExecutable), "%s/hl2.sh", pBinaryGameDir );
+		snprintf( szExecutable, sizeof(szExecutable), "%s/tf.sh", pBinaryGameDir );
 	}
 
 	std::vector<char *> new_argv;
