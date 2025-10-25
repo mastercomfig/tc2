@@ -12954,15 +12954,15 @@ bool CTFPlayer::TryToPickupBuilding()
 
 		pPickupObject->MakeCarriedObject( this );
 
-		if (!pPickupObject->ShouldBeActiveWhileCarried())
+		if ( !pPickupObject->ShouldBeActiveWhileCarried() )
 		{
-			CTFWeaponBuilder* pBuilder = dynamic_cast<CTFWeaponBuilder*>(Weapon_OwnsThisID(TF_WEAPON_BUILDER));
-			if (pBuilder)
+			CTFWeaponBuilder *pBuilder = dynamic_cast<CTFWeaponBuilder*>(Weapon_OwnsThisID( TF_WEAPON_BUILDER ));
+			if ( pBuilder )
 			{
-				if (GetActiveTFWeapon() == pBuilder)
-					SetActiveWeapon(NULL);
+				if ( GetActiveTFWeapon() == pBuilder )
+					SetActiveWeapon( NULL );
 
-				Weapon_Switch(pBuilder);
+				Weapon_Switch( pBuilder );
 				pBuilder->m_flNextSecondaryAttack = gpGlobals->curtime + 0.5f;
 			}
 		}
