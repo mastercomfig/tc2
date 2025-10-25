@@ -1008,6 +1008,12 @@ KeyValues *KeyValues::FindKey(const char *keyName, bool bCreate)
 							? m_pStringTable->GetSymbolForString( searchStr, bCreate ) 
 							: s_pfGetSymbolForString( searchStr, bCreate );
 
+	// if it's not included in our local storage string table, just fallback to the standard one
+	if ( m_bLocalStorage && iSearchStr == INVALID_KEY_SYMBOL )
+	{
+		iSearchStr = s_pfGetSymbolForString( searchStr, bCreate );
+	}
+
 	if ( iSearchStr == INVALID_KEY_SYMBOL )
 	{
 		// not found, couldn't possibly be in key value list
