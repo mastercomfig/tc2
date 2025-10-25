@@ -18911,7 +18911,7 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 					// Time for crits!
 					m_Shared.ActivateRageBuff( this, iBuffType );
 
-#if defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK) || 1
 					// Don't allow the taunt to be cancelled
 					m_bAllowMoveDuringTaunt = true;
 #endif
