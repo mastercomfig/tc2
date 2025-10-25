@@ -12915,6 +12915,10 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 	{
 		killer_weapon_name = "robot_arm_blender_kill";
 	}
+	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_TRICKSHOT )
+	{
+		killer_weapon_name = "tf_weapon_taunt_trickshot";
+	}
 	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_TELEFRAG )
 	{
 		killer_weapon_name = "telefrag";
