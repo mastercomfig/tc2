@@ -1357,12 +1357,16 @@ public:
 		pGrenade = dynamic_cast<CTFGrenadePipebombProjectile*>( pEntity );
 		if ( pGrenade )
 		{
-			if ( pGrenade->IsHighlighted() )
+			const bool bHighlighted = pGrenade->IsHighlighted();
+			if ( bHighlighted || !pGrenade->m_bDefensiveBomb )
 			{
 				int iTeamNumber = pGrenade->GetTeamNumber();
 				if ( iTeamNumber == TF_TEAM_RED )
 				{
-					vResult = Vector ( 100.f, 0.f, 0.f );
+					if ( bHighlighted )
+					{
+						vResult = Vector( 100.f, 0.f, 0.f );
+					}
 					if ( pGrenade->m_pGlowEffect )
 					{
 						pGrenade->m_pGlowEffect->SetColor( Vector( 250, 0, 0 ) );
@@ -1370,7 +1374,10 @@ public:
 				}
 				else
 				{
-					vResult = Vector ( 0.f, 0.f, 100.f );
+					if (bHighlighted)
+					{
+						vResult = Vector ( 0.f, 0.f, 100.f );
+					}
 					if ( pGrenade->m_pGlowEffect )
 					{
 						pGrenade->m_pGlowEffect->SetColor( Vector( 0, 0, 250 ) );
