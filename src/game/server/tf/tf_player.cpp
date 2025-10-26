@@ -2342,6 +2342,12 @@ int CTFPlayer::CheckStrandedSpawn(void)
 		return 0;
 	}
 
+	// or during pre-match / countdown
+	if ( TFGameRules()->BInMatchStartCountdown() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() || TFGameRules()->State_Get() <= GR_STATE_PREROUND )
+	{
+		return 0;
+	}
+
 	// left respawn room
 	if ( m_Shared.GetRespawnTouchCount() <= 0 )
 	{
