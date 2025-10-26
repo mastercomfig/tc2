@@ -3999,6 +3999,10 @@ void CTFPlayer::Spawn()
 		{
 			iSpawnGlowsDuration += 10; // add some extra time to help us navigate during rollout
 		}
+		else if ( TFGameRules()->State_Get() == GR_STATE_PREROUND )
+		{
+			iSpawnGlowsDuration += 5; // just a little time because standard prerounds are shorter
+		}
 		m_Shared.AddCond( TF_COND_TEAM_GLOWS, iSpawnGlowsDuration );
 
 		UpdateSkin( GetTeamNumber() );
