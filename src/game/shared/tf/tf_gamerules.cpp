@@ -8552,8 +8552,10 @@ void CTFGameRules::LevelShutdown()
 
 	g_TFGameModeHistory.SetPrevState( m_nGameType );
 
-	m_bPlayersAreOnMatchSummaryStage.Set( false );
-	m_bShowMatchSummary.Set( false );
+	if ( m_bShowMatchSummary || m_bPlayersAreOnMatchSummaryStage )
+	{
+		MatchSummaryEnd();
+	}
 
 	if ( m_pUpgrades )
 	{

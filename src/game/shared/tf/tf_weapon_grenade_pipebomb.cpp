@@ -1374,7 +1374,7 @@ public:
 				}
 				else
 				{
-					if (bHighlighted)
+					if ( bHighlighted )
 					{
 						vResult = Vector ( 0.f, 0.f, 100.f );
 					}
