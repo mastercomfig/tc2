@@ -311,7 +311,7 @@ public:
 		BaseClass::ApplySchemeSettings(pScheme);
 
 		// TODO(mcoms): hack: bleh..
-		if ( V_stricmp( "CHudAccountPanel", Panel::GetName() ) )
+		if ( V_stricmp( "CHudAccountPanel", Panel::GetName() ) && V_stricmp( "CHealthAccountPanel", Panel::GetName() ) )
 		{
 			return;
 		}
