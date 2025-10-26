@@ -43,6 +43,7 @@ private:
 	vgui::ContinuousProgressBar *m_pOverhealBar;
 	vgui::Panel *m_pClassImageBG;
 	vgui::ImagePanel *m_pDeathFlag;
+	CExLabel *m_pChargeAmount;
 	int m_iTeam;
 	int m_iHugeClassCount;
 
@@ -60,6 +61,8 @@ private:
 	CPanelAnimationVar( Color, m_ColorBarHealthLow, "color_bar_health_low", "191 58 58 255" );
 	CPanelAnimationVar( Color, m_ColorPortraitBlendDeadRed, "color_portrait_blend_dead_red", "255 255 255 255" );
 	CPanelAnimationVar( Color, m_ColorPortraitBlendDeadBlue, "color_portrait_blend_dead_blue", "255 255 255 255" );
+	CPanelAnimationVar( Color, m_ColorCharge, "color_charge", "255 255 255 255" );
+	CPanelAnimationVar( Color, m_ColorChargeFull, "color_charge_full", "0 255 0 255" );
 };
 
 //-----------------------------------------------------------------------------

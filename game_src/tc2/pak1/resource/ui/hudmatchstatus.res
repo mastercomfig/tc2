@@ -397,6 +397,8 @@
 			"percentage_health_low"	"0.3"
 			"color_portrait_blend_dead_red"	"255 255 255 255"
 			"color_portrait_blend_dead_blue" "255 255 255 255"
+			"color_charge"	"255 255 255 255"
+			"color_charge_full" "0 255 0 255"
 			
 			"playername"
 			{
@@ -556,18 +558,18 @@
 				"ControlName"	"CExLabel"
 				"fieldName"		"chargeamount"
 				"font"			"PlayerPanelChargeAmount"
-				"xpos"			"cs-0.4"
-				"ypos"			"9"
-				"zpos"			"6"
+				"xpos"			"1"
+				"ypos"			"8"
+				"zpos"			"7"
 				"wide"			"25"
 				"tall"			"15"
 				"autoResize"	"0"
 				"pinCorner"		"0"
 				"visible"		"1"
 				"labelText"		"%chargeamount%"
-				"textAlignment"	"center"
+				"textAlignment"	"west"
 				"proportionaltoparent"	"1"
-				"fgcolor"		"0 255 0 255"
+				"fgcolor"		"255 255 255 255"
 			}
 			"specindex"
 			{

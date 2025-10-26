@@ -45,6 +45,7 @@ CTFTeamStatusPlayerPanel::CTFTeamStatusPlayerPanel( vgui::Panel *parent, const c
 	m_pOverhealBar = new vgui::ContinuousProgressBar( this, "overhealbar" );
 	m_pClassImageBG = new vgui::Panel( this, "classimagebg" );
 	m_pDeathFlag = new vgui::ImagePanel( this, "DeathPanel" );
+	m_pChargeAmount = new CExLabel( this, "chargeamount", "" );
 
 	m_iTeam = TEAM_UNASSIGNED;
 }
@@ -101,6 +102,7 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		int iHealth = -1;
 		bool bIsLocalPlayer = false;
 		bool bHasPlayer = m_iPlayerIndex > 0;
+		C_TFPlayer* pTFPlayer = NULL;
 		if ( bHasPlayer || bIsHugeTeam )
 		{
 			bIsLocalPlayer = bIsHugeTeam ? false : pLocalPlayer->entindex() == m_iPlayerIndex;
@@ -116,7 +118,7 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				bAlive = g_TF_PR->IsAlive( m_iPlayerIndex );
 			}
 
-			C_TFPlayer* pTFPlayer = bIsHugeTeam ? NULL : ToTFPlayer( UTIL_PlayerByIndex( m_iPlayerIndex ) );
+			pTFPlayer = bIsHugeTeam ? NULL : ToTFPlayer( UTIL_PlayerByIndex( m_iPlayerIndex ) );
 
 			// Josh: Not sure if this halloween logic can ever trigger, but it was missing
 			// replication from the scoreboard either way.
@@ -370,14 +372,21 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		int iCharge = ( iClass == TF_CLASS_MEDIC && bSameTeamAsLocalPlayer && !bIsHugeTeam ) ? g_TF_PR->GetChargeLevel( m_iPlayerIndex ) : -1;
 		if ( iCharge != m_iPrevCharge )
 		{
-			if ( iCharge >= 0 )
+			if ( iCharge == 100 && pTFPlayer )
+			{
+				SetDialogVariable( "chargeamount", L"Ü" );
+				m_pChargeAmount->SetFgColor( m_ColorChargeFull );
+			}
+			else if ( iCharge >= 0 && pTFPlayer )
 			{
 				SetDialogVariable( "chargeamount", VarArgs( "%d%%", iCharge ) );
+				m_pChargeAmount->SetFgColor( pTFPlayer->MedicIsReleasingCharge() && iCharge > 0 ? m_ColorChargeFull : m_ColorCharge );
 				bChanged = true;
 			}
 			else
 			{
 				SetDialogVariable( "chargeamount", "" );
+				m_pChargeAmount->SetFgColor( m_ColorCharge );
 			}
 			m_iPrevCharge = iCharge;
 		}
