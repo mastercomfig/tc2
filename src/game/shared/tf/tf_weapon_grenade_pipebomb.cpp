@@ -255,7 +255,7 @@ void CTFGrenadePipebombProjectile::OnDataChanged(DataUpdateType_t updateType)
 			pLauncher->AddPipeBomb( this );
 		}
 
-		if ( m_bDefensiveBomb && C_BasePlayer::GetLocalPlayer() == GetThrower() )
+		if ( C_BasePlayer::GetLocalPlayer() == GetThrower() )
 		{
 			if ( GetTeamNumber() == TF_TEAM_RED )
 			{

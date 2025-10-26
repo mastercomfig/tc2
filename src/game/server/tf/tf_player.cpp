@@ -3994,7 +3994,12 @@ void CTFPlayer::Spawn()
 		m_Shared.RemoveAllCond(); // Remove conc'd, burning, rotting, hallucinating, etc.
 
 		// add team glows for a period of time after we respawn
-		m_Shared.AddCond( TF_COND_TEAM_GLOWS, tf_spawn_glows_duration.GetInt() );
+		int iSpawnGlowsDuration = tf_spawn_glows_duration.GetInt();
+		if ( TFGameRules()->BInMatchStartCountdown() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
+		{
+			iSpawnGlowsDuration += 10; // add some extra time to help us navigate during rollout
+		}
+		m_Shared.AddCond( TF_COND_TEAM_GLOWS, iSpawnGlowsDuration );
 
 		UpdateSkin( GetTeamNumber() );
 

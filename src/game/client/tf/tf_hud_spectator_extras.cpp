@@ -131,6 +131,8 @@ void CTFHudSpectatorExtras::OnTick()
 		}
 	}
 
+	// TODO(mcoms): add helpme and auto caller xray
+
 	if ( bIsHLTV || 
 		( tf_spec_xray.GetBool() && ( ( nLocalPlayerTeam == TEAM_SPECTATOR ) || ( pLocalPlayer->GetObserverMode() > OBS_MODE_FREEZECAM ) || ( pLocalPlayer->m_Shared.InCond( TF_COND_TEAM_GLOWS ) && tf_enable_glows_after_respawn.GetBool() ) ) ) )
 	{
