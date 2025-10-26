@@ -389,13 +389,19 @@ void CHudItemEffectMeter::ApplySchemeSettings( IScheme *pScheme )
 
 	BaseClass::ApplySchemeSettings( pScheme );
 
+	int x, y;
+	GetPos( x, y );
+
 	int xOffset;
 	int yOffset;
 	if ( ConstrainAspect( xOffset, yOffset ) )
 	{
-		int x, y;
-		GetPos( x, y );
 		OffsetAspect( x, y, xOffset, yOffset, m_nBaseX, m_nBaseY );
+	}
+	else
+	{
+		m_nBaseX = x;
+		m_nBaseY = y;
 	}
 
 	SetLabelText();
