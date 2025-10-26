@@ -4852,8 +4852,16 @@ void CTFGameRules::CleanUpMap( void )
 		if ( !pTFPlayer )
 			continue;
 
+		// HACK(mcoms): yup, this is a hack. but it's good.
+		const float flSpawnGlowsTime = pTFPlayer->m_Shared.GetConditionDuration( TF_COND_TEAM_GLOWS );
+
 		// Remove all player conditions to prevent some dependency bugs
 		pTFPlayer->m_Shared.RemoveAllCond();
+
+		if ( flSpawnGlowsTime > 0.0f )
+		{
+			pTFPlayer->m_Shared.AddCond( TF_COND_TEAM_GLOWS, flSpawnGlowsTime );
+		}
 	}
 #endif // GAME_DLL
 
