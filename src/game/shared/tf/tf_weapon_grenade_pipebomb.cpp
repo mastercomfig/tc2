@@ -1358,7 +1358,7 @@ public:
 		if ( pGrenade )
 		{
 			const bool bHighlighted = pGrenade->IsHighlighted();
-			if ( bHighlighted || !pGrenade->m_bDefensiveBomb )
+			if ( bHighlighted || ( !pGrenade->m_bDefensiveBomb && pGrenade->HasStickyEffects() ) )
 			{
 				int iTeamNumber = pGrenade->GetTeamNumber();
 				if ( iTeamNumber == TF_TEAM_RED )
