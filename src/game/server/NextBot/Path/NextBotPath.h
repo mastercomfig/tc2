@@ -277,16 +277,22 @@ public:
 		Invalidate();
 		
 		const Vector &start = bot->GetPosition();
+
+		const float maxDistanceToArea = 200.0f;
 		
 		CNavArea *startArea = bot->GetEntity()->GetLastKnownArea();
 		if ( !startArea )
 		{
-			OnPathChanged( bot, NO_PATH );
-			return false;
+			// if we can trivially link up, do that.
+			startArea = TheNavMesh->GetNearestNavArea(start, false, maxDistanceToArea, true);
+			if ( !startArea )
+			{
+				OnPathChanged( bot, NO_PATH );
+				return false;
+			}
 		}
 
 		// check line-of-sight to the goal position when finding it's nav area
-		const float maxDistanceToArea = 200.0f;
 		CNavArea *goalArea = TheNavMesh->GetNearestNavArea( goal, true, maxDistanceToArea, true );
 
 		if ( requireGoalArea && !goalArea )

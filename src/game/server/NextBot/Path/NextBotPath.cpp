@@ -336,8 +336,7 @@ bool Path::ComputePathDetails( INextBot *bot, const Vector &start )
 
 			++i;			
 		}
-
-		/** RETHINK THIS.  It doesn't work in general cases, and messes up on doorways
+		/** RETHINK THIS.  It doesn't work in general cases, and messes up on doorways */
 		else if ( from->type == ON_GROUND && from->how <= GO_WEST )
 		{
 			// if any segment is not directly walkable, add a segment
@@ -346,7 +345,7 @@ bool Path::ComputePathDetails( INextBot *bot, const Vector &start )
 			{
 				Segment newSegment = *from;
 				
-				if ( bot->IsDebugging( INextBot::PATH ) )
+				if ( bot->IsDebugging( NEXTBOT_PATH ) )
 				{
 					NDebugOverlay::HorzArrow( from->pos, to->pos, 3.0f, 255, 0, 0, 255, true, 3.0f );
 				}
@@ -362,7 +361,7 @@ bool Path::ComputePathDetails( INextBot *bot, const Vector &start )
 				
 				newSegment.type = ON_GROUND;
 
-				if ( bot->IsDebugging( INextBot::PATH ) )
+				if ( bot->IsDebugging( NEXTBOT_PATH ) )
 				{
 					NDebugOverlay::Cross3D( newSegment.pos, 15.0f, 255, 0, 255, true, 3.0f );
 				}
@@ -372,7 +371,6 @@ bool Path::ComputePathDetails( INextBot *bot, const Vector &start )
 				i += 2;
 			}
 		}
-		*/
 	}
 
 	return true;
