@@ -16,6 +16,17 @@
 
 using namespace vgui;
 
+struct HudNotificationParams_t
+{
+	const wchar_t *pszText = L"\0";
+	const char *pszIcon = "\0";
+	int iBackgroundTeam = 0;
+	HudNotification_t type = NUM_STOCK_NOTIFICATIONS;
+	float flOverrideDuration = 0.0f;
+	bool bForce = true;
+	float flForceWidth = 0.0f;
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -49,6 +60,8 @@ public:
 	void	SetupNotifyCustom( const wchar_t *pszText, const char *pszIcon, int iBackgroundTeam );
 	void	SetupNotifyCustom( const wchar_t *pszText, HudNotification_t type, float overrideDuration = 0.0f );
 
+	void	SetupNotifyCustom( const HudNotificationParams_t& params );
+
 	virtual void LevelInit( void ) { m_flFadeTime = 0; };
 
 	bool		LoadManifest( void );
@@ -76,6 +89,27 @@ private:
 		float m_flNextAllowedTime;
 	};
 	CUtlMap< int, ShowCount_t > m_mapShowCounts;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+class CStrandedSpawnPanel : public CHudElement, public EditablePanel
+{
+	DECLARE_CLASS_SIMPLE( CStrandedSpawnPanel, EditablePanel );
+
+public:
+
+	CStrandedSpawnPanel( const char *pElementName );
+
+	virtual void	ApplySchemeSettings( IScheme *scheme );
+	virtual bool	ShouldDraw( void );
+	virtual void	OnTick( void );
+
+private:
+	Label* m_pText;
+	ImagePanel* m_pBackground;
+	int m_iTeam;
 };
 
 #endif // TF_HUD_NOTIFICATION_PANEL_H
