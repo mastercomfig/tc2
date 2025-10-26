@@ -4154,7 +4154,7 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 	case kWebapiEquipmentState_WaitingForClientRequest:
 	{
 		Assert( state.m_pKVCurrentRequest == nullptr );
-		constexpr int iMaxPart = 1 << ( TF_LAST_NORMAL_CLASS - 1 ) - 1;
+		constexpr int iMaxPart = ( 1 << ( TF_LAST_NORMAL_CLASS - 1 ) ) - 1;
 		if ( state.m_pKVNextRequest == nullptr || state.iPartsReceived < iMaxPart )
 			return;
 
