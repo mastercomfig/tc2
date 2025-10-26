@@ -113,6 +113,9 @@ protected:
 
 	int					m_nState;
 
+	int					m_nBaseX;
+	int					m_nBaseY;
+
 	CPanelAnimationVarAliasType( float, m_iXOffset, "x_offset", "0", "proportional_float" );
 };
 

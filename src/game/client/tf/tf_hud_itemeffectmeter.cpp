@@ -389,6 +389,15 @@ void CHudItemEffectMeter::ApplySchemeSettings( IScheme *pScheme )
 
 	BaseClass::ApplySchemeSettings( pScheme );
 
+	int xOffset;
+	int yOffset;
+	if ( ConstrainAspect( xOffset, yOffset ) )
+	{
+		int x, y;
+		GetPos( x, y );
+		OffsetAspect( x, y, xOffset, yOffset, m_nBaseX, m_nBaseY );
+	}
+
 	SetLabelText();
 
 	m_pItemEffectIcon = dynamic_cast< CTFImagePanel* >( FindChildByName( "ItemEffectIcon" ) );
@@ -447,35 +456,12 @@ void CHudItemEffectMeter::PerformLayout()
 
 		if ( g_ItemEffectMeterManager.GetNumEnabled() + iOffset > 1 )
 		{
-			int xPos = 0, yPos = 0;
-			GetPos( xPos, yPos );
-			int xOffset;
-			int yOffset;
-			if ( ConstrainAspect( xOffset, yOffset ) )
-			{
-				int xNew, yNew;
-				OffsetAspect( xPos - m_iXOffset, yPos, xOffset, yOffset, xNew, yNew );
-				SetPos( xNew, yNew );
-			}
-			else
-			{
-				SetPos( xPos - m_iXOffset, yPos );
-			}
+			SetPos( m_nBaseX - m_iXOffset, m_nBaseY );
 			return;
 		}
 	}
 
-	// fall through to default layout
-	int xOffset;
-	int yOffset;
-	if ( ConstrainAspect( xOffset, yOffset ) )
-	{
-		int x, y;
-		GetPos( x, y );
-		int xNew, yNew;
-		OffsetAspect( x, y, xOffset, yOffset, xNew, yNew );
-		SetPos( xNew, yNew );
-	}
+	SetPos( m_nBaseX, m_nBaseY );
 }
 
 //-----------------------------------------------------------------------------

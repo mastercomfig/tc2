@@ -310,6 +310,12 @@ public:
 	{
 		BaseClass::ApplySchemeSettings(pScheme);
 
+		// TODO(mcoms): hack: bleh..
+		if ( V_stricmp( "CHudAccountPanel", Panel::GetName() ) )
+		{
+			return;
+		}
+
 		int xOffset;
 		int yOffset;
 		if ( ConstrainAspect( xOffset, yOffset ) )
