@@ -254,6 +254,7 @@ void CTFStickBomb::Smack( void )
 
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
+			// TODO(mcoms): use DMG_MELEE? (Fixed the Ullapool Caber's explosion not being counted as melee damage (for kill_refills_meter))
 #if defined(MCOMS_BALANCE_PACK)
 			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF;
 #else
@@ -263,18 +264,23 @@ void CTFStickBomb::Smack( void )
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
 
-			float flBaseDamage = 75.0f;
-			if (!bIsCrit && m_bMiniCrit)
+			float flDamage = 75.0f;
+			CALL_ATTRIB_HOOK_FLOAT( flDamage, mult_dmg );
+			if ( !bIsCrit && m_bMiniCrit )
 			{
-				flBaseDamage *= 1.35f;
+				flDamage *= 1.35f;
 			}
 
-			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flBaseDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
+			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
 #if defined(MCOMS_BALANCE_PACK)
-			CTFRadiusDamageInfo radiusinfo( &info, explosion, 146.0f );
+			float flRadius = 146.0f;
 #else
-			CTFRadiusDamageInfo radiusinfo( &info, explosion, 100.0f );
+			float flRadius = 100.0f;
 #endif
+			CALL_ATTRIB_HOOK_FLOAT( flRadius, mult_explosion_radius );
+
+			CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius );
+
 			TFGameRules()->RadiusDamage( radiusinfo );
 
 #if defined(MCOMS_BALANCE_PACK)
