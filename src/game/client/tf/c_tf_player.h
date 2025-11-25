@@ -124,6 +124,7 @@ public:
 	virtual void Simulate( void );
 	virtual void FireEvent( const Vector& origin, const QAngle& angles, int event, const char *options ) OVERRIDE;
 	virtual void UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity, float flSubTime = -1.0f ) OVERRIDE;
+	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force ) OVERRIDE;
 
 	CNewParticleEffect *SpawnHalloweenSpellFootsteps( ParticleAttachment_t eParticleAttachment, int iHalloweenFootstepType );
 
@@ -674,6 +675,8 @@ public:
 	float			m_flMvMLastDamageTime;
 	int				m_iSpawnCounter;
 	bool			m_bArenaSpectator;
+
+	bool			m_bFlipViewModels;
 
 	bool			m_bIsMiniBoss;
 	bool			m_bIsABot;

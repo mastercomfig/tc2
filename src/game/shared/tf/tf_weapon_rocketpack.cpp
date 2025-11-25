@@ -83,7 +83,7 @@ ConVar tf_rocketpack_impact_push_max( "tf_rocketpack_impact_push_max", "300", FC
 ConVar tf_rocketpack_launch_push( "tf_rocketpack_launch_push", "250", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_HIDDEN );
 #endif
 
-#ifdef GAME_DLL
+#if defined( GAME_DLL ) || defined( STAGING_ONLY )
 #define TF_ROCKETPACK_PASSENGER_DELAY_LAUNCH 0.2f
 #endif // GAME_DLL
 
