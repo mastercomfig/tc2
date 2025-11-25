@@ -1480,7 +1480,7 @@ void CTFMinigun::WeaponSoundUpdate()
 
 	if ( m_bRageDraining )
 	{
-		flPitch /= 1.65;
+		flPitch /= 1.65f;
 	}
 
 	CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();

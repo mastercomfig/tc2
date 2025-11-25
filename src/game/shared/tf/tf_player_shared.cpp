@@ -2594,7 +2594,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			}
 
 			// Track health prior to healing
-			int nPrevHealth = m_pOuter->GetHealth();
+			//int nPrevHealth = m_pOuter->GetHealth();
 			
 			// Cap it to the max we'll boost a player's health
 			nHealthToAdd = clamp( nHealthToAdd, 0, iBoostMax - m_pOuter->GetHealth() );

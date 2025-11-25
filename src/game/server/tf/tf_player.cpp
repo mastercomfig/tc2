@@ -18942,7 +18942,7 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 			{
 				if ( pActiveWeapon && pActiveWeapon->GetWeaponID() == TF_WEAPON_LUNCHBOX )
 				{
-					m_flTauntAttackTime = gpGlobals->curtime + 0.9;
+					m_flTauntAttackTime = gpGlobals->curtime + 0.9f;
 					m_iTauntAttack = TAUNTATK_SCOUT_DRINK;
 				}
 			}
@@ -18951,7 +18951,7 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 		{
 			if ( pActiveWeapon && pActiveWeapon->GetWeaponID() == TF_WEAPON_LUNCHBOX )
 			{
-				m_flTauntAttackTime = gpGlobals->curtime + 1.0;
+				m_flTauntAttackTime = gpGlobals->curtime + 1.0f;
 				m_iTauntAttack = TAUNTATK_HEAVY_EAT;
 
 				// Only count sandviches for "eat 100 sandviches" achievement
