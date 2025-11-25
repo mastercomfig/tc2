@@ -374,7 +374,8 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		{
 			if ( iCharge == 100 && pTFPlayer )
 			{
-				SetDialogVariable( "chargeamount", L"Ü" );
+				// TODO: Ü
+				SetDialogVariable( "chargeamount", "U" );
 				m_pChargeAmount->SetFgColor( m_ColorChargeFull );
 			}
 			else if ( iCharge >= 0 && pTFPlayer )
