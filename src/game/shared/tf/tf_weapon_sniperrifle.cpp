@@ -449,7 +449,7 @@ void CTFSniperRifle::ItemPostFrame( void )
 		CALL_ATTRIB_HOOK_INT( iBuffType, set_buff_type );
 		if ( iBuffType > 0 )
 		{
-			pPlayer->m_Shared.ActivateRageBuff( pPlayer, iBuffType );
+			pPlayer->m_Shared.ActivateRageBuff( this, iBuffType );
 		}
 	}
 }

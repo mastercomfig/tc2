@@ -9527,16 +9527,16 @@ void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float 
 	{
 		CTFBuffItem *pBuffItem = dynamic_cast<CTFBuffItem*>( pPlayer->Weapon_OwnsThisID( TF_WEAPON_BUFF_ITEM ) );
 		unsigned int iBuffId = pBuffItem ? pBuffItem->GetBuffType() : 0;
-		if ( iBuffId < ARRAYSIZE( g_RageBuffTypes ) )
+		if ( iBuffId < k_Num_RageBuffTypes )
 		{
-			// In Mannpower, the passive 20hp benefit of the Battalion's Backup makes it superior to the Buff Banner, so we reduce the rage build for it to compensate
-			if ( TFGameRules() && TFGameRules()->IsPowerupMode() && iBuffId == 2 )
+			if ( g_RageBuffTypes[iBuffId].m_iBuffFlags & iRequiredBuffFlags )
 			{
-				pPlayer->m_Shared.ModifyRage( g_RageBuffTypes[iBuffId].m_fRageScale * ( ( flDamage / 2.5 ) / fInverseRageGainScale ) );
-			}
-			else
-			{
-				if ( g_RageBuffTypes[iBuffId].m_iBuffFlags & iRequiredBuffFlags )
+				// In Mannpower, the passive 20hp benefit of the Battalion's Backup makes it superior to the Buff Banner, so we reduce the rage build for it to compensate
+				if ( TFGameRules() && TFGameRules()->IsPowerupMode() && iBuffId == k_RageBuffType_Defense )
+				{
+					pPlayer->m_Shared.ModifyRage( g_RageBuffTypes[iBuffId].m_fRageScale * ( ( flDamage / 2.5f ) / fInverseRageGainScale ) );
+				}
+				else
 				{
 					pPlayer->m_Shared.ModifyRage( g_RageBuffTypes[iBuffId].m_fRageScale * ( flDamage / fInverseRageGainScale ) );
 				}
@@ -9547,7 +9547,7 @@ void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float 
 	{
 		CTFFlameThrower *pFlameThrower = dynamic_cast<CTFFlameThrower*>( pPlayer->Weapon_OwnsThisID( TF_WEAPON_FLAMETHROWER ) );
 		unsigned int iBuffId = pFlameThrower ? pFlameThrower->GetBuffType() : 0;
-		if ( iBuffId < ARRAYSIZE( g_RageBuffTypes ) )
+		if ( iBuffId < k_Num_RageBuffTypes )
 		{
 			if ( g_RageBuffTypes[iBuffId].m_iBuffFlags & iRequiredBuffFlags )
 			{
@@ -18914,16 +18914,15 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 			 StringHasPrefix( szResponse, "scenes/player/pyro/low/taunt01" ) )
 		{
 			// Pyro Rage!
-			CBaseCombatWeapon *pWeapon = GetActiveWeapon();
-			if ( pWeapon )
+			if ( pActiveWeapon && pActiveWeapon->GetWeaponID() == TF_WEAPON_FLAMETHROWER )
 			{
 				int iBuffType = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iBuffType, set_buff_type );
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( pActiveWeapon, iBuffType, set_buff_type );
 
 				if ( iBuffType > 0 )
 				{
 					// Time for crits!
-					m_Shared.ActivateRageBuff( this, iBuffType );
+					m_Shared.ActivateRageBuff( pActiveWeapon, iBuffType );
 
 #if defined(MCOMS_BALANCE_PACK) || 1
 					// Don't allow the taunt to be cancelled

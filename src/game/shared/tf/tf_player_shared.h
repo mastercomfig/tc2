@@ -1327,8 +1327,7 @@ private:
 	int m_iIgnoreTeam;
 };
 
-enum { kSoldierBuffCount = 6 };
-extern ETFCond g_SoldierBuffAttributeIDToConditionMap[kSoldierBuffCount + 1];
+extern ETFCond g_SoldierBuffAttributeIDToConditionMap[k_Num_RageBuffTypes];
 
 class CTFPlayerSharedUtils
 {

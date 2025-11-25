@@ -2780,7 +2780,7 @@ enum
 	kRageBuffFlag_OnDamageReceived = 0x02,
 	kRageBuffFlag_OnMedicHealingReceived = 0x04,
 	kRageBuffFlag_OnBurnDamageDealt = 0x08,
-	kRageBuffFlag_OnHeal = 0x10
+	kRageBuffFlag_OnHeal = 0x10,
 };
 
 struct RageBuffType
@@ -2788,6 +2788,19 @@ struct RageBuffType
 	unsigned int m_iBuffFlags;
 	float m_fRageScale;
 	int m_nMaxPulses;
+};
+
+enum
+{
+	k_RageBuffType_Unknown,
+	k_RageBuffType_Offense,
+	k_RageBuffType_Defense,
+	k_RageBuffType_RegenOnDamage,
+	k_RageBuffType_NoHealingDamage,
+	k_RageBuffType_CritBoosted,
+	k_RageBuffType_Sniper,
+	k_RageBuffType_Healing,
+	k_Num_RageBuffTypes,
 };
 
 static const RageBuffType g_RageBuffTypes[] =
@@ -2798,8 +2811,11 @@ static const RageBuffType g_RageBuffTypes[] =
 	{ kRageBuffFlag_OnDamageDealt,			1.25f,	10 },	// buff type 3
 	{ kRageBuffFlag_OnMedicHealingReceived,	1.f,	10 },	// buff type 4
 	{ kRageBuffFlag_OnBurnDamageDealt,		1.f,	10 },	// pyro rage
+	{ kRageBuffFlag_OnDamageDealt,			1.f,	10 },	// sniper focus
 	{ kRageBuffFlag_OnHeal,					1.f,	10 },	// medic healing
 };
+
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_RageBuffTypes ) == k_Num_RageBuffTypes );
 
 enum
 {

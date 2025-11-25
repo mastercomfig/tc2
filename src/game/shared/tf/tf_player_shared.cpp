@@ -304,7 +304,7 @@ const char *g_pszBDayGibs[22] =
 	"models/player/gibs/gibs_tire.mdl"
 };
 
-ETFCond g_SoldierBuffAttributeIDToConditionMap[kSoldierBuffCount + 1] =
+ETFCond g_SoldierBuffAttributeIDToConditionMap[k_Num_RageBuffTypes] =
 {
 	TF_COND_LAST,				// dummy entry to deal with attribute value of "1" being the lowest value we store in the attribute itself
 	TF_COND_OFFENSEBUFF,
@@ -312,8 +312,11 @@ ETFCond g_SoldierBuffAttributeIDToConditionMap[kSoldierBuffCount + 1] =
 	TF_COND_REGENONDAMAGEBUFF,
 	TF_COND_NOHEALINGDAMAGEBUFF,
 	TF_COND_CRITBOOSTED_RAGE_BUFF,
-	TF_COND_SNIPERCHARGE_RAGE_BUFF
+	TF_COND_SNIPERCHARGE_RAGE_BUFF,
+	TF_COND_LAST,
 };
+
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_SoldierBuffAttributeIDToConditionMap ) == k_Num_RageBuffTypes );
 
 #ifdef CLIENT_DLL
 //-----------------------------------------------------------------------------
@@ -14072,11 +14075,13 @@ void CTFPlayerShared::SetupRageBuffTimer( int iBuffType, int iPulseCount, ERageB
 void CTFPlayerShared::ActivateRageBuff( CBaseEntity *pBuffItem, int iBuffType )
 {
 	// Sniper Focus can be activated at all times
-	if ( GetRageMeter() < 100.f && iBuffType != 6 )
+	if ( GetRageMeter() < 100.f && iBuffType != k_RageBuffType_Sniper )
 		return;
 
-	Assert( iBuffType > 0 && iBuffType < ARRAYSIZE( g_RageBuffTypes ) );	// 0 is valid in the array, but an invalid buff
-	if ( iBuffType < 0 || iBuffType >= ARRAYSIZE( g_RageBuffTypes ) )
+	// 0 is valid in the array, but an invalid buff
+	const bool bValidBuffType = iBuffType > 0 && iBuffType < k_Num_RageBuffTypes;
+	Assert( bValidBuffType );
+	if ( !bValidBuffType )
 	{
 		DevMsg( "Invalid rage buff type %i for entindex %i\n", iBuffType, m_pOuter->entindex() );
 		ResetRageSystem();
@@ -14089,20 +14094,20 @@ void CTFPlayerShared::ActivateRageBuff( CBaseEntity *pBuffItem, int iBuffType )
 #ifdef GAME_DLL
 	switch ( iBuffType )
 	{
-	case 1:
+	case k_RageBuffType_Offense:
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_BATTLECRY );
 		break;
-	case 2:
+	case k_RageBuffType_Defense:
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_INCOMING );
 		break;
-	case 3:
+	case k_RageBuffType_RegenOnDamage:
 		// FIXME: new sound file for samurai buff?
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_BATTLECRY );
-	case 5:
+	case k_RageBuffType_CritBoosted:
 		// Pyro Rage
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_BATTLECRY );
 		break;
-	case 6 :
+	case k_RageBuffType_Sniper:
 		// Sniper Focus
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_BATTLECRY );
 		nBuffPulses *= (m_flRageMeter / 100);
@@ -14181,15 +14186,13 @@ void CTFPlayerShared::UpdateRageBuffsAndRage( void )
 	}
 }
 
-static const int k_RageBuffType_Sniper = 6;
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::SetRageMeter( float val )
 {
 	// Allow Sniper to gain rage on kills even when buffed
-	if ( !InCond( TF_COND_SNIPERCHARGE_RAGE_BUFF ) && !m_pOuter->IsPlayerClass( TF_CLASS_SPY ) ) 
+	if ( !InCond( TF_COND_SNIPERCHARGE_RAGE_BUFF ) )
 	{
 		if ( IsRageDraining() )
 			return;
@@ -14202,14 +14205,10 @@ void CTFPlayerShared::SetRageMeter( float val )
 	m_flRageMeter = MIN( val, 100.0f );
 
 	if ( InCond( TF_COND_SNIPERCHARGE_RAGE_BUFF ) )
-	{	
-		Assert( k_RageBuffType_Sniper > 0 && k_RageBuffType_Sniper < ARRAYSIZE( g_RageBuffTypes ) );	// 0 is valid in the array, but an invalid buff
-		if ( k_RageBuffType_Sniper <= 0 || k_RageBuffType_Sniper >= ARRAYSIZE( g_RageBuffTypes ) )
-			return;
-
-		int nBuffPulses = g_RageBuffTypes[k_RageBuffType_Sniper].m_nMaxPulses;
+	{
 		m_bRageDraining = true;
 
+		int nBuffPulses = g_RageBuffTypes[k_RageBuffType_Sniper].m_nMaxPulses;
 		nBuffPulses *= RoundFloatToInt(m_flRageMeter / 100);
 
 		m_RageBuffSlots[kBuffSlot_Rage].m_iBuffPulseCount = nBuffPulses;
@@ -14254,17 +14253,17 @@ void CTFPlayerShared::PulseRageBuff( ERageBuffSlot eBuffSlot )
 #endif
 
 	int iSoldierBuffType = m_RageBuffSlots[eBuffSlot].m_iBuffTypeActive;
-	ETFCond eBuffCond = TF_COND_LAST;
-	if ( iSoldierBuffType > 0 && iSoldierBuffType <= kSoldierBuffCount )
+	ETFCond eBuffCond = g_SoldierBuffAttributeIDToConditionMap[iSoldierBuffType];
+	if ( eBuffCond == TF_COND_LAST )
 	{
-		eBuffCond = g_SoldierBuffAttributeIDToConditionMap[iSoldierBuffType];
+		return;
 	}
 
 	float fMaxRadius = 450.0f;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pOuter, fMaxRadius, mod_soldier_buff_range );
 	const float fMaxRadiusSq = fMaxRadius * fMaxRadius;
 
-	for( int iPlayerIndex=1; iPlayerIndex<=MAX_PLAYERS; ++iPlayerIndex )
+	for ( int iPlayerIndex = 1; iPlayerIndex <= MAX_PLAYERS; ++iPlayerIndex )
 	{
 		CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( iPlayerIndex ) );
 		if ( !pTFPlayer || !pTFPlayer->IsAlive() )
@@ -14320,20 +14319,17 @@ void CTFPlayerShared::PulseRageBuff( ERageBuffSlot eBuffSlot )
 			}
 		}
 
-		if ( eBuffCond != TF_COND_LAST )
+		pTFPlayer->m_Shared.AddCond( eBuffCond, 1.2f, m_pOuter );
+
+		nBuffedPlayers++;
+
+		IGameEvent* event = gameeventmanager->CreateEvent( "player_buff" );
+		if ( event )
 		{
-			pTFPlayer->m_Shared.AddCond( eBuffCond, 1.2f, m_pOuter );
-
-			nBuffedPlayers++;
-
-			IGameEvent* event = gameeventmanager->CreateEvent( "player_buff" );
-			if ( event )
-			{
-				event->SetInt( "userid", pTFPlayer->GetUserID() );
-				event->SetInt( "buff_owner", m_pOuter->GetUserID() );
-				event->SetInt( "buff_type", iSoldierBuffType );
-				gameeventmanager->FireEvent( event );
-			}
+			event->SetInt( "userid", pTFPlayer->GetUserID() );
+			event->SetInt( "buff_owner", m_pOuter->GetUserID() );
+			event->SetInt( "buff_type", iSoldierBuffType );
+			gameeventmanager->FireEvent( event );
 		}
 #endif
 	}
