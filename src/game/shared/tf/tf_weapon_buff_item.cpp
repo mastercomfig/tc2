@@ -158,6 +158,7 @@ void CTFBuffItem::Detach( void )
 	if ( pTFPlayer )
 	{
 		pTFPlayer->m_Shared.SetParachuteEquipped( false );
+		pTFPlayer->m_Shared.ResetRageSystem();
 	}
 
 	BaseClass::Detach();

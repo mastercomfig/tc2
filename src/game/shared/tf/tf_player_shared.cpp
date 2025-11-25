@@ -14229,11 +14229,11 @@ void CTFPlayerShared::ModifyRage( float fDelta )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::ResetRageMeter( void )
 {
-	m_flRageMeter = 0.0f;
-	m_flNextRageEarnTime = 0.0f;
-
-	ResetRageBuffs();
-	UpdateRageBuffsAndRage();
+	// ResetRageMeter logic was faulty.
+	// It ended up being effectively the same as ResetRageSystem but prone to bugs
+	// due to routing through the buff update and pulse system when data was
+	// already reset back to 0, effectively ending the rage the same as ResetRageSystem
+	ResetRageSystem();
 }
 
 //-----------------------------------------------------------------------------

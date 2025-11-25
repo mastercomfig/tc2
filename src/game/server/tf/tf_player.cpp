@@ -15637,7 +15637,7 @@ void CTFPlayer::ForceRespawn( void )
 	}
 
 	m_Shared.RemoveAllCond();
-	m_Shared.ResetRageMeter();
+	m_Shared.ResetRageSystem();
 
 	if ( m_bSwitchedClass )
 	{

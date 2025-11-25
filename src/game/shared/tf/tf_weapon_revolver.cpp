@@ -417,14 +417,14 @@ bool CTFRevolver::Deploy( void )
 //-----------------------------------------------------------------------------
 void CTFRevolver::Detach( void )
 {
-	if ( SapperKillsCollectCrits() )
+	CTFPlayer *pPlayer = GetTFPlayerOwner();
+	if ( pPlayer )
 	{
-		CTFPlayer *pPlayer = GetTFPlayerOwner();
-		if ( pPlayer )
+		if ( SapperKillsCollectCrits() )
 		{
-			pPlayer->m_Shared.SetRevengeCrits( 0 );
 			pPlayer->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 		}
+		pPlayer->m_Shared.SetRevengeCrits( 0 );
 	}
 
 	BaseClass::Detach();
