@@ -11538,7 +11538,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		   ( !pAttacker->IsSolidFlagSet( FSOLID_TRIGGER ) ) && 
 		   ( !m_Shared.InCond( TF_COND_DISGUISED ) ) )	
 		{
-			if ( !m_Shared.IsImmuneToPushback() || outParams.bSelfBlastDmg )
+			if ( !m_Shared.IsImmuneToPushback() || ( pTFAttacker == this ) )
 			{
 				ApplyPushFromDamage( info, vecDir );
 			}
