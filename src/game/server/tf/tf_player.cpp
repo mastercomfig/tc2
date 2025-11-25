@@ -19636,7 +19636,7 @@ void CTFPlayer::DoTauntAttack( void )
 			}
 		}
 	}
-	else if ( iTauntAttack == TAUNTATK_HEAVY_HIGH_NOON || iTauntAttack == TAUNTATK_ENGINEER_TRICKSHOT )
+	else if ( iTauntAttack == TAUNTATK_HEAVY_HIGH_NOON )
 	{
 		// Heavy "High Noon" attack
 		Vector vecForward;
@@ -19656,29 +19656,6 @@ void CTFPlayer::DoTauntAttack( void )
 				// Launch them up a little
 				AngleVectors( QAngle(-45, m_angEyeAngles[YAW], 0), &vecForward );
 				pEnt->TakeDamage( CTakeDamageInfo( this, this, GetActiveTFWeapon(), vecForward * 25000, WorldSpaceCenter(), 500.0f, DMG_BULLET, TF_DMG_CUSTOM_TAUNTATK_HIGH_NOON ) );
-			}
-		}
-	}
-	else if ( iTauntAttack == TAUNTATK_ENGINEER_TRICKSHOT )
-	{
-		// Engineer "Texan Trickshot" attack
-		Vector vecForward;
- 		AngleVectors( EyeAngles(), &vecForward );
-		Vector vecEnd = EyePosition() + vecForward * 500;
-
-		trace_t tr;
-		UTIL_TraceLine( EyePosition(), vecEnd, ( MASK_SOLID | CONTENTS_HITBOX ), this, COLLISION_GROUP_PLAYER, &tr );
-//		DebugDrawLine( EyePosition(), vecEnd, 0, 0, 255, true, 3.0f );
-
-		if ( tr.fraction < 1.0 )
-		{
-			CBaseEntity *pEnt = tr.m_pEnt;
-
-			if ( pEnt && pEnt->IsPlayer() && pEnt->GetTeamNumber() > LAST_SHARED_TEAM && pEnt->GetTeamNumber() != GetTeamNumber() )
-			{
-				// Launch them up a little
-				AngleVectors( QAngle(-45, m_angEyeAngles[YAW], 0), &vecForward );
-				pEnt->TakeDamage( CTakeDamageInfo( this, this, GetActiveTFWeapon(), vecForward * 25000, WorldSpaceCenter(), 500.0f, DMG_BULLET, TF_DMG_CUSTOM_TAUNTATK_TRICKSHOT ) );
 			}
 		}
 	}
