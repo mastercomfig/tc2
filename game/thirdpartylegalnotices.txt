@@ -947,3 +947,5 @@ Aligned, Improved, and Strengthened Heal Beam by Luna Nos Fide is licensed under
 Ubercharge Texture Fix MKII by A Paint Bucket Named Huey is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
 
 Refined Lineup-styled Eyes by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Refined Pickups (https://gamebanana.com/mods/610415) by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
