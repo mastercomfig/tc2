@@ -742,6 +742,8 @@ bool IsCreepWaveMode( void ) const;
 	bool IsPVEModeControlled( CBaseEntity *who ) const;		// return true for PvE opponents (ie: enemy bot team)
 	const char*		GetCustomUpgradesFile() { return m_pszCustomUpgradesFile.Get(); }
 
+	bool IsBetaActive() const;
+
 //=============================================================================
 // HPE_BEGIN:
 // [msmith]	Training Status. And HUD type.

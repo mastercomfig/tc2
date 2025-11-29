@@ -22,6 +22,7 @@ class CTeamTrainWatcher;
 
 #define CAPTURE_NORMAL					0
 #define CAPTURE_CATCHUP_ALIVEPLAYERS	1
+#define CAPTURE_RALLY					2
 
 #define MAX_CLIENT_AREAS				128
 #define MAX_AREA_CAPPERS				9

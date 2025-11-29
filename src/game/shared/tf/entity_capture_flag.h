@@ -309,7 +309,7 @@ public:
 #endif
 	
     // TODO: Both of these should be updated to work with floats instead of ints.
-	int				GetReturnTime( int nMaxReturnTime );
+	int				GetReturnTime( int nMaxReturnTime, CTFPlayer* pPlayer );
     int             GetMaxReturnTime( void );
 	
 	void			Capture( CTFPlayer *pPlayer, int nCapturePoint );
@@ -387,7 +387,7 @@ private:
 	int				m_iOriginalTeam;
 	float			m_flOwnerPickupTime;
 
-    int GetReturnTimeShotClockMode( int nStartReturnTime );
+    int GetReturnTimeShotClockMode( int nStartReturnTime, CTFPlayer* pPlayer );
     inline bool IsFlagShotClockModePossible() const
     {
         return m_nType == TF_FLAGTYPE_CTF 

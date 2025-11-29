@@ -1231,6 +1231,8 @@ ConVar tf_gamemode_community ( "tf_gamemode_community", "0", FCVAR_REPLICATED | 
 
 ConVar tf_voice_command_suspension_mode( "tf_voice_command_suspension_mode", "2", FCVAR_REPLICATED, "0 = None | 1 = No Voice Commands | 2 = Rate Limited" );
 
+ConVar tf_beta_mode("tf_beta_mode", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Activate experimental beta features for testing.");
+
 #ifdef GAME_DLL
 
 ConVar tf_voice_command_suspension_rate_limit_bucket_count( "tf_voice_command_suspension_rate_limit_bucket_count", "5" ); // Bucket size of 5.
@@ -2303,6 +2305,11 @@ bool CTFGameRules::CanPlayerUseRespec( CTFPlayer *pTFPlayer )
 bool CTFGameRules::IsCommunityGameMode( void ) const
 {
 	return tf_gamemode_community.GetBool();
+}
+
+bool CTFGameRules::IsBetaActive( void ) const
+{
+	return tf_beta_mode.GetBool();
 }
 
 bool CTFGameRules::IsCompetitiveMode( void ) const
@@ -4482,6 +4489,11 @@ void CTFGameRules::Activate()
 		tf_gamemode_boss_battle.SetValue( 1 );
 	}
 #endif // TF_RAID_MODE
+
+	if ( IsBetaActive() )
+	{
+		tf_beta_content.SetValue( 1 );
+	}
 
 	// This is beta content if this map has "beta" as a tag in the schema
 	{
@@ -21659,6 +21671,9 @@ void CTFGameRules::HandleCTFCaptureBonus( int nTeam )
 	float flBonusTime = GetCTFCaptureBonusTime();
 	
 	if ( flBonusTime <= 0 )
+		return;
+
+	if ( TFGameRules()->IsBetaActive() )
 		return;
 
 	for ( int i = 1 ; i <= gpGlobals->maxClients ; i++ )

@@ -574,15 +574,22 @@ bool CCaptureFlag::ShouldHideGlowEffect( void )
 			bIsHiddenTeam = ( pLocalPlayer->GetTeamNumber() != TEAM_SPECTATOR && pLocalPlayer->GetTeamNumber() != GetTeamNumber() );
 		}
 
+		// UNDONE(mcoms): why is this here? if WE'RE invisible, we can't see people carrying the flag?
+#if 0
 		if ( pLocalPlayer->m_Shared.IsFullyInvisible() )
 		{
 			C_TFPlayer *pOwner = ToTFPlayer( m_hPrevOwner );
 			if ( pOwner && pOwner != pLocalPlayer )
 				return true;
 		}
+#endif
 	}
 
 	bool bHide = IsStolen() && bIsHiddenTeam;
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+	{
+		bHide = false;
+	}
 
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
@@ -744,14 +751,14 @@ void CCaptureFlag::PlaySound( IRecipientFilter& filter, const char *pszString, i
 // Purpose: Gets the return time for first down mode, if enabled and supported, otherwise 
 // simply returns the passed in nReturnTime.
 //-----------------------------------------------------------------------------
-int CCaptureFlag::GetReturnTimeShotClockMode(int nStartReturnTime)
+int CCaptureFlag::GetReturnTimeShotClockMode(int nStartReturnTime, CTFPlayer* pPlayer)
 {
     int nReturnTime = nStartReturnTime;
 
     // Only enable this for specific modes.
     if (IsFlagShotClockModePossible())
     {
-        if (m_bUseShotClockMode)
+        if (m_bUseShotClockMode || (TFGameRules() && TFGameRules()->IsBetaActive()))
         {
 			// When the game is in a standoff (both flags are stolen and poisonous), return when next dropped
 			// This makes it easier to resolve the standoff and continue the game
@@ -760,8 +767,12 @@ int CCaptureFlag::GetReturnTimeShotClockMode(int nStartReturnTime)
 				return 0;
 	        }
 
-			float flCreditTime = (gpGlobals->curtime - m_flLastPickupTime) * tf_flag_return_time_credit_factor.GetFloat()
-                               + m_flLastResetDuration;
+			float flCreditTime = (gpGlobals->curtime - m_flLastPickupTime) * tf_flag_return_time_credit_factor.GetFloat();
+			if (pPlayer && pPlayer->IsPlayerClass(TF_CLASS_SCOUT))
+			{
+				flCreditTime *= 2.0f;
+			}
+			flCreditTime += m_flLastResetDuration;
             int nPossibleCreditTime = RoundFloatToInt(flCreditTime);
             int nActualCreditTime = MAX(0, nPossibleCreditTime);
             nReturnTime = MIN(nStartReturnTime, nActualCreditTime);
@@ -2096,7 +2107,7 @@ void CCaptureFlag::Drop( CTFPlayer *pPlayer, bool bVisible,  bool bThrown /*= fa
 	RemoveFlagTrail();
 
     int nMaxReturnTime = GetMaxReturnTime();
-	SetFlagReturnIn( GetReturnTime( nMaxReturnTime ), nMaxReturnTime );
+	SetFlagReturnIn( GetReturnTime( nMaxReturnTime, pPlayer ), nMaxReturnTime );
 
 	// Reset the flag's angles.
 	SetAbsAngles( m_vecResetAng );
@@ -2800,9 +2811,9 @@ void CCaptureFlag::RemoveFollower( CTFBot* pBot )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int	CCaptureFlag::GetReturnTime( int nMaxReturnTime )
+int	CCaptureFlag::GetReturnTime( int nMaxReturnTime, CTFPlayer* pPlayer )
 {
-    return GetReturnTimeShotClockMode( nMaxReturnTime );
+    return GetReturnTimeShotClockMode( nMaxReturnTime, pPlayer );
 }
 
 //-----------------------------------------------------------------------------
