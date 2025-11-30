@@ -15,7 +15,7 @@
 #endif
 
 
-ConVar tf_mm_force_high_skill("tf_mm_force_high_skill", "0", FCVAR_REPLICATED);
+ConVar tf_mm_force_high_skill( "tf_mm_force_high_skill", "0", FCVAR_REPLICATED );
 
 class CLadderMatchGroupDescription : public IMatchGroupDescription
 {
@@ -66,7 +66,7 @@ public:
 
 
 #if defined( GAME_DLL ) || defined( CLIENT_DLL )
-	bool BMatchIsHighSkill() const
+	virtual bool BMatchIsHighSkill() const OVERRIDE
 	{
 		if ( tf_mm_force_high_skill.GetBool() )
 			return true;

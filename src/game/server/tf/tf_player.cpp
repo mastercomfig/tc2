@@ -1100,6 +1100,9 @@ CTFPlayer::CTFPlayer()
 	m_flSpawnTime = 0;
 	m_flRespawnTime = 0;
 
+	m_bSaveMeParity = false;
+	m_flSaveMeExpireTime = 0.0f;
+
 	m_flWaterExitTime = 0;
 
 	SetViewOffset( TF_PLAYER_VIEW_OFFSET );
@@ -2601,7 +2604,8 @@ void CTFPlayer::PreThink()
 
 }
 
-ConVar mp_idledealmethod( "mp_idledealmethod", "1", FCVAR_GAMEDLL, "Deals with Idle Players. 1 = Sends them into Spectator mode then kicks them if they're still idle, 2 = Kicks them out of the game;" );
+ConVar mp_idledealmethod( "mp_idledealmethod", "1", FCVAR_GAMEDLL, "Deals with Idle Players. 1 = Sends them into Spectator mode then kicks them if they're still idle, 2 = Kicks them out of the game" );
+ConVar mp_idleunready( "mp_idleunready", "1", FCVAR_GAMEDLL, "If a player is idle while the game is not ready yet, should we just unready them?" );
 ConVar mp_idlemaxtime( "mp_idlemaxtime", "3", FCVAR_GAMEDLL, "Maximum time a player is allowed to be idle (in minutes)" );
 
 //-----------------------------------------------------------------------------
@@ -2692,7 +2696,11 @@ void CTFPlayer::CheckForIdle( void )
 			bool bKickPlayer = false;
 
 			ConVarRef mp_allowspectators( "mp_allowspectators" );
-			if ( ( mp_allowspectators.IsValid() && mp_allowspectators.GetBool() == false ) || ( TFGameRules()->IsInArenaMode() && tf_arena_use_queue.GetBool() ) )
+			if ( mp_idleunready.GetBool() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
+			{
+				TFGameRules()->PlayerReadyStatus_UpdatePlayerState( this, false );
+			}
+			else if ( ( mp_allowspectators.IsValid() && mp_allowspectators.GetBool() == false ) || ( TFGameRules()->IsInArenaMode() && tf_arena_use_queue.GetBool() ) )
 			{
 				// just kick the player if this server doesn't allow spectators
 				bKickPlayer = true;
@@ -3882,8 +3890,27 @@ int	CTFPlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 		}
 
 		CBaseEntity *pRecipientEntity = CBaseEntity::Instance( pInfo->m_pClientEnt );
-		if ( pRecipientEntity && pRecipientEntity->ShouldForceTransmitsForTeam( GetTeamNumber() ) )
-			return FL_EDICT_ALWAYS;
+		if ( pRecipientEntity )
+		{
+			// show injured teammate
+			if ( IsPlayerClass( TF_CLASS_MEDIC ) && pRecipientEntity->IsPlayer() )
+			{
+				CTFPlayer* pPlayer = ToTFPlayer( pRecipientEntity );
+				const bool bSameTeam = pPlayer->GetTeamNumber() == GetTeamNumber() || pPlayer->m_Shared.GetDisguiseTeam() == GetTeamNumber();
+				if ( bSameTeam )
+				{
+					if ( gpGlobals->curtime <= pPlayer->m_flSaveMeExpireTime )
+						return FL_EDICT_ALWAYS;
+
+					int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100;
+					if ( iHealth <= 50 )
+						return FL_EDICT_ALWAYS;
+				}
+			}
+
+			if ( pRecipientEntity->ShouldForceTransmitsForTeam( GetTeamNumber() ) )
+				return FL_EDICT_ALWAYS;
+		}
 	}
 
 	return BaseClass::ShouldTransmit( pInfo );
@@ -11100,16 +11127,10 @@ void CTFPlayer::CommitSuicide( bool bExplode /* = false */, bool bForce /*= fals
 // Input  : &info - 
 // Output : int
 //-----------------------------------------------------------------------------
-#ifdef TF2_OG
-#define DEFAULT_PREROUND_PUSH "1"
-#else
-#define DEFAULT_PREROUND_PUSH "0"
-#endif
-ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", DEFAULT_PREROUND_PUSH, FCVAR_NONE, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
 void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir )
 {
 	// check if player can be moved
-	if ( !tf_preround_push_from_damage_enable.GetBool() && !CanPlayerMove() )
+	if ( !TFGameRules()->IsPreRoundPushEnabled() && !CanPlayerMove() )
 		return;
 
 	if ( m_bIsTargetDummy )
@@ -12470,6 +12491,38 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 	if ( iSpeedBoostOnKill )
 	{
 		m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnKill );
+	}
+
+	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
+	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
+	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
+	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	{
+		// give ammo for the sound
+		GiveAmmo( 1, TF_AMMO_PRIMARY );
+
+		// Refill weapon clips
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase* >( GetWeapon( i ) );
+			if ( !pWeapon )
+				continue;
+
+			pWeapon->GiveDefaultAmmo();
+
+			pWeapon->WeaponRegenerate();
+		}
+
+		// Siphon some health
+		m_iHealth += 50.0f;
+
+		// Maybe refill charges...
+		m_Shared.SetDemomanChargeMeter( 100.f );
+
+		for( int i = FIRST_LOADOUT_SLOT_WITH_CHARGE_METER; i <= LAST_LOADOUT_SLOT_WITH_CHARGE_METER; ++i )
+		{
+			m_Shared.SetItemChargeMeter( (loadout_positions_t)i, 100.f );
+		}
 	}
 }
 
@@ -17057,6 +17110,7 @@ void CTFPlayer::SaveMe( void )
 		return;
 
 	m_bSaveMeParity = !m_bSaveMeParity;
+	m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
 }
 
 //-----------------------------------------------------------------------------

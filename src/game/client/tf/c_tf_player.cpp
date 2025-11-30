@@ -8168,7 +8168,7 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 		m_bNotifiedWeaponInspectThisLife = false;
 
 		// make sure the chat window has been restored to the appropriate place
-		if ( TFGameRules() && (TFGameRules()->BInMatchStartCountdown()) || TFGameRules()->ShowMatchSummary() ) // If we're at the start or end of a casual/competitive match...
+		if ( TFGameRules() && TFGameRules()->InMatchStartFreeze() || TFGameRules()->ShowMatchSummary() ) // If we're at the start or end of a casual/competitive match...
 		{
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_LowerChatWindow", false ); // ...do not update position!
 		}
@@ -8390,6 +8390,11 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 		m_pSaveMeEffect = ParticleProp()->Create( "speech_mediccall", PATTACH_POINT_FOLLOW, "head" );
 	}
 
+	if ( !IsClientSideGlowEnabled() && pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+	{
+		SetClientSideGlowEnabled( true );
+	}
+
 	if ( m_pSaveMeEffect )
 	{
 		m_pSaveMeEffect->SetControlPoint( 1, vHealth );
@@ -8434,6 +8439,10 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		}
 		
 		m_pSaveMeEffect = NULL;
+		if ( IsClientSideGlowEnabled() )
+		{
+			SetClientSideGlowEnabled( false );
+		}
 	}
 }
 
@@ -11710,9 +11719,19 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 
 	int nTeam = GetTeamNumber();
 
-	C_TFPlayer *pLocalPlayer = GetLocalTFPlayer();
-	// In CTF, show health color glow for alive player
-	if ( pLocalPlayer && pLocalPlayer->IsAlive() && TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
+	bool bShowHealthGlow = false;
+	if ( TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
+	{
+		// In CTF, show health for allied flag carrier
+		bShowHealthGlow = ( GetLocalPlayerTeam() >= FIRST_GAME_TEAM ) ? nTeam == GetLocalPlayerTeam() : true;
+	}
+	else if ( m_pSaveMeEffect )
+	{
+		// injured players get glow effect
+		bShowHealthGlow = true;
+	}
+
+	if ( bShowHealthGlow )
 	{
 		float flHealth = (float)GetHealth() / (float)GetMaxHealth();
 

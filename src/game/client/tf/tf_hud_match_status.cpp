@@ -643,9 +643,16 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 
 	switch ( nTime )
 	{
+	case 4:
+		// Drop the round sign with 4 seconds to go on the 1st round
+		if ( TFGameRules()->IsPreRoundPushEnabled() && TFGameRules()->GetRoundsPlayed() == 0 )
+		{
+			ShowRoundSign( TFGameRules()->GetRoundsPlayed() );
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("CompetitiveGame_RestoreChatWindow", false); // Restore chat window to in-game position
+		}
 	case 2:
 		// Drop the round sign with 2 seconds to go on the 1st round
-		if ( TFGameRules()->GetRoundsPlayed() == 0 )
+		if ( !TFGameRules()->IsPreRoundPushEnabled() && TFGameRules()->GetRoundsPlayed() == 0 )
 		{
 			ShowRoundSign( TFGameRules()->GetRoundsPlayed() );
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("CompetitiveGame_RestoreChatWindow", false); // Restore chat window to in-game position
@@ -691,7 +698,14 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		m_pMatchStartModelPanel->UpdateModel();
 		m_pMatchStartModelPanel->SetSkin( nSkin );
 
-		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors", false );
+		if ( TFGameRules()->IsPreRoundPushEnabled() )
+		{
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors_Fast", false );
+		}
+		else
+		{
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors", false );
+		}
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "CompetitiveGame_LowerChatWindow", false);	// Lowering chat window to minimize overlap with team lineup ui
 
 		bool bUsesStickyRanks = ( pMatchDesc && !TFGameRules()->IsEmulatingMatch() ) ? pMatchDesc->BUsesStickyRanks() : false;

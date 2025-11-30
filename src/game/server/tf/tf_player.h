@@ -694,6 +694,8 @@ public:
 	int m_flNextTimeCheck;		// Next time the player can execute a "timeleft" command
 
 	CNetworkVar( bool, m_bSaveMeParity );
+
+	float m_flSaveMeExpireTime;
 	
 	CNetworkVar( bool, m_bIsCoaching);
 	CNetworkHandle( CTFPlayer, m_hCoach );

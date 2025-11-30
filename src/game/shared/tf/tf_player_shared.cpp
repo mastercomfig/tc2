@@ -10935,7 +10935,6 @@ float CTFPlayer::GetMovementForwardPull( void ) const
 	return 0.0f;
 }
 
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -10948,6 +10947,7 @@ bool CTFPlayer::CanPlayerMove() const
 		return true;
 
 	// No one can move when in a final countdown transition.
+	// NOTE: this is intentionally not InMatchStartFreeze, because we want to freeze normal movement still.
 	if ( TFGameRules() && TFGameRules()->BInMatchStartCountdown() )
 		return false;
 
@@ -12492,12 +12492,15 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	if ( IsViewingCYOAPDA() )
 		return false;
 
-	if ( pRules->BInMatchStartCountdown() )
+	if ( pRules->InMatchStartFreeze() )
 		return false;
 
-	if ( gpGlobals->curtime < pRules->GetPreroundCountdownTime() )
+	if ( !pRules->IsPreRoundPushEnabled() )
 	{
-		return false;
+		if ( gpGlobals->curtime < pRules->GetPreroundCountdownTime() )
+		{
+			return false;
+		}
 	}
 
 	if ( m_Shared.HasPasstimeBall() ) 

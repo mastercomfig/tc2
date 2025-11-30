@@ -701,9 +701,11 @@ bool IsCreepWaveMode( void ) const;
 	bool IsMatchTypeCasual( void ) const;
 	bool IsMatchTypeCompetitive( void ) const;
 	bool IsCompetitiveGame( void );			// is this a game played competitively: competitive MM or community competitive
+	bool IsHighSkillCompetitive( void );
 	int IsEmulatingMatch(void) const;
 	// Are we showing the match-start-countdown doors right now
 	bool BInMatchStartCountdown() const;
+	bool InMatchStartFreeze();
 #ifdef GAME_DLL
 	void SyncMatchSettings();
 	// ! Check return
@@ -743,6 +745,8 @@ bool IsCreepWaveMode( void ) const;
 	const char*		GetCustomUpgradesFile() { return m_pszCustomUpgradesFile.Get(); }
 
 	bool IsBetaActive() const;
+
+	bool IsPreRoundPushEnabled();
 
 //=============================================================================
 // HPE_BEGIN:

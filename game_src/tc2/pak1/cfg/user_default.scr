@@ -338,7 +338,7 @@ DESCRIPTION INFO_OPTIONS
 	{
 		"#TF_AutoMedicCallThreshold"
 		"#Tooltip_AutoMedicCallThreshold"
-		{ SLIDER 10 99 }
+		{ SLIDER 10 75 }
 		{ "75" }
 	}
 		

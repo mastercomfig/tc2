@@ -79,6 +79,10 @@ public:
 	virtual bool BPlayWinMusic( int nWinningTeam, bool bGameOver ) const = 0;
 #endif
 
+#if defined( GAME_DLL ) || defined( CLIENT_DLL )
+	virtual bool BMatchIsHighSkill() const { return false; };
+#endif
+
 	// Accessors for param values
 	inline int GetMatchSize() const								{ return m_pmm_match_group_size->GetInt(); }
 	inline bool BShouldAutomaticallyRequeueOnMatchEnd() const	{ return m_bAutomaticallyRequeueAfterMatchEnds; }

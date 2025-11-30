@@ -1233,6 +1233,13 @@ ConVar tf_voice_command_suspension_mode( "tf_voice_command_suspension_mode", "2"
 
 ConVar tf_beta_mode("tf_beta_mode", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Activate experimental beta features for testing.");
 
+#ifdef TF2_OG
+#define DEFAULT_PREROUND_PUSH "1"
+#else
+#define DEFAULT_PREROUND_PUSH "0"
+#endif
+ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", DEFAULT_PREROUND_PUSH, FCVAR_REPLICATED, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
+
 #ifdef GAME_DLL
 
 ConVar tf_voice_command_suspension_rate_limit_bucket_count( "tf_voice_command_suspension_rate_limit_bucket_count", "5" ); // Bucket size of 5.
@@ -2312,6 +2319,40 @@ bool CTFGameRules::IsBetaActive( void ) const
 	return tf_beta_mode.GetBool();
 }
 
+bool CTFGameRules::IsPreRoundPushEnabled( void )
+{
+	if ( tf_preround_push_from_damage_enable.GetBool() )
+	{
+		return true;
+	}
+
+	if ( IsHighSkillCompetitive() )
+	{
+		// we're turning this on for high skill competitive games.
+		// why?
+		// there's too many consequences which can't be easily resolved in TF2
+		// if we block any actions from happening the countdown.
+		// if the match start countdown is different from other pre-rounds, that
+		// heavily affects roll-out on the first round vs. other rounds.
+		// so all rounds must have an awkward 10 second freeze during the countdown.
+		// without blast jumping, there is not a tradeoff between "crit heals"
+		// and health loss vs. getting overheal during freeze time and then jumping.
+		// this causes numerous things to go wrong in terms of the healing priority
+		// and mid fight for soldiers and demos.
+		// it's not necessarily a bad thing for everyone to be fully buffed and fast
+		// to mid, but it is a difference we want to mitigate the impact of for now
+		// in competitive matches.
+		// we're leaving the old match behavior on for lower skilled games so that the
+		// game is more accessible to players.
+		// finally, we would probably want to consider either turning this off at some point
+		// as meta shifts become more feasible, or give a way for other classes to have mobility
+		// during freeze time, so as to not be outshined by soldier and demo.
+		return true;
+	}
+
+	return false;
+}
+
 bool CTFGameRules::IsCompetitiveMode( void ) const
 {
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
@@ -2343,6 +2384,27 @@ bool CTFGameRules::IsMatchTypeCompetitive( void ) const
 		return ( pMatchDesc->GetMatchType() == MATCH_TYPE_COMPETITIVE );
 	}
 
+	return false;
+}
+
+bool CTFGameRules::InMatchStartFreeze( void )
+{
+	// No one can move when in a final countdown transition.
+	if ( TFGameRules() && TFGameRules()->BInMatchStartCountdown() )
+	{
+		// if preround push is enabled, we can move in the last bit.
+		if ( TFGameRules()->IsPreRoundPushEnabled() )
+		{
+			if ( ( TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime ) > 3.0f )
+			{
+				return true;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -2390,6 +2452,31 @@ bool CTFGameRules::IsCompetitiveGame( void )
 
 	// community competitive uses tournament mode: either player ready status or team ready status
 	if ( IsInTournamentMode() )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CTFGameRules::IsHighSkillCompetitive( void )
+{
+	// if we're not competitive, we can't be high skill
+	if ( !IsCompetitiveGame() )
+	{
+		return false;
+	}
+
+	// check mm force skill directly, so as to not require emulation
+	static ConVarRef tf_mm_force_high_skill( "tf_mm_force_high_skill" );
+	if ( tf_mm_force_high_skill.IsValid() && tf_mm_force_high_skill.GetBool() )
+	{
+		return true;
+	}
+
+	// check the match group now
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+	if ( pMatchDesc && pMatchDesc->BMatchIsHighSkill() )
 	{
 		return true;
 	}
@@ -3231,6 +3318,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 
 		// If everyone cancels ready state, stop the clock
 		bool bAnyoneReady = false;
+		bool bAnyBluReady = false;
+		bool bAnyRedReady = false;
 		for ( int i = 1; i <= MAX_PLAYERS; ++i )
 		{
 			CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
@@ -3240,14 +3329,28 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 			if ( m_bPlayerReady[i] )
 			{
 				bAnyoneReady = true;
+				if ( pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+				{
+					bAnyBluReady = true;
+				}
+				else if ( pPlayer->GetTeamNumber() == TF_TEAM_RED )
+				{
+					bAnyRedReady = true;
+				}
 				break;
 			}
+		}
+		
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+		const bool bAutoReady = IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady();
+		if ( bAutoReady ? ( !bAnyoneReady ) : ( !bAnyBluReady || !bAnyRedReady ) )
+		{
+			m_flRestartRoundTime.Set(-1.f);
+			mp_restartgame.SetValue(0);
 		}
 
 		if ( !bAnyoneReady )
 		{
-			m_flRestartRoundTime.Set( -1.f );
-			mp_restartgame.SetValue( 0 );
 			ResetPlayerAndTeamReadyState();
 		}
 	}
@@ -3270,14 +3373,58 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 			}
 			else if ( m_flRestartRoundTime < 0 && !PlayerReadyStatus_ShouldStartCountdown() )
 			{
-				m_flRestartRoundTime.Set( gpGlobals->curtime + 150.f );
-				m_bAwaitingReadyRestart = false;
-
-				IGameEvent* pEvent = gameeventmanager->CreateEvent( "teamplay_round_restart_seconds" );
-				if ( pEvent )
+				bool bReadyForDropDeadTimer = false;
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+				if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
 				{
-					pEvent->SetInt( "seconds", 150 );
-					gameeventmanager->FireEvent( pEvent );
+					bReadyForDropDeadTimer = true;
+				}
+				else if ( IsHighSkillCompetitive() )
+				{
+					// in a high skill competitive game, we wait until everyone is ready.
+				}
+				else
+				{
+					// in a competitive game, we count the timer down if someone from both teams is ready.
+					bool bAnyBluReady = false;
+					bool bAnyRedReady = false;
+					for ( int i = 1; i <= MAX_PLAYERS; ++i )
+					{
+						CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
+						if ( !pPlayer )
+							continue;
+
+						if ( m_bPlayerReady[i] )
+						{
+							if ( pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+							{
+								bAnyBluReady = true;
+							}
+							else if ( pPlayer->GetTeamNumber() == TF_TEAM_RED )
+							{
+								bAnyRedReady = true;
+							}
+							break;
+						}
+					}
+
+					if ( bAnyBluReady && bAnyRedReady )
+					{
+						bReadyForDropDeadTimer = true;
+					}
+				}
+
+				if ( bReadyForDropDeadTimer )
+				{
+					m_flRestartRoundTime.Set( gpGlobals->curtime + 150.f );
+					m_bAwaitingReadyRestart = false;
+
+					IGameEvent* pEvent = gameeventmanager->CreateEvent( "teamplay_round_restart_seconds" );
+					if ( pEvent )
+					{
+						pEvent->SetInt( "seconds", 150 );
+						gameeventmanager->FireEvent( pEvent );
+					}
 				}
 			}
 		}
@@ -13698,7 +13845,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 
 					float flCombatStartTime = m_flRoundStartTime + GetSetupTime();
 
-					if ( ( gpGlobals->curtime - flCombatStartTime ) <= flFastTime )
+					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
 					{
 						BroadcastSound( 255, "Announcer.AM_FirstBloodFast" );
 					}
@@ -21991,6 +22138,11 @@ void CTFGameRules::PreRound_Start( void )
 	if ( m_hCompetitiveLogicEntity )
 	{
 		m_hCompetitiveLogicEntity->OnSpawnRoomDoorsShouldLock();
+		if ( IsPreRoundPushEnabled() )
+		{
+			// immediately unlock, so we get the side-effects of the lock but then undo them.
+			m_hCompetitiveLogicEntity->OnSpawnRoomDoorsShouldUnlock();
+		}
 	}
 
 	BaseClass::PreRound_Start();
