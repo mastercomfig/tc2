@@ -669,7 +669,7 @@ END_SEND_TABLE()
 
 #endif
 
-extern void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
+extern void HandleRageGain( CTFPlayer *pPlayer, CBaseEntity *pVictim, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
 
 CTFWearableDemoShield* GetEquippedDemoShield( CTFPlayer * pPlayer )
 {
@@ -2634,7 +2634,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 								// Add this to the one-second-healing counter
 								m_aHealers[i].flHealedLastSecond += flHealAmount;
 					
-								HandleRageGain( m_pOuter, kRageBuffFlag_OnMedicHealingReceived, flHealAmount / 2.f, 1.0f );
+								HandleRageGain( m_pOuter, pHealScorer, kRageBuffFlag_OnMedicHealingReceived, flHealAmount / 2.f, 1.0f );
 								
 								float flRage = flHealAmount;
 								if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && 
@@ -2642,7 +2642,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 								{
 									flRage = Max( flHealAmount, 10.f );
 								}
-								HandleRageGain( pHealScorer, kRageBuffFlag_OnHeal, flRage, 1.0f );
+								HandleRageGain( pHealScorer, m_pOuter, kRageBuffFlag_OnHeal, flRage, 1.0f );
 
 								// If it's been one second, generate an event
 								if ( m_flHealedPerSecondTimer <= gpGlobals->curtime && m_aHealers[i].flHealedLastSecond > 1 )

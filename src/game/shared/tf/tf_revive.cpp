@@ -28,7 +28,7 @@ static const int REVIVE_EASY_LIMIT = 4;
 static const int REVIVE_MEDIUM_LIMIT = 8;
 
 #ifdef GAME_DLL
-extern void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
+extern void HandleRageGain( CTFPlayer *pPlayer, CBaseEntity *pVictim, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
 #else
 extern void AddMedicCaller( C_BaseEntity *pEntity, float flDuration, Vector &vecOffset, bool bAutoCaller = false );
 #endif // GAME_DLL
@@ -332,7 +332,7 @@ void CTFReviveMarker::AddMarkerHealth( float flAmount )
 	if ( !GetMaxHealth() )
 		return;
 
-	HandleRageGain( pReviver, kRageBuffFlag_OnHeal, flAmount * 2, 1.f );
+	HandleRageGain( pReviver, pOwner, kRageBuffFlag_OnHeal, flAmount * 2, 1.f );
 
 	m_flHealAccumulator += flAmount;
 	if ( m_flHealAccumulator >= 1.f )

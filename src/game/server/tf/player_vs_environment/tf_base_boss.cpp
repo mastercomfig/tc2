@@ -56,7 +56,7 @@ END_SCRIPTDESC();
 ConVar tf_base_boss_speed( "tf_base_boss_speed", "75", FCVAR_CHEAT );
 ConVar tf_base_boss_max_turn_rate( "tf_base_boss_max_turn_rate", "25", FCVAR_CHEAT );
 
-extern void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
+extern void HandleRageGain( CTFPlayer *pPlayer, CBaseEntity *pVictim, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale );
 
 //--------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------
@@ -450,12 +450,12 @@ int CTFBaseBoss::OnTakeDamage( const CTakeDamageInfo &rawInfo )
 
 		// Buff flag 1: we get rage when we deal damage. Here, that means the soldier that attacked
 		// gets rage when we take damage.
-		HandleRageGain( pAttacker, kRageBuffFlag_OnDamageDealt, info.GetDamage(), 6.0f );
+		HandleRageGain( pAttacker, this, kRageBuffFlag_OnDamageDealt, info.GetDamage(), 6.0f );
 
 		// Buff 5: our pyro attacker get rage when we're damaged by fire
 		if ( ( info.GetDamageType() & DMG_BURN ) != 0 || ( info.GetDamageType() & DMG_PLASMA ) != 0 )
 		{
-			HandleRageGain( pAttacker, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage(), 30.f );
+			HandleRageGain( pAttacker, this, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage(), 30.f );
 		}
 
 		if ( pAttacker && info.GetWeapon() )

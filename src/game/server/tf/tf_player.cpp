@@ -9545,7 +9545,7 @@ void CTFPlayer::ClearBlastJumpState( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale )
+void HandleRageGain( CTFPlayer *pPlayer, CBaseEntity *pVictim, unsigned int iRequiredBuffFlags, float flDamage, float fInverseRageGainScale )
 {
 	if ( !pPlayer )
 		return;
@@ -9578,14 +9578,20 @@ void HandleRageGain( CTFPlayer *pPlayer, unsigned int iRequiredBuffFlags, float 
 		{
 			if ( g_RageBuffTypes[iBuffId].m_iBuffFlags & iRequiredBuffFlags )
 			{
+				float flRageGainMod = 1.0f;
 				if ( TFGameRules() && TFGameRules()->IsPowerupMode() && pPlayer->m_Shared.GetCarryingRuneType() != RUNE_NONE )
 				{
-					pPlayer->m_Shared.ModifyRage(g_RageBuffTypes[iBuffId].m_fRageScale * ( ( flDamage / 10 ) / fInverseRageGainScale) );
+					flRageGainMod *= 0.1f;
 				}
-				else
+
+				// reduce rage gain at distance
+				if ( TFGameRules()->IsBetaActive() )
 				{
-					pPlayer->m_Shared.ModifyRage( g_RageBuffTypes[iBuffId].m_fRageScale * ( flDamage / fInverseRageGainScale ) );
+					const float flDist = pVictim ? pPlayer->GetAbsOrigin().DistTo( pVictim->GetAbsOrigin() ) : 0.0f;
+					flRageGainMod *= RemapValClamped(flDist, 256.0f, 1024.0f, 1.0f, 0.5f );
 				}
+
+				pPlayer->m_Shared.ModifyRage( g_RageBuffTypes[iBuffId].m_fRageScale * ( ( flDamage * flRageGainMod ) / fInverseRageGainScale ) );
 			}
 		}
 	}
@@ -10578,19 +10584,19 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	{
 		// Buff flag 1: we get rage when we deal damage. Here, that means the soldier that attacked
 		// gets rage when we take damage.
-		HandleRageGain( pTFAttacker, kRageBuffFlag_OnDamageDealt, info.GetDamage() * flRageScale, 6.0f );
+		HandleRageGain( pTFAttacker, this, kRageBuffFlag_OnDamageDealt, info.GetDamage() * flRageScale, 6.0f );
 
 		// Buff flag 2: we get rage when we take damage.
 		if (  !( info.GetDamageType() & DMG_FALL ) )
 		{
-			HandleRageGain( this, kRageBuffFlag_OnDamageReceived, info.GetDamage() * flRageScale, 3.5f );
+			HandleRageGain( this, pTFAttacker, kRageBuffFlag_OnDamageReceived, info.GetDamage() * flRageScale, 3.5f );
 		}
 
 		// Buff 5: our pyro attacker get rage when we're damaged by fire
 		if ( ( info.GetDamageType() & DMG_BURN ) != 0 || ( info.GetDamageType() & DMG_PLASMA ) != 0 )
 		{
 			float flInverseRageGainScale = TFGameRules()->IsMannVsMachineMode() ? 12.f : 3.f;
-			HandleRageGain( pTFAttacker, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage() * flRageScale, flInverseRageGainScale );
+			HandleRageGain( pTFAttacker, this, kRageBuffFlag_OnBurnDamageDealt, info.GetDamage() * flRageScale, flInverseRageGainScale );
 		}
 
 #if defined(MCOMS_BALANCE_PACK)
@@ -11803,7 +11809,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 				{
 					if ( pTFProvider != pTFAttacker && bUsingUpgrades )
 					{
-						HandleRageGain( pTFProvider, kRageBuffFlag_OnHeal, ( realDamage / 2.f ), 1.f );
+						HandleRageGain( pTFProvider, this, kRageBuffFlag_OnHeal, ( realDamage / 2.f ), 1.f );
 					}
 
 					CTF_GameStats.Event_PlayerBlockedDamage( pTFProvider, realDamage );
@@ -11820,7 +11826,7 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			{
 				// Cap to prevent insane values coming from headshots and backstabs
 				float flAmount = Min( realDamage, 250.f ) / 10.f;
-				HandleRageGain( ToTFPlayer( pProvider ), kRageBuffFlag_OnHeal, flAmount, 1.f );
+				HandleRageGain( ToTFPlayer( pProvider ), this, kRageBuffFlag_OnHeal, flAmount, 1.f );
 			}
 		}
 	}
