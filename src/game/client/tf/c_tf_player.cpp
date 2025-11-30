@@ -6029,12 +6029,14 @@ void C_TFPlayer::ClientThink()
 		m_bWaterExitEffectActive = false;
 	}
 
-	// Kill the effect if either
-	// a) the player is dead
-	// b) the enemy disguised spy is now invisible
+	// Kill the effect if
+	// a) save me expired
+	// b) the player is dead
+	// c) the enemy disguised spy is now invisible
 
-	if ( !IsAlive() ||
-		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 || !GetCompetitiveVisibility() ) ) )
+	if ( gpGlobals->curtime > m_flSaveMeExpireTime ||
+		 !IsAlive() ||
+		 ( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 || !GetCompetitiveVisibility() ) ) )
 	{
 		StopSaveMeEffect( true );
 	}
@@ -8438,11 +8440,12 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 			ParticleProp()->StopEmission( m_pSaveMeEffect );
 		}
 		
-		m_pSaveMeEffect = NULL;
 		if ( IsClientSideGlowEnabled() )
 		{
 			SetClientSideGlowEnabled( false );
 		}
+		
+		m_pSaveMeEffect = NULL;
 	}
 }
 
