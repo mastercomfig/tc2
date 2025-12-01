@@ -78,7 +78,7 @@ jobs:
         id: perma-rel
         if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
         run: |
-          7z a game-linux.zip game_dist/*
+          7z a -r game-linux.zip game_dist/*
           gh release upload --clobber rel game-linux.zip
           rm -f game-linux.zip
           (cd ~ && du -aBM 2>/dev/null | sort -nr | head -n 50 | more)
