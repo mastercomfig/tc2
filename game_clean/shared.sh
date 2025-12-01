@@ -4,7 +4,16 @@ DEV_DIR=../game
 CLEAN_DIR=../game_dist
 CLEAN_DEBUG_DIR=${CLEAN_DIR}_debug
 
-command -v 7z > /dev/null && CMD_7Z=7z || CMD_7Z=7za
+if [ command -v 7zz > /dev/null ]; then
+  CMD_7Z=7zz
+elif [ command -v 7z > /dev/null ]; then
+  CMD_7Z=7z
+elif [ command -v 7za > /dev/null ]; then
+  CMD_7Z=7za
+else
+  echo "7zz/7z/7za command not found! Please install 7zip."
+  exit 1
+fi
 
 if [[ "$OSTYPE" == "linux"* ]]; then
   PLATFORM="linux"
