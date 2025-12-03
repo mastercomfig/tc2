@@ -6047,6 +6047,18 @@ void C_TFPlayer::ClientThink()
 		StopSaveMeEffect( true );
 	}
 
+	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
+	C_TFPlayer* pTFHealTarget = pLocalPlayer ? ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) : nullptr;
+	const bool bHealingThisPlayer = pTFHealTarget && pTFHealTarget == this;
+	if ( bHealingThisPlayer )
+	{
+		SetClientSideGlowEnabled( true );
+	}
+	else if ( !m_pSaveMeEffect )
+	{
+		SetClientSideGlowEnabled( false );
+	}
+
 	if ( ShouldTauntHintIconBeVisible() )
 	{
 		CreateTauntWithMeEffect();
@@ -8515,11 +8527,6 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		else
 		{
 			ParticleProp()->StopEmission( m_pSaveMeEffect );
-		}
-		
-		if ( IsClientSideGlowEnabled() )
-		{
-			SetClientSideGlowEnabled( false );
 		}
 		
 		m_pSaveMeEffect = NULL;
@@ -11905,6 +11912,8 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 
 	int nTeam = GetTeamNumber();
 
+	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
+
 	bool bShowHealthGlow = false;
 	bool bMedic = IsPlayerClass( TF_CLASS_MEDIC );
 	if ( TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
@@ -11917,11 +11926,17 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 		// injured players get glow effect
 		bShowHealthGlow = true;
 	}
+	else if ( pLocalPlayer && ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) == this )
+	{
+		// if you're healing, always show.
+		bShowHealthGlow = true;
+	}
 
 	if ( bShowHealthGlow )
 	{
-		float flHealth = (float)GetHealth() / (float)GetMaxHealth();
+		const float flHealth = (float)GetHealth() / (float)GetMaxHealth();
 
+		Color healthOverheal(191, 231, 182);
 		Color healthGood(84, 191, 58);
 		Color healthOkay(191, 184, 58);
 		Color healthBad(191, 58, 58);
@@ -11933,18 +11948,23 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 		const float flBadThreshold = 0.3f;
 
 		Color glowColor;
-		if ( flHealth >= flGoodThreshold )
+		if ( flHealth > 1.0f )
+		{
+			const float t = RemapValClamped(flHealth, 0.9f, 1.5f, 0.0f, 1.0f);
+			glowColor = LerpColor(healthGood, healthOverheal, t);
+		}
+		else if ( flHealth >= flGoodThreshold )
 		{
 			glowColor = healthGood;
 		}
 		else if ( flHealth > flOkayThreshold )
 		{
-			const float t = RemapValClamped(flHealth, flOkayThreshold, flGoodThreshold, 0.0, 1.0f);
+			const float t = RemapValClamped(flHealth, flOkayThreshold, flGoodThreshold, 0.0f, 1.0f);
 			glowColor = LerpColor(healthOkay, healthGood, t);
 		}
 		else if( flHealth > flBadThreshold )
 		{
-			const float t = RemapValClamped(flHealth, flBadThreshold, flOkayThreshold, 0.0, 1.0f);
+			const float t = RemapValClamped(flHealth, flBadThreshold, flOkayThreshold, 0.0f, 1.0f);
 			glowColor = LerpColor(healthBad, healthOkay, t);
 		}
 		else

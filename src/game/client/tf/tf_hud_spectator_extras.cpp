@@ -220,6 +220,7 @@ void CTFHudSpectatorExtras::OnTick()
 				if ( pPlayer->IsPlayerClass( TF_CLASS_SPY ) && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && ( nPlayerTeamNumber != nLocalPlayerTeam ) )
 				{
 					pDisguiseTarget = pPlayer->m_Shared.GetDisguiseTarget();
+					nPlayerTeamNumber = pPlayer->m_Shared.GetDisguiseTeam();
 				}
 			}
 
@@ -250,7 +251,7 @@ void CTFHudSpectatorExtras::OnTick()
 
  			// what color should we use?
 			float r, g, b;
-			pPlayer->GetGlowEffectColor( &r, &g, &b );
+			TFGameRules()->GetTeamGlowColor( nPlayerTeamNumber, r, g, b );
 			m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Color( r * 255, g * 255, b * 255, 255 );
 
 			if ( !pPlayer->IsClientSideGlowEnabled() )
@@ -337,7 +338,7 @@ void CTFHudSpectatorExtras::OnTick()
 				// what color should we use?
 				float r, g, b;
 				pObject->GetGlowEffectColor( &r, &g, &b );
-				m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Color( r * 255, g * 255, b * 255, 255 );
+				m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Floats2Color( r, g, b );
 
 				if ( !pObject->IsClientSideGlowEnabled() )
 				{
