@@ -127,6 +127,15 @@ jobs:
         run: |
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
           gh release upload --clobber rel game-win.zip
-          Remove-Item -Force game-win.zip
+        env:
+          GH_TOKEN: ${{secrets.REPO_TOKEN}}
+
+      - name: Push Release
+        id: create-rel
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        run: |
+          ./game_clean/tag.sh
+          rm game-win.zip
+        shell: bash
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}

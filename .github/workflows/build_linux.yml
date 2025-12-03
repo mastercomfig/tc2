@@ -80,7 +80,16 @@ jobs:
         run: |
           (cd game_dist && 7z a -r ../game-linux.zip '*')
           gh release upload --clobber rel game-linux.zip
-          rm -f game-linux.zip
           (cd ~ && du -aBM 2>/dev/null | sort -nr | head -n 50 | more)
+        env:
+          GH_TOKEN: ${{secrets.REPO_TOKEN}}
+
+      - name: Push Release
+        id: create-rel
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        run: |
+          ./game_clean/tag.sh
+          rm game-linux.zip
+        shell: bash
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}
