@@ -1,9 +1,0 @@
-﻿"lang"
-{
-"Language" "English"
-"Tokens"
-{
-	"TF_ClassLimitReached"						"This class's slot limit is already full!"
-	"TF_DemoSupport_Matchmaking"			"Auto-record matchmaking matches"
-}
-}
