@@ -8,8 +8,10 @@ set -e
 
 source ./shared.sh
 
+git fetch --tags origin
+
 if git rev-parse ${VERSION} -- > /dev/null 2>&1; then
-    echo "Tag ${VERSION} already exists. Not creating a release."
+    echo "::warning Tag ${VERSION} already exists. Not creating a release."
     exit 0
 fi
 
@@ -20,6 +22,6 @@ git push origin ${VERSION}
 gh release create ${VERSION} \
     "../game-${PLATFORM}.zip" \
     --title "${VERSION}" \
-    --notes "Release ${VERSION}, view the [patch notes](https://teamcomtress.com/feed/#patches) for details." \
+    --notes "Release ${VERSION}\n\n[Download](https://teamcomtress.com/)\n[Patch Notes](https://teamcomtress.com/feed/#patches)" \
     --verify-tag \
     --fail-on-no-commits
