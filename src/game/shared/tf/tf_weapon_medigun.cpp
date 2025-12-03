@@ -2587,19 +2587,20 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 						// or dead (IsAlive can be true for a tick or so)...
 						if ( iHealth <= 0 || iHealth > iHealthThreshold )
 						{
+							if ( iHealth <= 0 )
+							{
+								// in the process of dying, so just clear it out, we can't help them anymore.
+								pPlayer->StopSaveMeEffect( true );
+							}
+							else
+							{
+								// we're healed up now! fade out the save me effect (not instantly since we wanna get a little bit of heal action)
+								pPlayer->FadeSaveMeEffect();
+							}
+
 							// Make sure we don't have them in our list if previously hurt
 							if ( m_iAutoCallers.Find( playerIndex ) != m_iAutoCallers.InvalidIndex() )
 							{
-								if ( iHealth <= 0 )
-								{
-									// in the process of dying, so just clear it out, we can't help them anymore.
-									pPlayer->StopSaveMeEffect( true );
-								}
-								else
-								{
-									// we're healed up now! fade out the save me effect (not instantly since we wanna get a little bit of heal action)
-									pPlayer->FadeSaveMeEffect();
-								}
 								m_iAutoCallers.FindAndRemove( playerIndex );
 								continue;
 							}

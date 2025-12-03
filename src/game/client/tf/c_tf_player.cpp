@@ -8485,6 +8485,11 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 //-----------------------------------------------------------------------------
 void C_TFPlayer::FadeSaveMeEffect()
 {
+	if ( !m_pSaveMeEffect )
+	{
+		return;
+	}
+
 	// only for auto caller.
 	if ( m_nMedicCallerType != CALLER_TYPE_AUTO )
 	{
