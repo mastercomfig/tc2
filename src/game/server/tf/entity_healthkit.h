@@ -37,7 +37,7 @@ public:
 	virtual void Precache( void );
 	virtual bool MyTouch( CBasePlayer *pPlayer );
 
-	virtual void ForceHoliday(int eHoliday) override;
+	virtual void ForceHoliday(int eHoliday) OVERRIDE;
 
 	virtual void UpdateModelIndexOverrides( void )
 	{

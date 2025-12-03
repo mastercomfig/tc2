@@ -1330,7 +1330,7 @@ public:
 
 	float	GetCapturePointTime( void ) { return m_flCapturePointEnableTime; }
 
-	virtual bool ShouldDrawHeadLabels() override;
+	virtual bool ShouldDrawHeadLabels() OVERRIDE;
 
 	enum HalloweenScenarioType
 	{

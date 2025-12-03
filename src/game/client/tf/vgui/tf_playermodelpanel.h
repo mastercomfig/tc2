@@ -91,7 +91,7 @@ protected:
 	virtual void	RenderingRootModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	virtual void	RenderingMergedModel( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	virtual IMaterial* GetOverrideMaterial( MDLHandle_t mdlHandle ) OVERRIDE;
-	virtual void CreateDefaultLights() override;
+	virtual void CreateDefaultLights() OVERRIDE;
 
 private:
 

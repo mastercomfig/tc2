@@ -962,8 +962,8 @@ public:
 	short GetAchievementRestrictions() const { return m_nRestrictAchievements; }
 	short GetQuestRestrictions() const { return m_nRestrictQuests; }
 
-	virtual void ClientAdjustStartSoundParams( EmitSound_t &params ) override;
-	virtual void ClientAdjustStartSoundParams( StartSoundParams_t& params ) override;
+	virtual void ClientAdjustStartSoundParams( EmitSound_t &params ) OVERRIDE;
+	virtual void ClientAdjustStartSoundParams( StartSoundParams_t& params ) OVERRIDE;
 
 private:
 	void ClientAdjustVOPitch( int& pitch );

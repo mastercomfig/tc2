@@ -160,7 +160,7 @@ protected:
 
 // Deduplicate providing Proto/MutProto/Assignment for implementors that have an m_proto ref or object
 #define _MATCHCRITERIA_IMPL( classname, criterianame ) \
-		virtual const CTF##criterianame##MatchCriteriaProto &Proto() const final override { return m_proto; }
+		virtual const CTF##criterianame##MatchCriteriaProto &Proto() const final OVERRIDE { return m_proto; }
 
 #define _MATCHCRITERIA_IMPL_MUTABLE( classname, criterianame )                  \
 	_MATCHCRITERIA_IMPL( classname, criterianame )                              \
@@ -169,7 +169,7 @@ protected:
 	classname &operator=( const ITF##criterianame##MatchCriteriaReader &other ) \
 		{ MutProto() = other.Proto(); return *this; }                           \
 	protected:                                                                  \
-		virtual CTF##criterianame##MatchCriteriaProto &MutProto() final override { return m_proto; }
+		virtual CTF##criterianame##MatchCriteriaProto &MutProto() final OVERRIDE { return m_proto; }
 
 /// PerPlayerMatchCriteria
 
