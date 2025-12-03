@@ -29,14 +29,7 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 #include "tf_obj_sentrygun.h"
 #endif
 
-#define TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC	50.0
-#define TF_WEAPON_SNIPERRIFLE_UNCHARGE_PER_SEC	75.0
-#define	TF_WEAPON_SNIPERRIFLE_DAMAGE_MIN		50
-#define TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX		150
-#define TF_WEAPON_SNIPERRIFLE_RELOAD_TIME		1.5f
-#define TF_WEAPON_SNIPERRIFLE_ZOOM_TIME			0.3f
-
-#define TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME	0.2f
+#define LASER_DOT_MAX_STRENGTH_TIME		3.0f
 
 #define LASER_DOT_SPRITE_RED		"effects/sniperdot_red.vmt"
 #define LASER_DOT_SPRITE_BLUE		"effects/sniperdot_blue.vmt"
@@ -448,7 +441,7 @@ int CLaserDot::DrawModel( int flags )
 	pRenderContext->Bind( m_hSpriteMaterial, this );
 
 	float flLifeTime = gpGlobals->curtime - m_flChargeStartTime;
-	float flStrength = RemapValClamped( flLifeTime, 0.0, TF_WEAPON_SNIPERRIFLE_DAMAGE_MAX / TF_WEAPON_SNIPERRIFLE_CHARGE_PER_SEC, 0.1, 1.0 );
+	float flStrength = RemapValClamped( flLifeTime, 0.0f, LASER_DOT_MAX_STRENGTH_TIME, 0.1f, 1.0f );
 
 	color32 innercolor = { 255, 255, 255, 255 };
 	color32 outercolor = { 255, 255, 255, 128 };
