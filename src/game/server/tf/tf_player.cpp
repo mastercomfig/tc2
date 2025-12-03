@@ -3908,7 +3908,9 @@ int	CTFPlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 				}
 			}
 
-			if ( pRecipientEntity->ShouldForceTransmitsForTeam( GetTeamNumber() ) )
+			const bool bFriendlyDisguise = IsPlayerClass( TF_CLASS_SPY ) && m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() == pRecipientEntity->GetTeamNumber();
+
+			if ( pRecipientEntity->ShouldForceTransmitsForTeam( bFriendlyDisguise ? pRecipientEntity->GetTeamNumber() : GetTeamNumber() ) )
 				return FL_EDICT_ALWAYS;
 		}
 	}

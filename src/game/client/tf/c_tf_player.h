@@ -215,6 +215,7 @@ public:
 	bool IsCompetitiveVisibilityChanging() const { return m_bCompetitiveVisibleChanged; }
 	bool GetCompetitiveVisibility() const { return m_bCompetitiveVisible; }
 	bool TraceCompetitiveVision( const Vector& vecEyes );
+	bool CanShowTeamGlowOutline();
 	virtual bool IsTransparent( void ) OVERRIDE { return GetPercentInvisible() > 0.f; }
 
 	virtual void AddDecal( const Vector& rayStart, const Vector& rayEnd,
@@ -267,6 +268,8 @@ public:
 	void			StopBlastJumpLoopSound( int iUserID );
 	
 	void			UpdateSpyStateChange( void );
+
+	bool			UpdateSpyPopIn( void );
 
 	void			UpdateRecentlyTeleportedEffect( void );
 	void			UpdateOverhealEffect( void );
@@ -608,6 +611,8 @@ private:
 
 	bool m_bCompetitiveVisible;
 	bool m_bCompetitiveVisibleChanged;
+
+	bool m_bSpyPoppingIn;
 
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;

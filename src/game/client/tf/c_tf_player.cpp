@@ -3927,6 +3927,9 @@ C_TFPlayer::C_TFPlayer() :
 	m_bCigaretteSmokeActive = false;
 
 	m_bCompetitiveVisible = true;
+	m_bCompetitiveVisibleChanged = false;
+
+	m_bSpyPoppingIn = true;
 
 	m_hRagdoll.Set( NULL );
 
@@ -4092,6 +4095,7 @@ C_TFPlayer::~C_TFPlayer()
 
 // NOTE: This is NOT called every time the player respawns!!
 // only the first time we spawn a player into the world
+// check ClientPlayerRespawn for that!
 void C_TFPlayer::Spawn( void )
 {
 	m_AttributeManager.SetPlayer( this );
@@ -6121,6 +6125,8 @@ void C_TFPlayer::ClientThink()
 		UpdateSpyStateChange();
 	}
 
+	m_bSpyPoppingIn = UpdateSpyPopIn();
+
 	// Act on prediction suppress (halloween karts, hopefully never anything else)
 	if ( IsLocalPlayer() )
 	{
@@ -7090,6 +7096,44 @@ bool C_TFPlayer::TraceCompetitiveVision( const Vector& vecEyes )
 		return true;
 	}
 	return false;
+}
+
+bool C_TFPlayer::CanShowTeamGlowOutline()
+{
+	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
+	if ( !pLocalPlayer )
+		return false;
+
+	const int nPlayerTeamNumber = GetTeamNumber();
+	const int nLocalPlayerTeam = pLocalPlayer->GetTeamNumber();
+	const bool bSameTeam = nPlayerTeamNumber == nLocalPlayerTeam;
+
+	// true teammates are always shown.
+	if ( bSameTeam )
+	{
+		return true;
+	}
+
+	// past this point, we're an enemy. so if we're not a spy, then we can't glow.
+	if ( !IsPlayerClass( TF_CLASS_SPY ) )
+	{
+		return false;
+	}
+
+	// if we're an enemy spy, but not disguised or at all invis, don't show.
+	if ( !m_Shared.InCond( TF_COND_DISGUISED ) || m_Shared.GetPercentInvisible() > 0.0f )
+	{
+		return false;
+	}
+
+	// disguised, but not disguised as a friendly.
+	if ( m_Shared.GetDisguiseTeam() != nLocalPlayerTeam )
+	{
+		return false;
+	}
+
+	// okay. so now we're an enemy spy disguised as a friendly. prevent pop-in.
+	return !m_bSpyPoppingIn;
 }
 
 //-----------------------------------------------------------------------------
@@ -8209,6 +8253,8 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 
 	m_fMetersRan = 0;
 	m_flLastRanFrame = 0.0f;
+
+	m_bSpyPoppingIn = true;
 
 	SetShowHudMenuTauntSelection( false );
 
@@ -10368,6 +10414,87 @@ void C_TFPlayer::UpdateSpyStateChange( void )
 	//	&& !m_Shared.IsStealthed();
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool C_TFPlayer::UpdateSpyPopIn()
+{
+	// must be a spy
+	if ( !IsPlayerClass( TF_CLASS_SPY ) )
+	{
+		return false;
+	}
+
+	// not alive, so don't care
+	if ( !IsAlive() || GetHealth() <= 0 )
+	{
+		return false;
+	}
+	
+	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
+	if ( !pLocalPlayer )
+		return false;
+
+	const int nPlayerTeamNumber = GetTeamNumber();
+	const int nLocalPlayerTeam = pLocalPlayer->GetTeamNumber();
+	const bool bSameTeam = nPlayerTeamNumber == nLocalPlayerTeam;
+
+	if ( nLocalPlayerTeam == TEAM_SPECTATOR )
+	{
+		return false;
+	}
+
+	// must be an enemy
+	if ( bSameTeam )
+	{
+		return false;
+	}
+
+	// not active, could pop in.
+	if ( IsDormant() )
+	{
+		return true;
+	}
+
+	QAngle angLocal = pLocalPlayer->EyeAngles();
+	Vector vecForward;
+	AngleVectors( angLocal, &vecForward );
+
+	Vector vecPlayer = GetAbsOrigin();
+	Vector vecLocal = pLocalPlayer->GetAbsOrigin();
+	Vector vecDir = ( vecPlayer - vecLocal );
+	vecDir.NormalizeInPlace();
+
+	float flFovDot = DotProduct( vecForward, vecDir );
+	if ( flFovDot < 0.382f )
+	{
+		// not in vision, could not pop in.
+		return false;
+	}
+
+	// here, we're an enemy spy in our FOV.
+
+	// invis right now. we could pop in by going visible.
+	if ( m_Shared.GetPercentInvisible() == 1.0f )
+	{
+		return true;
+	}
+
+	// we're not disguised. we could pop in by becoming disguised.
+	if ( !m_Shared.InCond( TF_COND_DISGUISED ) )
+	{
+		return true;
+	}
+
+	// not friendly disguise. we could pop in by changing disguise teams.
+	if ( m_Shared.GetDisguiseTeam() != nLocalPlayerTeam )
+	{
+		return true;
+	}
+
+	// here, we're in FOV and disguised. just linger our state from before.
+	return m_bSpyPoppingIn;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
