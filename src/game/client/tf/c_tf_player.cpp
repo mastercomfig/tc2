@@ -10475,7 +10475,7 @@ bool C_TFPlayer::UpdateSpyPopIn()
 	// here, we're an enemy spy in our FOV.
 
 	// invis right now. we could pop in by going visible.
-	if ( m_Shared.GetPercentInvisible() == 1.0f )
+	if ( m_Shared.GetPercentInvisible() > 0.0f )
 	{
 		return true;
 	}
