@@ -12,16 +12,15 @@ git fetch --tags origin
 
 if git rev-parse ${VERSION} -- > /dev/null 2>&1; then
     echo "::warning Tag ${VERSION} already exists. Not creating a release."
-    exit 0
+    gh release upload --clobber ${VERSION} "../game-${PLATFORM}.zip"
+else
+    git tag ${VERSION}
+    git pull
+    git push origin ${VERSION}
+    gh release create ${VERSION} \
+        "../game-${PLATFORM}.zip" \
+        --title "${VERSION}" \
+        --notes "Release ${VERSION}\\n\\n[Download](https://teamcomtress.com/)\\n[Patch Notes](https://teamcomtress.com/feed/#patches)" \
+        --verify-tag \
+        --fail-on-no-commits
 fi
-
-git tag ${VERSION}
-git pull
-git push origin ${VERSION}
-
-gh release create ${VERSION} \
-    "../game-${PLATFORM}.zip" \
-    --title "${VERSION}" \
-    --notes "Release ${VERSION}\n\n[Download](https://teamcomtress.com/)\n[Patch Notes](https://teamcomtress.com/feed/#patches)" \
-    --verify-tag \
-    --fail-on-no-commits
