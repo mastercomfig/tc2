@@ -11844,7 +11844,7 @@ bool C_TFPlayer::ShouldShowPowerupGlowEffect()
 {
 	// should local player see enemy glow with powerup related
 	C_TFPlayer *pLocalPlayer = GetLocalTFPlayer();
-	if ( pLocalPlayer->IsAlive() && this != pLocalPlayer && GetTeamNumber() != pLocalPlayer->GetTeamNumber() )
+	if ( pLocalPlayer && pLocalPlayer->IsAlive() && this != pLocalPlayer && GetTeamNumber() != pLocalPlayer->GetTeamNumber() )
 	{
 		// give advantage to local player who doesn't have rune to fight against enemy with rune by glowing their health
 		if ( m_Shared.IsCarryingRune() && !pLocalPlayer->m_Shared.IsCarryingRune() )
