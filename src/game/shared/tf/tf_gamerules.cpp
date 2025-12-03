@@ -5354,6 +5354,12 @@ void CTFGameRules::SetupOnRoundStart( void )
 	m_flMatchSummaryTeleportTime = -1.f;
 }
 
+void CC_CH_ReloadWhiteList( void )
+{
+	ItemSystem()->ReloadWhitelist();
+}
+static ConCommand mp_reload_whitelist("mp_reload_whitelist", CC_CH_ReloadWhiteList, "Reload whitelist.");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
