@@ -18,7 +18,7 @@ git pull
 git push origin ${VERSION}
 
 gh release create ${VERSION} \
-    "./game-${PLATFORM}.zip" \
+    "../game-${PLATFORM}.zip" \
     --title "${VERSION}" \
     --notes "Release ${VERSION}, view the [patch notes](https://teamcomtress.com/feed/#patches) for details." \
     --verify-tag \
