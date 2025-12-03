@@ -11008,21 +11008,10 @@ bool CTFPlayer::CanPlayerMove() const
 	return !bFreezeOnRestart;
 }
 
-#ifdef TF2_OG
-#define DEFAULT_MOVESPEED_SCALE_SPY "0.9375"
-#else
-#define DEFAULT_MOVESPEED_SCALE_SPY "1"
-#endif
-ConVar tf_move_speed_scale_spy("tf_move_speed_scale_spy", DEFAULT_MOVESPEED_SCALE_SPY, FCVAR_REPLICATED | FCVAR_HIDDEN);
-
+ConVar tf_move_speed_scale_spy("tf_move_speed_scale_spy", "1.0", FCVAR_REPLICATED | FCVAR_HIDDEN);
 ConVar tf_move_speed_scale_pyro("tf_move_speed_scale_pyro", "1.0", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
-#ifdef TF2_OG
-#define DEFAULT_MOVE_SPEED_HEAVY_AIMING "80"
-#else
-#define DEFAULT_MOVE_SPEED_HEAVY_AIMING "110"
-#endif
-ConVar tf_move_speed_heavy_aiming("tf_move_speed_heavy_aiming", DEFAULT_MOVE_SPEED_HEAVY_AIMING, FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_move_speed_heavy_aiming("tf_move_speed_heavy_aiming", "110", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -12735,14 +12724,16 @@ bool CTFPlayer::EndClassSpecialSkill( void )
 	return true;
 }
 
+ConVar tf_obj_disable_pickup("tf_obj_disable_pickup", "0", FCVAR_REPLICATED);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 {
-#ifdef TF2_OG
-	return false;
-#else
+	if ( tf_obj_disable_pickup.GetBool() )
+		return false;
+
 	if ( !pPickupObject )
 		return false;
 
@@ -12832,7 +12823,6 @@ bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 	}
 
 	return true;
-#endif
 }
 
 //-----------------------------------------------------------------------------

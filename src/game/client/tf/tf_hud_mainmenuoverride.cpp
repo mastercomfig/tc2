@@ -700,7 +700,7 @@ void CHudMainMenuOverride::PlayMainMenuMusic()
 
 	// only want to run the holiday check for TF2
 	const char* pGameName = CommandLine()->ParmValue("-game", "hl2");
-	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0) || (V_stricmp(pGameName, "tc2_beta") == 0))
+	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0))
 	{
 		// check for a holiday sound file
 		const char* pszHoliday = UTIL_GetActiveHolidayString();
@@ -2493,7 +2493,8 @@ void CHudMainMenuOverride::OnKeyCodePressed( KeyCode code )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::CheckTrainingStatus( void )
 {
-#ifndef TF2_OG
+	// TODO(mcoms): disable training for now, since it doesn't work properly.
+#if 0
 	bool bNeedsTraining = tf_training_has_prompted_for_training.GetInt() <= 0;
 	bool bNeedsPractice = tf_training_has_prompted_for_offline_practice.GetInt() <= 0;
 	bool bShowForum = tf_training_has_prompted_for_forums.GetInt() <= 0;

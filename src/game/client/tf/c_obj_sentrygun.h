@@ -84,6 +84,8 @@ public:
 	virtual void	OnPreDataChanged( DataUpdateType_t updateType );
 	virtual void	OnDataChanged( DataUpdateType_t updateType );
 
+	virtual int GetMaxUpgradeLevel() OVERRIDE;
+
 	virtual bool	IsUpgrading( void ) const { return ( m_iState == SENTRY_STATE_UPGRADING ); }
 
 	void			CreateLaserBeam( void );

@@ -50,11 +50,7 @@
 	ConVar  tf_flamethrower_velocityfadestart("tf_flamethrower_velocityfadestart", ".3", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution starts to fade." );
 	ConVar  tf_flamethrower_velocityfadeend("tf_flamethrower_velocityfadeend", ".5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution finishes fading." );
 	ConVar	tf_flamethrower_burst_zvelocity( "tf_flamethrower_burst_zvelocity", "350", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-#ifdef TF2_OG
 	const float	tf_flamethrower_burn_frequency = 0.075f;
-#else
-	const float	tf_flamethrower_burn_frequency = 0.075f;
-#endif
 	const float	tf_flamethrower_afterburn_rate = 0.4f;
 
 	static const char *s_pszFlameThrowerHitTargetThink = "FlameThrowerHitTargetThink";
@@ -63,10 +59,8 @@
 ConVar	tf_debug_flamethrower("tf_debug_flamethrower", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Visualize the flamethrower damage." );
 ConVar  tf_flamethrower_boxsize("tf_flamethrower_boxsize", "12.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Size of flame damage entities.", true, 1.f, true, 24.f );
 ConVar  tf_flamethrower_new_flame_offset( "tf_flamethrower_new_flame_offset", "40 5 0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Starting position relative to the flamethrower." );
-#ifdef TF2_OG
-const float	tf_flamethrower_initial_afterburn_duration = TF_AFTERBURN_BASE_DURATION;
-#else
-const float	tf_flamethrower_initial_afterburn_duration = 3.f;
+#ifdef GAME_DLL
+ConVar	tf_flamethrower_initial_afterburn_duration("tf_flamethrower_initial_afterburn_duration", "3", FCVAR_HIDDEN);
 #endif
 const float	tf_flamethrower_airblast_cone_angle = 35.0f;
 
@@ -82,12 +76,7 @@ const float	tf_flamethrower_damage_per_tick = 13.f;
 ConVar  tf_flamethrower_burstammo("tf_flamethrower_burstammo", "20", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "How much ammo does the air burst use per shot." );
 ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Time to live of flame damage entities." );
 
-#ifdef TF2_OG
-#define DEFAULT_FLAMETHROWER_AIRBLAST "0"
-#else
-#define DEFAULT_FLAMETHROWER_AIRBLAST "1"
-#endif
-ConVar tf_flamethrower_airblast("tf_flamethrower_airblast", DEFAULT_FLAMETHROWER_AIRBLAST, FCVAR_REPLICATED);
+ConVar tf_flamethrower_airblast("tf_flamethrower_airblast", "1", FCVAR_REPLICATED);
 
 
 // If we're shipping this it needs to be better hooked with flame manager -- right now we just spawn 5 managers for
@@ -1893,7 +1882,7 @@ void CTFFlameThrower::PlayDeflectionSound( bool bPlayer )
 //-----------------------------------------------------------------------------
 float CTFFlameThrower::GetInitialAfterburnDuration() const
 {
-	return tf_flamethrower_initial_afterburn_duration;
+	return tf_flamethrower_initial_afterburn_duration.GetFloat();
 }
 
 //-----------------------------------------------------------------------------

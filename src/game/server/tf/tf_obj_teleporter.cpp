@@ -312,19 +312,16 @@ void CObjectTeleporter::SetObjectMode( int iVal )
 	BaseClass::SetObjectMode( iVal );
 }
 
+ConVar tf_obj_teleporter_max_level("tf_obj_teleporter_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
+
 int CObjectTeleporter::GetMaxUpgradeLevel()
 {
-#ifdef TF2_OG
-	return 1;
-#else
-	return BaseClass::GetMaxUpgradeLevel();
-#endif
+	return Clamp(tf_obj_teleporter_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL);
 }
 
 //-----------------------------------------------------------------------------
 int CObjectTeleporter::GetUpgradeMetalRequired()
 {
-
 	int nCost = GetObjectInfo( GetType() )->m_UpgradeCost;
 
 	float flCostMod = 1.f;

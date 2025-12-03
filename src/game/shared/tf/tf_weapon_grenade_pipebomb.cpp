@@ -1489,7 +1489,7 @@ float CTFGrenadePipebombProjectile::GetDamageRadius()
 #ifdef GAME_DLL
 	// winbomb prevention.
 	// Air Det
-	if ( m_iType == TF_GL_MODE_REMOTE_DETONATE )
+	if ( m_iType == TF_GL_MODE_REMOTE_DETONATE && tf_sticky_airdet_radius.GetFloat() != 1.0f && tf_sticky_radius_ramp_time.GetFloat() > 0.0f )
 	{
 		if ( m_bTouched == false )
 		{

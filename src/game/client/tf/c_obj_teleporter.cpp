@@ -396,6 +396,13 @@ void C_ObjectTeleporter::UpdateDamageEffects( BuildingDamageLevel_t damageLevel 
 	}
 }
 
+ConVar tf_obj_teleporter_max_level("tf_obj_teleporter_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
+
+int C_ObjectTeleporter::GetMaxUpgradeLevel()
+{
+	return Clamp( tf_obj_teleporter_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL );
+}
+
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------

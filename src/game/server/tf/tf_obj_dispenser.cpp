@@ -379,16 +379,14 @@ bool CObjectDispenser::ShouldBeMiniBuilding( CTFPlayer* pPlayer )
 	return false;
 }
 
+ConVar tf_obj_dispenser_max_level("tf_obj_dispenser_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 int CObjectDispenser::GetMaxUpgradeLevel()
 {
-#ifdef TF2_OG
-	return 1;
-#else
-	return BaseClass::GetMaxUpgradeLevel();
-#endif
+	return Clamp(tf_obj_dispenser_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL);
 }
 
 //-----------------------------------------------------------------------------

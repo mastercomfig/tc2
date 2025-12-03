@@ -38,11 +38,13 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 #define TF_WEAPON_SNIPERRIFLE_RELOAD_TIME		1.5f
 #define TF_WEAPON_SNIPERRIFLE_ZOOM_TIME			0.3f
 
-#if defined(TF2_OG) || defined(MCOMS_BALANCE_PACK)
+#if defined(MCOMS_BALANCE_PACK)
 #define TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME	0.07f
-#else
-#define TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME	0.2f
 #endif
+
+ConVar tf_weapon_sniperrifle_no_crit_after_zoom_time("tf_weapon_sniperrifle_no_crit_after_zoom_time", "0.2", FCVAR_REPLICATED | FCVAR_HIDDEN);
+
+ConVar tf_weapon_sniperrifle_disable_jump_delay("tf_weapon_sniperrifle_disable_jump_delay", "0", FCVAR_HIDDEN);
 
 #define SNIPER_DOT_SPRITE_RED		"effects/sniperdot_red.vmt"
 #define SNIPER_DOT_SPRITE_BLUE		"effects/sniperdot_blue.vmt"
@@ -847,11 +849,7 @@ void CTFSniperRifle::Fire( CTFPlayer *pPlayer )
 				}
 				SetRezoom( true, flUnzoomDelay );	// zoom out in 0.5 seconds, then rezoom
 #ifdef GAME_DLL
-#ifdef TF2_OG
-				float flJumpDelay = 0.07f;
-#else
-				float flJumpDelay = flUnzoomDelay;
-#endif
+				const float flJumpDelay = tf_weapon_sniperrifle_disable_jump_delay.GetBool() ? 0.07f : flUnzoomDelay;
 				SetContextThink( &CTFSniperRifleClassic::EnableJump, gpGlobals->curtime + flJumpDelay, "RenableJump" );
 #endif
 			}
@@ -1077,7 +1075,7 @@ bool CTFSniperRifle::CanFireCriticalShot( bool bIsHeadshot, CBaseEntity *pTarget
 			}
 
 			// no crits for 0.2 seconds after starting to zoom
-			if ( ( gpGlobals->curtime - pPlayer->GetFOVTime() ) < TF_WEAPON_SNIPERRIFLE_NO_CRIT_AFTER_ZOOM_TIME )
+			if ( ( gpGlobals->curtime - pPlayer->GetFOVTime() ) < tf_weapon_sniperrifle_no_crit_after_zoom_time.GetFloat() )
 			{
 				return false;
 			}

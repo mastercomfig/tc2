@@ -19,12 +19,7 @@
 #include "tf_passtime_logic.h"
 #endif
 
-#if defined(TF2_OG) || defined(TF2_VANILLA)
-#define DEFAULT_FIXED_WEAPONSPREADS "0"
-#else
-#define DEFAULT_FIXED_WEAPONSPREADS "1"
-#endif
-ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", DEFAULT_FIXED_WEAPONSPREADS, FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
+ConVar tf_use_fixed_weaponspreads( "tf_use_fixed_weaponspreads", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a non-random pellet distribution." );
 ConVar tf_use_circular_weaponspreads("tf_use_circular_weaponspreads", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "If set to 1, weapons that fire multiple pellets per shot will use a true circular pellet distribution (for both random and fixed spread).");
 
 // Client specific.

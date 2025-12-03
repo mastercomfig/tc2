@@ -31,7 +31,6 @@ class CObjectSapper;
 struct animevent_t;
 
 #define WRENCH_DMG_VS_SAPPER	65
-#define OBJ_MAX_UPGRADE_LEVEL	3
 #define OBJECT_REPAIR_RATE		10			// Health healed per second while repairing
 
 // Construction

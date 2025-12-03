@@ -318,6 +318,16 @@ void C_ObjectDispenser::UpdateDamageEffects( BuildingDamageLevel_t damageLevel )
 	}
 }
 
+ConVar tf_obj_dispenser_max_level("tf_obj_dispenser_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
+
+//-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+int C_ObjectDispenser::GetMaxUpgradeLevel()
+{
+	return Clamp( tf_obj_dispenser_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL );
+}
+
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------

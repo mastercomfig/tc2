@@ -32,23 +32,23 @@
 #endif
 
 #define MAX_BARREL_SPIN_VELOCITY	20
-#if defined(TF2_OG)
-#if 1
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.9f"
-#else
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "1.0f"
-#endif
-#else
+
 #if defined(MCOMS_BALANCE_PACK)
 #define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.9f"
 #else
 #define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.75f"
 #endif
-#endif
 ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
 
 #define TF_MINIGUN_SPINUP_TIME tf_minigun_spinup_time.GetFloat()
-#define TF_MINIGUN_PENALTY_PERIOD 1.f
+
+#if defined(MCOMS_BALANCE_PACK)
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0"
+#else
+#define DEFAULT_TF_MINIGUN_SPINUP_TIME "1"
+#endif
+ConVar tf_minigun_penalty_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
+#define TF_MINIGUN_PENALTY_PERIOD tf_minigun_penalty_time.GetFloat()
 
 //=============================================================================
 //
@@ -1022,7 +1022,6 @@ float CTFMinigun::GetProjectileDamage( void )
 {
 	float flDamage = BaseClass::GetProjectileDamage();
 
-#ifndef TF2_OG
 	// How long have we been spun up - sans the min period required to fire
 	float flPreFireWindUp = GetWindUpDuration() - TF_MINIGUN_SPINUP_TIME;
 	float flSpinTime = Max( flPreFireWindUp, GetFiringDuration() );
@@ -1031,13 +1030,10 @@ float CTFMinigun::GetProjectileDamage( void )
 	if ( flSpinTime < TF_MINIGUN_PENALTY_PERIOD )
 	{
 		float flMod = 1.f;
-#if !defined(MCOMS_BALANCE_PACK)
 		flMod = RemapValClamped( flSpinTime, 0.2f, TF_MINIGUN_PENALTY_PERIOD, 0.5f, 1.f );
-#endif
 		flDamage *= flMod;
 		//DevMsg( "DmgMod: %.2f\n", flMod );
 	}
-#endif
 	
 	return flDamage;
 }
@@ -1049,7 +1045,6 @@ float CTFMinigun::GetWeaponSpread( void )
 {
 	float flSpread = BaseClass::GetWeaponSpread();
 
-#ifndef TF2_OG
 	// How long have we been spun up - sans the min period required to fire
 	float flPreFireWindUp = GetWindUpDuration() - TF_MINIGUN_SPINUP_TIME;
 	float flSpinTime = Max( flPreFireWindUp, GetFiringDuration() );
@@ -1057,17 +1052,12 @@ float CTFMinigun::GetWeaponSpread( void )
 
 	if ( flSpinTime < TF_MINIGUN_PENALTY_PERIOD )
 	{
-#if !defined(MCOMS_BALANCE_PACK)
 		const float flMaxSpread = 1.5f;
 		float flMod = RemapValClamped( flSpinTime, 0.f, TF_MINIGUN_PENALTY_PERIOD, flMaxSpread, 1.f );
-#else
-		float flMod = 1.0f;
-#endif
 		//DevMsg( "SpreadMod: %.2f\n", flMod );
 
 		flSpread *= flMod;
 	}
-#endif
 	
 	return flSpread;
 }

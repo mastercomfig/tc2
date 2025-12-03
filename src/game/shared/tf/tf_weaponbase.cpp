@@ -1241,6 +1241,8 @@ bool CTFWeaponBase::Holster( CBaseCombatWeapon *pSwitchingTo )
 	return BaseClass::Holster( pSwitchingTo );
 }
 
+ConVar tf_weapon_base_switch_speed("tf_weapon_base_switch_speed", "0.5", FCVAR_REPLICATED);
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1270,11 +1272,7 @@ bool CTFWeaponBase::Deploy( void )
 		if ( !pPlayer )
 			return false;
 
-#ifdef TF2_OG
-		float flWeaponSwitchTime = 0.67f;
-#else
-		float flWeaponSwitchTime = 0.5f;
-#endif
+		float flWeaponSwitchTime = tf_weapon_base_switch_speed.GetFloat();
 
 		// Overrides the anim length for calculating ready time.
 		float flDeployTimeMultiplier = 1.0f;

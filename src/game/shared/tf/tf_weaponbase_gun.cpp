@@ -61,12 +61,7 @@ END_DATADESC()
 #endif
 
 #ifdef GAME_DLL
-#if defined(TF2_OG) || defined(TF2_VANILLA)
-#define DEFAULT_PIPEBOMB_RANDOM "0"
-#else
-#define DEFAULT_PIPEBOMB_RANDOM "0"
-#endif
-ConVar tf_pipebomb_disable_random_launch("tf_pipebomb_disable_random_launch", DEFAULT_PIPEBOMB_RANDOM, FCVAR_HIDDEN, "Disable random velocity and spin when launching grenades and stickybombs.");
+ConVar tf_pipebomb_disable_random_launch("tf_pipebomb_disable_random_launch", "0", FCVAR_HIDDEN, "Disable random velocity and spin when launching grenades and stickybombs.");
 #endif
 
 //=============================================================================

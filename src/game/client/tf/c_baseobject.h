@@ -148,6 +148,8 @@ public:
 	virtual void	UpgradeLevelChanged() { return; }
 	int				GetHighestUpgradeLevel( void ) { return m_iHighestUpgradeLevel; }
 
+	virtual int		GetMaxUpgradeLevel( void ) { return OBJ_MAX_UPGRADE_LEVEL; }
+
 	int				GetObjectMode( void ) const { return m_iObjectMode; }
 
 	// Shadows

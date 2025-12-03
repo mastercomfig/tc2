@@ -18,11 +18,7 @@
 
 C_TFRootPanel *g_pRootPanel = NULL;
 
-#ifdef TF2_OG
-#define DEFAULT_UI_VERSION "-10000"
-#else
 #define DEFAULT_UI_VERSION "-1"
-#endif
 static ConVar tf_ui_version( "tf_ui_version", DEFAULT_UI_VERSION, FCVAR_DEVELOPMENTONLY );
 
 extern const char *COM_GetModDirectory();
@@ -68,7 +64,6 @@ void CheckCustomModSearchPaths()
 	{
 		// allow loose files in these search paths
 		g_pFullFileSystem->AddSearchPath( "tc2", "vgui" );
-		g_pFullFileSystem->AddSearchPath( "tf2_og", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "tf", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "hl2", "vgui" );
 		g_pFullFileSystem->AddSearchPath( "platform", "vgui" );

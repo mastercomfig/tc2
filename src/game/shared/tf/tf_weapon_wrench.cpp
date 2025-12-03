@@ -348,12 +348,7 @@ void CTFWrench::ApplyBuildingHealthUpgrade( void )
 #endif
 
 // STAGING_ENGY
-#ifdef TF2_OG
-#define DEFAULT_BUILD_RATE_MULTIPLIER "2.0f"
-#else
-#define DEFAULT_BUILD_RATE_MULTIPLIER "1.5f"
-#endif
-ConVar tf_construction_build_rate_multiplier( "tf_construction_build_rate_multiplier", DEFAULT_BUILD_RATE_MULTIPLIER, FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
+ConVar tf_construction_build_rate_multiplier( "tf_construction_build_rate_multiplier", "1.5f", FCVAR_REPLICATED | FCVAR_HIDDEN );
 float CTFWrench::GetConstructionValue( void )
 {
 	float flValue = tf_construction_build_rate_multiplier.GetFloat();

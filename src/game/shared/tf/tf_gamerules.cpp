@@ -732,7 +732,7 @@ extern ConVar mp_autoteambalance;
 // STAGING_SPY
 ConVar tf_feign_death_activate_damage_scale( "tf_feign_death_activate_damage_scale", "0.25", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar tf_feign_death_damage_scale( "tf_feign_death_damage_scale", "0.35", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_stealth_damage_reduction( "tf_stealth_damage_reduction", "0.8", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar tf_stealth_damage_reduction( "tf_stealth_damage_reduction", "0.8", FCVAR_HIDDEN );
 
 // training
 ConVar training_class( "training_class", "3", FCVAR_REPLICATED, "Class to use in training." );
@@ -793,18 +793,8 @@ ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_
 
 static float g_fEternaweenAutodisableTime = 0.0f;
 
-#ifdef TF2_OG
-#define DEFAULT_SPEC_XRAY "0"
-#else
-#define DEFAULT_SPEC_XRAY "1"
-#endif
-ConVar tf_spec_xray( "tf_spec_xray", DEFAULT_SPEC_XRAY, FCVAR_NOTIFY | FCVAR_REPLICATED, "Allows spectators to see player glows. 1 = same team, 2 = both teams" );
-#ifdef TF2_OG
-#define DEFAULT_SPAWN_GLOWS_DURATION "0"
-#else
-#define DEFAULT_SPAWN_GLOWS_DURATION "10"
-#endif
-ConVar tf_spawn_glows_duration( "tf_spawn_glows_duration", DEFAULT_SPAWN_GLOWS_DURATION, FCVAR_NOTIFY | FCVAR_REPLICATED, "How long should teammates glow after respawning\n" );
+ConVar tf_spec_xray( "tf_spec_xray", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Allows spectators to see player glows. 1 = same team, 2 = both teams" );
+ConVar tf_spawn_glows_duration( "tf_spawn_glows_duration", "10", FCVAR_NOTIFY | FCVAR_REPLICATED, "How long should teammates glow after respawning\n" );
 
 #ifdef GAME_DLL
 void cc_tf_forced_holiday_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
@@ -828,12 +818,7 @@ ConVar tf_item_based_forced_holiday( "tf_item_based_forced_holiday", "0", FCVAR_
 	, cc_tf_forced_holiday_changed
 #endif // GAME_DLL
 );
-#ifdef TF2_OG
-#define DEFAULT_HOLIDAYS_OFF "1"
-#else
-#define DEFAULT_HOLIDAYS_OFF "0"
-#endif
-ConVar tf_force_holidays_off( "tf_force_holidays_off", DEFAULT_HOLIDAYS_OFF, FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, ""
+ConVar tf_force_holidays_off( "tf_force_holidays_off", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, ""
 #ifdef GAME_DLL
 , cc_tf_forced_holiday_changed
 #endif // GAME_DLL
@@ -923,13 +908,8 @@ ConVar tf_medieval( "tf_medieval", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable
 
 ConVar tf_medieval_autorp( "tf_medieval_autorp", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable Medieval Mode auto-roleplaying.\n", true, 0, true, 1 );
 
-ConVar tf_sticky_radius_ramp_time( "tf_sticky_radius_ramp_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT | FCVAR_REPLICATED, "Amount of time to get full radius after arming" );
-#ifdef TF2_OG
-#define DEFAULT_STICKY_AIRDET_RADIUS "1.0"
-#else
-#define DEFAULT_STICKY_AIRDET_RADIUS "0.85"
-#endif
-ConVar tf_sticky_airdet_radius( "tf_sticky_airdet_radius", DEFAULT_STICKY_AIRDET_RADIUS, FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT | FCVAR_REPLICATED, "Radius Scale if detonated in the air" );
+ConVar tf_sticky_radius_ramp_time( "tf_sticky_radius_ramp_time", "2.0", FCVAR_HIDDEN | FCVAR_REPLICATED, "Amount of time to get full radius after arming" );
+ConVar tf_sticky_airdet_radius( "tf_sticky_airdet_radius", "0.85", FCVAR_HIDDEN | FCVAR_REPLICATED, "Radius Scale if detonated in the air" );
 
 
 #ifndef GAME_DLL
@@ -943,12 +923,7 @@ ConVar tf_arena_force_class( "tf_arena_force_class", "0", FCVAR_REPLICATED | FCV
 ConVar tf_arena_change_limit( "tf_arena_change_limit", "1", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Number of times players can change their class when mp_force_random_class is being used." );
 ConVar tf_arena_override_cap_enable_time( "tf_arena_override_cap_enable_time", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Overrides the time (in seconds) it takes for the capture point to become enable, -1 uses the level designer specified time." );
 ConVar tf_arena_override_team_size( "tf_arena_override_team_size", "0", FCVAR_REPLICATED, "Overrides the maximum team size in arena mode. Set to zero to keep the default behavior of 1/3 maxplayers.");
-#ifdef TF2_OG
-#define DEFAULT_ARENA_FIRST_BLOOD "0"
-#else
-#define DEFAULT_ARENA_FIRST_BLOOD "1"
-#endif
-ConVar tf_arena_first_blood( "tf_arena_first_blood", DEFAULT_ARENA_FIRST_BLOOD, FCVAR_REPLICATED | FCVAR_NOTIFY, "Rewards the first player to get a kill each round." );
+ConVar tf_arena_first_blood( "tf_arena_first_blood", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Rewards the first player to get a kill each round." );
 extern ConVar tf_arena_preround_time;
 extern ConVar tf_arena_max_streak;
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
@@ -1192,12 +1167,7 @@ static Vector s_BotSpawnPosition;
 
 ConVar tf_gravetalk( "tf_gravetalk", "1", FCVAR_NOTIFY, "Allows living players to hear dead players using text/voice chat.", true, 0, true, 1 );
 
-#ifdef TF2_OG
-#define DEFAULT_CTF_BONUS_TIME "0"
-#else
-#define DEFAULT_CTF_BONUS_TIME "10"
-#endif
-ConVar tf_ctf_bonus_time ( "tf_ctf_bonus_time", DEFAULT_CTF_BONUS_TIME, FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
+ConVar tf_ctf_bonus_time( "tf_ctf_bonus_time", "10", FCVAR_NOTIFY, "Length of team crit time for CTF capture." );
 
 #ifdef _DEBUG
 ConVar mp_scrambleteams_debug( "mp_scrambleteams_debug", "0", FCVAR_NONE, "Debug spew." );
@@ -1233,12 +1203,7 @@ ConVar tf_voice_command_suspension_mode( "tf_voice_command_suspension_mode", "2"
 
 ConVar tf_beta_mode("tf_beta_mode", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Activate experimental beta features for testing.");
 
-#ifdef TF2_OG
-#define DEFAULT_PREROUND_PUSH "1"
-#else
-#define DEFAULT_PREROUND_PUSH "0"
-#endif
-ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", DEFAULT_PREROUND_PUSH, FCVAR_REPLICATED, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
+ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", "0", FCVAR_REPLICATED, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
 
 #ifdef GAME_DLL
 
@@ -6410,12 +6375,7 @@ void CTFGameRules::RadiusDamage( const CTakeDamageInfo &info, const Vector &vecS
 	RadiusDamage(radiusinfo);
 }
 
-#if TF2_OG
-#define DEFAULT_DEFLECT_MINICRITS "0"
-#else
-#define DEFAULT_DEFLECT_MINICRITS "1"
-#endif
-ConVar tf_deflect_minicrits("tf_deflect_minicrits", DEFAULT_DEFLECT_MINICRITS, FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_deflect_minicrits("tf_deflect_minicrits", "1", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -8121,13 +8081,11 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					}
 				}
 			}
-#ifndef TF2_OG
 			// Standard Stealth gives small damage reduction
 			else if ( pVictim->m_Shared.InCond( TF_COND_STEALTHED ) )
 			{
 				flRealDamage *= tf_stealth_damage_reduction.GetFloat();
 			}
-#endif
 		}
 
 		if ( sv_cheats && !sv_cheats->GetBool() )

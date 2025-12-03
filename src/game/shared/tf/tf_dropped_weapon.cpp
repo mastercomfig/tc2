@@ -24,12 +24,7 @@
 
 
 #ifdef GAME_DLL
-#ifdef TF2_OG
-#define DEFAULT_DROPPED_WEAPON_LIFETIME "0"
-#else
-#define DEFAULT_DROPPED_WEAPON_LIFETIME "30"
-#endif
-ConVar tf_dropped_weapon_lifetime("tf_dropped_weapon_lifetime", DEFAULT_DROPPED_WEAPON_LIFETIME, FCVAR_CHEAT);
+ConVar tf_dropped_weapon_lifetime("tf_dropped_weapon_lifetime", "30", FCVAR_HIDDEN);
 
 EXTERN_SEND_TABLE( DT_ScriptCreatedItem );
 

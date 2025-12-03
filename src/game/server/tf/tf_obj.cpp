@@ -177,7 +177,7 @@ IMPLEMENT_SERVERCLASS_ST(CBaseObject, DT_BaseObject)
 	SendPropInt( SENDINFO(m_iUpgradeLevel), 5 ),
 	SendPropInt( SENDINFO(m_iUpgradeMetal), 10 ),
 	SendPropInt( SENDINFO(m_iUpgradeMetalRequired), 10 ),
-	SendPropInt( SENDINFO(m_iHighestUpgradeLevel), 3 ),
+	SendPropInt( SENDINFO(m_iHighestUpgradeLevel), 5 ),
 	SendPropInt( SENDINFO(m_iObjectMode), 2, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO( m_bDisposableBuilding ) ),
 	SendPropBool( SENDINFO( m_bWasMapPlaced ) ),
@@ -2203,6 +2203,8 @@ void CBaseObject::OnConstructionHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vec
 	TE_TFParticleEffect( filter, 0.0f, "nutsnbolts_build", hitLoc, QAngle(0,0,0) );
 }
 
+ConVar tf_obj_use_multiplicative_construction_boost("tf_obj_use_multiplicative_construction_boost", "0");
+
 //----------------------------------------------------------------------------------------------------------------------------------------
 float CBaseObject::GetConstructionMultiplier( void )
 {
@@ -2226,11 +2228,14 @@ float CBaseObject::GetConstructionMultiplier( void )
 			// STAGING_ENGY
 			// each Player adds a fixed amount of speed boost
 			// Carry deploy hits add more
-#ifdef TF2_OG
-			flMultiplier *= (m_ConstructorList[iThis].flValue);
-#else
-			flMultiplier += ( m_ConstructorList[iThis].flValue );
-#endif
+			if ( tf_obj_use_multiplicative_construction_boost.GetBool() )
+			{
+				flMultiplier *= m_ConstructorList[iThis].flValue;
+			}
+			else
+			{
+				flMultiplier += m_ConstructorList[iThis].flValue;
+			}
 		}
 	}
 
