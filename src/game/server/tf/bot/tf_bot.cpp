@@ -1372,6 +1372,11 @@ void CTFBot::Spawn()
 {
 	BaseClass::Spawn();
 
+	engine->SetFakeClientConVarValue( this->edict(), "tf_respawn_on_loadoutchanges", "1" );
+	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallers", "0" );
+	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallersglow", "0" );
+	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallersthreshold", "0" );
+
 	m_spawnArea = NULL;
 	m_justLostPointTimer.Invalidate();
 	m_squad = NULL;
