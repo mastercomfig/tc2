@@ -494,11 +494,14 @@ public:
 	float GetCritMult(const bool bMelee) { return m_Shared.GetCritMult(bMelee); }
 	void  RecordDamageEvent( const CTakeDamageInfo &info, bool bKill, int nVictimPrevHealth ) { m_Shared.RecordDamageEvent(info,bKill,nVictimPrevHealth); }
 
-	bool GetHudClassAutoKill( void ){ return m_bHudClassAutoKill; }
-	void SetHudClassAutoKill( bool bAutoKill ){ m_bHudClassAutoKill = bAutoKill; }
+	bool GetHudClassAutoKill( void ) { return m_bHudClassAutoKill; }
+	void SetHudClassAutoKill( bool bAutoKill ) { m_bHudClassAutoKill = bAutoKill; }
 
-	bool GetMedigunAutoHeal( void ){ return m_bMedigunAutoHeal; }
-	void SetMedigunAutoHeal( bool bMedigunAutoHeal ){ m_bMedigunAutoHeal = bMedigunAutoHeal; }
+	int GetMedicAutoCallersThreshold( void ) { return m_iAutoCallThreshold; }
+	void SetMedicAutoCallersThreshold( int iAutoCallThreshold ) { m_iAutoCallThreshold = iAutoCallThreshold; }
+
+	bool GetMedigunAutoHeal( void ) { return m_bMedigunAutoHeal; }
+	void SetMedigunAutoHeal( bool bMedigunAutoHeal ) { m_bMedigunAutoHeal = bMedigunAutoHeal; }
 	CBaseEntity		*MedicGetHealTarget( void );
 	HSCRIPT ScriptGetHealTarget() { return ToHScript( MedicGetHealTarget() ); }
 	float			MedicGetChargeLevel( CTFWeaponBase **pRetMedigun = NULL );
@@ -1301,6 +1304,7 @@ private:
 	bool				m_bSpeakingConceptAsDisguisedSpy;
 
 	bool 				m_bMedigunAutoHeal;
+	int					m_iAutoCallThreshold;
 	int					m_iZoomMode;	// 0) toggle zoom 1) does the player want to re-zoom after each shot for sniper rifles 2) hold zoom
 	bool				m_bAutoReload;
 

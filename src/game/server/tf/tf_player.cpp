@@ -3893,7 +3893,7 @@ int	CTFPlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 		if ( pRecipientEntity )
 		{
 			// show injured teammate
-			if ( IsPlayerClass( TF_CLASS_MEDIC ) && pRecipientEntity->IsPlayer() )
+			if ( IsPlayerClass( TF_CLASS_MEDIC ) && GetMedicAutoCallersThreshold() > 0 && pRecipientEntity->IsPlayer() )
 			{
 				CTFPlayer* pPlayer = ToTFPlayer( pRecipientEntity );
 				const bool bSameTeam = pPlayer->GetTeamNumber() == GetTeamNumber() || pPlayer->m_Shared.GetDisguiseTeam() == GetTeamNumber();
@@ -3902,8 +3902,8 @@ int	CTFPlayer::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 					if ( gpGlobals->curtime <= pPlayer->m_flSaveMeExpireTime )
 						return FL_EDICT_ALWAYS;
 
-					int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100;
-					if ( iHealth <= 50 )
+					const int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100.0f;
+					if ( iHealth <= GetMedicAutoCallersThreshold() )
 						return FL_EDICT_ALWAYS;
 				}
 			}

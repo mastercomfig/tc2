@@ -79,7 +79,7 @@ ConVar weapon_medigun_resist_num_chunks( "weapon_medigun_resist_num_chunks", "4"
 ConVar tf_vaccinator_uber_charge_rate_modifier( "tf_vaccinator_uber_charge_rate_modifier", "1.0", FCVAR_CHEAT | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY , "Vaccinator uber charge rate." );
 
 #if defined (CLIENT_DLL)
-ConVar tf_medigun_autoheal( "tf_medigun_autoheal", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_USERINFO, "Setting this to 1 will cause the Medigun's primary attack to be a toggle instead of needing to be held down." );
+ConVar tf_medigun_autoheal( "tf_medigun_autoheal", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_USERINFO, "Setting this to 1 will cause the Medigun's primary attack to be a toggle instead of needing to be held down." );
 #endif
 
 #if !defined (CLIENT_DLL)
@@ -200,8 +200,9 @@ extern ConVar tf_max_health_boost;
 // Purpose: For HUD auto medic callers
 //-----------------------------------------------------------------------------
 #ifdef CLIENT_DLL
-ConVar hud_medicautocallers( "hud_medicautocallers", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
-ConVar hud_medicautocallersthreshold( "hud_medicautocallersthreshold", "50", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX, "Health threshold to see injured allies", true, 0.0f, true, 75.0f );
+ConVar hud_medicautocallers( "hud_medicautocallers", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX | FCVAR_USERINFO );
+ConVar hud_medicautocallersglow( "hud_medicautocallersglow", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX | FCVAR_USERINFO );
+ConVar hud_medicautocallersthreshold( "hud_medicautocallersthreshold", "50", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX | FCVAR_USERINFO, "Health threshold to see injured allies", true, 0.0f, true, 75.0f );
 ConVar hud_medichealtargetmarker ( "hud_medichealtargetmarker", "1", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 #endif
 
@@ -2577,42 +2578,39 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 				if ( ( pPlayer->GetTeamNumber() == GetLocalPlayerTeam() ) ||
 					 ( pPlayer->GetPlayerClass() && ( pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY ) && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && ( pPlayer->m_Shared.GetDisguiseTeam() == GetLocalPlayerTeam() ) ) )
 				{
-					if ( m_hHealingTarget != NULL )
-					{
-						// Don't do this for players the medic is healing
-						if ( pPlayer == m_hHealingTarget )
-							continue;
-					}
-
 					if ( pPlayer->IsAlive() )
 					{
-						int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100;
+						int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100.0f;
 						int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
 
 						// If it's a healthy teammate....
-						if ( iHealth > iHealthThreshold )
+						// or dead (IsAlive can be true for a tick or so)...
+						if ( iHealth <= 0 || iHealth > iHealthThreshold )
 						{
 							// Make sure we don't have them in our list if previously hurt
 							if ( m_iAutoCallers.Find( playerIndex ) != m_iAutoCallers.InvalidIndex() )
 							{
+								if ( iHealth <= 0 )
+								{
+									// in the process of dying, so just clear it out, we can't help them anymore.
+									pPlayer->StopSaveMeEffect( true );
+								}
+								else
+								{
+									// we're healed up now! fade out the save me effect (not instantly since we wanna get a little bit of heal action)
+									pPlayer->FadeSaveMeEffect();
+								}
 								m_iAutoCallers.FindAndRemove( playerIndex );
 								continue;
 							}
 						}
 
-						// If it's a hurt teammate....
+						// If it's a hurt teammate (not dead)....
 						if ( iHealth <= iHealthThreshold )
 						{
 							// Make sure we're not already tracking this
 							if ( m_iAutoCallers.Find( playerIndex ) != m_iAutoCallers.InvalidIndex() )
 								continue;
-
-							// Distance check
-							float flDistSq = pPlayer->GetAbsOrigin().DistToSqr( pLocalPlayer->GetAbsOrigin() );
-							if ( flDistSq >= 1000000 )
-							{
-								continue;
-							}
 
 							// Now add auto-caller
 							pPlayer->CreateSaveMeEffect( CALLER_TYPE_AUTO );

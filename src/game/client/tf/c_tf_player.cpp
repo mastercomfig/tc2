@@ -197,6 +197,8 @@ ConVar tf_sheen_framerate( "tf_sheen_framerate", "25", FCVAR_NONE | FCVAR_HIDDEN
 
 extern ConVar tf_killstreak_alwayson;
 
+extern ConVar hud_medicautocallersthreshold;
+
 ConVar tf_sheen_alpha_firstperson( "tf_sheen_alpha_firstperson", "0.1", FCVAR_NONE, "Set the Alpha Value for first person sheens" );
 ConVar tf_killstreakeyes_minkills( "tf_killstreakeyes_minkills", "5", FCVAR_DEVELOPMENTONLY, "min kills to get base eyeglow" );
 ConVar tf_killstreakeyes_maxkills( "tf_killstreakeyes_maxkills", "10", FCVAR_DEVELOPMENTONLY, "kills to get the max eye glow effect" );
@@ -8385,7 +8387,12 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 	if ( nType == CALLER_TYPE_AUTO )
 	{
 		m_pSaveMeEffect = ParticleProp()->Create( "speech_mediccall_auto", PATTACH_POINT_FOLLOW, "head" );
-		EmitSound( "Medic.AutoCallerAnnounce" );
+		// sound should only play if they're close and we're not already healing them.
+		const float flDistSq = GetAbsOrigin().DistToSqr( pLocalPlayer->GetAbsOrigin() );
+		if ( flDistSq < 1000 * 1000 && ( !pLocalPlayer->MedicGetHealTarget() || ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) != this ) )
+		{
+			EmitSound( "Medic.AutoCallerAnnounce" );
+		}
 	}
 	else
 	{
@@ -8420,6 +8427,7 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 		gameeventmanager->FireEventClientSide( event );
 	}
 
+	m_nMedicCallerType = nType;
 	m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
 }
 
@@ -8431,6 +8439,29 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 {
 	if ( m_pSaveMeEffect )
 	{
+		// this is expiring, let's see if we actually should expire it.
+		if ( bForceRemoveInstantly && gpGlobals->curtime > m_flSaveMeExpireTime )
+		{
+			const bool bAutoCaller = m_nMedicCallerType == CALLER_TYPE_AUTO;
+			int iHealth = float( GetHealth() ) / float( GetMaxHealth() ) * 100.0f;
+			int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
+			// we're below the auto caller threshold!
+			if ( iHealth <= iHealthThreshold )
+			{
+				if ( bAutoCaller )
+				{
+					// if we're already auto caller, just let it continue
+					m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
+				}
+				else
+				{
+					// not auto caller, but we're hurt. this will happen if a non auto caller interrupts while we're hurt.
+					CreateSaveMeEffect( CALLER_TYPE_AUTO );
+				}
+				return;
+			}
+		}
+
 		if ( bForceRemoveInstantly )
 		{
 			ParticleProp()->StopEmissionAndDestroyImmediately( m_pSaveMeEffect );
@@ -8447,6 +8478,26 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		
 		m_pSaveMeEffect = NULL;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void C_TFPlayer::FadeSaveMeEffect()
+{
+	// only for auto caller.
+	if ( m_nMedicCallerType != CALLER_TYPE_AUTO )
+	{
+		return;
+	}
+
+	// already expiring
+	if ( m_flSaveMeExpireTime - gpGlobals->curtime <= 0.25f )
+	{
+		return;
+	}
+
+	m_flSaveMeExpireTime = gpGlobals->curtime + 0.25f;
 }
 
 
@@ -11723,6 +11774,7 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 	int nTeam = GetTeamNumber();
 
 	bool bShowHealthGlow = false;
+	bool bMedic = IsPlayerClass( TF_CLASS_MEDIC );
 	if ( TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
 	{
 		// In CTF, show health for allied flag carrier
@@ -11738,24 +11790,38 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 	{
 		float flHealth = (float)GetHealth() / (float)GetMaxHealth();
 
-		if ( flHealth > 0.6 )
+		Color healthGood(84, 191, 58);
+		Color healthOkay(191, 184, 58);
+		Color healthBad(191, 58, 58);
+
+		const float flAutoCallersThreshold = Clamp( static_cast<float>( hud_medicautocallersthreshold.GetInt() ) / 100.0f, 0.31f, 0.74f );
+
+		const float flGoodThreshold = bMedic ? 1.0f : 0.75f;
+		const float flOkayThreshold = bMedic ? flAutoCallersThreshold : 0.6f;
+		const float flBadThreshold = 0.3f;
+
+		Color glowColor;
+		if ( flHealth >= flGoodThreshold )
 		{
-			*r = 0.33f;
-			*g = 0.75f;
-			*b = 0.23f;
+			glowColor = healthGood;
 		}
-		else if( flHealth > 0.3 )
+		else if ( flHealth > flOkayThreshold )
 		{
-			*r = 0.75f;
-			*g = 0.72f;
-			*b = 0.23f;
+			const float t = RemapValClamped(flHealth, flOkayThreshold, flGoodThreshold, 0.0, 1.0f);
+			glowColor = LerpColor(healthOkay, healthGood, t);
+		}
+		else if( flHealth > flBadThreshold )
+		{
+			const float t = RemapValClamped(flHealth, flBadThreshold, flOkayThreshold, 0.0, 1.0f);
+			glowColor = LerpColor(healthBad, healthOkay, t);
 		}
 		else
 		{
-			*r = 0.75f;
-			*g = 0.23f;
-			*b = 0.23f;
+			glowColor = healthBad;
 		}
+		*r = glowColor.r() / 255.0f;
+		*g = glowColor.g() / 255.0f;
+		*b = glowColor.b() / 255.0f;
 		return;
 	}
 
