@@ -665,7 +665,7 @@ void CTFGCClientSystem::LocalInventoryChanged()
 	m_WebapiInventory.m_bLocalChangesApplied = true;
 }
 
-CON_COMMAND_F(mod_inventory_acknowledge, "Acknowledge reception of SDK inventory part.", FCVAR_SERVER_CAN_EXECUTE | FCVAR_CHEAT)
+CON_COMMAND_F(mod_inventory_acknowledge, "Acknowledge reception of SDK inventory part.", FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
 {
 	GTFGCClientSystem()->AcknowledgeInventoryReceive();
 }
