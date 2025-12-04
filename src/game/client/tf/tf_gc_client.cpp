@@ -589,7 +589,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		if ( !engine->IsInGame() )
 			return;
 
-		if ( gpGlobals->curtime < state.m_flNextPartTime )
+		if ( state.m_flNextPartTime == 0.0f || gpGlobals->curtime < state.m_flNextPartTime )
 			return;
 
 		// hex-encode the auth token for sending across the wire
@@ -614,7 +614,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 			// Send to the server
 			engine->ServerCmdKeyValues(kv);
 
-			state.m_flNextPartTime = gpGlobals->curtime + TICK_INTERVAL * 2.0f;
+			state.m_flNextPartTime = 0.0f;
 
 			if ( i == TF_LAST_NORMAL_CLASS - 1 )
 			{
@@ -663,6 +663,16 @@ void CTFGCClientSystem::ServerRequestEquipment()
 void CTFGCClientSystem::LocalInventoryChanged()
 {
 	m_WebapiInventory.m_bLocalChangesApplied = true;
+}
+
+CON_COMMAND_F(mod_inventory_acknowledge, "Acknowledge reception of SDK inventory part.", FCVAR_SERVER_CAN_EXECUTE | FCVAR_CHEAT)
+{
+	GTFGCClientSystem()->AcknowledgeInventoryReceive();
+}
+
+void CTFGCClientSystem::AcknowledgeInventoryReceive()
+{
+	m_WebapiInventory.m_flNextPartTime = gpGlobals->curtime + TICK_INTERVAL;
 }
 
 
@@ -938,10 +948,16 @@ void CTFGCClientSystem::SDK_AddServerInventoryInfo( KeyValues* pKV, CGCClientSha
 			KeyValues *pSlotKV = new KeyValues(szSlot);
 			pClassKV->AddSubKey(pSlotKV);
 
+#if 0
 			uint32 iItemIDHigh = pItemView->GetID() >> 32;
 			pSlotKV->SetInt( "h", iItemIDHigh );
 			uint32 iItemIDLow = pItemView->GetID() & 0xFFFFFFFF;
 			pSlotKV->SetInt( "l", iItemIDLow );
+#else
+			CNumStr str;
+			str.SetUint64(pItemView->GetID());
+			pSlotKV->SetString( "s", str );
+#endif
 		}
 	}
 	pKV->AddSubKey( pLoadoutKV );

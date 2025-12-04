@@ -16567,6 +16567,8 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 				return;
 
 			GTFGCClientSystem()->ProcessPlayerInventoryRequest( steamID, pKeyValues );
+
+			engine->ClientCommand(pTFPlayer->edict(), "mod_inventory_acknowledge\n");
 		}
 		else
 		{

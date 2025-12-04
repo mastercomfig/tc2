@@ -250,6 +250,8 @@ public:
 	void ServerRequestEquipment();
 	void LocalInventoryChanged();
 
+	void AcknowledgeInventoryReceive();
+
 protected:
 
 	// CGCClientSystem

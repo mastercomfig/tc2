@@ -4496,10 +4496,14 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 		FOR_EACH_SUBKEY(pClassKey, pLoadoutEntry)
 		{
 			const int iSlot = V_atoi(pLoadoutEntry->GetName());
+#if 0
 			const uint32 iItemIDHigh = (uint32)pLoadoutEntry->GetInt("h");
 			const uint32 iItemIDLow = (uint32)pLoadoutEntry->GetInt("l");
 			const uint64 iTmp = (((int64)iItemIDHigh) << 32) | iItemIDLow;
 			const itemid_t uItemId = iTmp;
+#else
+			const itemid_t uItemId = V_strtoui64( pLoadoutEntry->GetString( "s" ), nullptr, 10 );
+#endif
 
 			if ( uItemId == INVALID_ITEM_ID || uItemId == 0 )
 				continue;
