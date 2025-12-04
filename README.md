@@ -15,9 +15,9 @@ We're also experimenting with continuing support work for gameplay balance and o
 2. Suggest quality of life improvements (but not balance changes) through the issues page.
 3. Install TC2 and play the game to test stability, bug fixes, performance, and enjoyment.
 
-## Installation
+## Download
 
-Follow the [installation instructions on itch.io](https://mastercoms.itch.io/tc2)
+Download the launcher from [teamcomtress.com](https://teamcomtress.com/)
 
 ## Links
 
