@@ -43,11 +43,11 @@ ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINU
 #define TF_MINIGUN_SPINUP_TIME tf_minigun_spinup_time.GetFloat()
 
 #if defined(MCOMS_BALANCE_PACK)
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0"
+#define DEFAULT_TF_MINIGUN_PENALTY_TIME "0"
 #else
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "1"
+#define DEFAULT_TF_MINIGUN_PENALTY_TIME "1"
 #endif
-ConVar tf_minigun_penalty_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_minigun_penalty_time("tf_minigun_penalty_time", DEFAULT_TF_MINIGUN_PENALTY_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
 #define TF_MINIGUN_PENALTY_PERIOD tf_minigun_penalty_time.GetFloat()
 
 //=============================================================================
