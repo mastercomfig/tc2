@@ -133,7 +133,7 @@ void CTFDemoSupport::LevelShutdownPostEntity()
 //-----------------------------------------------------------------------------
 void CTFDemoSupport::Update( float frametime )
 {
-	if ( engine->IsPlayingDemo() )
+	if ( engine->IsPlayingDemo() || engine->IsLevelMainMenuBackground() )
 		return;
 
 	static ConVarRef tf_tournament_force_ds("tf_tournament_force_ds");

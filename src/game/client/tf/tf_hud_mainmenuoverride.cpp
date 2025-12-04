@@ -127,7 +127,7 @@ extern bool Training_IsComplete();
 
 void PromptOrFireCommand( const char* pszCommand )
 {
-	if ( engine->IsInGame()  )
+	if ( engine->IsInGame() && !engine->IsLevelMainMenuBackground()  )
 	{
 		CTFDisconnectConfirmDialog *pDialog = BuildDisconnectConfirmDialog();
 		if ( pDialog )
@@ -258,6 +258,42 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	//m_pWatchStreamsPanel = new CTFStreamListPanel( this, "StreamListPanel" );
 	m_pCharacterImagePanel = new ImagePanel( this, "TFCharacterImage" );
 
+	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "resource/html/index.html", true );
+	if ( m_pMainMenuWebUi )
+	{
+		m_pMainMenuWebUi->AddCommandListener("playsound", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			vgui::surface()->PlaySound(psQuery.c_str());
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("OpenOptionsDialog", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			OnCommand("OpenOptionsDialog");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("open_charinfo", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			OnCommand("engine open_charinfo");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("create_server", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			GetMMDashboard()->OnCommand("create_server");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("find_game", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			GetMMDashboard()->OnCommand("find_game");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("play_community", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			GetMMDashboard()->OnCommand("play_community");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("quit", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			GetMMDashboard()->OnCommand("quit");
+		}));
+
+		m_pMainMenuWebUi->AddCommandListener("disconnect", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+			GetMMDashboard()->OnCommand("disconnect");
+		}));
+	}
+
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
 
@@ -286,6 +322,8 @@ CHudMainMenuOverride::~CHudMainMenuOverride( void )
 	}
 
 	vgui::ivgui()->RemoveTickSignal( GetVPanel() );
+
+	m_pMainMenuWebUi->DeletePanel();
 }
 
 //-----------------------------------------------------------------------------
@@ -1313,8 +1351,9 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 	// So try and do the least amount of work if nothing has changed.
 
 	bool bSomethingChanged = false;
-	bool bInGame = engine->IsInGame() && !engine->IsLevelMainMenuBackground();
-	bool bIsConnected = engine->IsConnected();
+	bool bBackgroundLevel = engine->IsLevelMainMenuBackground();
+	bool bInGame = engine->IsInGame() && !bBackgroundLevel;
+	bool bIsConnected = engine->IsConnected() && !bBackgroundLevel;
 #if defined( REPLAY_ENABLED )
 	bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
 #else
@@ -1340,7 +1379,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 	}
 
 	// Hide the character if we're in game.
-	if ( bInGame || bInReplay || bIsConnected )
+	if ( bInGame || bInReplay || bIsConnected || bBackgroundLevel )
 	{
 		if ( m_pCharacterImagePanel->IsVisible() )
 		{
@@ -1359,7 +1398,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			m_iPlayMusicFrame = 0;
 		}
 	}
-	else if ( !bInGame && !bInReplay && !bIsConnected )
+	else if ( !bInGame && !bInReplay && !bIsConnected && !bBackgroundLevel )
 	{
 		if ( !m_pCharacterImagePanel->IsVisible() )
 		{
@@ -1470,7 +1509,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			cl_mainmenu_operation_motd_start.SetValue( sztime );
 		}
 
-		bool bShouldBeVisible = bInGame == false;
+		bool bShouldBeVisible = !bInGame && !bBackgroundLevel;
 		if ( m_pBackground->IsVisible() != bShouldBeVisible )
 		{
 			m_pBackground->SetVisible( bShouldBeVisible );

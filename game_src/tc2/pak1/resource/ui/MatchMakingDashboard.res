@@ -3,7 +3,7 @@
 	"MMDashboard"
 	{
 		"fieldName"				"MMDashboard"
-		"visible"				"1"
+		"visible"				"0"
 		"enabled"				"1"
 		"xpos"					"cs-0.5"
 		"ypos"					"-5"
@@ -26,7 +26,7 @@
 		"zpos"			"1"
 		"wide"			"f0"
 		"tall"			"35"
-		"visible"		"1"
+		"visible"		"0"
 		"proportionaltoparent"	"1"
 
 		"pinCorner"		"2"

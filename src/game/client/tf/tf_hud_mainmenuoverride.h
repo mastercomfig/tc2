@@ -18,6 +18,7 @@
 #include <vgui/ISurface.h>
 #include "hud.h"
 #include "hudelement.h"
+#include "interactivewebpanel.h"
 #include "tf_shareddefs.h"
 #include "vgui_avatarimage.h"
 #include "tf_imagepanel.h"
@@ -199,6 +200,8 @@ private:
 	bool					m_bPlayingMusic;
 	float					m_flPlayMusicTime;
 	int32					m_iPlayMusicFrame;
+
+	CInteractiveWebPanel* m_pMainMenuWebUi;
 
 	vgui::ImagePanel		*m_pCharacterImagePanel;
 	int						 m_iCharacterImageIdx;
