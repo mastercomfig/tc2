@@ -114,6 +114,33 @@ void C_BaseCombatCharacter::GetGlowEffectColor( float *r, float *g, float *b )
 	*b = 0.76f;
 }
 
+void C_BaseCombatCharacter::SetClientSideGlowEnabled(bool bEnabled, int iSourceFlag)
+{
+	const int iOldSources = m_iClientSideGlowSources;
+	if ( bEnabled )
+	{
+		m_iClientSideGlowSources |= iSourceFlag;
+	}
+	else
+	{
+		m_iClientSideGlowSources &= ~iSourceFlag;
+	}
+	if ( m_iClientSideGlowSources != 0 )
+	{
+		bEnabled = true;
+	}
+	else
+	{
+		bEnabled = false;
+	}
+	const bool bChanged = ( iOldSources != m_iClientSideGlowSources ) || ( m_bClientSideGlowEnabled != bEnabled );
+	if ( bChanged )
+	{
+		m_bClientSideGlowEnabled = bEnabled;
+		UpdateGlowEffect();
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

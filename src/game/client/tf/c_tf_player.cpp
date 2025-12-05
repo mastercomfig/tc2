@@ -6050,14 +6050,7 @@ void C_TFPlayer::ClientThink()
 	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
 	C_TFPlayer* pTFHealTarget = pLocalPlayer ? ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) : nullptr;
 	const bool bHealingThisPlayer = pTFHealTarget && pTFHealTarget == this;
-	if ( bHealingThisPlayer )
-	{
-		SetClientSideGlowEnabled( true );
-	}
-	else if ( !m_pSaveMeEffect )
-	{
-		SetClientSideGlowEnabled( false );
-	}
+	SetClientSideGlowEnabled( bHealingThisPlayer, CLIENTSIDE_GLOW_HEALER );
 
 	if ( ShouldTauntHintIconBeVisible() )
 	{
@@ -8457,9 +8450,9 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 		m_pSaveMeEffect = ParticleProp()->Create( "speech_mediccall", PATTACH_POINT_FOLLOW, "head" );
 	}
 
-	if ( !IsClientSideGlowEnabled() && pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+	if ( pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
 	{
-		SetClientSideGlowEnabled( true );
+		SetClientSideGlowEnabled( true, CLIENTSIDE_GLOW_SAVEME );
 	}
 
 	if ( m_pSaveMeEffect )
@@ -8500,23 +8493,28 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		// this is expiring, let's see if we actually should expire it.
 		if ( bForceRemoveInstantly && gpGlobals->curtime > m_flSaveMeExpireTime )
 		{
-			const bool bAutoCaller = m_nMedicCallerType == CALLER_TYPE_AUTO;
-			int iHealth = float( GetHealth() ) / float( GetMaxHealth() ) * 100.0f;
-			int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
-			// we're below the auto caller threshold!
-			if ( iHealth <= iHealthThreshold )
+			C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
+			if ( pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
 			{
-				if ( bAutoCaller )
+				const bool bAutoCaller = m_nMedicCallerType == CALLER_TYPE_AUTO;
+				int iHealth = float( GetHealth() ) / float( GetMaxHealth() ) * 100.0f;
+				int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
+				// we're below the auto caller threshold!
+				if ( iHealth <= iHealthThreshold )
 				{
-					// if we're already auto caller, just let it continue
-					m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
+					if ( bAutoCaller )
+					{
+						// todo(mcoms): should we just refresh the effect in this case?
+						// if we're already auto caller, just let it continue
+						m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
+					}
+					else
+					{
+						// not auto caller, but we're hurt. this will happen if a non auto caller interrupts while we're hurt.
+						CreateSaveMeEffect( CALLER_TYPE_AUTO );
+					}
+					return;
 				}
-				else
-				{
-					// not auto caller, but we're hurt. this will happen if a non auto caller interrupts while we're hurt.
-					CreateSaveMeEffect( CALLER_TYPE_AUTO );
-				}
-				return;
 			}
 		}
 
@@ -8528,6 +8526,8 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		{
 			ParticleProp()->StopEmission( m_pSaveMeEffect );
 		}
+		
+		SetClientSideGlowEnabled( false, CLIENTSIDE_GLOW_SAVEME );
 		
 		m_pSaveMeEffect = NULL;
 	}

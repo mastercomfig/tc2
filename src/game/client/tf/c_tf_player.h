@@ -68,6 +68,10 @@ struct BonusEffect_t
 
 extern BonusEffect_t g_BonusEffects[ kBonusEffect_Count ];
 
+#define CLIENTSIDE_GLOW_SPECTATOR	0x02
+#define CLIENTSIDE_GLOW_HEALER 		0x04
+#define CLIENTSIDE_GLOW_SAVEME		0x08
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

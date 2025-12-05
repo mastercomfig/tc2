@@ -66,10 +66,7 @@ void CTFHudSpectatorExtras::Reset( void )
 		if ( !pEnt )
 			continue;
 
-		if ( pEnt->IsClientSideGlowEnabled() )
-		{
-			pEnt->SetClientSideGlowEnabled( false );
-		}
+		pEnt->SetClientSideGlowEnabled( false, CLIENTSIDE_GLOW_SPECTATOR );
 	}
 
 	m_vecEntitiesToDraw.Purge();
@@ -165,10 +162,7 @@ void CTFHudSpectatorExtras::OnTick()
 				( pPlayer->m_Shared.IsStealthed() && ( nLocalPlayerTeam >= FIRST_GAME_TEAM ) && ( nPlayerTeamNumber != nLocalPlayerTeam ) ) ||
 				( !bShowEveryone && !pPlayer->CanShowTeamGlowOutline() ) )
 			{
-				if ( pPlayer->IsClientSideGlowEnabled() )
-				{
-					pPlayer->SetClientSideGlowEnabled( false );
-				}
+				pPlayer->SetClientSideGlowEnabled( false, CLIENTSIDE_GLOW_SPECTATOR );
 				RemoveEntity( i );
 				continue;
 			}
@@ -203,10 +197,7 @@ void CTFHudSpectatorExtras::OnTick()
 					// if we're in chase mode, just remove them entirely
 					if ( pLocalPlayer->GetObserverMode() == OBS_MODE_CHASE )
 					{
-						if ( pPlayer->IsClientSideGlowEnabled() )
-						{
-							pPlayer->SetClientSideGlowEnabled( false );
-						}
+						pPlayer->SetClientSideGlowEnabled( false, CLIENTSIDE_GLOW_SPECTATOR );
 						RemoveEntity( i );
 						continue;
 					}
@@ -252,12 +243,9 @@ void CTFHudSpectatorExtras::OnTick()
  			// what color should we use?
 			float r, g, b;
 			TFGameRules()->GetTeamGlowColor( nPlayerTeamNumber, r, g, b );
-			m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Color( r * 255, g * 255, b * 255, 255 );
+			m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Floats2Color(r, g, b);
 
-			if ( !pPlayer->IsClientSideGlowEnabled() )
-			{
-				pPlayer->SetClientSideGlowEnabled( true );
-			}
+			pPlayer->SetClientSideGlowEnabled( true, CLIENTSIDE_GLOW_SPECTATOR );
 		}
 
 		// loop through the buildings
@@ -327,8 +315,7 @@ void CTFHudSpectatorExtras::OnTick()
 				pObject->GetTargetIDString( m_vecEntitiesToDraw[nVecIndex].m_wszName, sizeof( m_vecEntitiesToDraw[nVecIndex].m_wszName ), true );
 				m_vecEntitiesToDraw[nVecIndex].m_nNameWidth = UTIL_ComputeStringWidth( m_hNameFont, m_vecEntitiesToDraw[nVecIndex].m_wszName );
 
-				float flHealth = 1.0f;
-				flHealth = (float)( pObject->GetHealth() ) / (float)( pObject->GetMaxHealth() );
+				float flHealth = (float)( pObject->GetHealth() ) / (float)( pObject->GetMaxHealth() );
 				if ( flHealth > 1.0f )
 				{
 					flHealth = 1.0f;
@@ -337,20 +324,14 @@ void CTFHudSpectatorExtras::OnTick()
 
 				// what color should we use?
 				float r, g, b;
-				pObject->GetGlowEffectColor( &r, &g, &b );
+				TFGameRules()->GetTeamGlowColor( pObject->GetTeamNumber(), r, g, b );
 				m_vecEntitiesToDraw[nVecIndex].m_clrGlowColor = Floats2Color( r, g, b );
 
-				if ( !pObject->IsClientSideGlowEnabled() )
-				{
-					pObject->SetClientSideGlowEnabled( true );
-				}
+				pObject->SetClientSideGlowEnabled( true, CLIENTSIDE_GLOW_SPECTATOR );
 			}
 			else
 			{
-				if ( pObject->IsClientSideGlowEnabled() )
-				{
-					pObject->SetClientSideGlowEnabled( false );
-				}
+				pObject->SetClientSideGlowEnabled( false, CLIENTSIDE_GLOW_SPECTATOR );
 				RemoveEntity( pObject->entindex() );
 			}
 		}

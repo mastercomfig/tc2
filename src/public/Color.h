@@ -113,7 +113,12 @@ inline int Float2Byte(float flNum)
 // Converts to Color using Float2Byte
 inline Color Floats2Color(float r, float g, float b)
 {
-	return Color(Float2Byte(r), Float2Byte(g), Float2Byte(b));
+	return Color(Float2Byte(r), Float2Byte(g), Float2Byte(b), 255);
+}
+
+inline Color Floats2Color(float r, float g, float b, float a)
+{
+	return Color(Float2Byte(r), Float2Byte(g), Float2Byte(b), Float2Byte(a));
 }
 
 #endif // COLOR_H
