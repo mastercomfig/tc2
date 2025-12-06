@@ -91,7 +91,9 @@ for F in "${DLLS[@]}"; do
   DLL=${F}${DLL_EXT}
   cp -f ${DEV_DIR}/${DLL} ${CLEAN_DIR}/${DLL}
   if [ $PLATFORM = "win" ]; then
-    cp -f ${DEV_DIR}/${F,,}.pdb ${CLEAN_DEBUG_DIR}/${F,,}.pdb
+    if [ -f ${DEV_DIR}/${F,,}.pdb ]; then
+      cp -f ${DEV_DIR}/${F,,}.pdb ${CLEAN_DEBUG_DIR}/${F,,}.pdb
+    fi
   elif [ $PLATFORM = "linux" ]; then
     # Linux binaries aren't stripped by the build scripts, so separate the
     # debug info and strip them here.
