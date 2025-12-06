@@ -43,10 +43,11 @@ bool CCrashReporter::Init()
 		return true;
 #endif
 
-	if (m_bInit)
-	{
+	if ( CommandLine()->FindParm ( "-nosentry" ) )
 		return true;
-	}
+
+	if (m_bInit)
+		return true;
 
 	SetAssertFailedNotifyFunc( AssertCallbackFunc );
 	m_OutputFuncPrev = GetSpewOutputFunc();

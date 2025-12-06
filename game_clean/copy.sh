@@ -16,7 +16,7 @@ mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR}
 ./dlpak.sh
 
 declare -a DLLS=(
-  tc2/bin/$PLAT_DIR/{client,server,sentry,game_shader_generic_std}
+  tc2/bin/$PLAT_DIR/{client,server,game_shader_generic_std}
 )
 
 declare -a FILES_REP=(
@@ -54,6 +54,10 @@ if [ $PLATFORM = "win" ]; then
   )
 
   DLLS+=(
+    tc2/bin/$PLAT_DIR/sentry
+  )
+
+  DLLS+=(
     bin/$PLAT_DIR/vrad_dll
     bin/$PLAT_DIR/vvis_dll
   )
@@ -69,6 +73,10 @@ if [ $PLATFORM = "win" ]; then
 elif [ $PLATFORM = "linux" ]; then
   declare -a EXES=(
     tc2_linux64
+  )
+
+  DLLS+=(
+    bin/$PLAT_DIR/libsentry
   )
 
   declare -a DLLS_LIB=(
@@ -102,8 +110,9 @@ for F in "${DLLS[@]}"; do
     strip ${CLEAN_DIR}/${DLL}
     # dedicated server DLL
     if [ -z ${DLL##*server.so} ]; then
-      cp ${CLEAN_DIR}/${F}${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
-      patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+      cp -f ${DEV_DIR}/${F}${DLL_EXT} ${DEV_DIR}/${F}_srv${DLL_EXT}
+      patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${DEV_DIR}/${F}_srv${DLL_EXT}
+      cp ${DEV_DIR}/${F}_srv${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
     fi
   fi
 done
