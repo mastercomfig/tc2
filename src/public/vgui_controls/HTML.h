@@ -136,6 +136,8 @@ public:
 
 	void GetLinkAtPosition( int x, int y );
 
+	void SetZoomLevel(float flZoom) { m_flZoom = flZoom; }
+
 	void HidePopup();
 
 #ifdef DBGFLAG_VALIDATE

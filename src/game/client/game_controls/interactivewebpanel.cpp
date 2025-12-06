@@ -73,6 +73,8 @@ void CInteractiveWebPanel::PerformLayout()
 	BaseClass::PerformLayout();
 
 	m_pHTML->SetSize(GetWide(), GetTall());
+	int zoomLevel = vgui::scheme()->GetProportionalNormalizedValue(100);
+	m_pHTML->SetZoomLevel((float)zoomLevel);
 }
 
 void CInteractiveWebPanel::AddCommandListener(std::string commandName,

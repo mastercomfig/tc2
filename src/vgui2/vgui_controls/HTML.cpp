@@ -895,6 +895,11 @@ void HTML::BrowserResize()
 				m_SteamAPIContext.SteamHTMLSurface()->SetSize( m_unBrowserHandle, m_iWideLastHTMLSize, m_iTalLastHTMLSize );
 		}
 
+		{
+			if (m_SteamAPIContext.SteamHTMLSurface())
+				m_SteamAPIContext.SteamHTMLSurface()->SetPageScaleFactor(m_unBrowserHandle, m_flZoom, 0, 0);
+		}
+
 	
 		// webkit forgets the scroll offset when you resize (it saves the scroll in a DC and a resize throws away the DC)
 		// so just tell it after the resize
