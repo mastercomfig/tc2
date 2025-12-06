@@ -26,13 +26,13 @@ class teeth_flashlight_ps20b_Static_Index
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 	}
 
 	void SetFLASHLIGHTDEPTHFILTERMODE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nFLASHLIGHTDEPTHFILTERMODE = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTDEPTHFILTERMODE = true;
@@ -50,7 +50,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bFLASHLIGHTDEPTHFILTERMODE );
+		DebugAssert( m_bFLASHLIGHTDEPTHFILTERMODE );
 		return ( 6 * m_nCONVERT_TO_SRGB ) + ( 12 * m_nFLASHLIGHTDEPTHFILTERMODE ) + 0;
 	}
 };
@@ -69,7 +69,7 @@ class teeth_flashlight_ps20b_Dynamic_Index
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -78,7 +78,7 @@ public:
 
 	void SetFLASHLIGHTSHADOWS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHTSHADOWS = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTSHADOWS = true;
@@ -97,7 +97,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bPIXELFOGTYPE && m_bFLASHLIGHTSHADOWS );
+		DebugAssert( m_bPIXELFOGTYPE && m_bFLASHLIGHTSHADOWS );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 3 * m_nFLASHLIGHTSHADOWS ) + 0;
 	}
 };

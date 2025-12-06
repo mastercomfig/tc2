@@ -8,7 +8,7 @@ private:
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -35,7 +35,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bHALFLAMBERT;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nHALFLAMBERT ) + 0;
 	}

@@ -9,7 +9,7 @@ private:
 public:
 	void SetMULTITEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMULTITEXTURE = i;
 #ifdef _DEBUG
 		m_bMULTITEXTURE = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetFRESNEL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFRESNEL = i;
 #ifdef _DEBUG
 		m_bFRESNEL = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetBLEND( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBLEND = i;
 #ifdef _DEBUG
 		m_bBLEND = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetREFRACTALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nREFRACTALPHA = i;
 #ifdef _DEBUG
 		m_bREFRACTALPHA = true;
@@ -93,7 +93,7 @@ private:
 public:
 	void SetHDRTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nHDRTYPE = i;
 #ifdef _DEBUG
 		m_bHDRTYPE = true;
@@ -114,7 +114,7 @@ private:
 public:
 	void SetNORMAL_DECODE_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nNORMAL_DECODE_MODE = i;
 #ifdef _DEBUG
 		m_bNORMAL_DECODE_MODE = true;
@@ -161,7 +161,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bMULTITEXTURE && m_bFRESNEL && m_bBLEND && m_bREFRACTALPHA && m_bHDRTYPE && m_bNORMAL_DECODE_MODE;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 4 * m_nMULTITEXTURE ) + ( 8 * m_nFRESNEL ) + ( 16 * m_nBLEND ) + ( 32 * m_nREFRACTALPHA ) + ( 64 * m_nHDRTYPE ) + ( 192 * m_nNORMAL_DECODE_MODE ) + 0;
 	}
@@ -177,7 +177,7 @@ private:
 public:
 	void SetHDRENABLED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHDRENABLED = i;
 #ifdef _DEBUG
 		m_bHDRENABLED = true;
@@ -198,7 +198,7 @@ private:
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -229,7 +229,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bHDRENABLED && m_bPIXELFOGTYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nHDRENABLED ) + ( 2 * m_nPIXELFOGTYPE ) + 0;
 	}

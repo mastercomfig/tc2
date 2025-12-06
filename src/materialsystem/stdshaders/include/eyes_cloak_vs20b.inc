@@ -9,7 +9,7 @@ private:
 public:
 	void SetINTRO( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nINTRO = i;
 #ifdef _DEBUG
 		m_bINTRO = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -61,7 +61,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bINTRO && m_bHALFLAMBERT;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 32 * m_nINTRO ) + ( 64 * m_nHALFLAMBERT ) + 0;
 	}
@@ -77,7 +77,7 @@ private:
 public:
 	void SetNUM_BONES( int i )
 	{
-		Assert( i >= 0 && i <= 3 );
+		DebugAssert( i >= 0 && i <= 3 );
 		m_nNUM_BONES = i;
 #ifdef _DEBUG
 		m_bNUM_BONES = true;
@@ -98,7 +98,7 @@ private:
 public:
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -119,7 +119,7 @@ private:
 public:
 	void SetDYNAMIC_LIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDYNAMIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bDYNAMIC_LIGHT = true;
@@ -140,7 +140,7 @@ private:
 public:
 	void SetSTATIC_LIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTATIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bSTATIC_LIGHT = true;
@@ -179,7 +179,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bNUM_BONES && m_bDOWATERFOG && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nNUM_BONES ) + ( 4 * m_nDOWATERFOG ) + ( 8 * m_nDYNAMIC_LIGHT ) + ( 16 * m_nSTATIC_LIGHT ) + 0;
 	}

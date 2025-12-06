@@ -9,7 +9,7 @@ private:
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 #ifdef _DEBUG
 		m_bCONVERT_TO_SRGB = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetDEPTHBLEND( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDEPTHBLEND = i;
 #ifdef _DEBUG
 		m_bDEPTHBLEND = true;
@@ -61,7 +61,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB && m_bDEPTHBLEND;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 2 * m_nCONVERT_TO_SRGB ) + ( 4 * m_nDEPTHBLEND ) + 0;
 	}
@@ -77,7 +77,7 @@ private:
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -104,7 +104,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bPIXELFOGTYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nPIXELFOGTYPE ) + 0;
 	}

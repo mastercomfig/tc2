@@ -9,7 +9,7 @@ private:
 public:
 	void SetNORMALMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nNORMALMAP = i;
 #ifdef _DEBUG
 		m_bNORMALMAP = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetNOCULL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nNOCULL = i;
 #ifdef _DEBUG
 		m_bNOCULL = true;
@@ -61,7 +61,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bNORMALMAP && m_bNOCULL;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nNORMALMAP ) + ( 2 * m_nNOCULL ) + 0;
 	}

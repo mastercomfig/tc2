@@ -8,7 +8,7 @@ private:
 public:
 	void SetDETAIL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDETAIL = i;
 #ifdef _DEBUG
 		m_bDETAIL = true;
@@ -29,7 +29,7 @@ private:
 public:
 	void SetENVMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nENVMAP = i;
 #ifdef _DEBUG
 		m_bENVMAP = true;
@@ -62,7 +62,7 @@ private:
 public:
 	void SetENVMAPSPHERE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nENVMAPSPHERE = i;
 #ifdef _DEBUG
 		m_bENVMAPSPHERE = true;
@@ -83,7 +83,7 @@ private:
 public:
 	void SetVERTEXCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -126,7 +126,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bDETAIL && m_bENVMAP && m_bENVMAPCAMERASPACE && m_bENVMAPSPHERE && m_bVERTEXCOLOR;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 2 * m_nDETAIL ) + ( 4 * m_nENVMAP ) + ( 8 * m_nENVMAPCAMERASPACE ) + ( 8 * m_nENVMAPSPHERE ) + ( 16 * m_nVERTEXCOLOR ) + 0;
 	}
@@ -141,7 +141,7 @@ private:
 public:
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -168,7 +168,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bDOWATERFOG;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nDOWATERFOG ) + 0;
 	}

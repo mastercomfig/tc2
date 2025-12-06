@@ -1547,7 +1547,10 @@ void CClientLeafSystem::RenderableChanged( ClientRenderHandle_t handle )
 {
 	if (m_bDisableLeafReinsertion)
 	{
+#ifdef _DEBUG
 		DevWarning("Renderable %d re-entrant after frame!\n", handle);
+#endif
+		return;
 	}
 
 	Assert ( handle != INVALID_CLIENT_RENDER_HANDLE );

@@ -25,7 +25,7 @@ private:
 public:
 	void SetAA_ENABLE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nAA_ENABLE = i;
 #ifdef _DEBUG
 		m_bAA_ENABLE = true;
@@ -46,7 +46,7 @@ private:
 public:
 	void SetAA_QUALITY_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nAA_QUALITY_MODE = i;
 #ifdef _DEBUG
 		m_bAA_QUALITY_MODE = true;
@@ -67,7 +67,7 @@ private:
 public:
 	void SetAA_REDUCE_ONE_PIXEL_LINE_BLUR( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nAA_REDUCE_ONE_PIXEL_LINE_BLUR = i;
 #ifdef _DEBUG
 		m_bAA_REDUCE_ONE_PIXEL_LINE_BLUR = true;
@@ -88,7 +88,7 @@ private:
 public:
 	void SetCOL_CORRECT_NUM_LOOKUPS( int i )
 	{
-		Assert( i >= 0 && i <= 4 );
+		DebugAssert( i >= 0 && i <= 4 );
 		m_nCOL_CORRECT_NUM_LOOKUPS = i;
 #ifdef _DEBUG
 		m_bCOL_CORRECT_NUM_LOOKUPS = true;
@@ -127,7 +127,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bAA_ENABLE && m_bAA_QUALITY_MODE && m_bAA_REDUCE_ONE_PIXEL_LINE_BLUR && m_bCOL_CORRECT_NUM_LOOKUPS;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nAA_ENABLE ) + ( 2 * m_nAA_QUALITY_MODE ) + ( 2 * m_nAA_REDUCE_ONE_PIXEL_LINE_BLUR ) + ( 2 * m_nCOL_CORRECT_NUM_LOOKUPS ) + 0;
 	}

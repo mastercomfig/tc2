@@ -9,7 +9,7 @@ private:
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 #ifdef _DEBUG
 		m_bCONVERT_TO_SRGB = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetLINEAR_INPUT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nLINEAR_INPUT = i;
 #ifdef _DEBUG
 		m_bLINEAR_INPUT = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetLINEAR_OUTPUT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nLINEAR_OUTPUT = i;
 #ifdef _DEBUG
 		m_bLINEAR_OUTPUT = true;
@@ -86,7 +86,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB && m_bLINEAR_INPUT && m_bLINEAR_OUTPUT;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 40 * m_nCONVERT_TO_SRGB ) + ( 80 * m_nLINEAR_INPUT ) + ( 160 * m_nLINEAR_OUTPUT ) + 0;
 	}
@@ -102,7 +102,7 @@ private:
 public:
 	void SetAA_ENABLE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nAA_ENABLE = i;
 #ifdef _DEBUG
 		m_bAA_ENABLE = true;
@@ -123,7 +123,7 @@ private:
 public:
 	void SetAA_QUALITY_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nAA_QUALITY_MODE = i;
 #ifdef _DEBUG
 		m_bAA_QUALITY_MODE = true;
@@ -144,7 +144,7 @@ private:
 public:
 	void SetAA_REDUCE_ONE_PIXEL_LINE_BLUR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nAA_REDUCE_ONE_PIXEL_LINE_BLUR = i;
 #ifdef _DEBUG
 		m_bAA_REDUCE_ONE_PIXEL_LINE_BLUR = true;
@@ -165,7 +165,7 @@ private:
 public:
 	void SetCOL_CORRECT_NUM_LOOKUPS( int i )
 	{
-		Assert( i >= 0 && i <= 4 );
+		DebugAssert( i >= 0 && i <= 4 );
 		m_nCOL_CORRECT_NUM_LOOKUPS = i;
 #ifdef _DEBUG
 		m_bCOL_CORRECT_NUM_LOOKUPS = true;
@@ -204,7 +204,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bAA_ENABLE && m_bAA_QUALITY_MODE && m_bAA_REDUCE_ONE_PIXEL_LINE_BLUR && m_bCOL_CORRECT_NUM_LOOKUPS;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nAA_ENABLE ) + ( 2 * m_nAA_QUALITY_MODE ) + ( 4 * m_nAA_REDUCE_ONE_PIXEL_LINE_BLUR ) + ( 8 * m_nCOL_CORRECT_NUM_LOOKUPS ) + 0;
 	}

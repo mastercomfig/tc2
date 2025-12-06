@@ -25,7 +25,7 @@ private:
 public:
 	void SetDISTORT_TYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nDISTORT_TYPE = i;
 #ifdef _DEBUG
 		m_bDISTORT_TYPE = true;
@@ -52,7 +52,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bDISTORT_TYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nDISTORT_TYPE ) + 0;
 	}

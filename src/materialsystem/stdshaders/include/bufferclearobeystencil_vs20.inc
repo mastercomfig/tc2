@@ -9,7 +9,7 @@ private:
 public:
 	void SetUSESCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSESCOLOR = i;
 #ifdef _DEBUG
 		m_bUSESCOLOR = true;
@@ -36,7 +36,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bUSESCOLOR;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nUSESCOLOR ) + 0;
 	}

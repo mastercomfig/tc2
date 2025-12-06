@@ -20,6 +20,6 @@ if [ -z $SLR_SNIPER_PATH ]; then
   fi
 fi
 
-${SLR_SNIPER_PATH} --devel -- ./tc2_linux64 -steam -particles 1 +ip 127.0.0.1 "$@"
+${SLR_SNIPER_PATH} --devel -- ./tc2_linux64 -steam -particles 1 -nobreakpad -nominidumps "$@" +ip 127.0.0.1
 
 popd > /dev/null

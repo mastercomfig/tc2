@@ -25,7 +25,7 @@ class eyes_flashlight_ps30_Static_Index
 public:
 	void SetFLASHLIGHTDEPTHFILTERMODE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nFLASHLIGHTDEPTHFILTERMODE = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTDEPTHFILTERMODE = true;
@@ -42,7 +42,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bFLASHLIGHTDEPTHFILTERMODE );
+		DebugAssert( m_bFLASHLIGHTDEPTHFILTERMODE );
 		return ( 6 * m_nFLASHLIGHTDEPTHFILTERMODE ) + 0;
 	}
 };
@@ -61,7 +61,7 @@ class eyes_flashlight_ps30_Dynamic_Index
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -70,7 +70,7 @@ public:
 
 	void SetFLASHLIGHTSHADOWS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHTSHADOWS = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTSHADOWS = true;
@@ -89,7 +89,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bPIXELFOGTYPE && m_bFLASHLIGHTSHADOWS );
+		DebugAssert( m_bPIXELFOGTYPE && m_bFLASHLIGHTSHADOWS );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 3 * m_nFLASHLIGHTSHADOWS ) + 0;
 	}
 };

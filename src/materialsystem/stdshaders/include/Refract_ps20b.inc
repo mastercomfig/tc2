@@ -43,13 +43,13 @@ class refract_ps20b_Static_Index
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 	}
 
 	void SetBLUR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBLUR = i;
 #ifdef _DEBUG
 		m_bBLUR = true;
@@ -58,7 +58,7 @@ public:
 
 	void SetFADEOUTONSILHOUETTE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFADEOUTONSILHOUETTE = i;
 #ifdef _DEBUG
 		m_bFADEOUTONSILHOUETTE = true;
@@ -67,7 +67,7 @@ public:
 
 	void SetCUBEMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCUBEMAP = i;
 #ifdef _DEBUG
 		m_bCUBEMAP = true;
@@ -76,7 +76,7 @@ public:
 
 	void SetREFRACTTINTTEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nREFRACTTINTTEXTURE = i;
 #ifdef _DEBUG
 		m_bREFRACTTINTTEXTURE = true;
@@ -85,7 +85,7 @@ public:
 
 	void SetMASKED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMASKED = i;
 #ifdef _DEBUG
 		m_bMASKED = true;
@@ -94,7 +94,7 @@ public:
 
 	void SetCOLORMODULATE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLORMODULATE = i;
 #ifdef _DEBUG
 		m_bCOLORMODULATE = true;
@@ -103,7 +103,7 @@ public:
 
 	void SetSECONDARY_NORMAL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSECONDARY_NORMAL = i;
 #ifdef _DEBUG
 		m_bSECONDARY_NORMAL = true;
@@ -112,7 +112,7 @@ public:
 
 	void SetNORMAL_DECODE_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nNORMAL_DECODE_MODE = i;
 #ifdef _DEBUG
 		m_bNORMAL_DECODE_MODE = true;
@@ -121,7 +121,7 @@ public:
 
 	void SetSHADER_SRGB_READ( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSHADER_SRGB_READ = i;
 #ifdef _DEBUG
 		m_bSHADER_SRGB_READ = true;
@@ -155,7 +155,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bBLUR && m_bFADEOUTONSILHOUETTE && m_bCUBEMAP && m_bREFRACTTINTTEXTURE && m_bMASKED && m_bCOLORMODULATE && m_bSECONDARY_NORMAL && m_bNORMAL_DECODE_MODE && m_bSHADER_SRGB_READ );
+		DebugAssert( m_bBLUR && m_bFADEOUTONSILHOUETTE && m_bCUBEMAP && m_bREFRACTTINTTEXTURE && m_bMASKED && m_bCOLORMODULATE && m_bSECONDARY_NORMAL && m_bNORMAL_DECODE_MODE && m_bSHADER_SRGB_READ );
 		AssertMsg( !( m_nMASKED && m_nBLUR ), "Invalid combo combination ( MASKED && BLUR )" );
 		return ( 6 * m_nCONVERT_TO_SRGB ) + ( 12 * m_nBLUR ) + ( 24 * m_nFADEOUTONSILHOUETTE ) + ( 48 * m_nCUBEMAP ) + ( 96 * m_nREFRACTTINTTEXTURE ) + ( 192 * m_nMASKED ) + ( 384 * m_nCOLORMODULATE ) + ( 768 * m_nSECONDARY_NORMAL ) + ( 1536 * m_nNORMAL_DECODE_MODE ) + ( 1536 * m_nSHADER_SRGB_READ ) + 0;
 	}
@@ -175,7 +175,7 @@ class refract_ps20b_Dynamic_Index
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -184,7 +184,7 @@ public:
 
 	void SetWRITE_DEPTH_TO_DESTALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nWRITE_DEPTH_TO_DESTALPHA = i;
 #ifdef _DEBUG
 		m_bWRITE_DEPTH_TO_DESTALPHA = true;
@@ -203,7 +203,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bPIXELFOGTYPE && m_bWRITE_DEPTH_TO_DESTALPHA );
+		DebugAssert( m_bPIXELFOGTYPE && m_bWRITE_DEPTH_TO_DESTALPHA );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 3 * m_nWRITE_DEPTH_TO_DESTALPHA ) + 0;
 	}
 };

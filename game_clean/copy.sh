@@ -16,7 +16,7 @@ mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR}
 ./dlpak.sh
 
 declare -a DLLS=(
-  tc2/bin/$PLAT_DIR/{client,server}
+  tc2/bin/$PLAT_DIR/{client,server,sentry,game_shader_generic_std}
 )
 
 declare -a FILES_REP=(
@@ -65,7 +65,6 @@ if [ $PLATFORM = "win" ]; then
   FILES_REP+=(
     start_dedicated_tc2.bat
     tc2.bat
-    tc2_vulkan.bat
   )
 elif [ $PLATFORM = "linux" ]; then
   declare -a EXES=(

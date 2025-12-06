@@ -9,7 +9,7 @@ private:
 public:
 	void SetEFFECT( int i )
 	{
-		Assert( i >= 0 && i <= 3 );
+		DebugAssert( i >= 0 && i <= 3 );
 		m_nEFFECT = i;
 #ifdef _DEBUG
 		m_bEFFECT = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetVERTEXCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetVERTEX_LIT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEX_LIT = i;
 #ifdef _DEBUG
 		m_bVERTEX_LIT = true;
@@ -93,7 +93,7 @@ private:
 public:
 	void SetFULLBRIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFULLBRIGHT = i;
 #ifdef _DEBUG
 		m_bFULLBRIGHT = true;
@@ -114,7 +114,7 @@ private:
 public:
 	void SetBASETEXTURE2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBASETEXTURE2 = i;
 #ifdef _DEBUG
 		m_bBASETEXTURE2 = true;
@@ -135,7 +135,7 @@ private:
 public:
 	void SetSTRIPES( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTRIPES = i;
 #ifdef _DEBUG
 		m_bSTRIPES = true;
@@ -156,7 +156,7 @@ private:
 public:
 	void SetSTRIPES_USE_NORMAL2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTRIPES_USE_NORMAL2 = i;
 #ifdef _DEBUG
 		m_bSTRIPES_USE_NORMAL2 = true;
@@ -211,7 +211,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bEFFECT && m_bVERTEXCOLOR && m_bHALFLAMBERT && m_bVERTEX_LIT && m_bFULLBRIGHT && m_bBASETEXTURE2 && m_bSTRIPES && m_bSTRIPES_USE_NORMAL2;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 16 * m_nEFFECT ) + ( 64 * m_nVERTEXCOLOR ) + ( 128 * m_nHALFLAMBERT ) + ( 256 * m_nVERTEX_LIT ) + ( 512 * m_nFULLBRIGHT ) + ( 1024 * m_nBASETEXTURE2 ) + ( 2048 * m_nSTRIPES ) + ( 4096 * m_nSTRIPES_USE_NORMAL2 ) + 0;
 	}
@@ -227,7 +227,7 @@ private:
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -248,7 +248,7 @@ private:
 public:
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -269,7 +269,7 @@ private:
 public:
 	void SetDYNAMIC_LIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDYNAMIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bDYNAMIC_LIGHT = true;
@@ -290,7 +290,7 @@ private:
 public:
 	void SetSTATIC_LIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTATIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bSTATIC_LIGHT = true;
@@ -329,7 +329,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bCOMPRESSED_VERTS && m_bSKINNING && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nSKINNING ) + ( 4 * m_nDYNAMIC_LIGHT ) + ( 8 * m_nSTATIC_LIGHT ) + 0;
 	}

@@ -9,7 +9,7 @@ private:
 public:
 	void SetADDBASETEXTURE2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDBASETEXTURE2 = i;
 #ifdef _DEBUG
 		m_bADDBASETEXTURE2 = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetADDSELF( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDSELF = i;
 #ifdef _DEBUG
 		m_bADDSELF = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetUSEALPHAASRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSEALPHAASRGB = i;
 #ifdef _DEBUG
 		m_bUSEALPHAASRGB = true;
@@ -86,7 +86,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bADDBASETEXTURE2 && m_bADDSELF && m_bUSEALPHAASRGB;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nADDBASETEXTURE2 ) + ( 2 * m_nADDSELF ) + ( 4 * m_nUSEALPHAASRGB ) + 0;
 	}

@@ -9,7 +9,7 @@ private:
 public:
 	void SetMAXTEXTURESTAGES( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nMAXTEXTURESTAGES = i;
 #ifdef _DEBUG
 		m_bMAXTEXTURESTAGES = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetHASALPHAMASK( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHASALPHAMASK = i;
 #ifdef _DEBUG
 		m_bHASALPHAMASK = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetHASSTATICTEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHASSTATICTEXTURE = i;
 #ifdef _DEBUG
 		m_bHASSTATICTEXTURE = true;
@@ -86,7 +86,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bMAXTEXTURESTAGES && m_bHASALPHAMASK && m_bHASSTATICTEXTURE;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 4 * m_nMAXTEXTURESTAGES ) + ( 12 * m_nHASALPHAMASK ) + ( 24 * m_nHASSTATICTEXTURE ) + 0;
 	}
@@ -102,7 +102,7 @@ private:
 public:
 	void SetADDSTATIC( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDSTATIC = i;
 #ifdef _DEBUG
 		m_bADDSTATIC = true;
@@ -123,7 +123,7 @@ private:
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -154,7 +154,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bADDSTATIC && m_bPIXELFOGTYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nADDSTATIC ) + ( 2 * m_nPIXELFOGTYPE ) + 0;
 	}

@@ -9,7 +9,7 @@ private:
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 #ifdef _DEBUG
 		m_bCONVERT_TO_SRGB = true;
@@ -36,7 +36,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 5 * m_nCONVERT_TO_SRGB ) + 0;
 	}
@@ -52,7 +52,7 @@ private:
 public:
 	void SetNUM_LOOKUPS( int i )
 	{
-		Assert( i >= 0 && i <= 4 );
+		DebugAssert( i >= 0 && i <= 4 );
 		m_nNUM_LOOKUPS = i;
 #ifdef _DEBUG
 		m_bNUM_LOOKUPS = true;
@@ -79,7 +79,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bNUM_LOOKUPS;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nNUM_LOOKUPS ) + 0;
 	}

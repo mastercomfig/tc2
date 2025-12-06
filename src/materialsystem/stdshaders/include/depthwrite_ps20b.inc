@@ -9,7 +9,7 @@ private:
 public:
 	void SetCOLOR_DEPTH( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLOR_DEPTH = i;
 #ifdef _DEBUG
 		m_bCOLOR_DEPTH = true;
@@ -36,7 +36,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bCOLOR_DEPTH;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 2 * m_nCOLOR_DEPTH ) + 0;
 	}
@@ -52,7 +52,7 @@ private:
 public:
 	void SetALPHACLIP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nALPHACLIP = i;
 #ifdef _DEBUG
 		m_bALPHACLIP = true;
@@ -79,7 +79,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bALPHACLIP;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nALPHACLIP ) + 0;
 	}

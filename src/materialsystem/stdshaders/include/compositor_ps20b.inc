@@ -9,7 +9,7 @@ private:
 public:
 	void SetCOMBINE_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 6 );
+		DebugAssert( i >= 0 && i <= 6 );
 		m_nCOMBINE_MODE = i;
 #ifdef _DEBUG
 		m_bCOMBINE_MODE = true;
@@ -36,7 +36,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bCOMBINE_MODE;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 2 * m_nCOMBINE_MODE ) + 0;
 	}
@@ -52,7 +52,7 @@ private:
 public:
 	void SetDEBUG_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDEBUG_MODE = i;
 #ifdef _DEBUG
 		m_bDEBUG_MODE = true;
@@ -79,7 +79,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bDEBUG_MODE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nDEBUG_MODE ) + 0;
 	}

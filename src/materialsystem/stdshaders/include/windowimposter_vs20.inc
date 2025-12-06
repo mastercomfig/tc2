@@ -28,7 +28,7 @@ class windowimposter_vs20_Dynamic_Index
 public:
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -45,7 +45,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bDOWATERFOG );
+		DebugAssert( m_bDOWATERFOG );
 		return ( 1 * m_nDOWATERFOG ) + 0;
 	}
 };

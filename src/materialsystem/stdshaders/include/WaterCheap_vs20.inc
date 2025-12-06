@@ -12,7 +12,7 @@ class watercheap_vs20_Static_Index
 public:
 	void SetBLEND( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBLEND = i;
 #ifdef _DEBUG
 		m_bBLEND = true;
@@ -29,7 +29,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bBLEND );
+		DebugAssert( m_bBLEND );
 		return ( 1 * m_nBLEND ) + 0;
 	}
 };

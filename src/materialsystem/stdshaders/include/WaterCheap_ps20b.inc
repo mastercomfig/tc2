@@ -29,13 +29,13 @@ class watercheap_ps20b_Static_Index
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 	}
 
 	void SetMULTITEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMULTITEXTURE = i;
 #ifdef _DEBUG
 		m_bMULTITEXTURE = true;
@@ -44,7 +44,7 @@ public:
 
 	void SetFRESNEL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFRESNEL = i;
 #ifdef _DEBUG
 		m_bFRESNEL = true;
@@ -53,7 +53,7 @@ public:
 
 	void SetBLEND( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBLEND = i;
 #ifdef _DEBUG
 		m_bBLEND = true;
@@ -62,7 +62,7 @@ public:
 
 	void SetREFRACTALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nREFRACTALPHA = i;
 #ifdef _DEBUG
 		m_bREFRACTALPHA = true;
@@ -71,7 +71,7 @@ public:
 
 	void SetHDRTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nHDRTYPE = i;
 #ifdef _DEBUG
 		m_bHDRTYPE = true;
@@ -80,7 +80,7 @@ public:
 
 	void SetNORMAL_DECODE_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nNORMAL_DECODE_MODE = i;
 #ifdef _DEBUG
 		m_bNORMAL_DECODE_MODE = true;
@@ -108,7 +108,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bMULTITEXTURE && m_bFRESNEL && m_bBLEND && m_bREFRACTALPHA && m_bHDRTYPE && m_bNORMAL_DECODE_MODE );
+		DebugAssert( m_bMULTITEXTURE && m_bFRESNEL && m_bBLEND && m_bREFRACTALPHA && m_bHDRTYPE && m_bNORMAL_DECODE_MODE );
 		return ( 6 * m_nCONVERT_TO_SRGB ) + ( 12 * m_nMULTITEXTURE ) + ( 24 * m_nFRESNEL ) + ( 48 * m_nBLEND ) + ( 96 * m_nREFRACTALPHA ) + ( 192 * m_nHDRTYPE ) + ( 576 * m_nNORMAL_DECODE_MODE ) + 0;
 	}
 };
@@ -127,7 +127,7 @@ class watercheap_ps20b_Dynamic_Index
 public:
 	void SetHDRENABLED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHDRENABLED = i;
 #ifdef _DEBUG
 		m_bHDRENABLED = true;
@@ -136,7 +136,7 @@ public:
 
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -155,7 +155,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bHDRENABLED && m_bPIXELFOGTYPE );
+		DebugAssert( m_bHDRENABLED && m_bPIXELFOGTYPE );
 		return ( 1 * m_nHDRENABLED ) + ( 2 * m_nPIXELFOGTYPE ) + 0;
 	}
 };

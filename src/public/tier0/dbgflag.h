@@ -54,11 +54,17 @@
 //-----------------------------------------------------------------------------
 #else // _DEBUG
 
-#ifdef STEAM
+#ifndef DBGFLAG_RELEASE_NODLG
+#define DBGFLAG_RELEASE_NODLG 1
+#endif
+
+#if defined( STEAM ) || DBGFLAG_RELEASE_NODLG
 #define DBGFLAG_ASSERT
 #endif
 #define DBGFLAG_ASSERTFATAL		// note: fatal asserts are enabled in release builds
+#if !DBGFLAG_RELEASE_NODLG
 #define DBGFLAG_ASSERTDLG
+#endif
 
 #endif // _DEBUG
 

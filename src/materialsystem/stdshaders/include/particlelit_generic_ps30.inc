@@ -8,7 +8,7 @@ private:
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -29,7 +29,7 @@ private:
 public:
 	void SetHDRTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nHDRTYPE = i;
 #ifdef _DEBUG
 		m_bHDRTYPE = true;
@@ -60,7 +60,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bHALFLAMBERT && m_bHDRTYPE;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 264 * m_nHALFLAMBERT ) + ( 528 * m_nHDRTYPE ) + 0;
 	}
@@ -76,7 +76,7 @@ private:
 public:
 	void SetLIGHT_COMBO( int i )
 	{
-		Assert( i >= 0 && i <= 21 );
+		DebugAssert( i >= 0 && i <= 21 );
 		m_nLIGHT_COMBO = i;
 #ifdef _DEBUG
 		m_bLIGHT_COMBO = true;
@@ -97,7 +97,7 @@ private:
 public:
 	void SetWRITEWATERFOGTODESTALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nWRITEWATERFOGTODESTALPHA = i;
 #ifdef _DEBUG
 		m_bWRITEWATERFOGTODESTALPHA = true;
@@ -118,7 +118,7 @@ private:
 public:
 	void SetFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nFOGTYPE = i;
 #ifdef _DEBUG
 		m_bFOGTYPE = true;
@@ -139,7 +139,7 @@ private:
 public:
 	void SetHDRENABLED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHDRENABLED = i;
 #ifdef _DEBUG
 		m_bHDRENABLED = true;
@@ -178,7 +178,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bLIGHT_COMBO && m_bWRITEWATERFOGTODESTALPHA && m_bFOGTYPE && m_bHDRENABLED;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nLIGHT_COMBO ) + ( 22 * m_nWRITEWATERFOGTODESTALPHA ) + ( 44 * m_nFOGTYPE ) + ( 132 * m_nHDRENABLED ) + 0;
 	}

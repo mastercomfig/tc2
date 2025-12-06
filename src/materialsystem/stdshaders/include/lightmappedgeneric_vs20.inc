@@ -32,7 +32,7 @@ class lightmappedgeneric_vs20_Static_Index
 public:
 	void SetENVMAP_MASK( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nENVMAP_MASK = i;
 #ifdef _DEBUG
 		m_bENVMAP_MASK = true;
@@ -41,7 +41,7 @@ public:
 
 	void SetTANGENTSPACE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nTANGENTSPACE = i;
 #ifdef _DEBUG
 		m_bTANGENTSPACE = true;
@@ -50,7 +50,7 @@ public:
 
 	void SetBUMPMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBUMPMAP = i;
 #ifdef _DEBUG
 		m_bBUMPMAP = true;
@@ -59,7 +59,7 @@ public:
 
 	void SetDIFFUSEBUMPMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDIFFUSEBUMPMAP = i;
 #ifdef _DEBUG
 		m_bDIFFUSEBUMPMAP = true;
@@ -68,7 +68,7 @@ public:
 
 	void SetVERTEXCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -77,7 +77,7 @@ public:
 
 	void SetVERTEXALPHATEXBLENDFACTOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXALPHATEXBLENDFACTOR = i;
 #ifdef _DEBUG
 		m_bVERTEXALPHATEXBLENDFACTOR = true;
@@ -86,7 +86,7 @@ public:
 
 	void SetRELIEF_MAPPING( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nRELIEF_MAPPING = i;
 #ifdef _DEBUG
 		m_bRELIEF_MAPPING = true;
@@ -95,7 +95,7 @@ public:
 
 	void SetSEAMLESS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSEAMLESS = i;
 #ifdef _DEBUG
 		m_bSEAMLESS = true;
@@ -104,7 +104,7 @@ public:
 
 	void SetBUMPMASK( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBUMPMASK = i;
 #ifdef _DEBUG
 		m_bBUMPMASK = true;
@@ -137,7 +137,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK );
+		DebugAssert( m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK );
 		AssertMsg( !( !m_nBUMPMAP && m_nDIFFUSEBUMPMAP ), "Invalid combo combination ( !BUMPMAP && DIFFUSEBUMPMAP )" );
 		AssertMsg( !( m_nSEAMLESS && m_nRELIEF_MAPPING ), "Invalid combo combination ( SEAMLESS && RELIEF_MAPPING )" );
 		AssertMsg( !( m_nBUMPMASK && m_nRELIEF_MAPPING ), "Invalid combo combination ( BUMPMASK && RELIEF_MAPPING )" );
@@ -162,7 +162,7 @@ class lightmappedgeneric_vs20_Dynamic_Index
 public:
 	void SetFASTPATH( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFASTPATH = i;
 #ifdef _DEBUG
 		m_bFASTPATH = true;
@@ -171,7 +171,7 @@ public:
 
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -180,7 +180,7 @@ public:
 
 	void SetLIGHTING_PREVIEW( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nLIGHTING_PREVIEW = i;
 #ifdef _DEBUG
 		m_bLIGHTING_PREVIEW = true;
@@ -201,7 +201,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW );
+		DebugAssert( m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW );
 		AssertMsg( !( 1 && ( 1 && ( m_nLIGHTING_PREVIEW && m_nFASTPATH ) ) ), "Invalid combo combination ( 1 && ( 1 && ( LIGHTING_PREVIEW && FASTPATH ) ) )" );
 		return ( 1 * m_nFASTPATH ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nLIGHTING_PREVIEW ) + 0;
 	}

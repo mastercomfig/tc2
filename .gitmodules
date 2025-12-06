@@ -1,0 +1,6 @@
+[submodule "src/thirdparty/poco"]
+	path = src/thirdparty/poco
+	url = https://github.com/pocoproject/poco.git
+[submodule "src/thirdparty/sentry"]
+	path = src/thirdparty/sentry
+	url = https://github.com/getsentry/sentry-native.git

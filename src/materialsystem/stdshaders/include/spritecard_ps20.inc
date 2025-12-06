@@ -9,7 +9,7 @@ private:
 public:
 	void SetDUALSEQUENCE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDUALSEQUENCE = i;
 #ifdef _DEBUG
 		m_bDUALSEQUENCE = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetSEQUENCE_BLEND_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nSEQUENCE_BLEND_MODE = i;
 #ifdef _DEBUG
 		m_bSEQUENCE_BLEND_MODE = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetADDBASETEXTURE2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDBASETEXTURE2 = i;
 #ifdef _DEBUG
 		m_bADDBASETEXTURE2 = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetMAXLUMFRAMEBLEND1( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMAXLUMFRAMEBLEND1 = i;
 #ifdef _DEBUG
 		m_bMAXLUMFRAMEBLEND1 = true;
@@ -93,7 +93,7 @@ private:
 public:
 	void SetMAXLUMFRAMEBLEND2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMAXLUMFRAMEBLEND2 = i;
 #ifdef _DEBUG
 		m_bMAXLUMFRAMEBLEND2 = true;
@@ -114,7 +114,7 @@ private:
 public:
 	void SetEXTRACTGREENALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nEXTRACTGREENALPHA = i;
 #ifdef _DEBUG
 		m_bEXTRACTGREENALPHA = true;
@@ -135,7 +135,7 @@ private:
 public:
 	void SetCOLORRAMP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLORRAMP = i;
 #ifdef _DEBUG
 		m_bCOLORRAMP = true;
@@ -156,7 +156,7 @@ private:
 public:
 	void SetANIMBLEND( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nANIMBLEND = i;
 #ifdef _DEBUG
 		m_bANIMBLEND = true;
@@ -177,7 +177,7 @@ private:
 public:
 	void SetADDSELF( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDSELF = i;
 #ifdef _DEBUG
 		m_bADDSELF = true;
@@ -236,7 +236,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bDUALSEQUENCE && m_bSEQUENCE_BLEND_MODE && m_bADDBASETEXTURE2 && m_bMAXLUMFRAMEBLEND1 && m_bMAXLUMFRAMEBLEND2 && m_bEXTRACTGREENALPHA && m_bCOLORRAMP && m_bANIMBLEND && m_bADDSELF;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nDUALSEQUENCE ) + ( 2 * m_nSEQUENCE_BLEND_MODE ) + ( 6 * m_nADDBASETEXTURE2 ) + ( 12 * m_nMAXLUMFRAMEBLEND1 ) + ( 24 * m_nMAXLUMFRAMEBLEND2 ) + ( 48 * m_nEXTRACTGREENALPHA ) + ( 96 * m_nCOLORRAMP ) + ( 192 * m_nANIMBLEND ) + ( 384 * m_nADDSELF ) + 0;
 	}

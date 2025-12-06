@@ -8,7 +8,7 @@ private:
 public:
 	void SetBASETEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBASETEXTURE = i;
 #ifdef _DEBUG
 		m_bBASETEXTURE = true;
@@ -29,7 +29,7 @@ private:
 public:
 	void SetBUMPTEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBUMPTEXTURE = i;
 #ifdef _DEBUG
 		m_bBUMPTEXTURE = true;
@@ -50,7 +50,7 @@ private:
 public:
 	void SetDIFFUSELIGHTING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDIFFUSELIGHTING = i;
 #ifdef _DEBUG
 		m_bDIFFUSELIGHTING = true;
@@ -71,7 +71,7 @@ private:
 public:
 	void SetSELFILLUM( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSELFILLUM = i;
 #ifdef _DEBUG
 		m_bSELFILLUM = true;
@@ -92,7 +92,7 @@ private:
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -113,7 +113,7 @@ private:
 public:
 	void SetFLASHLIGHT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHT = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = true;
@@ -160,7 +160,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bBASETEXTURE && m_bBUMPTEXTURE && m_bDIFFUSELIGHTING && m_bSELFILLUM && m_bHALFLAMBERT && m_bFLASHLIGHT;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 132 * m_nBASETEXTURE ) + ( 264 * m_nBUMPTEXTURE ) + ( 528 * m_nDIFFUSELIGHTING ) + ( 1056 * m_nSELFILLUM ) + ( 2112 * m_nHALFLAMBERT ) + ( 4224 * m_nFLASHLIGHT ) + 0;
 	}
@@ -176,7 +176,7 @@ private:
 public:
 	void SetLIGHT_COMBO( int i )
 	{
-		Assert( i >= 0 && i <= 21 );
+		DebugAssert( i >= 0 && i <= 21 );
 		m_nLIGHT_COMBO = i;
 #ifdef _DEBUG
 		m_bLIGHT_COMBO = true;
@@ -197,7 +197,7 @@ private:
 public:
 	void SetWRITEWATERFOGTODESTALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nWRITEWATERFOGTODESTALPHA = i;
 #ifdef _DEBUG
 		m_bWRITEWATERFOGTODESTALPHA = true;
@@ -218,7 +218,7 @@ private:
 public:
 	void SetFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nFOGTYPE = i;
 #ifdef _DEBUG
 		m_bFOGTYPE = true;
@@ -253,7 +253,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bLIGHT_COMBO && m_bWRITEWATERFOGTODESTALPHA && m_bFOGTYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nLIGHT_COMBO ) + ( 22 * m_nWRITEWATERFOGTODESTALPHA ) + ( 44 * m_nFOGTYPE ) + 0;
 	}

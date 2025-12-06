@@ -9,7 +9,7 @@ private:
 public:
 	void SetBLUR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBLUR = i;
 #ifdef _DEBUG
 		m_bBLUR = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetFADEOUTONSILHOUETTE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFADEOUTONSILHOUETTE = i;
 #ifdef _DEBUG
 		m_bFADEOUTONSILHOUETTE = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetCUBEMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCUBEMAP = i;
 #ifdef _DEBUG
 		m_bCUBEMAP = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetREFRACTTINTTEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nREFRACTTINTTEXTURE = i;
 #ifdef _DEBUG
 		m_bREFRACTTINTTEXTURE = true;
@@ -93,7 +93,7 @@ private:
 public:
 	void SetMASKED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMASKED = i;
 #ifdef _DEBUG
 		m_bMASKED = true;
@@ -114,7 +114,7 @@ private:
 public:
 	void SetCOLORMODULATE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLORMODULATE = i;
 #ifdef _DEBUG
 		m_bCOLORMODULATE = true;
@@ -135,7 +135,7 @@ private:
 public:
 	void SetSECONDARY_NORMAL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSECONDARY_NORMAL = i;
 #ifdef _DEBUG
 		m_bSECONDARY_NORMAL = true;
@@ -156,7 +156,7 @@ private:
 public:
 	void SetNORMAL_DECODE_MODE( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		DebugAssert( i >= 0 && i <= 0 );
 		m_nNORMAL_DECODE_MODE = i;
 #ifdef _DEBUG
 		m_bNORMAL_DECODE_MODE = true;
@@ -211,7 +211,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bBLUR && m_bFADEOUTONSILHOUETTE && m_bCUBEMAP && m_bREFRACTTINTTEXTURE && m_bMASKED && m_bCOLORMODULATE && m_bSECONDARY_NORMAL && m_bNORMAL_DECODE_MODE;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 2 * m_nBLUR ) + ( 4 * m_nFADEOUTONSILHOUETTE ) + ( 8 * m_nCUBEMAP ) + ( 16 * m_nREFRACTTINTTEXTURE ) + ( 32 * m_nMASKED ) + ( 64 * m_nCOLORMODULATE ) + ( 128 * m_nSECONDARY_NORMAL ) + ( 256 * m_nNORMAL_DECODE_MODE ) + 0;
 	}
@@ -227,7 +227,7 @@ private:
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -254,7 +254,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bPIXELFOGTYPE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nPIXELFOGTYPE ) + 0;
 	}

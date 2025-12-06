@@ -25,7 +25,7 @@ private:
 public:
 	void SetCMBO_USERENDERTARGET( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCMBO_USERENDERTARGET = i;
 #ifdef _DEBUG
 		m_bCMBO_USERENDERTARGET = true;
@@ -52,7 +52,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bCMBO_USERENDERTARGET;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nCMBO_USERENDERTARGET ) + 0;
 	}

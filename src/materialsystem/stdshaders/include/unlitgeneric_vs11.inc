@@ -8,7 +8,7 @@ private:
 public:
 	void SetDETAIL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDETAIL = i;
 #ifdef _DEBUG
 		m_bDETAIL = true;
@@ -29,7 +29,7 @@ private:
 public:
 	void SetENVMAP( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nENVMAP = i;
 #ifdef _DEBUG
 		m_bENVMAP = true;
@@ -62,7 +62,7 @@ private:
 public:
 	void SetENVMAPSPHERE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nENVMAPSPHERE = i;
 #ifdef _DEBUG
 		m_bENVMAPSPHERE = true;
@@ -83,7 +83,7 @@ private:
 public:
 	void SetVERTEXCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -104,7 +104,7 @@ private:
 public:
 	void SetSEPARATEDETAILUVS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSEPARATEDETAILUVS = i;
 #ifdef _DEBUG
 		m_bSEPARATEDETAILUVS = true;
@@ -151,7 +151,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bDETAIL && m_bENVMAP && m_bENVMAPCAMERASPACE && m_bENVMAPSPHERE && m_bVERTEXCOLOR && m_bSEPARATEDETAILUVS;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 4 * m_nDETAIL ) + ( 8 * m_nENVMAP ) + ( 16 * m_nENVMAPCAMERASPACE ) + ( 16 * m_nENVMAPSPHERE ) + ( 32 * m_nVERTEXCOLOR ) + ( 64 * m_nSEPARATEDETAILUVS ) + 0;
 	}
@@ -166,7 +166,7 @@ private:
 public:
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -187,7 +187,7 @@ private:
 public:
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -218,7 +218,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bDOWATERFOG && m_bSKINNING;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nDOWATERFOG ) + ( 2 * m_nSKINNING ) + 0;
 	}

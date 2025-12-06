@@ -9,7 +9,7 @@ private:
 public:
 	void SetEFFECT( int i )
 	{
-		Assert( i >= 0 && i <= 3 );
+		DebugAssert( i >= 0 && i <= 3 );
 		m_nEFFECT = i;
 #ifdef _DEBUG
 		m_bEFFECT = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetVERTEX_LIT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEX_LIT = i;
 #ifdef _DEBUG
 		m_bVERTEX_LIT = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetBASETEXTURE2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nBASETEXTURE2 = i;
 #ifdef _DEBUG
 		m_bBASETEXTURE2 = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetFANCY_BLENDING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nFANCY_BLENDING = i;
 #ifdef _DEBUG
 		m_bFANCY_BLENDING = true;
@@ -93,7 +93,7 @@ private:
 public:
 	void SetSELFILLUM( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSELFILLUM = i;
 #ifdef _DEBUG
 		m_bSELFILLUM = true;
@@ -114,7 +114,7 @@ private:
 public:
 	void SetCOLOR_BAR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLOR_BAR = i;
 #ifdef _DEBUG
 		m_bCOLOR_BAR = true;
@@ -135,7 +135,7 @@ private:
 public:
 	void SetSTRIPES( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTRIPES = i;
 #ifdef _DEBUG
 		m_bSTRIPES = true;
@@ -156,7 +156,7 @@ private:
 public:
 	void SetSTRIPES_USE_NORMAL2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSTRIPES_USE_NORMAL2 = i;
 #ifdef _DEBUG
 		m_bSTRIPES_USE_NORMAL2 = true;
@@ -211,7 +211,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bEFFECT && m_bVERTEX_LIT && m_bBASETEXTURE2 && m_bFANCY_BLENDING && m_bSELFILLUM && m_bCOLOR_BAR && m_bSTRIPES && m_bSTRIPES_USE_NORMAL2;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 8 * m_nEFFECT ) + ( 32 * m_nVERTEX_LIT ) + ( 64 * m_nBASETEXTURE2 ) + ( 128 * m_nFANCY_BLENDING ) + ( 256 * m_nSELFILLUM ) + ( 512 * m_nCOLOR_BAR ) + ( 1024 * m_nSTRIPES ) + ( 2048 * m_nSTRIPES_USE_NORMAL2 ) + 0;
 	}
@@ -227,7 +227,7 @@ private:
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -248,7 +248,7 @@ private:
 public:
 	void SetVISUALIZE_DOF( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVISUALIZE_DOF = i;
 #ifdef _DEBUG
 		m_bVISUALIZE_DOF = true;
@@ -269,7 +269,7 @@ private:
 public:
 	void SetHEATHAZE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHEATHAZE = i;
 #ifdef _DEBUG
 		m_bHEATHAZE = true;
@@ -304,7 +304,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bPIXELFOGTYPE && m_bVISUALIZE_DOF && m_bHEATHAZE;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 2 * m_nVISUALIZE_DOF ) + ( 4 * m_nHEATHAZE ) + 0;
 	}

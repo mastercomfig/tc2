@@ -14,7 +14,7 @@ class refract_vs20_Static_Index
 public:
 	void SetMODEL( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nMODEL = i;
 #ifdef _DEBUG
 		m_bMODEL = true;
@@ -23,7 +23,7 @@ public:
 
 	void SetCOLORMODULATE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOLORMODULATE = i;
 #ifdef _DEBUG
 		m_bCOLORMODULATE = true;
@@ -42,7 +42,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bMODEL && m_bCOLORMODULATE );
+		DebugAssert( m_bMODEL && m_bCOLORMODULATE );
 		return ( 4 * m_nMODEL ) + ( 8 * m_nCOLORMODULATE ) + 0;
 	}
 };
@@ -61,7 +61,7 @@ class refract_vs20_Dynamic_Index
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -70,7 +70,7 @@ public:
 
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -89,7 +89,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bCOMPRESSED_VERTS && m_bSKINNING );
+		DebugAssert( m_bCOMPRESSED_VERTS && m_bSKINNING );
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nSKINNING ) + 0;
 	}
 };

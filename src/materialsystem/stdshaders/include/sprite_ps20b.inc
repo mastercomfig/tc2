@@ -34,13 +34,13 @@ class sprite_ps20b_Static_Index
 public:
 	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONVERT_TO_SRGB = i;
 	}
 
 	void SetVERTEXCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -49,7 +49,7 @@ public:
 
 	void SetCONSTANTCOLOR( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCONSTANTCOLOR = i;
 #ifdef _DEBUG
 		m_bCONSTANTCOLOR = true;
@@ -58,7 +58,7 @@ public:
 
 	void SetHDRTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nHDRTYPE = i;
 #ifdef _DEBUG
 		m_bHDRTYPE = true;
@@ -67,7 +67,7 @@ public:
 
 	void SetSRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSRGB = i;
 #ifdef _DEBUG
 		m_bSRGB = true;
@@ -76,7 +76,7 @@ public:
 
 	void SetSRGB_OUTPUT_ADAPTER( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSRGB_OUTPUT_ADAPTER = i;
 #ifdef _DEBUG
 		m_bSRGB_OUTPUT_ADAPTER = true;
@@ -102,7 +102,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bVERTEXCOLOR && m_bCONSTANTCOLOR && m_bHDRTYPE && m_bSRGB && m_bSRGB_OUTPUT_ADAPTER );
+		DebugAssert( m_bVERTEXCOLOR && m_bCONSTANTCOLOR && m_bHDRTYPE && m_bSRGB && m_bSRGB_OUTPUT_ADAPTER );
 		return ( 6 * m_nCONVERT_TO_SRGB ) + ( 12 * m_nVERTEXCOLOR ) + ( 24 * m_nCONSTANTCOLOR ) + ( 48 * m_nHDRTYPE ) + ( 144 * m_nSRGB ) + ( 288 * m_nSRGB_OUTPUT_ADAPTER ) + 0;
 	}
 };
@@ -121,7 +121,7 @@ class sprite_ps20b_Dynamic_Index
 public:
 	void SetHDRENABLED( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHDRENABLED = i;
 #ifdef _DEBUG
 		m_bHDRENABLED = true;
@@ -130,7 +130,7 @@ public:
 
 	void SetPIXELFOGTYPE( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -149,7 +149,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bHDRENABLED && m_bPIXELFOGTYPE );
+		DebugAssert( m_bHDRENABLED && m_bPIXELFOGTYPE );
 		return ( 1 * m_nHDRENABLED ) + ( 2 * m_nPIXELFOGTYPE ) + 0;
 	}
 };

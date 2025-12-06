@@ -17,7 +17,7 @@ class vertexlit_and_unlit_generic_bump_vs20_Static_Index
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -26,7 +26,7 @@ public:
 
 	void SetUSE_WITH_2B( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSE_WITH_2B = i;
 #ifdef _DEBUG
 		m_bUSE_WITH_2B = true;
@@ -35,7 +35,7 @@ public:
 
 	void SetUSE_STATIC_CONTROL_FLOW( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSE_STATIC_CONTROL_FLOW = i;
 #ifdef _DEBUG
 		m_bUSE_STATIC_CONTROL_FLOW = true;
@@ -56,7 +56,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bHALFLAMBERT && m_bUSE_WITH_2B && m_bUSE_STATIC_CONTROL_FLOW );
+		DebugAssert( m_bHALFLAMBERT && m_bUSE_WITH_2B && m_bUSE_STATIC_CONTROL_FLOW );
 		return ( 24 * m_nHALFLAMBERT ) + ( 48 * m_nUSE_WITH_2B ) + ( 96 * m_nUSE_STATIC_CONTROL_FLOW ) + 0;
 	}
 };
@@ -79,7 +79,7 @@ class vertexlit_and_unlit_generic_bump_vs20_Dynamic_Index
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -88,7 +88,7 @@ public:
 
 	void SetDOWATERFOG( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -97,7 +97,7 @@ public:
 
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -106,7 +106,7 @@ public:
 
 	void SetNUM_LIGHTS( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nNUM_LIGHTS = i;
 #ifdef _DEBUG
 		m_bNUM_LIGHTS = true;
@@ -129,7 +129,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bNUM_LIGHTS );
+		DebugAssert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bNUM_LIGHTS );
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nSKINNING ) + ( 8 * m_nNUM_LIGHTS ) + 0;
 	}
 };

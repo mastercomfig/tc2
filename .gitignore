@@ -140,16 +140,34 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
+**/x64/*
+**/x86/*
+**/linux64/*
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
+**/[Bb]in/*
+!**/[Bb]in/x64
+**/[Bb]in/x64/*
+!**/[Bb]in/linux64
+**/[Bb]in/linux64/*
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+!**/[Bb]in/x64/steam_api64.dll
+!**/[Bb]in/linux64/libsteam_api.so
+
+!**/[Bb]in/x64/crashpad_handler.exe
+!**/[Bb]in/x64/crashpad_wer.dll
+!**/[Bb]in/linux64/crashpad_handler
+
+!**/x64/sentry.dll
+!**/linux64/sentry.dll
+
+!**/x64/sentry.lib
+!**/linux64/sentry.a
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -558,9 +576,6 @@ enc_temp_folder
 
 /build/
 
-!/game/bin/x64/steam_api64.dll
-!/game/bin/linux64/libsteam_api.so
-
 notes.txt
 *.nav
 *.bsp
@@ -585,4 +600,10 @@ pak.zip
 /tf2
 /tf2ds
 gameinfo_client.txt
+
+*.la
+
+/src/thirdparty/sentry_native/lib
+/src/thirdparty/sentry_native/bin
+
 # END TC2 MOD

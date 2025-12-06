@@ -9,7 +9,7 @@ private:
 public:
 	void SetZOOM_ANIMATE_SEQ2( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nZOOM_ANIMATE_SEQ2 = i;
 #ifdef _DEBUG
 		m_bZOOM_ANIMATE_SEQ2 = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetDUALSEQUENCE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nDUALSEQUENCE = i;
 #ifdef _DEBUG
 		m_bDUALSEQUENCE = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetEXTRACTGREENALPHA( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nEXTRACTGREENALPHA = i;
 #ifdef _DEBUG
 		m_bEXTRACTGREENALPHA = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetUSE_INSTANCING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSE_INSTANCING = i;
 #ifdef _DEBUG
 		m_bUSE_INSTANCING = true;
@@ -111,7 +111,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bZOOM_ANIMATE_SEQ2 && m_bDUALSEQUENCE && m_bEXTRACTGREENALPHA && m_bUSE_INSTANCING;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 3 * m_nZOOM_ANIMATE_SEQ2 ) + ( 6 * m_nDUALSEQUENCE ) + ( 12 * m_nEXTRACTGREENALPHA ) + ( 24 * m_nUSE_INSTANCING ) + 0;
 	}
@@ -127,7 +127,7 @@ private:
 public:
 	void SetORIENTATION( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nORIENTATION = i;
 #ifdef _DEBUG
 		m_bORIENTATION = true;
@@ -154,7 +154,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bORIENTATION;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nORIENTATION ) + 0;
 	}

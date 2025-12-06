@@ -9,7 +9,7 @@ private:
 public:
 	void SetMAXTEXTURESTAGES( int i )
 	{
-		Assert( i >= 0 && i <= 2 );
+		DebugAssert( i >= 0 && i <= 2 );
 		m_nMAXTEXTURESTAGES = i;
 #ifdef _DEBUG
 		m_bMAXTEXTURESTAGES = true;
@@ -30,7 +30,7 @@ private:
 public:
 	void SetHASALPHAMASK( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHASALPHAMASK = i;
 #ifdef _DEBUG
 		m_bHASALPHAMASK = true;
@@ -51,7 +51,7 @@ private:
 public:
 	void SetHASSTATICTEXTURE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHASSTATICTEXTURE = i;
 #ifdef _DEBUG
 		m_bHASSTATICTEXTURE = true;
@@ -72,7 +72,7 @@ private:
 public:
 	void SetUSEALTERNATEVIEW( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUSEALTERNATEVIEW = i;
 #ifdef _DEBUG
 		m_bUSEALTERNATEVIEW = true;
@@ -111,7 +111,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bMAXTEXTURESTAGES && m_bHASALPHAMASK && m_bHASSTATICTEXTURE && m_bUSEALTERNATEVIEW;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 4 * m_nMAXTEXTURESTAGES ) + ( 12 * m_nHASALPHAMASK ) + ( 24 * m_nHASSTATICTEXTURE ) + ( 48 * m_nUSEALTERNATEVIEW ) + 0;
 	}
@@ -127,7 +127,7 @@ private:
 public:
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -148,7 +148,7 @@ private:
 public:
 	void SetADDSTATIC( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nADDSTATIC = i;
 #ifdef _DEBUG
 		m_bADDSTATIC = true;
@@ -179,7 +179,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bSKINNING && m_bADDSTATIC;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nSKINNING ) + ( 2 * m_nADDSTATIC ) + 0;
 	}

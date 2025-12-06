@@ -8,7 +8,7 @@ private:
 public:
 	void SetUNLIT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nUNLIT = i;
 #ifdef _DEBUG
 		m_bUNLIT = true;
@@ -29,7 +29,7 @@ private:
 public:
 	void SetHALF_LAMBERT( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nHALF_LAMBERT = i;
 #ifdef _DEBUG
 		m_bHALF_LAMBERT = true;
@@ -60,7 +60,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllStaticVarsDefined = m_bUNLIT && m_bHALF_LAMBERT;
-		Assert( bAllStaticVarsDefined );
+		DebugAssert( bAllStaticVarsDefined );
 #endif // _DEBUG
 		return ( 44 * m_nUNLIT ) + ( 88 * m_nHALF_LAMBERT ) + 0;
 	}
@@ -75,7 +75,7 @@ private:
 public:
 	void SetLIGHT_COMBO( int i )
 	{
-		Assert( i >= 0 && i <= 21 );
+		DebugAssert( i >= 0 && i <= 21 );
 		m_nLIGHT_COMBO = i;
 #ifdef _DEBUG
 		m_bLIGHT_COMBO = true;
@@ -96,7 +96,7 @@ private:
 public:
 	void SetSKINNING( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -127,7 +127,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bLIGHT_COMBO && m_bSKINNING;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nLIGHT_COMBO ) + ( 22 * m_nSKINNING ) + 0;
 	}

@@ -25,7 +25,7 @@ private:
 public:
 	void SetNEED_BLINDMK( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nNEED_BLINDMK = i;
 #ifdef _DEBUG
 		m_bNEED_BLINDMK = true;
@@ -46,7 +46,7 @@ private:
 public:
 	void SetNEED_ANOMYLIZE( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nNEED_ANOMYLIZE = i;
 #ifdef _DEBUG
 		m_bNEED_ANOMYLIZE = true;
@@ -67,7 +67,7 @@ private:
 public:
 	void SetNEED_MONOCHROME( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
+		DebugAssert( i >= 0 && i <= 1 );
 		m_nNEED_MONOCHROME = i;
 #ifdef _DEBUG
 		m_bNEED_MONOCHROME = true;
@@ -102,7 +102,7 @@ public:
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
 		bool bAllDynamicVarsDefined = m_bNEED_BLINDMK && m_bNEED_ANOMYLIZE && m_bNEED_MONOCHROME;
-		Assert( bAllDynamicVarsDefined );
+		DebugAssert( bAllDynamicVarsDefined );
 #endif // _DEBUG
 		return ( 1 * m_nNEED_BLINDMK ) + ( 2 * m_nNEED_ANOMYLIZE ) + ( 4 * m_nNEED_MONOCHROME ) + 0;
 	}

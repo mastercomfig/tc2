@@ -21,9 +21,16 @@ public:
 	virtual bool Init();
 	virtual void Shutdown();
 
+	static void AssertCallbackFunc( const char *pchFile, int nLine, const char *pchMessage );
+	static SpewRetval_t SpewFunc( SpewType_t type, const tchar* pMsg );
+
 	void ReportInfo( const char *logger, const char* message );
 	void ReportWarning( const char* logger, const char* message );
 	void ReportError( const char* logger, const char* message );
+
+private:
+	bool m_bInit = false;
+	SpewOutputFunc_t m_OutputFuncPrev;
 };
 
 extern CCrashReporter* GetCrashReporter();
