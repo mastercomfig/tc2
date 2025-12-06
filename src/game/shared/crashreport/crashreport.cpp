@@ -43,6 +43,11 @@ bool CCrashReporter::Init()
 		return true;
 #endif
 
+	if (m_bInit)
+	{
+		return true;
+	}
+
 	SetAssertFailedNotifyFunc( AssertCallbackFunc );
 	m_OutputFuncPrev = GetSpewOutputFunc();
 	SpewOutputFunc(&SpewFunc);
@@ -68,12 +73,15 @@ bool CCrashReporter::Init()
 void CCrashReporter::Shutdown()
 {
 #ifdef GAME_DLL
+	if (!engine->IsDedicatedServer())
+		return;
+#endif
+
 	if (m_bInit)
 	{
 		SpewOutputFunc(m_OutputFuncPrev);
 		sentry_close();
 	}
-#endif
 }
 
 void CCrashReporter::AssertCallbackFunc( const char* pchFile, int nLine, const char* pchMessage )
