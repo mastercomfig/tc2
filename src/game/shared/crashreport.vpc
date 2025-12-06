@@ -14,7 +14,8 @@ $Project
 {
   $Folder "Link Libraries"
   {
-    $ImpLibexternal "$SRCDIR\thirdparty\sentry_native\lib\sentry"
+    $ImpLibexternal "$SRCDIR\thirdparty\sentry_native\lib\sentry" [$WINDOWS]
+    $ImpLibexternal "$SRCDIR/thirdparty/sentry_native/lib/libsentry" [$LINUXALL]
   }
     
   $Folder "Source Files"
