@@ -748,9 +748,9 @@ int main( int argc, char *argv[] )
 	char *pBinaryGameDir = pRootDir;
 
 	std::string strGameInstallDir;
+	char szGameInstallDir[4096];
 	if ( !bForceNoSteamClient )
 	{
-		char szGameInstallDir[4096];
 		if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096, bLaunchDedicated ) )
 		{
 			return 1;
@@ -799,12 +799,17 @@ int main( int argc, char *argv[] )
 	}
 	else
 	{
-		snprintf( szExecutable, sizeof(szExecutable), "%s/tf.sh", pBinaryGameDir );
+		snprintf( szExecutable, sizeof(szExecutable), "%s/hl2.sh", pRootDir );
 	}
 
 	std::vector<char *> new_argv;
 
 	new_argv.push_back( szExecutable );
+
+	if ( !bLaunchDedicated )
+	{
+		new_argv.push_back( pBinaryGameDir );
+	}
 
 	bool bHasGame = false;
 	for ( int i = 1; i < argc; i++ )
