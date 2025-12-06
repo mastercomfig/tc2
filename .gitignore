@@ -158,6 +158,7 @@ bld/
 
 !**/[Bb]in/x64/steam_api64.dll
 !**/[Bb]in/linux64/libsteam_api.so
+!**/[Bb]in/linux64/libsentry.so
 
 !**/[Bb]in/x64/crashpad_handler.exe
 !**/[Bb]in/x64/crashpad_wer.dll
