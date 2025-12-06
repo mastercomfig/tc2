@@ -603,7 +603,10 @@ gameinfo_client.txt
 
 *.la
 
-/src/thirdparty/sentry_native/lib
+/src/thirdparty/sentry_native/lib/*
 /src/thirdparty/sentry_native/bin
+
+!/src/thirdparty/sentry_native/lib/sentry.lib
+!/src/thirdparty/sentry_native/lib/sentry.a
 
 # END TC2 MOD
