@@ -57,7 +57,7 @@ public:
 
 	virtual void UpdateDamageEffects( BuildingDamageLevel_t damageLevel );
 
-	virtual int GetMaxUpgradeLevel() OVERRIDE;
+	virtual int GetMaxUpgradeLevel() const OVERRIDE;
 
 	virtual int		GetUpgradeLevel( void ) { return m_iUpgradeLevel; }
 	int				GetUpgradeMetal( void ) { return m_iUpgradeMetal; }

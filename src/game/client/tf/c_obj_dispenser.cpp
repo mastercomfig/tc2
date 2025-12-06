@@ -323,9 +323,9 @@ ConVar tf_obj_dispenser_max_level("tf_obj_dispenser_max_level", V_STRINGIFY(OBJ_
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-int C_ObjectDispenser::GetMaxUpgradeLevel()
+int C_ObjectDispenser::GetMaxUpgradeLevel() const
 {
-	return Clamp( tf_obj_dispenser_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL );
+	return Clamp( tf_obj_dispenser_max_level.GetInt(), 1, BaseClass::GetMaxUpgradeLevel() );
 }
 
 //-----------------------------------------------------------------------------

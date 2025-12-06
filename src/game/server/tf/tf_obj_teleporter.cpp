@@ -314,9 +314,9 @@ void CObjectTeleporter::SetObjectMode( int iVal )
 
 ConVar tf_obj_teleporter_max_level("tf_obj_teleporter_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
 
-int CObjectTeleporter::GetMaxUpgradeLevel()
+int CObjectTeleporter::GetMaxUpgradeLevel() const
 {
-	return Clamp(tf_obj_teleporter_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL);
+	return Clamp( tf_obj_teleporter_max_level.GetInt(), 1, BaseClass::GetMaxUpgradeLevel() );
 }
 
 //-----------------------------------------------------------------------------

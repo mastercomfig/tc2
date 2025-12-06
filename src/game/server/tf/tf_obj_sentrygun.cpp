@@ -413,12 +413,9 @@ void CObjectSentrygun::MakeMiniBuilding( CTFPlayer* pPlayer )
 ConVar tf_obj_sentrygun_max_level("tf_obj_sentrygun_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
 
 //-----------------------------------------------------------------------------
-int CObjectSentrygun::GetMaxUpgradeLevel( )
+int CObjectSentrygun::GetMaxUpgradeLevel() const
 {
-	if ( IsDisposableBuilding() || IsMiniBuilding() )
-		return SENTRYGUN_MAX_LEVEL_MINI;
-
-	return Clamp(tf_obj_sentrygun_max_level.GetInt(), 1, OBJ_MAX_UPGRADE_LEVEL);
+	return Clamp( tf_obj_sentrygun_max_level.GetInt(), 1, BaseClass::GetMaxUpgradeLevel() );
 }
 
 //-----------------------------------------------------------------------------

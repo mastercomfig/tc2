@@ -280,7 +280,12 @@ public:
 	float			GetUpgradeDuration( void );
 	void			DoReverseBuild( void );
 	float			GetReversesBuildingConstructionSpeed( void );
-	virtual int		GetMaxUpgradeLevel( void ) { return OBJ_MAX_UPGRADE_LEVEL; }
+	virtual int		GetMaxUpgradeLevel( void ) const
+	{
+		if (IsDisposableBuilding() || IsMiniBuilding())
+			return 1;
+		return OBJ_MAX_UPGRADE_LEVEL;
+	}
 	int				GetUpgradeAmountPerHit( void );
 
 	// Carrying
@@ -355,11 +360,7 @@ public:
 	Vector GetBuildOrigin() { return m_vecBuildOrigin; }
 	Vector GetBuildCenterOfMass() { return m_vecBuildCenterOfMass; }
 
-#ifdef TF2_OG
-	virtual bool CanBeUpgraded() const { return !(IsDisposableBuilding() || IsMiniBuilding() || GetType() == OBJ_DISPENSER || GetType() == OBJ_TELEPORTER); }
-#else
-	virtual bool CanBeUpgraded() const { return !(IsDisposableBuilding() || IsMiniBuilding()); }
-#endif
+	virtual bool CanBeUpgraded() const { return !(IsDisposableBuilding() || IsMiniBuilding() || GetMaxUpgradeLevel() <= 1); }
 
 protected:
 	

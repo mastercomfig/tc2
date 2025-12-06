@@ -104,7 +104,7 @@ public:
 
 	void			SetShieldLevel( int nLevel, float flDuration ) { m_nShieldLevel = nLevel; m_flShieldFadeTime = gpGlobals->curtime + flDuration; }
 
-	virtual int		GetMaxUpgradeLevel( void ) OVERRIDE;
+	virtual int		GetMaxUpgradeLevel( void ) const OVERRIDE;
 
 	virtual int		GetMiniBuildingStartingHealth( void ) OVERRIDE { return SENTRYGUN_MINI_MAX_HEALTH; }
 

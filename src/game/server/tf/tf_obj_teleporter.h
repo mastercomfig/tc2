@@ -109,7 +109,7 @@ public:
 
 	virtual int		GetBaseHealth( void ) { return TELEPORTER_MAX_HEALTH; }
 
-	virtual int		GetMaxUpgradeLevel(void) OVERRIDE;
+	virtual int		GetMaxUpgradeLevel(void) const OVERRIDE;
 
 	virtual int		GetUpgradeMetalRequired();
 

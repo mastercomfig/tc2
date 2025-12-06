@@ -148,7 +148,12 @@ public:
 	virtual void	UpgradeLevelChanged() { return; }
 	int				GetHighestUpgradeLevel( void ) { return m_iHighestUpgradeLevel; }
 
-	virtual int		GetMaxUpgradeLevel( void ) { return OBJ_MAX_UPGRADE_LEVEL; }
+	virtual int		GetMaxUpgradeLevel( void ) const
+	{
+		if (IsDisposableBuilding() || IsMiniBuilding())
+			return 1;
+		return OBJ_MAX_UPGRADE_LEVEL;
+	}
 
 	int				GetObjectMode( void ) const { return m_iObjectMode; }
 
@@ -217,7 +222,7 @@ public:
 
 	virtual bool TestHitboxes( const Ray_t &ray, unsigned int fContentsMask, trace_t& tr );
 
-	bool				IsMiniBuilding() { return m_bMiniBuilding; }
+	bool				IsMiniBuilding() const { return m_bMiniBuilding; }
 	bool				IsDisposableBuilding( void ) const { return m_bDisposableBuilding; }
 
 // ITargetIDProvidesHint

@@ -160,7 +160,7 @@ public:
 
 	virtual int		GetBaseHealth( void ) { return DISPENSER_MAX_HEALTH; }
 
-	virtual int		GetMaxUpgradeLevel( void ) OVERRIDE;
+	virtual int		GetMaxUpgradeLevel( void ) const OVERRIDE;
 
 	virtual int		GetMiniBuildingStartingHealth( void ) OVERRIDE { return DISPENSER_MINI_MAX_HEALTH; }
 
