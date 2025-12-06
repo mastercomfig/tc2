@@ -12484,12 +12484,11 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	if ( pRules->InMatchStartFreeze() )
 		return false;
 
-	if ( !pRules->IsPreRoundPushEnabled() )
+	const float flCountdown = pRules->GetPreroundCountdownTime() - gpGlobals->curtime;
+	const float flCountdownAttackTime = TFGameRules()->IsPreRoundPushEnabled() ? 3.0f : 0.0f;
+	if ( flCountdown > flCountdownAttackTime )
 	{
-		if ( gpGlobals->curtime < pRules->GetPreroundCountdownTime() )
-		{
-			return false;
-		}
+		return false;
 	}
 
 	if ( m_Shared.HasPasstimeBall() ) 
