@@ -7832,6 +7832,11 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim, flDamageBase, mult_dmgtaken_from_fire );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim->GetActiveWeapon(), flDamageBase, mult_dmgtaken_from_fire_active );
 
+				if ( pVictim->m_Shared.InCond(TF_COND_GAS) )
+				{
+					flDamageBase *= 1.2f;
+				}
+
 				// Check for medic resist
 				outParams.bPlayDamageReductionSound = CheckMedicResist( TF_COND_MEDIGUN_SMALL_FIRE_RESIST, TF_COND_MEDIGUN_UBER_FIRE_RESIST, pVictim, flRawDamage, flDamageBase, bCrit, flDamageBonus );
 			}

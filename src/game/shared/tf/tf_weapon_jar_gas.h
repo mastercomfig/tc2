@@ -51,7 +51,7 @@ public:
 	virtual CTFProjectile_Jar* CreateJarProjectile( const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner, const CTFWeaponInfo &weaponInfo ) OVERRIDE;
 	virtual float GetAfterburnRateOnHit() const OVERRIDE;
 	virtual void OnResourceMeterFilled() OVERRIDE;
-	virtual float GetDefaultItemChargeMeterValue( void ) const OVERRIDE { return 0.f; }
+	virtual float GetDefaultItemChargeMeterValue(void) const OVERRIDE;
 #else
 	virtual const char* ModifyEventParticles( const char* token ) OVERRIDE;
 	virtual bool Holster( CBaseCombatWeapon *pSwitchingTo = NULL ) OVERRIDE;
@@ -59,7 +59,7 @@ public:
 
 	virtual const char* GetEffectLabelText( void ) OVERRIDE { return "#TF_Gas"; }
 	virtual bool ShouldUpdateMeter() const OVERRIDE;
-	virtual float InternalGetEffectBarRechargeTime( void ) OVERRIDE { return 0.f; }
+	virtual float InternalGetEffectBarRechargeTime(void) OVERRIDE;
 
 private:
 	void RemoveJarGas( CBaseCombatCharacter *pOwner );

@@ -2719,6 +2719,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			// Reduce the duration of this burn 
 			float flReduction = 2.f * gpGlobals->frametime;	 // ( flReduction + 1 ) x faster reduction
 			m_flAfterburnDuration -= flReduction;
+			if ( m_flAfterburnDuration < 0.0f )
+			{
+				m_flAfterburnDuration = 0.0f;
+			}
 		}
 		if ( InCond( TF_COND_BLEEDING ) )
 		{
@@ -2815,11 +2819,12 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	}
 	if ( InCond( TF_COND_BURNING ) && !m_pOuter->m_bInPowerPlay )
 	{
+		const bool bCanStopBurning = TFGameRules() && (!TFGameRules()->IsBetaActive() || !InCond(TF_COND_GAS));
 		if ( TFGameRules() && TFGameRules()->IsTruceActive() && m_hBurnAttacker && m_hBurnAttacker->IsTruceValidForEnt() )
 		{
 			RemoveCond( TF_COND_BURNING );
 		}
-		else if ( m_flAfterburnDuration <= 0.f || m_pOuter->GetWaterLevel() >= WL_Waist )
+		else if ( ( bCanStopBurning && m_flAfterburnDuration <= 0.f ) || m_pOuter->GetWaterLevel() >= WL_Waist )
 		{
 			// If we're underwater, put the fire out
 			if ( m_pOuter->GetWaterLevel() >= WL_Waist )
@@ -3026,6 +3031,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 
 			m_flFlameBurnTime = gpGlobals->curtime + TF_BURNING_FREQUENCY;
 			m_flAfterburnDuration -= TF_BURNING_FREQUENCY;
+			if ( m_flAfterburnDuration < 0.0f )
+			{
+				m_flAfterburnDuration = 0.0f;
+			}
 		}
 
 		if ( m_flNextBurningSound < gpGlobals->curtime )
@@ -14537,6 +14546,10 @@ void CTFPlayerShared::UpdateCloakMeter( void )
 				{
 					// Reduce the duration of this burn
 					m_flAfterburnDuration -= flReduction;
+					if ( m_flAfterburnDuration < 0.0f )
+					{
+						m_flAfterburnDuration = 0.0f;
+					}
 				}
 				else if ( g_aDebuffConditions[i] == TF_COND_BLEEDING )
 				{
