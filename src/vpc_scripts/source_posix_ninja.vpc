@@ -34,7 +34,7 @@ $Macro NINJA_C_FLAGS				"$NINJA_ARCH_FLAGS $NINJA_WARN_FLAGS_C $NINJA_C_DEV_FLAG
 // TODO:
 // Consider -fno-plt?
 
-$Macro NINJA_CXX_FLAGS				"$NINJA_C_FLAGS $NINJA_WARN_FLAGS_CXX -std=c++11 -I/usr/include/freetype2"
+$Macro NINJA_CXX_FLAGS				"$NINJA_C_FLAGS $NINJA_WARN_FLAGS_CXX -std=c++17 -I/usr/include/freetype2"
 
 $Macro NINJA_EXTRA_C_FLAGS			"-Usprintf -Ustrncpy -UPROTECTED_THINGS_ENABLE"
 $Macro NINJA_EXTRA_CXX_FLAGS		"$NINJA_EXTRA_C_FLAGS"

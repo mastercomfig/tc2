@@ -43,25 +43,11 @@ void CInteractiveWebPanel::ApplySchemeSettings(IScheme* pScheme)
 
 	const char* pszPath = m_szPath.c_str();
 
-	if ( !g_pFullFileSystem->FileExists( pszPath ) )
-	{
-		Warning("Could not find web panel resource!\n");
-		return;
-	}
-
-	// it's a local HTML file
-	char localURL[ _MAX_PATH + 7 ];
-	Q_strncpy( localURL, "file://", sizeof( localURL ) );
-
-	char pPathData[ _MAX_PATH ];
-	g_pFullFileSystem->GetLocalPath( pszPath, pPathData, sizeof(pPathData) );
-	Q_strncat( localURL, pPathData, sizeof( localURL ), COPY_ALL_CHARACTERS );
-
-	// force steam to dump a local copy
-	g_pFullFileSystem->GetLocalCopy( pPathData );
+	// it goes through our web server
+	CFmtStr1024 fmt("http://127.0.0.1:58270/%s", pszPath);
 
 	m_pHTML->SetVisible( true );
-	m_pHTML->OpenURL( localURL, NULL );
+	m_pHTML->OpenURL( fmt.Get(), NULL );
 	m_pHTML->SetContextMenuEnabled( false );
 
 	InvalidateLayout();

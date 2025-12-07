@@ -949,3 +949,5 @@ Ubercharge Texture Fix MKII by A Paint Bucket Named Huey is licensed under a Cre
 Refined Lineup-styled Eyes by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
 
 Refined Pickups (https://gamebanana.com/mods/610415) by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+background_cabin_v1 (https://gamebanana.com/mods/68847) by DomenicoFTW is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.

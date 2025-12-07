@@ -258,38 +258,38 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	//m_pWatchStreamsPanel = new CTFStreamListPanel( this, "StreamListPanel" );
 	m_pCharacterImagePanel = new ImagePanel( this, "TFCharacterImage" );
 
-	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "resource/html/index.html", true );
+	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true );
 	if ( m_pMainMenuWebUi )
 	{
-		m_pMainMenuWebUi->AddCommandListener("playsound", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("playsound", std::function([&](const std::string& psQuery) {
 			vgui::surface()->PlaySound(psQuery.c_str());
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("OpenOptionsDialog", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("OpenOptionsDialog", std::function([&](const std::string& psQuery) {
 			OnCommand("OpenOptionsDialog");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("open_charinfo", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("open_charinfo", std::function([&](const std::string& psQuery) {
 			OnCommand("engine open_charinfo");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("create_server", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("create_server", std::function([&](const std::string& psQuery) {
 			GetMMDashboard()->OnCommand("create_server");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("find_game", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("find_game", std::function([&](const std::string& psQuery) {
 			GetMMDashboard()->OnCommand("find_game");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("play_community", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("play_community", std::function([&](const std::string& psQuery) {
 			GetMMDashboard()->OnCommand("play_community");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("quit", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("quit", std::function([&](const std::string& psQuery) {
 			GetMMDashboard()->OnCommand("quit");
 		}));
 
-		m_pMainMenuWebUi->AddCommandListener("disconnect", std::function<void(const std::string&)>([&](const std::string& psQuery) {
+		m_pMainMenuWebUi->AddCommandListener("disconnect", std::function([&](const std::string& psQuery) {
 			GetMMDashboard()->OnCommand("disconnect");
 		}));
 	}

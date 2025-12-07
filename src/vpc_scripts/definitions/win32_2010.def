@@ -674,6 +674,7 @@
 			{
 				"ISO C++14 Standard (/std:c++14)"											"stdcpp14"
 				"ISO C++17 Standard (/std:c++17)"											"stdcpp17"
+				"ISO C++20 Standard (/std:c++20)"											"stdcpp20"
 				"ISO C++ Latest Draft Standard (/std:c++latest)"							"stdcpplatest"
 				"Preview - Features from the Latest C++ Working Draft (/std:c++latest)"		"stdcpplatest"
 			}

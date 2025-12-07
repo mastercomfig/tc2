@@ -1,0 +1,32 @@
+//-----------------------------------------------------------------------------
+//	GAMESTATE.VPC
+//-----------------------------------------------------------------------------
+
+$Configuration
+{
+  $Compiler
+  {
+  }
+}
+
+$Project
+{    
+  $Folder "Source Files"
+  {
+    $Folder "Game State"
+    {
+      $File "$SRCDIR\game\shared\gamestate\gamestate.h"
+      // Not using precompiled header cbase.h
+      $File "$SRCDIR\game\shared\gamestate\gamestate.cpp"
+      {
+        $Configuration
+        {
+          $Compiler
+          {
+            $Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+          }
+        }
+      }
+    }
+  }
+}

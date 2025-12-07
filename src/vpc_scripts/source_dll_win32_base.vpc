@@ -34,6 +34,7 @@ $Configuration
 
 	$Compiler
 	{
+		$LanguageStandard					"ISO C++17 Standard (/std:c++17)"
 		$PreprocessorDefinitions			"$BASE;PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64" [$WIN64]
 		$PreprocessorDefinitions			"$BASE;COMPILER_MSVC32" [$WIN32]		
 		$PreprocessorDefinitions			"$BASE;COMPILER_MSVC;_DLL_EXT=$_DLL_EXT"

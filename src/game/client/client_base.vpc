@@ -18,6 +18,7 @@ $include "$SRCDIR\vpc_scripts\protobuf_builder.vpc"
 $Include "$SRCDIR\vpc_scripts\source_replay.vpc"	[$TF]
 $Include "$SRCDIR\game\protobuf_include.vpc"
 $Include "$SRCDIR\game\shared\crashreport.vpc"
+$Include "$SRCDIR\game\shared\gamestate.vpc"
 
 $Configuration	"Debug"
 {
