@@ -50,6 +50,8 @@ jobs:
           gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
           sudo dpkg -i Crow.deb
           rm Crow.deb
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Build dist
         id: build-dist
