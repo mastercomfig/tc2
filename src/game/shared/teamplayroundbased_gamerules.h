@@ -259,6 +259,8 @@ public:
 
 	float GetRoundRestartTime( void ) const { return m_flRestartRoundTime; }
 
+	virtual bool IsAllTalkActive() OVERRIDE;
+
 	//Arena Mode
 	virtual bool	IsInArenaMode( void ) const { return false; }
 

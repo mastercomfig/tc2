@@ -3591,6 +3591,28 @@ bool CTeamplayRoundBasedRules::IsInSixesMode(void)
 #endif
 }
 
+bool CTeamplayRoundBasedRules::IsAllTalkActive()
+{
+	bool bAllTalk = BaseClass::IsAllTalkActive();
+	if (bAllTalk)
+	{
+		return true;
+	}
+
+	static ConVar* sv_alltalk_betweenrounds = cvar->FindVar("sv_alltalk_betweenrounds");
+	if (!sv_alltalk_betweenrounds || !sv_alltalk_betweenrounds->GetBool())
+	{
+		return false;
+	}
+
+	if ( State_Get() == GR_STATE_STARTGAME || State_Get() == GR_STATE_PREROUND || State_Get() == GR_STATE_RND_RUNNING )
+	{
+		return false;
+	}
+
+	return true;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

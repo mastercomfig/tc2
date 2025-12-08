@@ -13,6 +13,7 @@
 #include "player.h"
 #include "ivoiceserver.h"
 #include "usermessages.h"
+#include "multiplay_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -38,6 +39,7 @@ ConVar voice_serverdebug( "voice_serverdebug", "0" );
 // Set game rules to allow all clients to talk to each other.
 // Muted players still can't talk to each other.
 ConVar sv_alltalk( "sv_alltalk", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Players can hear all other players, no team restrictions" );
+ConVar sv_alltalk_betweenrounds("sv_alltalk_betweenrounds", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Enables sv_alltalk outside of gameplay rounds, including pre-game, win and intermission.");
 
 
 CVoiceGameMgr g_VoiceGameMgr;
@@ -201,7 +203,7 @@ void CVoiceGameMgr::UpdateMasks()
 {
 	m_UpdateInterval = 0;
 
-	bool bAllTalk = !!sv_alltalk.GetInt();
+	const bool bAllTalk = MultiplayRules() && MultiplayRules()->IsAllTalkActive();
 
 	for(int iClient=0; iClient < m_nMaxPlayers; iClient++)
 	{

@@ -23,7 +23,6 @@
 
 extern ConVar mp_teams_unbalance_limit;
 extern ConVar mp_autoteambalance;
-extern ConVar sv_alltalk;
 extern ConVar mp_timelimit;
 
 CRaidLogic *g_pRaidLogic = NULL;

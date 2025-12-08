@@ -336,6 +336,15 @@ bool CMultiplayRules::Init()
 	return BaseClass::Init();
 }
 
+bool CMultiplayRules::IsAllTalkActive()
+{
+	static ConVar *sv_alltalk = cvar->FindVar("sv_alltalk");
+	if (sv_alltalk && sv_alltalk->GetBool())
+	{
+		return true;
+	}
+	return false;
+}
 
 #ifdef CLIENT_DLL
 

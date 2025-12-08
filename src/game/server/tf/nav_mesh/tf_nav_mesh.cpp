@@ -48,7 +48,6 @@ extern ConVar tf_bot_debug_select_defense_area;
 extern ConVar tf_nav_in_combat_duration;
 extern ConVar mp_teams_unbalance_limit;
 extern ConVar mp_autoteambalance;
-extern ConVar sv_alltalk;
 extern ConVar mp_timelimit;
 
 

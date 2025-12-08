@@ -13,10 +13,9 @@
 #include "voice_status.h"
 #include "clientmode_shared.h"
 #include "c_playerresource.h"
+#include "multiplay_gamerules.h"
 #include "voice_common.h"
 #include "vgui_avatarimage.h"
-
-ConVar *sv_alltalk = NULL;
 
 //=============================================================================
 // Icon for the local player using voice
@@ -343,8 +342,7 @@ void CHudVoiceStatus::Paint()
 		iFontHeight = surface()->GetFontTall( m_NameFont );
 	}
 
-	if ( !sv_alltalk )
-		sv_alltalk = cvar->FindVar( "sv_alltalk" );
+	const bool bAllTalk = MultiplayRules() && MultiplayRules()->IsAllTalkActive();
 
 	//draw everyone in the list!
 	FOR_EACH_LL(m_SpeakingList, i)
@@ -364,7 +362,7 @@ void CHudVoiceStatus::Paint()
 
 		// Add the location, if any
 		bool usedLocation = false;
-		if ( sv_alltalk && !sv_alltalk->GetBool() )
+		if ( bAllTalk )
 		{
 			C_BasePlayer *pPlayer = UTIL_PlayerByIndex( playerId );
 			if ( pPlayer )
