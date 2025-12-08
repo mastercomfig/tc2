@@ -3321,7 +3321,7 @@ void CBackpackPanel::DoSellMarketplace()
 	if( !m_vecSelected.Count() )
 		return;
 
-	if ( m_vecSelected.Count() && steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() )
+	if ( m_vecSelected.Count() )
 	{
 		CEconItemView *pItem = m_vecSelected.Head()->GetItem();
 		const char *pszPrefix = "";
@@ -3332,7 +3332,7 @@ void CBackpackPanel::DoSellMarketplace()
 		uint32 nAssetContext = 2; // k_EEconContextBackpack
 		char szURL[512];
 		V_snprintf( szURL, sizeof(szURL), "https://%ssteamcommunity.com/my/inventory/?sellOnLoad=1#%d_%d_%llu", pszPrefix, UTIL_GetEmulatedAppID(), nAssetContext, pItem->GetItemID() );
-		steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+		UTIL_OpenWebPage( szURL );
 	}
 }
 
@@ -4031,24 +4031,18 @@ void CBackpackPanel::AttemptToShowItemInMarket( item_definition_index_t iItemDef
 	if ( !pItemDef )
 		return;
 
-	if ( !CBaseAdPanel::CheckForRequiredSteamComponents( "#StoreUpdate_SteamRequired", "#MMenu_OverlayRequired" ) )
-		return;
-
-	if ( pItemDef && steamapicontext && steamapicontext->SteamFriends() )
+	const char *pszPrefix = "";
+	if ( GetUniverse() == k_EUniverseBeta )
 	{
-		const char *pszPrefix = "";
-		if ( GetUniverse() == k_EUniverseBeta )
-		{
-			pszPrefix = "beta.";
-		}
-
-		static char pszItemName[256];
-		g_pVGuiLocalize->ConvertUnicodeToANSI( g_pVGuiLocalize->Find( pItemDef->GetItemBaseName() ), pszItemName, sizeof( pszItemName ) );
-
-		char szURL[512];
-		V_snprintf( szURL, sizeof( szURL ), "https://%ssteamcommunity.com/market/listings/%d/%s", pszPrefix, UTIL_GetEmulatedAppID(), pszItemName );
-		steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+		pszPrefix = "beta.";
 	}
+
+	static char pszItemName[256];
+	g_pVGuiLocalize->ConvertUnicodeToANSI( g_pVGuiLocalize->Find( pItemDef->GetItemBaseName() ), pszItemName, sizeof( pszItemName ) );
+
+	char szURL[512];
+	V_snprintf( szURL, sizeof( szURL ), "https://%ssteamcommunity.com/market/listings/%d/%s", pszPrefix, UTIL_GetEmulatedAppID(), pszItemName );
+	UTIL_OpenWebPage( szURL );
 }
 //-----------------------------------------------------------------------------
 // Purpose: Get the first, or all selected item model panels

@@ -3703,7 +3703,7 @@ void CItemModelPanel::OnCommand( const char *command )
 {
 	if ( FStrEq( command, "sellitem" ) )
 	{
-		if ( HasItem() && steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() )
+		if ( HasItem() )
 		{
 			const char *pszPrefix = "";
 			if ( GetUniverse() == k_EUniverseBeta )
@@ -3713,7 +3713,7 @@ void CItemModelPanel::OnCommand( const char *command )
 			uint32 nAssetContext = 2; // k_EEconContextBackpack
 			char szURL[512];
 			V_snprintf( szURL, sizeof(szURL), "https://%ssteamcommunity.com/my/inventory/?sellOnLoad=1#%d_%d_%llu", pszPrefix, UTIL_GetEmulatedAppID(), nAssetContext, GetItem()->GetItemID() );
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+			UTIL_OpenWebPage( szURL );
 		}
 	}
 }

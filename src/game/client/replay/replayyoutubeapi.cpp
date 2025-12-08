@@ -352,10 +352,7 @@ public:
 	{
 		if ( !Q_strnicmp( command, "register", 8 ) )
 		{
-			if ( steamapicontext && steamapicontext->SteamFriends() )
-			{
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.youtube.com/create_account?next=/" );
-			}
+			UTIL_OpenWebPage( "https://www.youtube.com/create_account?next=/" );
 		}		
 		else if ( !Q_strnicmp( command, "confirm", 7 ) )
 		{
@@ -492,10 +489,7 @@ public:
 	{
 		if ( !Q_strnicmp( command, "termsofservice", 14 ) )
 		{
-			if ( steamapicontext && steamapicontext->SteamFriends() )
-			{
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.youtube.com/t/terms" );
-			}
+			UTIL_OpenWebPage( "https://www.youtube.com/t/terms" );
 		}		
 		else if ( !Q_strnicmp( command, "confirm", 7 ) )
 		{

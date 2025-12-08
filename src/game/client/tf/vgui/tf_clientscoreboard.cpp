@@ -43,6 +43,7 @@
 #include "econ/econ_trading.h"
 #include "in_buttons.h"
 #include "tf_mapinfo.h"
+#include "store/store_panel.h"
 
 #if defined ( _X360 )
 #include "engine/imatchmaking.h"
@@ -550,6 +551,10 @@ void CTFClientScoreBoardDialog::OnCommand( const char *command )
 					if ( pTarget->GetSteamID( &steamID ) && steamapicontext && steamapicontext->SteamFriends() )
 					{
 						steamapicontext->SteamFriends()->ActivateGameOverlayToUser( "friendadd", steamID );
+					}
+					else
+					{
+						OpenStoreStatusDialog( NULL, "#MMenu_OverlayRequired", true, false );
 					}
 				}
 			}

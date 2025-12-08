@@ -290,7 +290,7 @@ void CTFItemInspectionPanel::OnCommand( const char *command )
 	}
 	else if ( FStrEq( command, "market" ) )
 	{
-		if ( m_pItemViewData && steamapicontext && steamapicontext->SteamFriends() )
+		if ( m_pItemViewData )
 		{
 			const char *pszPrefix = "";
 			if ( GetUniverse() == k_EUniverseBeta )
@@ -302,7 +302,7 @@ void CTFItemInspectionPanel::OnCommand( const char *command )
 
 			char szURL[512];
 			V_snprintf( szURL, sizeof(szURL), "https://%ssteamcommunity.com/market/listings/%d/%s", pszPrefix, UTIL_GetEmulatedAppID(), CStrAutoEncode( generator.GetFullName() ).ToString() );
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+			UTIL_OpenWebPage( szURL );
 		}
 
 		return;

@@ -207,9 +207,9 @@ private:
 //-----------------------------------------------------------------------------
 static void ContactSupportConfirm( bool bConfirmed, void *pContext )
 {
-	if ( bConfirmed && steamapicontext && steamapicontext->SteamFriends() )
+	if ( bConfirmed )
 	{
-		steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://support.steampowered.com/" );
+		UTIL_OpenWebPage( "https://support.steampowered.com/" );
 	}
 }
 
@@ -1630,7 +1630,7 @@ void CStoreCart::AddToCart( const econ_store_entry_t *pEntry, const char* pszPag
 		if ( !CBaseAdPanel::CheckForRequiredSteamComponents( "#StoreUpdate_SteamRequired", "#MMenu_OverlayRequired" ) )
 			return;
 
-		if ( pItemDef && steamapicontext && steamapicontext->SteamFriends() )
+		if ( pItemDef )
 		{
 			const char *pszPrefix = "";
 			if ( GetUniverse() == k_EUniverseBeta )
@@ -1643,7 +1643,7 @@ void CStoreCart::AddToCart( const econ_store_entry_t *pEntry, const char* pszPag
 
 			char szURL[512];
 			V_sprintf_safe( szURL, "https://%ssteamcommunity.com/market/listings/%d/%s", pszPrefix, UTIL_GetEmulatedAppID(), pszItemName );
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+			UTIL_OpenWebPage( szURL );
 		}
 		return;
 	}

@@ -561,13 +561,13 @@ void CFilePublishDialog::Steam_OnPublishFile( SubmitItemUpdateResult_t *pResult,
 		switch ( universe )
 		{
 		case k_EUniversePublic:
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://steamcommunity.com/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
+			UTIL_OpenWebPage( CFmtStrMax( "https://steamcommunity.com/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
 			break;
 		case k_EUniverseBeta:
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://beta.steamcommunity.com/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
+			UTIL_OpenWebPage( CFmtStrMax( "https://beta.steamcommunity.com/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
 			break;
 		case k_EUniverseDev:
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStrMax( "https://localhost/community/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
+			UTIL_OpenWebPage( CFmtStrMax( "https://localhost/community/sharedfiles/filedetails/?id=%llu&requirelogin=true", m_nFileID ) );
 			break;
 		}
 

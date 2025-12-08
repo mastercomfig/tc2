@@ -1230,10 +1230,7 @@ void CStorePage::OnCommand( const char *command )
 	}
 	else if ( !Q_strnicmp( command, "marketplace", 8 ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() )
-		{
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://steamcommunity.com/market/search?appid=440" );
-		}
+		UTIL_OpenWebPage( "https://steamcommunity.com/market/search?appid=440" );
 		return;
 	}
 	else if ( !Q_stricmp( command, "reloadscheme" ) )

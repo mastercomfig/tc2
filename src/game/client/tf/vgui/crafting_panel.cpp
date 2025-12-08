@@ -1627,10 +1627,7 @@ private:
 
 		virtual void Trigger()
 		{
-			if ( steamapicontext && steamapicontext->SteamFriends() )
-			{
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.teamfortress.com/saxxyawards/winners.php" );
-			}
+			UTIL_OpenWebPage( "https://www.teamfortress.com/saxxyawards/winners.php" );
 			MarkForDeletion();
 		}
 	};

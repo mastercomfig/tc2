@@ -733,20 +733,17 @@ void CTFAdvancedOptionsDialog::OnCommand( const char *command )
 {
 	if ( !stricmp( command, "open_chat_filter_settings" ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() )
+		switch ( GetUniverse() )
 		{
-			switch ( GetUniverse() )
-			{
-			case k_EUniversePublic:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://store.steampowered.com/account/preferences#CommunityContentPreferences" );
-				break;
-			case k_EUniverseBeta:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://store.beta.steampowered.com/account/preferences#CommunityContentPreferences" );
-				break;
-			case k_EUniverseDev:
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://localhost/store/account/preferences#CommunityContentPreferences" );
-				break;
-			}
+		case k_EUniversePublic:
+			UTIL_OpenWebPage( "https://store.steampowered.com/account/preferences#CommunityContentPreferences" );
+			break;
+		case k_EUniverseBeta:
+			UTIL_OpenWebPage( "https://store.beta.steampowered.com/account/preferences#CommunityContentPreferences" );
+			break;
+		case k_EUniverseDev:
+			UTIL_OpenWebPage( "https://localhost/store/account/preferences#CommunityContentPreferences" );
+			break;
 		}
 		return;
 	}

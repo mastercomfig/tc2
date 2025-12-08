@@ -28,10 +28,14 @@
 #include "view.h"
 #include "ixboxsystem.h"
 #include "inputsystem/iinputsystem.h"
+#include "vgui/ISystem.h"
+#ifdef TF_CLIENT_DLL
+#include "store/store_panel.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-																						
+
 ConVar localplayer_visionflags( "localplayer_visionflags", "0", FCVAR_DEVELOPMENTONLY );
 																						
 //-----------------------------------------------------------------------------
@@ -1387,4 +1391,27 @@ bool UTIL_BPerformNearMiss( const CBaseEntity* pEntity, const char* pszNearMissS
 	CBaseEntity::EmitSound( localFilter, pLocalPlayer->entindex(), params );
 
 	return true;
+}
+
+void UTIL_OpenWebPage( const char* pchURL, bool bSteamRequired )
+{
+	// XXX ShellExecuting random URLs is questionable at any point, but lets at least make sure it's an expected protocol.
+	if ( Q_strncmp( pchURL, "https://", 8 ) != 0 )
+	{
+		Warning( "Invalid URL '%s'\n", pchURL );
+		return;
+	}
+	if ( steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && steamapicontext->SteamUtils()->IsOverlayEnabled() )
+	{
+		steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( pchURL );
+		return;
+	}
+	if ( bSteamRequired )
+	{
+#ifdef TF_CLIENT_DLL
+		OpenStoreStatusDialog( NULL, "#MMenu_OverlayRequired", true, false );
+#endif
+		return;
+	}
+	vgui::system()->ShellExecute( "open", pchURL );
 }

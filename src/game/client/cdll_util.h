@@ -183,4 +183,6 @@ bool UTIL_HasLoadedAnyMap();
 // miss is detected.
 bool UTIL_BPerformNearMiss( const CBaseEntity* pEntity, const char* pszNearMissSound, float flNearMissDistanceThreshold );
 
+void UTIL_OpenWebPage( const char* pchURL, bool bSteamRequired = false );
+
 #endif // !UTIL_H

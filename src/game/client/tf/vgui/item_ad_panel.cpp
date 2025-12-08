@@ -260,11 +260,8 @@ void CItemAdPanel::OnCommand( const char *command )
 	}
 	else if ( FStrEq( "market", command ) ) 
 	{
-		if ( !CheckForRequiredSteamComponents( "#StoreUpdate_SteamRequired", "#MMenu_OverlayRequired" ) )
-			return;
-
 		const CTFItemDefinition* pItemDef = GetItemDef();
-		if ( pItemDef && steamapicontext && steamapicontext->SteamFriends() )
+		if ( pItemDef )
 		{
 			const char *pszPrefix = "";
 			if ( GetUniverse() == k_EUniverseBeta )
@@ -277,7 +274,7 @@ void CItemAdPanel::OnCommand( const char *command )
 
 			char szURL[512];
 			V_snprintf( szURL, sizeof(szURL), "https://%ssteamcommunity.com/market/listings/%d/%s", pszPrefix, UTIL_GetEmulatedAppID(), pszItemName );
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+			UTIL_OpenWebPage( szURL );
 		}
 	}
 }

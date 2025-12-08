@@ -756,7 +756,7 @@ void CTFStorePreviewItemPanel2::OnCommand( const char *command )
 	}
 	else if ( !V_strnicmp( command, "viewwikipage", 12 ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() && m_pItemFullImage )
+		if ( m_pItemFullImage )
 		{
 			CEconItemView *pItem = m_pItemFullImage->GetItem();
 			if ( pItem && pItem->IsValid() )
@@ -769,7 +769,7 @@ void CTFStorePreviewItemPanel2::OnCommand( const char *command )
 
 				char szURL[512];
 				Q_snprintf( szURL, sizeof(szURL), "https://wiki.teamfortress.com/scripts/itemredirect.php?id=%d&lang=%s", pItem->GetItemDefIndex(), GetLanguageICUName( iLang ) );
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+				UTIL_OpenWebPage( szURL );
 
 				C_CTF_GameStats.Event_Catalog( IE_ARMORY_BROWSE_WIKI, NULL, pItem );
 			}

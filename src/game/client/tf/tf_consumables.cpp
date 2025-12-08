@@ -1486,15 +1486,10 @@ public:
 	{
 		GCSDK::CGCMsg<MsgGCUsedClaimCodeItem_t> msg( pNetPacket );
 
-		if ( steamapicontext == NULL )
-		{
-			return true;
-		}
-
 		CUtlString url;
 		if ( msg.BReadStr( &url ) )
 		{
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( url.Get() );
+			UTIL_OpenWebPage( url.Get() );
 			IViewPortPanel *pMMOverride = ( gViewPortInterface->FindPanelByName( PANEL_MAINMENUOVERRIDE ) );
 			if ( pMMOverride )
 			{

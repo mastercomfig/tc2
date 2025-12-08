@@ -389,22 +389,19 @@ void CArmoryPanel::OnCommand( const char *command )
 	}
 	else if ( !Q_stricmp( command, "wiki" ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() )
+		if ( IsVisible() && m_SelectedItem.IsValid() )
 		{
-			if ( IsVisible() && m_SelectedItem.IsValid() )
-			{
-				// Determine which language we should use
-				char uilanguage[ 64 ];
-				uilanguage[0] = 0;
-				engine->GetUILanguage( uilanguage, sizeof( uilanguage ) );
-				ELanguage iLang = PchLanguageToELanguage( uilanguage );
+			// Determine which language we should use
+			char uilanguage[ 64 ];
+			uilanguage[0] = 0;
+			engine->GetUILanguage( uilanguage, sizeof( uilanguage ) );
+			ELanguage iLang = PchLanguageToELanguage( uilanguage );
 
-				char szURL[512];
-				Q_snprintf( szURL, sizeof( szURL ), "https://wiki.teamfortress.com/scripts/itemredirect.php?id=%d&lang=%s", m_SelectedItem.GetItemDefIndex(), GetLanguageICUName( iLang ) );
-				steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( szURL );
+			char szURL[512];
+			Q_snprintf( szURL, sizeof( szURL ), "https://wiki.teamfortress.com/scripts/itemredirect.php?id=%d&lang=%s", m_SelectedItem.GetItemDefIndex(), GetLanguageICUName( iLang ) );
+			UTIL_OpenWebPage( szURL );
 
-				C_CTF_GameStats.Event_Catalog( IE_ARMORY_BROWSE_WIKI, NULL, &m_SelectedItem );
-			}
+			C_CTF_GameStats.Event_Catalog( IE_ARMORY_BROWSE_WIKI, NULL, &m_SelectedItem );
 		}
 	}
 	else if ( !Q_stricmp( command, "viewset" ) )

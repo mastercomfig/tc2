@@ -22,6 +22,7 @@
 #include "tf_controls.h"
 #include "softline.h"
 #include "hud_controlpointicons.h"
+#include "store/store_panel.h"
 
 using namespace vgui;
 using namespace GCSDK;
@@ -480,7 +481,14 @@ void CDashboardPartyMember::DoSendMessage()
 	Assert( !BIsLocalPlayerSlot() );
 	if ( m_eMemberState == MEMBER_PRESENT && !BIsLocalPlayerSlot() )
 	{
-		steamapicontext->SteamFriends()->ActivateGameOverlayToUser( "chat", m_steamIDPartyMember );
+		if ( steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && steamapicontext->SteamUtils()->IsOverlayEnabled() )
+		{
+			steamapicontext->SteamFriends()->ActivateGameOverlayToUser( "chat", m_steamIDPartyMember );
+		}
+		else
+		{
+			OpenStoreStatusDialog( NULL, "#MMenu_OverlayRequired", true, false );
+		}
 	}
 }
 
