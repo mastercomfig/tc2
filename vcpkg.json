@@ -1,0 +1,8 @@
+{
+	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+	"name": "team-comtress-2",
+	"version-string": "1.0.0",
+	"description": " A TF2 mod with fresh new development ",
+	"homepage": "https://github.com/mastercomfig/tc2",
+	"dependencies": [ "crow"]
+}

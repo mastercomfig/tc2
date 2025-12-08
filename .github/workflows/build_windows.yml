@@ -8,6 +8,8 @@ on:
 jobs:
   build_win:
     runs-on: windows-latest
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
     steps:
       # checkout the github actions / workflow
       - name: Checkout actions
@@ -87,10 +89,17 @@ jobs:
         working-directory: "${{ github.workspace }}/src"
         run: '.\createallprojects.bat'
 
+      - name: Install dependencies
+        uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall : true
+
       - name: Build solution
         shell: cmd
         working-directory: "${{ github.workspace }}/src"
-        run: msbuild everything.sln /p:Platform="win64" /p:Configuration="Release"
+        run: |
+          vcpkg integrate install
+          msbuild everything.sln /p:Platform="win64" /p:Configuration="Release"
 
       - name: Copy dist
         id: copy-dist

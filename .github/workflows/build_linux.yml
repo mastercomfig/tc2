@@ -45,6 +45,12 @@ jobs:
           chmod +x ~/.local/bin/butler
           butler -V
 
+      - name: Install dependencies
+        run: |
+          gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
+          sudo dpkg -i Crow.deb
+          rm Crow.deb
+
       - name: Build dist
         id: build-dist
         env:
