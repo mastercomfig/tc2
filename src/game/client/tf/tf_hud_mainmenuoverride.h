@@ -201,6 +201,10 @@ private:
 	float					m_flPlayMusicTime;
 	int32					m_iPlayMusicFrame;
 
+	bool					m_bInGame;
+	bool					m_bIsConnectedOnly;
+	float					m_flCurMaxFPS;
+
 	CInteractiveWebPanel* m_pMainMenuWebUi;
 
 	vgui::ImagePanel		*m_pCharacterImagePanel;

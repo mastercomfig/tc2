@@ -5,12 +5,8 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include <KeyValues.h>
-#include <vgui/ISurface.h>
-#include <vgui/ISystem.h>
 #include <vgui/IScheme.h>
 #include <vgui_controls/EditablePanel.h>
-#include <vgui/ISurface.h>
 #include <filesystem.h>
 
 #include "interactivewebpanel.h"
@@ -61,16 +57,5 @@ void CInteractiveWebPanel::PerformLayout()
 	m_pHTML->SetSize(GetWide(), GetTall());
 	int zoomLevel = vgui::scheme()->GetProportionalNormalizedValue(100);
 	m_pHTML->SetZoomLevel((float)zoomLevel);
-}
-
-void CInteractiveWebPanel::AddCommandListener(std::string commandName,
-	const std::function<void(const std::string& psQuery)>& func)
-{
-	m_pHTML->AddCommandListener(commandName, func);
-}
-
-void CInteractiveWebPanel::RemoveCommandListener(std::string commandName)
-{
-	m_pHTML->RemoveCommandListener(commandName);
 }
 

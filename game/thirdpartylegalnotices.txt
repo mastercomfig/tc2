@@ -951,3 +951,11 @@ Refined Lineup-styled Eyes by Everik is licensed under a Creative Commons Attrib
 Refined Pickups (https://gamebanana.com/mods/610415) by Everik is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
 
 background_cabin_v1 (https://gamebanana.com/mods/68847) by DomenicoFTW is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+VGUI Facelift (https://gamebanana.com/mods/530974) by Azarciel is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Source Text Refont (https://gamebanana.com/mods/314848) by Fred McFrizzle is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+ServerBrowser (fix UI) (https://gamebanana.com/mods/634577) by SexyLion is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.
+
+Improved globalchat.res (https://gamebanana.com/mods/413478) by Whurr is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 4.0 Unported License.

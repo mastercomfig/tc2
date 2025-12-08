@@ -62,11 +62,12 @@
 #include "econ_paintkit.h"
 #include "ienginevgui.h"
 
+#include "tf_playermodelpanel.h"
+#include "gamestate/gamestate.h"
 
 #include "c_tf_gamestats.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
-#include "tf_playermodelpanel.h"
 #include "tier0/memdbgon.h"
 
 extern const char* g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS];
@@ -191,6 +192,10 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_flPlayMusicTime = -1.0f;
 	m_iPlayMusicFrame = 0;
 
+	m_bInGame = false;
+	m_bIsConnectedOnly = true; // start true so we go to false
+	m_flCurMaxFPS = -1.0f;
+
 	m_iCharacterImageIdx = -1;
 
 	m_pCharacterModelPanel = NULL;
@@ -259,40 +264,6 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_pCharacterImagePanel = new ImagePanel( this, "TFCharacterImage" );
 
 	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true );
-	if ( m_pMainMenuWebUi )
-	{
-		m_pMainMenuWebUi->AddCommandListener("playsound", std::function([&](const std::string& psQuery) {
-			vgui::surface()->PlaySound(psQuery.c_str());
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("OpenOptionsDialog", std::function([&](const std::string& psQuery) {
-			OnCommand("OpenOptionsDialog");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("open_charinfo", std::function([&](const std::string& psQuery) {
-			OnCommand("engine open_charinfo");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("create_server", std::function([&](const std::string& psQuery) {
-			GetMMDashboard()->OnCommand("create_server");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("find_game", std::function([&](const std::string& psQuery) {
-			GetMMDashboard()->OnCommand("find_game");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("play_community", std::function([&](const std::string& psQuery) {
-			GetMMDashboard()->OnCommand("play_community");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("quit", std::function([&](const std::string& psQuery) {
-			GetMMDashboard()->OnCommand("quit");
-		}));
-
-		m_pMainMenuWebUi->AddCommandListener("disconnect", std::function([&](const std::string& psQuery) {
-			GetMMDashboard()->OnCommand("disconnect");
-		}));
-	}
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
@@ -323,7 +294,10 @@ CHudMainMenuOverride::~CHudMainMenuOverride( void )
 
 	vgui::ivgui()->RemoveTickSignal( GetVPanel() );
 
-	m_pMainMenuWebUi->DeletePanel();
+	if (m_pMainMenuWebUi)
+	{
+		m_pMainMenuWebUi->DeletePanel();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1429,6 +1403,47 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		}
 	}
 
+	static ConVarRef fps_max("fps_max");
+	static ConVarRef ui_fps_max("ui_fps_max");
+	if ( m_bInGame != ( bInGame && bIsConnected ) )
+	{
+		m_bInGame = bInGame;
+		GetGameStateManager()->QueueEvent( "ingame", m_bInGame ? "1" : "0" );
+		
+		if ( m_bInGame )
+		{
+			// after loading, restore it.
+			fps_max.SetValue( m_flCurMaxFPS );
+			m_flCurMaxFPS = -1.0f;
+		}
+	}
+
+	if ( m_bIsConnectedOnly != ( !bInGame && bIsConnected ) )
+	{
+		m_bIsConnectedOnly = ( !bInGame && bIsConnected );
+		if ( m_bIsConnectedOnly )
+		{
+			if ( m_flCurMaxFPS <= 0.0f )
+			{
+				m_flCurMaxFPS = fps_max.GetFloat();
+			}
+			// while loading, keep it at our lowest
+			fps_max.SetValue( 30.0f );
+		}
+		// TODO(mcoms): ui_fps_max
+#if 0
+		else
+		{
+			if (m_flCurMaxFPS <= 0.0f)
+			{
+				m_flCurMaxFPS = fps_max.GetFloat();
+			}
+			// if not in game, set fps_max to UI mode.
+			fps_max.SetValue(ui_fps_max.GetFloat());
+		}
+#endif
+	}
+
 	// Position the entries
 	FOR_EACH_VEC( m_pMMButtonEntries, i )
 	{
@@ -2250,20 +2265,14 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 			const char *pszURL = pMOTD->GetURL();
 			if ( pszURL && pszURL[0] )
 			{
-				if ( steamapicontext && steamapicontext->SteamFriends() )
-				{
-					steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( pszURL );
-				}
+				UTIL_OpenWebPage( pszURL );
 			}
 		}
 		return;
 	}
 	else if ( !Q_stricmp( command, "view_newuser_forums" ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() )
-		{
-			steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://steamcommunity.com/app/440/discussions/" );
-		}
+		UTIL_OpenWebPage( "https://steamcommunity.com/app/440/discussions/" );
 		return;
 	}
 	else if ( !Q_stricmp( command, "opentf2options" ) )
@@ -2356,14 +2365,14 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	}
 	else if ( !Q_stricmp( command, "showpromocodes" ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() )
+		if ( steamapicontext && steamapicontext->SteamUtils() )
 		{
 			CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
 			switch ( GetUniverse() )
 			{
-			case k_EUniversePublic: steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStr1024( "https://steamcommunity.com/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
-			case k_EUniverseBeta:	steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStr1024( "https://beta.steamcommunity.com/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
-			case k_EUniverseDev:	steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( CFmtStr1024( "https://localhost/community/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
+			case k_EUniversePublic: UTIL_OpenWebPage( CFmtStr1024( "https://steamcommunity.com/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
+			case k_EUniverseBeta:	UTIL_OpenWebPage( CFmtStr1024( "https://beta.steamcommunity.com/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
+			case k_EUniverseDev:	UTIL_OpenWebPage( CFmtStr1024( "https://localhost/community/profiles/%llu/promocodes/tf2", steamID.ConvertToUint64() ) ); break;
 			}
 		}
 	}
@@ -2394,37 +2403,21 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	{
 		StopUpdateGlow();
 
-		if ( steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && steamapicontext->SteamUtils()->IsOverlayEnabled() )
+		switch ( GetUniverse() )
 		{
-			CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
-			switch ( GetUniverse() )
-			{
-			case k_EUniversePublic: steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.teamfortress.com/meetyourmatch" ); break;
-			case k_EUniverseBeta:	// Fall through
-			case k_EUniverseDev:	steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://csham.valvesoftware.com/tf.com/meetyourmatch" ); break;
-			}
-		}
-		else
-		{
-			OpenStoreStatusDialog( NULL, "#MMenu_OverlayRequired", true, false );
+		case k_EUniversePublic: UTIL_OpenWebPage( "https://www.teamfortress.com/meetyourmatch" ); break;
+		case k_EUniverseBeta:	// Fall through
+		case k_EUniverseDev:	UTIL_OpenWebPage( "https://csham.valvesoftware.com/tf.com/meetyourmatch" ); break;
 		}
 		return;
 	}
 	else if ( FStrEq( "view_update_comic", command ) )
 	{
-		if ( steamapicontext && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && steamapicontext->SteamUtils()->IsOverlayEnabled() )
+		switch ( GetUniverse() )
 		{
-			CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
-			switch ( GetUniverse() )
-			{
-			case k_EUniversePublic: steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.teamfortress.com/gargoyles_and_gravel" ); break;
-			case k_EUniverseBeta:	// Fall through
-			case k_EUniverseDev:	steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( "https://www.teamfortress.com/gargoyles_and_gravel" ); break;
-			}
-		}
-		else
-		{
-			OpenStoreStatusDialog( NULL, "#MMenu_OverlayRequired", true, false );
+		case k_EUniversePublic: UTIL_OpenWebPage( "https://www.teamfortress.com/gargoyles_and_gravel" ); break;
+		case k_EUniverseBeta:	// Fall through
+		case k_EUniverseDev:	UTIL_OpenWebPage( "https://csham.valvesoftware.com/tf.com/gargoyles_and_gravel" ); break;
 		}
 		return;
 	}
@@ -2501,6 +2494,31 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	{
 		ETFMatchGroup eMatchGroup = (ETFMatchGroup)atoi( command + 16 );
 		tf_mainmenu_match_panel_type.SetValue( eMatchGroup );
+	}
+	else if ( !V_stricmp( command, "open_chat_filter_settings" ) )
+	{
+		switch ( GetUniverse() )
+		{
+		case k_EUniversePublic:
+			UTIL_OpenWebPage( "https://store.steampowered.com/account/preferences#CommunityContentPreferences" );
+			break;
+		case k_EUniverseBeta:
+			UTIL_OpenWebPage( "https://store.beta.steampowered.com/account/preferences#CommunityContentPreferences" );
+			break;
+		case k_EUniverseDev:
+			UTIL_OpenWebPage( "https://localhost/store/account/preferences#CommunityContentPreferences" );
+			break;
+		}
+		return;
+	}
+	else if ( !V_stricmp( command, "mic_test" ) )
+	{
+		IVoiceTweak_s* pVoiceTweak = engine->GetVoiceTweakAPI();
+		if (pVoiceTweak)
+		{
+			// TODO(mcoms)
+		}
+		return;
 	}
 	else
 	{

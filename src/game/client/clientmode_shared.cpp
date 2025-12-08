@@ -83,6 +83,23 @@ ConVar hud_takesshots( "hud_takesshots", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "
 ConVar hud_freezecamhide( "hud_freezecamhide", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Hide the HUD during freeze-cam" );
 ConVar cl_show_num_particle_systems( "cl_show_num_particle_systems", "0", FCVAR_CLIENTDLL, "Display the number of active particle systems." );
 
+void CC_SG_Changed(IConVar* var, const char* pOld, float flOldValue)
+{
+	const ConVarRef sg_var(var);
+	const int iVal = sg_var.GetInt();
+	char szCmd[270];
+	Q_snprintf(szCmd, sizeof(szCmd), "exec this_is_a_namespace/sg/%s/%d.cfg", var->GetName(), iVal);
+	engine->ExecuteClientCmd(szCmd);
+}
+static ConVar sg_preset("sg_preset", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_net("sg_net", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_shadows("sg_shadows", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_shaders("sg_shaders", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_effects("sg_effects", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_reflections("sg_reflections", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_postprocess("sg_postprocess", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_sound("sg_sound", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
+
 extern ConVar v_viewmodel_fov;
 extern ConVar voice_modenable;
 extern ConVar cl_enable_text_chat;

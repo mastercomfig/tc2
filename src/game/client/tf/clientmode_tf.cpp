@@ -131,6 +131,8 @@ extern ConVar cl_notifications_show_ingame;
 
 extern ConVar sc_look_sensitivity_scale;
 
+ConVar ui_fps_max("ui_fps_max", "120", FCVAR_ARCHIVE);
+
 extern bool TournamentHudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 extern bool ArenaClassLayoutKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 extern bool CoachingHandlesKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );

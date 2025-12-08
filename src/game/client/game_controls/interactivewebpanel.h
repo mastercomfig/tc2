@@ -11,10 +11,7 @@
 #pragma once
 #endif
 
-#include <vgui/IScheme.h>
 #include <vgui_controls/EditablePanel.h>
-#include "GameEventListener.h"
-#include "KeyValues.h"
 #include "vgui_controls/HTML.h"
 #include <string>
 #include "interactivehtml.h"
@@ -33,9 +30,6 @@ class CInteractiveWebPanel : public EditablePanel
 
     void ApplySchemeSettings(IScheme* pScheme) override;
     void PerformLayout() override;
-
-    void AddCommandListener(std::string commandName, const std::function<void(const std::string& psQuery) >& func);
-    void RemoveCommandListener(std::string commandName);
 
 private:
     bool m_bInited;

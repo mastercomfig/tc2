@@ -11,6 +11,7 @@
 #pragma once
 #endif
 
+#include <functional>
 #include "igamesystem.h"
 
 class CGameStateManager : public CAutoGameSystemPerFrame
@@ -23,6 +24,7 @@ public:
 	virtual void Shutdown() OVERRIDE;
 	void RegisterMethod(std::string methodName, const std::function<std::string(const std::string& params) >& method);
 	void UnregisterMethod(std::string methodName);
+	void QueueEvent(const std::string& strEvent, const std::string& strParams);
 
 private:
 	bool m_bInit = false;

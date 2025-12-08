@@ -1,1 +1,0 @@
-import{p as t}from"./playSound.Dtxg4sS4.js";class n extends HTMLElement{connectedCallback(){this.querySelectorAll(".paper-card").forEach(e=>{e.addEventListener("mouseenter",()=>{t("ui/buttonrollover.wav")}),e.addEventListener("click",()=>{t("ui/buttonclickrelease.wav")}),e.addEventListener("pointerdown",()=>{t("ui/buttonclick.wav")})})}}customElements.define("button-player",n);

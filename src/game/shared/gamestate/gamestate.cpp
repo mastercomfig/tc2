@@ -21,10 +21,30 @@
 #include <tier0/platform.h>
 #include <tier3/tier3.h>
 
+#ifdef TF_CLIENT_DLL
+#include "tf_hud_mainmenuoverride.h"
+#include "tf_matchmaking_dashboard.h"
+#endif
+#include "game/client/iviewport.h"
+#include "materialsystem/materialsystem_config.h"
+#include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 
 static CGameStateManager s_GameStateManager;
 CGameStateManager* GetGameStateManager() { return &s_GameStateManager; }
+
+
+struct CWebRpcEvent
+{
+	int64_t m_iEventId;
+	std::string m_strEvent;
+	std::string m_strParams;
+
+	static bool LessFunc(CWebRpcEvent* const& lhs, CWebRpcEvent* const& rhs)
+	{
+		return lhs->m_iEventId > rhs->m_iEventId;
+	}
+};
 
 struct CWebRpcReturn
 {
@@ -53,8 +73,9 @@ class CHTTPServerThread : public CThread
 {
 public:
 	CHTTPServerThread() :
-	m_Incoming(0, 0, CWebRpcReturn::LessFunc),
-	m_Outgoing(0, 0, CWebRpcMessage::LessFunc)
+	m_IncomingReturns(0, 0, CWebRpcReturn::LessFunc),
+	m_IncomingEvents(0, 0, CWebRpcEvent::LessFunc),
+	m_OutgoingGameMsgs(0, 0, CWebRpcMessage::LessFunc)
 	{
 		SetName("GameStateHTTPThread");
 	}
@@ -114,12 +135,22 @@ public:
 				return;
 
 			const auto& command = data["m"].s();
+			std::string strCommand = command;
 
 			{
 				AUTO_LOCK( m_clientsMutex )
 				if (m_connectedClients.empty())
 				{
 					m_connectedClients.push_back(&conn);
+				}
+				if (!V_strcmp(strCommand.c_str(), "disconnect"))
+				{
+					// immediately send back a message for closing
+					crow::json::wvalue data;
+					data["i"] = id;
+					m_connectedClients[0]->send_text(data.dump());
+					m_connectedClients.clear();
+					return;
 				}
 			}
 
@@ -129,13 +160,15 @@ public:
 				params = data["p"].s();
 			}
 
+			//DevMsg("%s\n", in.c_str());
+
 			{
 				AUTO_LOCK(m_OutgoingMutex)
 				CWebRpcMessage* pMessage = new CWebRpcMessage;
 				pMessage->m_iRpcId = id;
 				pMessage->m_strMethod = command;
 				pMessage->m_strParams = params;
-				m_Outgoing.Insert(pMessage);
+				m_OutgoingGameMsgs.Insert(pMessage);
 			}
 		});
 		auto f = app.bindaddr("127.0.0.1").port(58270).run_async();
@@ -154,25 +187,47 @@ public:
 
 			{
 				AUTO_LOCK(m_clientsMutex)
-				AUTO_LOCK(m_IncomingMutex)
+				AUTO_LOCK(m_IncomingReturnsMutex)
+				AUTO_LOCK(m_IncomingEventsMutex)
 
 				crow::websocket::connection* conn = m_connectedClients.empty() ? NULL : m_connectedClients[0];
 
-				while (m_Incoming.Count() > 0)
+				while (m_IncomingReturns.Count() > 0)
 				{
-					CWebRpcReturn* pReturn = m_Incoming.ElementAtHead();
+					CWebRpcReturn* pReturn = m_IncomingReturns.ElementAtHead();
 					crow::json::wvalue data;
 					data["i"] = pReturn->m_iRpcId;
 					if (!pReturn->m_strValue.empty())
 					{
 						data["r"] = pReturn->m_strValue;
 					}
+					//DevMsg("%s\n", data.dump().c_str());
 					if (conn)
 					{
 						conn->send_text(data.dump());
 					}
 					delete pReturn;
-					m_Incoming.RemoveAtHead();
+					m_IncomingReturns.RemoveAtHead();
+				}
+
+				while (m_IncomingEvents.Count() > 0)
+				{
+					CWebRpcEvent* pEvent = m_IncomingEvents.ElementAtHead();
+					if (!pEvent->m_strEvent.empty())
+					{
+						crow::json::wvalue data;
+						data["e"] = pEvent->m_strEvent;
+						if (!pEvent->m_strParams.empty())
+						{
+							data["d"] = pEvent->m_strParams;
+						}
+						if (conn)
+						{
+							conn->send_text(data.dump());
+						}
+					}
+					delete pEvent;
+					m_IncomingEvents.RemoveAtHead();
 				}
 			}
 		}
@@ -183,12 +238,12 @@ public:
 		if (!ThreadInMainThread())
 			return;
 
-		AUTO_LOCK(m_IncomingMutex)
+		AUTO_LOCK(m_IncomingReturnsMutex)
 		AUTO_LOCK(m_OutgoingMutex)
 
-		while (m_Outgoing.Count() > 0)
+		while (m_OutgoingGameMsgs.Count() > 0)
 		{
-			CWebRpcMessage* pMessage = m_Outgoing.ElementAtHead();
+			CWebRpcMessage* pMessage = m_OutgoingGameMsgs.ElementAtHead();
 			std::unordered_map<std::string, std::function<std::string(const std::string&)>>::iterator funcIter;
 			if ((funcIter = m_Methods.find(pMessage->m_strMethod)) != m_Methods.end())
 			{
@@ -200,14 +255,20 @@ public:
 				QueueReturnNoLock(pMessage->m_iRpcId, "");
 			}
 			delete pMessage;
-			m_Outgoing.RemoveAtHead();
+			m_OutgoingGameMsgs.RemoveAtHead();
 		}
 	}
 
 	void QueueReturn(int64_t iRpcId, const std::string& strValue)
 	{
-		AUTO_LOCK(m_IncomingMutex)
+		AUTO_LOCK(m_IncomingReturnsMutex)
 		QueueReturnNoLock(iRpcId, strValue);
+	}
+
+	void QueueEvent(const std::string& strEvent, const std::string& strParams)
+	{
+		AUTO_LOCK(m_IncomingEventsMutex)
+		QueueEventNoLock(strEvent, strParams);
 	}
 
 	void Shutdown()
@@ -239,7 +300,19 @@ private:
 		pReturn->m_iRpcId = iRpcId;
 		pReturn->m_strValue = strValue;
 
-		m_Incoming.Insert(pReturn);
+		m_IncomingReturns.Insert(pReturn);
+
+		m_hThreadEvent.Set();
+	}
+
+	void QueueEventNoLock(const std::string& strEvent, const std::string& strParams)
+	{
+		CWebRpcEvent* pEvent = new CWebRpcEvent;
+		pEvent->m_iEventId = m_iEventId++;
+		pEvent->m_strEvent = strEvent;
+		pEvent->m_strParams = strParams;
+
+		m_IncomingEvents.Insert(pEvent);
 
 		m_hThreadEvent.Set();
 	}
@@ -250,13 +323,17 @@ private:
 
 	crow::SimpleApp* m_Crow;
 
-	CUtlPriorityQueue<CWebRpcMessage*> m_Outgoing;
+	CUtlPriorityQueue<CWebRpcMessage*> m_OutgoingGameMsgs;
 	CThreadMutex m_OutgoingMutex;
-	CUtlPriorityQueue<CWebRpcReturn*> m_Incoming;
-	CThreadMutex m_IncomingMutex;
+	CUtlPriorityQueue<CWebRpcReturn*> m_IncomingReturns;
+	CThreadMutex m_IncomingReturnsMutex;
+	CUtlPriorityQueue<CWebRpcEvent*> m_IncomingEvents;
+	CThreadMutex m_IncomingEventsMutex;
 
 	std::vector<crow::websocket::connection*> m_connectedClients;
 	CThreadMutex m_clientsMutex;
+
+	int64_t m_iEventId = 1;
 
 	std::unordered_map<std::string, std::function<std::string(const std::string& psQuery)>> m_Methods;
 };
@@ -332,76 +409,92 @@ bool CGameStateManager::Init()
 	RegisterMethod("cmd", std::function([](const std::string& params)
 	{
 		std::string str;
+		// security check: no multiple commands
+		size_t iSemicolonPos = params.find(';');
+		if (iSemicolonPos != std::string::npos)
+			return str;
+		std::string cmdName;
+		size_t iSpacePos = params.find(' ');
+		if (iSpacePos == std::string::npos)
+			cmdName = params;
+		else
+			cmdName = params.substr(0, iSpacePos);
+
+		ConCommand* pCmd = g_pCVar->FindCommand(cmdName.c_str());
+		if (!pCmd)
+		{
+			return str;
+		}
+
+		// security check: no restricted flags
+		if (pCmd->IsFlagSet(FCVAR_CHEAT) || pCmd->IsFlagSet(FCVAR_DEVELOPMENTONLY))
+		{
+			return str;
+		}
+
 		engine->ClientCmd_Unrestricted(params.c_str());
 		return str;
 	}));
 
-	RegisterMethod("getsg", std::function([](const std::string& params)
+	RegisterMethod("getmodes", std::function([](const std::string& params)
 	{
+		int iCount = 0;
+		vmode_s* pList = NULL;
+		engine->GetVideoModes(iCount, pList);
+
 		std::string str;
-		size_t iSpacePos = params.find(' ');
-		if (iSpacePos == std::string::npos)
-			return str;
+		for (int i = 0; i < iCount; i++, pList++)
+		{
+			CFmtStr res("%d %d;", pList->width, pList->height);
+			str += res.Get();
+		}
+		return str.substr(0, str.length() - 1);
+	}));
 
-		std::string settingName = params.substr(0, iSpacePos);
-		std::string settingOpt = params.substr(iSpacePos + 1);
+	RegisterMethod("getmode", std::function([](const std::string& params)
+	{
+		const MaterialSystem_Config_t& config = materials->GetCurrentConfigForVideoCard();
 
-		if (settingName == "preset")
-		{
-			str = "3";
-		}
-		else if (settingName == "shadows")
-		{
-			str = "3";
-		}
-		else if (settingName == "lighting")
-		{
-			str = "3";
-		}
-		else if (settingName == "effects")
-		{
-			str = "3";
-		}
-		else if (settingName == "postprocess")
-		{
-			str = "3";
-		}
-		else if (settingName == "sound")
-		{
-			str = "3";
-		}
-
+		CFmtStr mode("%d %d %d %d", config.m_VideoMode.m_Width, config.m_VideoMode.m_Height, config.Windowed() ? 1 : 0, config.NoWindowBorder() ? 1 : 0);
+		std::string str = mode.Get();
+		
 		return str;
 	}));
 
-	RegisterMethod("setsg", std::function([](const std::string& params)
+	RegisterMethod("playsound", std::function([](const std::string& params)
+	{
+		vgui::surface()->PlaySound(params.c_str());
+		std::string str;
+		return str;
+	}));
+
+	RegisterMethod("getingame", std::function([](const std::string& params)
+	{
+		std::string str = engine->IsInGame() && !engine->IsLevelMainMenuBackground() ? "1" : "0";
+		return str;
+	}));
+
+#ifdef TF_CLIENT_DLL
+	RegisterMethod("mmcmd", std::function([](const std::string& params)
+	{
+		GetMMDashboard()->OnCommand(params.c_str());
+		std::string str;
+		return str;
+	}));
+#endif
+
+	RegisterMethod("uicmd", std::function([](const std::string& params)
 	{
 		std::string str;
-		size_t iSpacePos = params.find(' ');
-		if (iSpacePos == std::string::npos)
-			return str;
-
-		std::string settingName = params.substr(0, iSpacePos);
-		std::string settingOpt = params.substr(iSpacePos + 1);
-
-		if (settingName == "preset")
+#ifdef TF_CLIENT_DLL
+		IViewPortPanel* pMMOverride = gViewPortInterface->FindPanelByName( PANEL_MAINMENUOVERRIDE );
+		if (pMMOverride)
 		{
+			((CHudMainMenuOverride*)pMMOverride)->OnCommand( params.c_str() );
 		}
-		else if (settingName == "shadows")
-		{
-		}
-		else if (settingName == "lighting")
-		{;
-		}
-		else if (settingName == "effects")
-		{
-		}
-		else if (settingName == "postprocess")
-		{
-		}
-		else if (settingName == "sound")
-		{
-		}
+#else
+		// TODO: implement for other games please
+#endif
 
 		return str;
 	}));
@@ -453,4 +546,14 @@ void CGameStateManager::UnregisterMethod(std::string methodName)
 	Assert(m_pServerThread);
 
 	m_pServerThread->UnregisterMethod(methodName);
+}
+
+void CGameStateManager::QueueEvent(const std::string& strEvent, const std::string& strParams)
+{
+	if (!m_bInit)
+		return;
+
+	Assert(m_pServerThread);
+
+	m_pServerThread->QueueEvent(strEvent, strParams);
 }
