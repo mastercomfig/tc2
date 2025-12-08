@@ -45,15 +45,6 @@ jobs:
           chmod +x ~/.local/bin/butler
           butler -V
 
-      - name: Install dependencies
-        run: |
-          sudo apt install libasio-dev
-          gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
-          sudo dpkg -i Crow.deb
-          rm Crow.deb
-        env:
-          GH_TOKEN: ${{ github.token }}
-
       - name: Build dist
         id: build-dist
         env:
