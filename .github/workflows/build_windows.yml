@@ -90,9 +90,14 @@ jobs:
         run: '.\createallprojects.bat'
 
       - name: Install dependencies
-        uses: lukka/run-vcpkg@v11
-        with:
-          runVcpkgInstall : true
+        run: |
+          cd ..
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          .\bootstrap-vcpkg.bat
+          .\vcpkg integrate install
+          .\vcpkg install crow
+          
 
       - name: Build solution
         shell: cmd
