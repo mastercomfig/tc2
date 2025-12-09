@@ -10,6 +10,7 @@ jobs:
     runs-on: windows-latest
     env:
       VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
+      VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       # checkout the github actions / workflow
       - name: Checkout actions
@@ -103,7 +104,6 @@ jobs:
         shell: cmd
         working-directory: "${{ github.workspace }}/src"
         run: |
-          vcpkg integrate install
           msbuild everything.sln /p:Platform="win64" /p:Configuration="Release"
 
       - name: Copy dist
