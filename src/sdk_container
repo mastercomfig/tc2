@@ -26,7 +26,7 @@ function run_in_sniper() {
         mod_src_dir_name=$(basename -- "$mod_src_dir")
         mod_base_dir=$(dirname -- "$mod_src_dir")
 
-        if [[ -v GITHUB_ACTIONS ]]; then
+        if [[ ! -v GITHUB_ACTIONS ]]; then
             GITHUB_ACTIONS=""
         fi
 
@@ -42,7 +42,7 @@ function run_in_sniper() {
         exec podman run \
             --env "$check_env=$script_file" \
             --env "CCACHE_DIR=${my_ccache_dir}" \
-            --env "GITHUB=${GITHUB_ACTIONS}" \
+            --env "GITHUB_ACTIONS=${GITHUB_ACTIONS}" \
             $USERNS \
             --rm -it \
             --mount type=bind,\"source="${my_ccache_dir}"\",\"target="${my_ccache_dir}"\" \
