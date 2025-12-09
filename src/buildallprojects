@@ -37,7 +37,8 @@ solution_out="_vpc_/ninja/sdk_everything_${VPC_NINJA_EXTRA_SUFFIX}$VPC_NINJA_BUI
 
 if [ -n "${GITHUB_ACTIONS+x}" ]; then
     sudo DEBIAN_FRONTEND=noninteractive apt-get -yq --no-install-recommends install libasio-dev gh
-    gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
+    #gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
+    curl -Lo Crow.deb https://github.com/CrowCpp/Crow/releases/download/v1.3.0/Crow-1.3.0-Linux.deb
     sudo DEBIAN_FRONTEND=noninteractive dpkg -i Crow.deb
     rm Crow.deb
 fi
