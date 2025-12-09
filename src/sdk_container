@@ -32,8 +32,10 @@ function run_in_sniper() {
 
         if [ -z ${GITHUB_ACTIONS} ]; then
             USERNS="--userns=keep-id"
+            INTERACTIVE_FLAGS="-it"
         else
             USERNS=""
+            INTERACTIVE_FLAGS=""
         fi
 
         image="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest"
@@ -44,7 +46,7 @@ function run_in_sniper() {
             --env "CCACHE_DIR=${my_ccache_dir}" \
             --env "GITHUB_ACTIONS=${GITHUB_ACTIONS}" \
             $USERNS \
-            --rm -it \
+            --rm $INTERACTIVE_FLAGS \
             --mount type=bind,\"source="${my_ccache_dir}"\",\"target="${my_ccache_dir}"\" \
             --mount type=bind,\"source="${mod_base_dir}"\",\"target="/tc2/"\" \
             "$image" \
