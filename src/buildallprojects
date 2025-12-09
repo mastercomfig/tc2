@@ -36,9 +36,9 @@ fi
 solution_out="_vpc_/ninja/sdk_everything_${VPC_NINJA_EXTRA_SUFFIX}$VPC_NINJA_BUILD_MODE"
 
 if [[ ! -e "$solution_out.ninja" ]]; then
-    sudp -n apt-get install libasio-dev
+    sudo -n apt-get install libasio-dev
     gh release download --pattern 'Crow*.deb' -R CrowCpp/Crow -O Crow.deb
-    sudp -n dpkg -i Crow.deb
+    sudo -n dpkg -i Crow.deb
     rm Crow.deb
     
     devtools/bin/vpc /tf /linux64 /ninja /define:SOURCESDK ${VPC_EXTRA_ARGS} +everything /mksln "$solution_out"
