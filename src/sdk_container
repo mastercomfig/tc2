@@ -26,13 +26,19 @@ function run_in_sniper() {
         mod_src_dir_name=$(basename -- "$mod_src_dir")
         mod_base_dir=$(dirname -- "$mod_src_dir")
 
+        if [ -n "${GITHUB_ACTIONS+x}" ]; then
+            USERNS=""
+        else
+            USERNS="--userns=keep-id"
+        fi
+
         image="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest"
         echo "Running script inside $image"
         # you need a recent version of podman, tested on 5.6
         exec podman run \
             --env "$check_env=$script_file" \
             --env "CCACHE_DIR=${my_ccache_dir}" \
-            --userns=keep-id \
+            $USERNS \
             --rm -it \
             --mount type=bind,\"source="${my_ccache_dir}"\",\"target="${my_ccache_dir}"\" \
             --mount type=bind,\"source="${mod_base_dir}"\",\"target="/tc2/"\" \
