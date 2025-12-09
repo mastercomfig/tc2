@@ -9,7 +9,7 @@ jobs:
   build_win:
     runs-on: windows-latest
     env:
-      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
     steps:
       # checkout the github actions / workflow
       - name: Checkout actions
