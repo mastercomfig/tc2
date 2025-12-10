@@ -420,7 +420,7 @@ bool CGameStateManager::Init()
 		else
 			cmdName = params.substr(0, iSpacePos);
 
-		ConCommand* pCmd = g_pCVar->FindCommand(cmdName.c_str());
+		ConCommandBase* pCmd = g_pCVar->FindCommandBase(cmdName.c_str());
 		if (!pCmd)
 		{
 			return str;
