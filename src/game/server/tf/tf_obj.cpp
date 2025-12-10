@@ -718,12 +718,16 @@ bool CBaseObject::EstimateValidBuildPos( void )
 		}
 	}
 	
-#if defined(MCOMS_BALANCE_PACK)
-	// BLU can build in setup time
-	bool bCanBuildInRespawnRoom = ( GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->InSetup() ) || g_pServerBenchmark->IsBenchmarkRunning();
-#else
-	bool bCanBuildInRespawnRoom = g_pServerBenchmark->IsBenchmarkRunning();
-#endif
+	bool bCanBuildInRespawnRoom;
+	if ( TFGameRules()->IsBetaActive() )
+	{
+		// BLU can build in setup time
+		bCanBuildInRespawnRoom = ( GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->InSetup() ) || g_pServerBenchmark->IsBenchmarkRunning();
+	}
+	else
+	{
+		bCanBuildInRespawnRoom = g_pServerBenchmark->IsBenchmarkRunning();
+	}
 	if ( !bCanBuildInRespawnRoom )
 	{
 		if ( PointInRespawnRoom( NULL, m_vecBuildOrigin ) )

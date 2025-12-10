@@ -24,6 +24,7 @@
 #include "halloween/merasmus/merasmus_trick_or_treat_prop.h"
 #include "tf_robot_destruction_robot.h"
 #include "tf_generic_bomb.h"
+#include "tf_gamerules.h"
 #endif
 
 #define ENERGY_RING_DISPATCH_EFFECT			"ClientProjectile_EnergyRing"
@@ -64,12 +65,8 @@ void PrecacheRing(void *pUser)
 PRECACHE_REGISTER_FN(PrecacheRing);
 
 #ifdef GAME_DLL
-#if defined(MCOMS_BALANCE_PACK)
-ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.05", FCVAR_CHEAT );
-ConVar tf_bison_in_enemy_slow("tf_bison_in_enemy_slow", "0.25", FCVAR_CHEAT);
-#else
-ConVar tf_bison_tick_time("tf_bison_tick_time", "0.025", FCVAR_CHEAT);
-#endif
+ConVar tf_bison_tick_time( "tf_bison_tick_time", "0.025", FCVAR_CHEAT );
+ConVar tf_bison_in_enemy_slow( "tf_bison_in_enemy_slow", "0.25", FCVAR_CHEAT );
 #endif
 
 
@@ -180,6 +177,20 @@ CTFProjectile_EnergyRing *CTFProjectile_EnergyRing::Create( CTFWeaponBaseGun *pL
 	return pRing;
 }
 
+#ifdef GAME_DLL
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+float CTFProjectile_EnergyRing::GetTickTime()
+{
+	const float flTickTime = tf_bison_tick_time.GetFloat();
+	if ( TFGameRules()->IsBetaActive() )
+	{
+		return flTickTime * 2.0f;
+	}
+	return flTickTime;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -194,13 +205,11 @@ void CTFProjectile_EnergyRing::Spawn()
 	SetSolidFlags( FSOLID_TRIGGER | FSOLID_NOT_SOLID );
 	SetCollisionGroup( TFCOLLISION_GROUP_ROCKETS );
 
-#if defined(MCOMS_BALANCE_PACK)
 #ifdef GAME_DLL
-	if (ShouldPenetrate())
+	if ( ShouldPenetrate() && TFGameRules()->IsBetaActive() )
 	{
-		SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + tf_bison_tick_time.GetFloat(), "BisonThink");
+		SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink");
 	}
-#endif
 #endif
 }
 
@@ -274,7 +283,7 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 		bool bSkipCollide;
 		if ( ShouldPenetrate() )
 		{
-			bSkipCollide = ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < tf_bison_tick_time.GetFloat() );
+			bSkipCollide = ( pOther->InSameTeam( this ) || ( gpGlobals->curtime - m_flLastHitTime ) < GetTickTime() );
 		}
 		else
 		{
@@ -310,13 +319,11 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 
 		PlayImpactEffects( vecNewPos, pOther->IsPlayer() );
 
-		if ( ShouldPenetrate() )
+		if ( ShouldPenetrate() && TFGameRules()->IsBetaActive() )
 		{
-#if defined(MCOMS_BALANCE_PACK)
 			Vector dir;
 			AngleVectors(GetAbsAngles(), &dir);
 			SetAbsVelocity(dir * GetInitialVelocity() * tf_bison_in_enemy_slow.GetFloat());
-#endif
 			return;
 		}
 		
@@ -341,14 +348,14 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 //-----------------------------------------------------------------------------
 void CTFProjectile_EnergyRing::BisonThink()
 {
-	if (gpGlobals->curtime - m_flLastHitTime > tf_bison_tick_time.GetFloat())
+	if (gpGlobals->curtime - m_flLastHitTime > GetTickTime())
 	{
 		Vector dir;
 		AngleVectors(GetAbsAngles(), &dir);
 		SetAbsVelocity(dir * GetInitialVelocity());
 	}
 
-	SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + tf_bison_tick_time.GetFloat(), "BisonThink");
+	SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink");
 }
 
 

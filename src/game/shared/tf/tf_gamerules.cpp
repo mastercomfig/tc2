@@ -6274,21 +6274,31 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 	{
 		if ( pWeapon )
 		{
-			switch ( pWeapon->GetWeaponID() )
+			if ( TFGameRules()->IsBetaActive() )
 			{
-			case TF_WEAPON_PIPEBOMBLAUNCHER:
-			case TF_WEAPON_GRENADELAUNCHER:
-			case TF_WEAPON_CANNON:
-#if !defined(MCOMS_BALANCE_PACK)
-			case TF_WEAPON_STICKBOMB:
-#endif
-				flAdjustedDamage *= 0.75f;
-				break;
-#if defined(MCOMS_BALANCE_PACK)
-			case TF_WEAPON_STICKBOMB:
-				flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
-				break;
-#endif
+				switch ( pWeapon->GetWeaponID() )
+				{
+				case TF_WEAPON_PIPEBOMBLAUNCHER:
+				case TF_WEAPON_GRENADELAUNCHER:
+				case TF_WEAPON_CANNON:
+					flAdjustedDamage *= 0.75f;
+					break;
+				case TF_WEAPON_STICKBOMB:
+					flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
+					break;
+				}
+			}
+			else
+			{
+				switch ( pWeapon->GetWeaponID() )
+				{
+				case TF_WEAPON_PIPEBOMBLAUNCHER:
+				case TF_WEAPON_GRENADELAUNCHER:
+				case TF_WEAPON_CANNON:
+				case TF_WEAPON_STICKBOMB:
+					flAdjustedDamage *= 0.75f;
+					break;
+				}
 			}
 		}
 

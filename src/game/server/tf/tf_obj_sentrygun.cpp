@@ -319,14 +319,15 @@ void CObjectSentrygun::SentryThink( void )
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
 
-#if defined(MCOMS_BALANCE_PACK)
-	// shield after disabling
-	const float flTimeTillFade = m_flShieldFadeTime - gpGlobals->curtime;
-	if ( m_nShieldLevel == 0 && flTimeTillFade > 0.001f && !m_bPlayerControlled && !IsCarried() )
+	if ( TFGameRules()->IsBetaActive() )
 	{
-		m_nShieldLevel.Set( SHIELD_NORMAL );
+		// shield after disabling
+		const float flTimeTillFade = m_flShieldFadeTime - gpGlobals->curtime;
+		if ( m_nShieldLevel == 0 && flTimeTillFade > 0.001f && !m_bPlayerControlled && !IsCarried() )
+		{
+			m_nShieldLevel.Set( SHIELD_NORMAL );
+		}
 	}
-#endif
 	if ( m_nShieldLevel > 0 && (gpGlobals->curtime > m_flShieldFadeTime) )
 	{
 		m_nShieldLevel.Set( SHIELD_NONE );
@@ -899,12 +900,16 @@ bool CObjectSentrygun::FindTarget()
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
 			m_bPlayerControlled = true;
-#if defined(MCOMS_BALANCE_PACK)
-			// no shield
-			m_nShieldLevel.Set(SHIELD_NONE);
-#else
-			m_nShieldLevel.Set( SHIELD_NORMAL );
-#endif
+
+			if ( TFGameRules()->IsBetaActive() )
+			{
+				// no shield
+				m_nShieldLevel.Set( SHIELD_NONE );
+			}
+			else
+			{
+				m_nShieldLevel.Set( SHIELD_NORMAL );
+			}
 			m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
 
 			// If not target dummy, use laserdot, otherwise targetdummy overrides
@@ -1381,11 +1386,15 @@ bool CObjectSentrygun::FireRocket()
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-#if defined(MCOMS_BALANCE_PACK)
-			float flPlayerRocketTime = flRocketTime / 2.0f;
-#else
-			float flPlayerRocketTime = 2.25f;
-#endif
+			float flPlayerRocketTime;
+			if ( TFGameRules()->IsBetaActive() )
+			{
+				flPlayerRocketTime = flRocketTime / 2.0f;
+			}
+			else
+			{
+				flPlayerRocketTime = 2.25f;
+			}
 			AddGesture( ACT_RANGE_ATTACK2, flPlayerRocketTime, true );
 			m_flNextRocketAttack = gpGlobals->curtime + flPlayerRocketTime;
 		}
@@ -1849,22 +1858,25 @@ void CObjectSentrygun::CalcFireRate( void )
 	// This is different for each type because of how the boost worked before the firing speed fix.
 	if ( m_bPlayerControlled )
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		vecFireRateBoosts.push_back( 0.5f );
-#else
-		if ( IsMiniBuilding() )
+		if ( TFGameRules()->IsBetaActive() )
 		{
 			vecFireRateBoosts.push_back( 0.5f );
 		}
-		else if (m_iUpgradeLevel == 1)
-		{
-			vecFireRateBoosts.push_back( 0.6f );
-		}
 		else
 		{
-			vecFireRateBoosts.push_back( 2.0f / 3.0f );
+			if ( IsMiniBuilding() )
+			{
+				vecFireRateBoosts.push_back( 0.5f );
+			}
+			else if (m_iUpgradeLevel == 1)
+			{
+				vecFireRateBoosts.push_back( 0.6f );
+			}
+			else
+			{
+				vecFireRateBoosts.push_back( 2.0f / 3.0f );
+			}
 		}
-#endif
 	}
 
 	// Crit canteen 2x boost
