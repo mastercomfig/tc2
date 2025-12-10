@@ -40,6 +40,7 @@ if [ $PLATFORM = "win" ]; then
   declare -a EXES=(
     tc2_win64
     bin/$PLAT_DIR/captioncompiler
+    bin/$PLAT_DIR/crashpad_handler
     bin/$PLAT_DIR/glview
     bin/$PLAT_DIR/height2normal
     bin/$PLAT_DIR/motionmapper
@@ -73,6 +74,7 @@ if [ $PLATFORM = "win" ]; then
 elif [ $PLATFORM = "linux" ]; then
   declare -a EXES=(
     tc2_linux64
+    bin/$PLAT_DIR/crashpad_handler
   )
 
   DLLS+=(
