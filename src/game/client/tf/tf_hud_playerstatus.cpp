@@ -997,7 +997,7 @@ void CTFHudPlayerHealth::OnThink()
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_MARKEDFORDEATH_SILENT,	m_pMarkedForDeathImageSilent,	nXOffset,	Color( 125 - color_fade, 255 - color_fade, 255 - color_fade, 255 ) );
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_PASSTIME_PENALTY_DEBUFF,	m_pMarkedForDeathImageSilent,	nXOffset,	Color( 125 - color_fade, 255 - color_fade, 255 - color_fade, 255 ) );
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_STUNNED,					m_pSlowedImage,					nXOffset,	Color( color_fade, color_fade, 0, 255 ) );
-			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_GAS,						m_pGasImage,					nXOffset,	Color( color_fade, color_fade, color_fade, 255 ) );
+			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_GAS_DRIP,					m_pGasImage,					nXOffset,	Color( color_fade, color_fade, color_fade, 255 ) );
 			
 			UpdateHalloweenStatus();
 		}

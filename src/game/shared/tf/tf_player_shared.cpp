@@ -1343,7 +1343,7 @@ CBaseEntity *CTFPlayerShared::GetConditionAssistFromVictim( void )
 		TF_COND_URINE,
 		TF_COND_MAD_MILK,
 		TF_COND_MARKEDFORDEATH,
-		TF_COND_GAS,
+		TF_COND_GAS_DRIP,
 	};
 
 	CBaseEntity *pProvider = NULL;
@@ -1913,7 +1913,7 @@ void CTFPlayerShared::OnConditionAdded( ETFCond eCond )
 		OnAddCompetitiveLoser();
 		break;
 
-	case TF_COND_GAS:
+	case TF_COND_GAS_DRIP:
 		OnAddCondGas();
 		break;
 
@@ -2254,7 +2254,7 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond eCond )
 		OnRemoveCompetitiveLoser();
 		break;
 
-	case TF_COND_GAS:
+	case TF_COND_GAS_DRIP:
 		OnRemoveCondGas();
 		break;
 
@@ -2819,7 +2819,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	}
 	if ( InCond( TF_COND_BURNING ) && !m_pOuter->m_bInPowerPlay )
 	{
-		const bool bCanStopBurning = TFGameRules() && (!TFGameRules()->IsBetaActive() || !InCond(TF_COND_GAS));
+		const bool bCanStopBurning = TFGameRules() && (!TFGameRules()->IsBetaActive() || !InCond( TF_COND_GAS_DRIP ));
 		if ( TFGameRules() && TFGameRules()->IsTruceActive() && m_hBurnAttacker && m_hBurnAttacker->IsTruceValidForEnt() )
 		{
 			RemoveCond( TF_COND_BURNING );
@@ -3098,6 +3098,12 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		{
 			// If we're underwater, wash off the Gas.
 			RemoveCond( TF_COND_GAS );
+		}
+
+		if ( InCond( TF_COND_GAS_DRIP ) )
+		{
+			// If we're underwater, wash off the Gas.
+			RemoveCond( TF_COND_GAS_DRIP );
 		}
 	}
 
@@ -3641,6 +3647,11 @@ void CTFPlayerShared::OnAddInvulnerable( void )
 	if ( InCond( TF_COND_GAS ) )
 	{
 		RemoveCond( TF_COND_GAS );
+	}
+
+	if ( InCond( TF_COND_GAS_DRIP ) )
+	{
+		RemoveCond( TF_COND_GAS_DRIP );
 	}
 
 	if ( InCond( TF_COND_PLAGUE ) )

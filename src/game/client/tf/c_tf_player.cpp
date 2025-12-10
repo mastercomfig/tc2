@@ -5890,7 +5890,7 @@ bool C_TFPlayer::CanLightCigarette( void )
 		return false;
 
 	// Don't light if we're wet.
-	if ( m_Shared.InCond( TF_COND_URINE ) || m_Shared.InCond( TF_COND_MAD_MILK ) || m_Shared.InCond( TF_COND_GAS ) )
+	if ( m_Shared.InCond( TF_COND_URINE ) || m_Shared.InCond( TF_COND_MAD_MILK ) || m_Shared.InCond( TF_COND_GAS_DRIP ) )
 		return false;
 
 	// Or underwater.

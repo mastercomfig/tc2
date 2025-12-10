@@ -412,6 +412,10 @@ void JarExplode( int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeap
 					continue;
 
 				pPlayer->m_Shared.AddCond( cond, flDuration, pAttacker );
+				if ( cond == TF_COND_GAS )
+				{
+					pPlayer->m_Shared.AddCond( TF_COND_GAS_DRIP, flDuration, pAttacker );
+				}
 				pPlayer->m_Shared.SetPeeAttacker( pAttacker );
 				pPlayer->SpeakConceptIfAllowed( MP_CONCEPT_JARATE_HIT );
 

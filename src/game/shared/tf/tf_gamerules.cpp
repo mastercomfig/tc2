@@ -7832,7 +7832,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim, flDamageBase, mult_dmgtaken_from_fire );
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim->GetActiveWeapon(), flDamageBase, mult_dmgtaken_from_fire_active );
 
-				if ( pVictim->m_Shared.InCond(TF_COND_GAS) )
+				if ( pVictim->m_Shared.InCond( TF_COND_GAS_DRIP ) && IsBetaActive() )
 				{
 					flDamageBase *= 1.2f;
 				}

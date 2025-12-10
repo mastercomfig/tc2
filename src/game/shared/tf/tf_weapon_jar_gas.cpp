@@ -408,6 +408,7 @@ void CTFGasManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	if ( !pTFPlayer->m_Shared.IsInvulnerable() && !pTFPlayer->m_Shared.InCond( TF_COND_PHASE ) && !pTFPlayer->m_Shared.InCond( TF_COND_PASSTIME_INTERCEPTION ) && pTFPlayer->CanGetWet() )
 	{
 		pTFPlayer->m_Shared.AddCond( TF_COND_GAS, 10.f, GetOwnerEntity() );
+		pTFPlayer->m_Shared.AddCond( TF_COND_GAS_DRIP, 10.f, GetOwnerEntity() );
 	}
 
 	m_Touched.AddToTail( pTFPlayer );

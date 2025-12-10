@@ -4477,6 +4477,11 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 			m_Shared.RemoveCond( TF_COND_GAS );
 		}
 
+		if ( m_Shared.InCond( TF_COND_GAS_DRIP ) )
+		{
+			m_Shared.RemoveCond( TF_COND_GAS_DRIP );
+		}
+
 		if ( m_Shared.InCond( TF_COND_BLEEDING ) )
 		{
 			m_Shared.RemoveCond( TF_COND_BLEEDING );
@@ -10754,7 +10759,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 
 	if ( bTookDamage && m_Shared.InCond( TF_COND_GAS ) )
 	{
-		CTFPlayer *pTFGasTosser = dynamic_cast< CTFPlayer* >( m_Shared.GetConditionProvider( TF_COND_GAS ) );
+		CTFPlayer *pTFGasTosser = dynamic_cast< CTFPlayer* >( m_Shared.GetConditionProvider( TF_COND_GAS_DRIP ) );
 		if ( pTFGasTosser )
 		{
 			IGameEvent *event = gameeventmanager->CreateEvent( "gas_doused_player_ignited" );
