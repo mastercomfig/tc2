@@ -930,11 +930,7 @@ void KeyValues::SaveKeyToFile( KeyValues *dat, IBaseFileSystem *filesystem, File
 
 				char buf[32];
 				// write "0x" + 16 char 0-padded hex encoded 64 bit value
-#ifdef WIN32
-				Q_snprintf( buf, sizeof( buf ), "0x%016I64X", *( (uint64 *)dat->m_sValue ) );
-#else
 				Q_snprintf( buf, sizeof( buf ), "0x%016llX", *( (uint64 *)dat->m_sValue ) );
-#endif
 
 				INTERNALWRITE(buf, Q_strlen(buf));
 				INTERNALWRITE("\"\n", 2);
