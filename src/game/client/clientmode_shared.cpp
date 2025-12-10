@@ -753,6 +753,20 @@ int	ClientModeShared::KeyInput( int down, ButtonCode_t keynum, const char *pszCu
 //-----------------------------------------------------------------------------
 int ClientModeShared::HandleSpectatorKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding )
 {
+#ifdef TF_CLIENT_DLL
+	static ConVarRef tf_scoreboard_mouse_mode("tf_scoreboard_mouse_mode");
+	// if scoreboard mouse mode is on, and this is a valid mouse key input,
+	if ( tf_scoreboard_mouse_mode.IsValid() && tf_scoreboard_mouse_mode.GetBool() && down && pszCurrentBinding && ( keynum == MOUSE_LEFT || keynum == MOUSE_RIGHT ) )
+	{
+		// and the scoreboard is open
+		IViewPortPanel* pScoreboard = gViewPortInterface->FindPanelByName( PANEL_SCOREBOARD );
+		if ( pScoreboard && pScoreboard->IsVisible() )
+		{
+			// ignore the spectator input
+			return 1;
+		}
+	}
+#endif
 	// we are in spectator mode, open spectator menu
 	if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+duck" ) == 0 )
 	{
