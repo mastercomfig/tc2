@@ -67,6 +67,6 @@
 		"labelText"		""
 		"textAlignment"		"south-west"
 		"font"			"ChatFont"
-		"maxchars"		"-1"
+		"maxchars"		"51000"
 	}
 }
