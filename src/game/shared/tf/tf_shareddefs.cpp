@@ -429,6 +429,7 @@ static const char *g_aConditionNames[] =
 	"TF_COND_IMMUNE_TO_PUSHBACK",				// = 130
 	"TF_COND_CRITBOOSTED_SELF",					// = 131
 	"TF_COND_COLA_BUFF",						// = 132
+	"TF_COND_GAS_DRIP",						// = 133
 
 	//
 	// ADD NEW ITEMS HERE TO AVOID BREAKING DEMOS
