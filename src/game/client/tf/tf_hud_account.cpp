@@ -70,7 +70,7 @@ typedef struct
 	int m_nSourceID;		// Can be entindex, etc
 	Color m_color;
 	bool m_bShadows;
-	bool m_bEnemy;
+	int m_iEnemyState;
 
 	bool m_bSimulate = false;
 
@@ -704,7 +704,7 @@ public:
 					pNewAccount->m_nSourceID = pVictim->entindex();
 					pNewAccount->m_flBatchWindow = hud_combattext_batching.GetBool() ? hud_combattext_batching_window.GetFloat() : 0.f;
 					pNewAccount->m_bLargeFont = bIsCrit;
-					pNewAccount->m_bEnemy = true;
+					pNewAccount->m_iEnemyState = 1;
 					//	V_swprintf_safe( pNewAccount->m_wzText, L" (%d)", m_nQueuedDamageEvents );
 				}
 			}
@@ -1148,7 +1148,7 @@ account_delta_t *CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewVa
 		pNewDeltaItem->m_wzText[0] = NULL;
 		pNewDeltaItem->m_color = GetColor( type, iDelta );
 		pNewDeltaItem->m_bShadows = false;
-		pNewDeltaItem->m_bEnemy = false;
+		pNewDeltaItem->m_iEnemyState = 0;
 		return &m_AccountDeltaItems[index];
 	}
 
@@ -1195,6 +1195,44 @@ void CAccountPanel::Paint( void )
 		return;
 	}
 
+	auto canBeSeen = [&](int i)
+	{
+		if ( m_AccountDeltaItems[i].m_iEnemyState > 0 )
+		{
+			// TODO(mcoms): it's hard to decide what should be the condition to show enemy damage numbers.
+			// if we go with enemy visible, then the player can be alerted to an enemy's presence by seeing damage numbers pop up.
+			// if we go with damage number visible, we get to see a trail of numbers even after enemy goes out of sight.
+			//Vector vecWorldStart(m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, m_AccountDeltaItems[i].m_nHStart);
+			C_BaseEntity* pEntity = m_AccountDeltaItems[i].m_nSourceID > 0 ? ClientEntityList().GetEnt( m_AccountDeltaItems[i].m_nSourceID ) : NULL;
+			C_TFPlayer* pEnemyPlayer = pEntity && pEntity->IsPlayer() ? ToTFPlayer( pEntity ) : NULL;
+			if ( pEnemyPlayer )
+			{
+				// check if we can see them
+				if ( pEnemyPlayer->m_Shared.InCond( TF_COND_STEALTHED ) || pEnemyPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
+				{
+					return false;
+				}
+			}
+			if ( pEntity )
+			{
+				trace_t tr;
+				UTIL_TraceLine( pEntity->WorldSpaceCenter(), MainViewOrigin(), MASK_OPAQUE, NULL, COLLISION_GROUP_NONE, &tr );
+
+				if ( tr.fraction < 1.0f )
+				{
+					// CAN'T see them on the initial, this is a disappearing number.
+					return false;
+				}
+				else
+				{
+					// don't need to check after this.
+					m_AccountDeltaItems[i].m_iEnemyState = 0;
+				}
+			}
+		}
+		return true;
+	};
+
 	FOR_EACH_VEC( m_AccountDeltaItems, i )
 	{
 		// Reduce lifetime when count grows too high
@@ -1203,38 +1241,9 @@ void CAccountPanel::Paint( void )
 		// update all the valid delta items
 		if ( ( m_AccountDeltaItems[i].m_flDieTime - flTimeMod ) > gpGlobals->curtime )
 		{
-			if ( m_AccountDeltaItems[i].m_bEnemy )
+			if ( !canBeSeen(i) )
 			{
-				// TODO(mcoms): it's hard to decide what should be the condition to show enemy damage numbers.
-				// if we go with enemy visible, then the player can be alerted to an enemy's presence by seeing damage numbers pop up.
-				// if we go with damage number visible, we get to see a trail of numbers even after enemy goes out of sight.
-				//Vector vecWorldStart(m_AccountDeltaItems[i].m_nX, m_AccountDeltaItems[i].m_nY, m_AccountDeltaItems[i].m_nHStart);
-				C_BaseEntity* pEntity = m_AccountDeltaItems[i].m_nSourceID > 0 ? ClientEntityList().GetEnt( m_AccountDeltaItems[i].m_nSourceID ) : NULL;
-				C_TFPlayer* pEnemyPlayer = pEntity && pEntity->IsPlayer() ? ToTFPlayer( pEntity ) : NULL;
-				if ( pEnemyPlayer )
-				{
-					// check if we can see them
-					if ( pEnemyPlayer->m_Shared.InCond( TF_COND_STEALTHED ) || pEnemyPlayer->m_Shared.InCond( TF_COND_DISGUISED ) )
-					{
-						continue;
-					}
-				}
-				if ( pEntity )
-				{
-					trace_t tr;
-					UTIL_TraceLine( pEntity->WorldSpaceCenter(), MainViewOrigin(), MASK_OPAQUE, NULL, COLLISION_GROUP_NONE, &tr );
-
-					if ( tr.fraction < 1.0f )
-					{
-						continue;
-					}
-					else
-					{
-						// UNDONE: yes we do
-						// don't need to check after this.
-						//m_AccountDeltaItems[i].m_bEnemy = false;
-					}
-				}
+				continue;
 			}
 
 			// position and alpha are determined from the lifetime
@@ -1268,7 +1277,8 @@ void CAccountPanel::Paint( void )
 						{
 							m_AccountDeltaItems[i].m_bLargeFont = true;
 						}
-						if ( !IsInFreezeCam() )
+						const bool bCanNextBeSeen = canBeSeen(iNext);
+						if ( !IsInFreezeCam() && bCanNextBeSeen )
 						{
 							if ( bNewDamageStyle )
 							{
@@ -1281,15 +1291,18 @@ void CAccountPanel::Paint( void )
 							m_AccountDeltaItems[i].m_nY = m_AccountDeltaItems[iNext].m_nY;
 						}
 						m_AccountDeltaItems.Remove(iNext);
-						if ( bNewDamageStyle )
+						if ( bCanNextBeSeen )
 						{
-							if (m_AccountDeltaItems[i].m_flRealDieTime < 0.0f)
+							if ( bNewDamageStyle )
 							{
-								// keep track of our position progress
-								m_AccountDeltaItems[i].m_flRealDieTime = m_AccountDeltaItems[i].m_flDieTime;
+								if (m_AccountDeltaItems[i].m_flRealDieTime < 0.0f)
+								{
+									// keep track of our position progress
+									m_AccountDeltaItems[i].m_flRealDieTime = m_AccountDeltaItems[i].m_flDieTime;
+								}
 							}
+							m_AccountDeltaItems[i].m_flDieTime = gpGlobals->curtime + m_flDeltaLifetime; // refresh
 						}
-						m_AccountDeltaItems[i].m_flDieTime = gpGlobals->curtime + m_flDeltaLifetime; // refresh
 					}
 					else
 					{
