@@ -1414,7 +1414,7 @@ void CAccountPanel::Paint( void )
 			Vector rgb((float)c.r(), (float)c.g(), (float)c.b());
 			Vector hsv;
 			RGBtoHSV(rgb, hsv);
-			const float flSatMult = m_AccountDeltaItems[i].m_bLargeFont ? 0.87f : 0.65f;
+			const float flSatMult = m_AccountDeltaItemsSmall[i].m_bLargeFont ? 0.87f : 0.65f;
 			hsv.y *= flSatMult;
 			HSVtoRGB(hsv, rgb);
 			c[0] = RoundFloatToByte(rgb.x);
@@ -1430,7 +1430,7 @@ void CAccountPanel::Paint( void )
 				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
 				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
 			}
-			const float flBaseAlpha = m_AccountDeltaItems[i].m_bLargeFont ? 150.0f : 115.0f;
+			const float flBaseAlpha = m_AccountDeltaItemsSmall[i].m_bLargeFont ? 150.0f : 115.0f;
 			unsigned char nAlpha = RoundFloatToByte( flBaseAlpha * ( 1.0f - flLifetimePctAlpha) );
 			c[3] = nAlpha;
 
