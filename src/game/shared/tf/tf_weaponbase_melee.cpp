@@ -217,6 +217,7 @@ void CTFWeaponBaseMelee::PrimaryAttack()
 	// Swing the weapon.
 	Swing( pPlayer );
 
+	// TODO(mcoms): this variable is a bit weird..
 	m_bCurrentAttackIsDuringDemoCharge = pPlayer->m_Shared.GetNextMeleeCrit() != MELEE_NOCRIT;
 
 	if ( pPlayer->m_Shared.GetNextMeleeCrit() == MELEE_MINICRIT )

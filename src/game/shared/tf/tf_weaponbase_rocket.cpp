@@ -722,7 +722,7 @@ int CTFBaseRocket::GetStunLevel( void )
 float CTFBaseRocket::GetRadius() 
 { 
 	float flRadius = TF_ROCKET_RADIUS;
-	if ( !GetOriginalLauncher() )
+	if ( !GetOriginalLauncher() || GetOriginalLauncher()->IsBaseObject() )
 		return flRadius;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOriginalLauncher(), flRadius, mult_explosion_radius );
 

@@ -790,6 +790,8 @@ ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_H
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_REPLICATED | FCVAR_HIDDEN );
 
+ConVar tf_jumpdmgreduction_always_apply("tf_jumpdmgreduction_always_apply", "0");
+
 
 static float g_fEternaweenAutodisableTime = 0.0f;
 
@@ -6099,7 +6101,7 @@ void CTFRadiusDamageInfo::CalculateFalloff( void )
 		flFalloff = 1.f;
 
 	CBaseEntity *pWeapon = dmgInfo->GetWeapon();
-	if ( pWeapon != NULL )
+	if ( pWeapon != NULL && !pWeapon->IsBaseObject() )
 	{
 		float flFalloffMod = 1.f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flFalloffMod, mult_dmg_falloff );
@@ -7727,10 +7729,23 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 	CBaseEntity *pAttacker = info.GetAttacker();
 	CTFPlayer *pTFAttacker = ToTFPlayer( pAttacker );
 
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
+	CTFWeaponBase* pTFAttackerWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pTFAttackerWeapon = static_cast<CTFWeaponBase*>(info.GetWeapon());
+	}
+
 	float flRealDamage = info.GetDamage();
 
 	int iAttackIgnoresResists = 0;
-	CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iAttackIgnoresResists, mod_pierce_resists_absorbs );
+	CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iAttackIgnoresResists, mod_pierce_resists_absorbs );
+
 
 	if ( pVictimBaseEntity && pVictimBaseEntity->m_takedamage != DAMAGE_EVENTS_ONLY && pVictim )
 	{
@@ -7742,7 +7757,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 		if ( !IsDOTDmg( info.GetDamageCustom() ) )
 		{
 			int iAddBurningDamageType = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iAddBurningDamageType, set_dmgtype_ignite );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iAddBurningDamageType, set_dmgtype_ignite );
 			if ( iAddBurningDamageType )
 			{
 				iDamageTypeBits |= DMG_IGNITE;
@@ -7817,9 +7832,6 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			Assert( flDamageBase >= 0.f );
 		}
 
-		int iPierceResists = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iPierceResists, mod_pierce_resists_absorbs );
-
 		// This raw damage wont get scaled.  Used for determining how much health to give resist medics.
 		float flRawDamage = flDamageBase;
 		
@@ -7828,7 +7840,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 
 		// Reduce only the crit portion of the damage with crit resist
 		bool bCrit = ( info.GetDamageType() & DMG_CRITICAL ) > 0;
-		if ( !iPierceResists )
+		if ( !iAttackIgnoresResists )
 		{
 			if ( bCrit )
 			{
@@ -7853,7 +7865,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 
 			if ( pTFAttacker && pVictim && pVictim->m_Shared.InCond( TF_COND_BURNING ) )
 			{
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pTFAttacker->GetActiveWeapon(), flDamageBase, mult_dmg_vs_burning );
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAttribWeapon, flDamageBase, mult_dmg_vs_burning );
 			}
 
 			if ( (info.GetDamageType() & (DMG_BLAST) ) )
@@ -7881,7 +7893,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			float flResist = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pVictim, flResist, mult_dmgtaken_from_bullets );
 			// If the resist is actually a vulnerability, apply it even if we're piercing resists
-			if ( flResist > 1.0f || !iPierceResists )
+			if ( flResist > 1.0f || !iAttackIgnoresResists )
 			{
 				flDamageBase *= flResist;
 
@@ -7890,7 +7902,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			}
 		}
 
-		if ( !iPierceResists )
+		if ( !iAttackIgnoresResists )
 		{
 			if ( info.GetDamageType() & DMG_MELEE )
 			{
@@ -8036,12 +8048,11 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			}
 		}
 
-		if ( pVictim && pTFAttacker && info.GetWeapon() )
+		if ( pVictim && pTFAttacker && pTFAttackerWeapon )
 		{
-			CTFWeaponBase *pWeapon = pTFAttacker->GetActiveTFWeapon();
-			if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SNIPERRIFLE && info.GetWeapon() == pWeapon )
+			if ( pTFAttackerWeapon && pTFAttackerWeapon->GetWeaponID() == TF_WEAPON_SNIPERRIFLE )
 			{
-				CTFSniperRifle *pRifle = static_cast< CTFSniperRifle* >( info.GetWeapon() );
+				CTFSniperRifle *pRifle = static_cast< CTFSniperRifle* >( pTFAttackerWeapon );
 
 				float flStun = 1.0f;
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pRifle, flStun, applies_snare_effect );
@@ -8126,25 +8137,19 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				return -1;
 			}
 		}
-
-		const bool bOnlyDamagedSelf = info.GetDamagedOtherPlayers() == 0;
-#ifdef TF2_OG
-		const bool bShouldApplyJumpDmgReduction = true;
-#else
-		const bool bShouldApplyJumpDmgReduction = bOnlyDamagedSelf;
-#endif
 		if ( ( pAttacker == pVictimBaseEntity ) &&
 			 ( ( info.GetDamageType() & DMG_BLAST ) || ( info.GetDamageCustom() == TF_DMG_CUSTOM_FLARE_EXPLOSION ) ) &&
-			 ( bShouldApplyJumpDmgReduction ) && 
 			 ( info.GetDamageCustom() != TF_DMG_CUSTOM_TAUNTATK_GRENADE ) )
 		{
-			// If we attacked ourselves, hurt no other players, and it is a blast,
-			// check the attribute that reduces rocket jump damage.
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetAttacker(), flRealDamage, rocket_jump_dmg_reduction );
-			if ( bOnlyDamagedSelf ) 
+			const bool bOnlyDamagedSelf = info.GetDamagedOtherPlayers() == 0;
+			const bool bShouldApplyJumpDmgReduction = tf_jumpdmgreduction_always_apply.GetBool() || bOnlyDamagedSelf;
+			if ( bShouldApplyJumpDmgReduction )
 			{
-				outParams.bSelfBlastDmg = true;
+				// If we attacked ourselves, hurt no other players, and it is a blast,
+				// check the attribute that reduces rocket jump damage.
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetAttacker(), flRealDamage, rocket_jump_dmg_reduction );
 			}
+			outParams.bSelfBlastDmg = true;
 		}
 
 		if ( pAttacker == pVictimBaseEntity )
@@ -8155,10 +8160,10 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				kSelfBlastResponse_IgnoreProjectilesFromAllWeapons = 2,		// the rocket jumper doesn't have a special projectile type and so ignores all self-inflicted damage from explosive sources
 			};
 
-			if ( info.GetWeapon() )
+			if ( pAttribWeapon )
 			{
 				int iNoSelfBlastDamage = 0;
-				CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iNoSelfBlastDamage, no_self_blast_dmg );
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iNoSelfBlastDamage, no_self_blast_dmg );
 
 				const bool bIgnoreThisSelfDamage = ( iNoSelfBlastDamage == kSelfBlastResponse_IgnoreProjectilesFromAllWeapons )
 					|| ( (iNoSelfBlastDamage == kSelfBlastResponse_IgnoreProjectilesFromThisWeapon) && (info.GetDamageCustom() == TF_DMG_CUSTOM_PRACTICE_STICKY) );
@@ -8167,7 +8172,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 					flRealDamage = 0;
 				}
 
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flRealDamage, blast_dmg_to_self );
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAttribWeapon, flRealDamage, blast_dmg_to_self );
 			}
 		}
 
