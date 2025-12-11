@@ -568,6 +568,7 @@ mapcyclecomp.txt
 videoconfig_linux.cfg
 server_official.cfg
 trainingprogress.txt
+OfflinePracticeConfig.vdf
 version.txt
 
 .vscode/settings.json
@@ -613,3 +614,8 @@ gameinfo_client.txt
 !/src/thirdparty/sentry_native/lib/libsentry.so
 
 # END TC2 MOD
+
+# temp
+game_src/tc2/pak1/models
+game_src/tc2/pak1/materials
+game_src/tc2/pak1/particles
