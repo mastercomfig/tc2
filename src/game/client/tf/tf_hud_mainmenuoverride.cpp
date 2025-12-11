@@ -263,6 +263,8 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	//m_pWatchStreamsPanel = new CTFStreamListPanel( this, "StreamListPanel" );
 	m_pCharacterImagePanel = new ImagePanel( this, "TFCharacterImage" );
 
+	m_MainMenuWebUiZIndex = -102;
+
 	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true );
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
@@ -1371,6 +1373,18 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			m_flPlayMusicTime = -1.0f;
 			m_iPlayMusicFrame = 0;
 		}
+
+		if ( m_pMainMenuWebUi )
+		{
+			bool bShouldWebUiShow = true;
+			if ( GetClientModeTFNormal()->GameUI() )
+				bShouldWebUiShow = GetClientModeTFNormal()->GameUI()->IsMainMenuVisible();
+
+			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
+			{
+				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
+			}
+		}
 	}
 	else if ( !bInGame && !bInReplay && !bIsConnected && !bBackgroundLevel )
 	{
@@ -1400,6 +1414,10 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			m_iPlayMusicFrame = 0;
 			// TODO(mcoms): main menu music not working
 			//PlayMainMenuMusic();
+		}
+		if ( m_pMainMenuWebUi && !m_pMainMenuWebUi->IsVisible() )
+		{
+			m_pMainMenuWebUi->SetVisible(true);
 		}
 	}
 
@@ -2508,6 +2526,23 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 		case k_EUniverseDev:
 			UTIL_OpenWebPage( "https://localhost/store/account/preferences#CommunityContentPreferences" );
 			break;
+		}
+		return;
+	}
+	else if ( !V_stricmp( command, "open_interactive_window" ) )
+	{
+		if ( m_pMainMenuWebUi )
+		{
+			m_MainMenuWebUiZIndex = m_pMainMenuWebUi->GetZPos();
+			m_pMainMenuWebUi->SetZPos(400);
+		}
+		return;
+	}
+	else if ( !V_stricmp( command, "close_interactive_window" ) )
+	{
+		if ( m_pMainMenuWebUi )
+		{
+			m_pMainMenuWebUi->SetZPos(m_MainMenuWebUiZIndex);
 		}
 		return;
 	}

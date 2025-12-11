@@ -207,6 +207,8 @@ private:
 
 	CInteractiveWebPanel* m_pMainMenuWebUi;
 
+	int						m_MainMenuWebUiZIndex;
+
 	vgui::ImagePanel		*m_pCharacterImagePanel;
 	int						 m_iCharacterImageIdx;
 
