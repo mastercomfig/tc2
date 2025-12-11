@@ -831,7 +831,7 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 		m_pCharacterModelPanel->ClearCarriedItems();
 		int iSelectedClass = tf_mainmenu_class_highlight.GetInt();
 		int iClass;
-		if ( iSelectedClass > 0 && iSelectedClass < TF_LAST_NORMAL_CLASS - 1 )
+		if ( iSelectedClass > 0 && iSelectedClass <= TF_LAST_NORMAL_CLASS - 1 )
 		{
 			iClass = g_ClassDefinesRemap[iSelectedClass];
 		}
