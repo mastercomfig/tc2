@@ -712,6 +712,12 @@ void CTFStatPanel::ShowStatPanel( int iClass, int iTeam, int iCurStatValue, TFSt
 		return;
 	}
 
+	// Don't show in high skill competitive
+	if ( TFGameRules()->IsHighSkillCompetitive() )
+	{
+		return;
+	}
+
 	ClassStats_t &classStats = GetClassStats( iClass );
 	vgui::Label *pLabel = dynamic_cast<Label *>( FindChildByName( "summaryLabel" ) );
 	if ( !pLabel )
