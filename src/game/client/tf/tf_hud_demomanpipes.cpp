@@ -183,7 +183,10 @@ void CHudDemomanPipes::OnTick( void )
 			m_pChargeMeter->SetProgress( flProgress );
 			if ( pPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
 			{
-				if ( flProgress <= 0.33f )
+				// Keying on TideTurner
+				int iDemoChargeDamagePenalty = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, iDemoChargeDamagePenalty, lose_demo_charge_on_damage_when_charging );
+				if ( !iDemoChargeDamagePenalty && flProgress <= 0.4f )
 				{
 					m_pChargeMeter->SetFgColor( Color( 255, 0, 0, 255 ) );
 				}
