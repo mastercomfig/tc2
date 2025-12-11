@@ -10482,7 +10482,9 @@ bool C_TFPlayer::UpdateSpyPopIn()
 	// here, we're an enemy spy in our FOV.
 
 	// far away is a "pop in" as well since they're so far that it could be a tell to help us track them down.
-	if ( flDist >= 2560.0f )
+	// if they're in a spawn room, then limit the distance even more.
+	const float flDistLimit = m_Shared.GetRespawnTouchCount() > 0 ? 1024.0f : 2560.0f;
+	if ( flDist >= flDistLimit )
 	{
 		return true;
 	}
