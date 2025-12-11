@@ -7230,8 +7230,11 @@ void CTFPlayerShared::OnAddStealthed( void )
 	m_pOuter->TeamFortress_SetSpeed();
 
 #ifdef CLIENT_DLL
+	// UNDONE(mcoms): this doesn't exist.
+#if 0
 	// Remove water balloon effect if it on player
 	m_pOuter->ParticleProp()->StopParticlesNamed( "balloontoss_drip", true );
+#endif
 
 	m_pOuter->UpdateSpyStateChange();
 	m_pOuter->UpdateKillStreakEffects( GetStreak( kTFStreak_Kills ) );
