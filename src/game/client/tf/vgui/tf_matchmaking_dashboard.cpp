@@ -394,6 +394,10 @@ void CTFMatchmakingDashboard::OnCommand( const char *command )
 	{
 		OnPlayCommunity();
 	}
+	else if ( FStrEq( command, "play_training" ) )
+	{
+		OnPlayTraining();
+	}
 #endif
 	else if ( FStrEq( command, "quit" ) )
 	{

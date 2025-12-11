@@ -499,6 +499,13 @@ bool CGameStateManager::Init()
 		return str;
 	}));
 
+	RegisterMethod("openurl", std::function([](const std::string& params)
+	{
+		std::string str;
+		UTIL_OpenWebPage(params.c_str());
+		return str;
+	}));
+
 	return true;
 }
 
