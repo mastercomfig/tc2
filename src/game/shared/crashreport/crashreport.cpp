@@ -88,8 +88,7 @@ void CCrashReporter::Shutdown()
 void CCrashReporter::AssertCallbackFunc( const char* pchFile, int nLine, const char* pchMessage )
 {
 	sentry_value_t event = sentry_value_new_message_event( SENTRY_LEVEL_ERROR, "assert", pchMessage );
-	sentry_value_set_by_key(event, "file", sentry_value_new_string(pchFile));
-	sentry_value_set_by_key(event, "line", sentry_value_new_int32(nLine));
+	sentry_value_set_stacktrace(event, nullptr, 0);
 	sentry_capture_event( event );
 }
 
@@ -115,27 +114,17 @@ SpewRetval_t CCrashReporter::SpewFunc(SpewType_t type, const tchar* pMsg)
 // capture events
 void CCrashReporter::ReportInfo( const char* logger, const char* message )
 {
-	sentry_capture_event( sentry_value_new_message_event(
-		/*   level */ SENTRY_LEVEL_INFO,
-		/*  logger */ logger,
-		/* message */ message
-	) );
+	sentry_capture_event( sentry_value_new_message_event( SENTRY_LEVEL_INFO, logger, message ) );
 }
 
 void CCrashReporter::ReportWarning( const char* logger, const char* message )
 {
-	sentry_capture_event( sentry_value_new_message_event(
-		/*   level */ SENTRY_LEVEL_WARNING,
-		/*  logger */ logger,
-		/* message */ message
-	) );
+	sentry_capture_event( sentry_value_new_message_event( SENTRY_LEVEL_WARNING, logger, message ) );
 }
 
 void CCrashReporter::ReportError( const char* logger, const char* message )
 {
-	sentry_capture_event( sentry_value_new_message_event(
-		/*   level */ SENTRY_LEVEL_ERROR,
-		/*  logger */ logger,
-		/* message */ message
-	) );
+	sentry_value_t event = sentry_value_new_message_event( SENTRY_LEVEL_ERROR, logger, message );
+	sentry_value_set_stacktrace(event, nullptr, 0);
+	sentry_capture_event( event );
 }
