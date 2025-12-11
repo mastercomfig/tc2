@@ -6251,16 +6251,19 @@ bool C_TFPlayer::GetPredictable( void ) const
 //-----------------------------------------------------------------------------
 void C_TFPlayer::UpdateLookAt( void )
 {
+	if ( IsDormant() )
+		return;
+
 	bool bFoundViewTarget = false;
 
 	Vector vForward;
 	AngleVectors( GetLocalAngles(), &vForward );
 
-	Vector vMyOrigin =  GetAbsOrigin();
+	Vector vMyOrigin = GetAbsOrigin();
 
-	Vector vecLookAtTarget = vec3_origin;
+	Vector vecLookAtTarget;
 
-	if ( tf_clientsideeye_lookats.GetBool() )
+	if ( tf_clientsideeye_lookats.GetBool() && IsAlive() )
 	{
 		for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
 		{
@@ -6271,6 +6274,9 @@ void C_TFPlayer::UpdateLookAt( void )
 			if ( !pEnt->IsAlive() )
 				continue;
 
+			if ( pEnt->IsDormant() )
+				continue;
+
 			if ( pEnt == this )
 				continue;
 
@@ -6279,6 +6285,9 @@ void C_TFPlayer::UpdateLookAt( void )
 			const float flDistSq = vDir.LengthSqr();
 
 			if ( flDistSq > 300 * 300 )
+				continue;
+
+			if ( flDistSq <= 1.0f )
 				continue;
 
 			vDir /= FastSqrt(flDistSq);
