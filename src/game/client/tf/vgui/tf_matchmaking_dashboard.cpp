@@ -1484,3 +1484,15 @@ void CTFMatchmakingDashboard::UpdateJoinPartyLobbyPanel()
 		g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pJoinPartyLobbyPanel, "ypos", -YRES(50), 0.0f, tf_dashboard_slide_time.GetFloat(), vgui::AnimationController::INTERPOLATOR_GAIN, 0.8f, true, false );
 	}
 }
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFMatchmakingDashboard::OnConfirm( KeyValues *pParams )
+{
+	if ( pParams->GetBool( "confirmed" ) )
+	{
+		engine->ClientCmd_Unrestricted( "disconnect" );
+		GetClientModeTFNormal()->GameUI()->SendMainMenuCommand( "engine training_showdlg" );
+	}
+}

@@ -139,6 +139,7 @@ public:
 	MESSAGE_FUNC( OnViewMatchSettings, "ViewMatchSettings" );
 	MESSAGE_FUNC_PARAMS( OnCloseSideStack, "CloseSideStack", pParams );
 	MESSAGE_FUNC_PTR( OnNavigateSideStack, "NavigateSideStack", panel );
+	MESSAGE_FUNC_PARAMS( OnConfirm, "ConfirmDlgResult", data );
 
 	// Context menu actions
 	MESSAGE_FUNC( OnLeaveParty, "Context_LeaveParty" );
