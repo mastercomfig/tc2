@@ -4031,15 +4031,22 @@ void CTFPlayer::Spawn()
 
 		// add team glows for a period of time after we respawn
 		int iSpawnGlowsDuration = tf_spawn_glows_duration.GetInt();
-		if ( TFGameRules()->BInMatchStartCountdown() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
+		if ( TFGameRules()->IsBetaActive() || iSpawnGlowsDuration == -10 )
 		{
-			iSpawnGlowsDuration += 10; // add some extra time to help us navigate during rollout
+			m_Shared.AddCond( TF_COND_TEAM_GLOWS );
 		}
-		else if ( TFGameRules()->State_Get() == GR_STATE_PREROUND )
+		else
 		{
-			iSpawnGlowsDuration += 5; // just a little time because standard prerounds are shorter
+			if ( TFGameRules()->BInMatchStartCountdown() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
+			{
+				iSpawnGlowsDuration += 10; // add some extra time to help us navigate during rollout
+			}
+			else if ( TFGameRules()->State_Get() == GR_STATE_PREROUND )
+			{
+				iSpawnGlowsDuration += 5; // just a little time because standard prerounds are shorter
+			}
+			m_Shared.AddCond( TF_COND_TEAM_GLOWS, iSpawnGlowsDuration );
 		}
-		m_Shared.AddCond( TF_COND_TEAM_GLOWS, iSpawnGlowsDuration );
 
 		UpdateSkin( GetTeamNumber() );
 
@@ -11150,6 +11157,18 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 	if ( m_bIsTargetDummy )
 		return;
 
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
+	CTFWeaponBase* pTFAttackerWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pTFAttackerWeapon = static_cast<CTFWeaponBase*>( info.GetWeapon() );
+	}
+
 	Vector vecForce;
 	vecForce.Init();
 	if ( info.GetAttacker() == this )
@@ -11169,7 +11188,7 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 		float flDamageForForce = info.GetDamageForForceCalc() ? info.GetDamageForForceCalc() : info.GetDamage();
 
 		float flSelfPushMult = 1.0;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flSelfPushMult, mult_dmgself_push_force );
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAttribWeapon, flSelfPushMult, mult_dmgself_push_force );
 
 		
 		if ( IsPlayerClass( TF_CLASS_SOLDIER ) )
@@ -11249,8 +11268,7 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 		}
 		else
 		{
-			CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
-			if ( pWeapon && (pWeapon->GetWeaponID() == TF_WEAPON_COMPOUND_BOW) )
+			if ( pTFAttackerWeapon && (pTFAttackerWeapon->GetWeaponID() == TF_WEAPON_COMPOUND_BOW) )
 			{
 				vecForce = vecDir * -DamageForce( WorldAlignSize(), info.GetDamage(), tf_damageforcescale_other.GetFloat() );
 				vecForce.z = 0;
@@ -11286,7 +11304,7 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 			}
 
 			CBaseEntity* pInflictor = info.GetInflictor();
-			if ( pInflictor && CanScatterGunKnockBack(pWeapon, info.GetDamage(), (WorldSpaceCenter() - pInflictor->WorldSpaceCenter()).LengthSqr() ) )
+			if ( pInflictor && CanScatterGunKnockBack( pTFAttackerWeapon, info.GetDamage(), (WorldSpaceCenter() - pInflictor->WorldSpaceCenter()).LengthSqr() ) )
 			{
 				// Remove all Z force from these shots if they are close enough and doing enough damage
 				if ( vecForce.z < 0 )
@@ -11296,7 +11314,7 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 			}
 
 			int iAirBlast = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iAirBlast, damage_causes_airblast );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iAirBlast, damage_causes_airblast );
 			if ( iAirBlast )
 			{
 				float force = -DamageForce( WorldAlignSize(), 100, 6 );
@@ -11327,7 +11345,7 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 
 		// Airblast effect for general attacks.  Scaled by range.
 		float flImpactBlastForce = 1.f;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), flImpactBlastForce, damage_blast_push );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, flImpactBlastForce, damage_blast_push );
 		if ( flImpactBlastForce != 1.f )
 		{
 			CBaseEntity *pInflictor = info.GetInflictor();
@@ -11437,6 +11455,18 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	// Always NULL check this below
 	CTFPlayer *pTFAttacker = ToTFPlayer( info.GetAttacker() );
 
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
+	CTFWeaponBase* pTFAttackerWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pTFAttackerWeapon = static_cast<CTFWeaponBase*>( info.GetWeapon() );
+	}
+
 	CTFGameRules::DamageModifyExtras_t outParams;
 	outParams.bIgniting = false;
 	outParams.bSelfBlastDmg = false;
@@ -11495,16 +11525,15 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	{
 		if ( info.GetDamageCustom() != TF_DMG_CUSTOM_BLEEDING && !outParams.bSelfBlastDmg )
 		{
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetWeapon(), flBleedingTime, bleeding_duration );
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAttribWeapon, flBleedingTime, bleeding_duration );
 		}
 
 #if defined(MCOMS_BALANCE_PACK)
 		// sniper head trauma
-		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
-		if ( IsHeadshot(info.GetDamageCustom()) && pTFWeapon && WeaponID_IsSniperRifle(pTFWeapon->GetWeaponID()) )
+		if ( IsHeadshot( info.GetDamageCustom() ) && pTFAttackerWeapon && WeaponID_IsSniperRifle( pTFAttackerWeapon->GetWeaponID() ) )
 		{
 			const float fHeadshotBleedTime = 2.0f;
-			m_Shared.MakeBleed(pTFAttacker, dynamic_cast<CTFWeaponBase*>(info.GetWeapon()), fHeadshotBleedTime, TF_BLEEDING_DMG * 2);
+			m_Shared.MakeBleed( pTFAttacker, pTFAttackerWeapon, fHeadshotBleedTime, TF_BLEEDING_DMG * 2 );
 		}
 #endif
 
@@ -11523,10 +11552,10 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		}
 
 		// For lifeleech, calculate how much damage we actually inflicted.
-		if ( pTFAttacker && pTFAttacker->GetActiveWeapon() )
+		if ( pTFAttacker && pTFAttackerWeapon )
 		{
 			float fLifeleechOnDamage = 0.0f;
-			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pTFAttacker->GetActiveWeapon(), fLifeleechOnDamage, lifeleech_on_damage );
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pTFAttackerWeapon, fLifeleechOnDamage, lifeleech_on_damage );
 			if ( fLifeleechOnDamage > 0.0f )
 			{
 				const float fActualDamageDealt = iOldHealth - m_iHealth;
@@ -11582,23 +11611,22 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 	if ( outParams.bIgniting && pTFAttacker )
 	{
-		m_Shared.Burn( pTFAttacker, dynamic_cast< CTFWeaponBase * >( info.GetWeapon() ) );
+		m_Shared.Burn( pTFAttacker, pTFAttackerWeapon );
 	}
 
 	if ( flBleedingTime > 0 && pTFAttacker )
 	{
-		m_Shared.MakeBleed( pTFAttacker, dynamic_cast< CTFWeaponBase * >( info.GetWeapon() ), flBleedingTime );
+		m_Shared.MakeBleed( pTFAttacker, pTFAttackerWeapon, flBleedingTime );
 	}
 
 #if defined(MCOMS_BALANCE_PACK) && 0
-	if ( pTFAttacker && !(info.GetDamageType() & DMG_BLAST) )
+	if ( pTFAttacker && !( info.GetDamageType() & DMG_BLAST ) )
 	{
-		CTFWeaponBase* pTFWeapon = dynamic_cast<CTFWeaponBase*>(info.GetWeapon());
 		int iSapperCrits = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER(pTFWeapon, iSapperCrits, sapper_kills_collect_crits);
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttackerWeapon, iSapperCrits, sapper_kills_collect_crits );
 		if (iSapperCrits != 0)
 		{
-			m_Shared.AddStuckJet(pTFAttacker, pTFWeapon, pTFAttacker->m_Shared.GetRevengeCrits() + 2);
+			m_Shared.AddStuckJet( pTFAttacker, pTFAttackerWeapon, pTFAttacker->m_Shared.GetRevengeCrits() + 2 );
 		}
 	}
 #endif
@@ -11609,10 +11637,9 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		return 0;
 	}
 
-	CTFWeaponBase *pTFWeapon = dynamic_cast< CTFWeaponBase * >( info.GetWeapon() );
-	if ( pTFWeapon && WeaponID_IsSniperRifle( pTFWeapon->GetWeaponID() ) )
+	if ( pTFAttackerWeapon && WeaponID_IsSniperRifle( pTFAttackerWeapon->GetWeaponID() ) )
 	{
-		CTFSniperRifle *pSniper = dynamic_cast<CTFSniperRifle*>( pTFWeapon );
+		CTFSniperRifle *pSniper = dynamic_cast<CTFSniperRifle*>( pTFAttackerWeapon );
 		if ( pSniper && ( pSniper->IsZoomed() || ( pSniper->GetWeaponID() == TF_WEAPON_SNIPERRIFLE_CLASSIC ) ) )
 		{
 			float flJarateTime = pSniper->GetJarateTime();
@@ -11721,9 +11748,9 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			Assert( (int)m_eBonusAttackEffect < 256 );
 			event->SetInt( "bonuseffect", (int)m_eBonusAttackEffect );
 
-			if ( pTFAttacker && pTFAttacker->GetActiveTFWeapon() )
+			if ( pTFAttacker && pTFAttackerWeapon )
 			{
-				event->SetInt( "weaponid", pTFAttacker->GetActiveTFWeapon()->GetWeaponID() );
+				event->SetInt( "weaponid", pTFAttackerWeapon->GetWeaponID() );
 			}
 		}
 		// Hurt by world.
@@ -11753,10 +11780,9 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	// Except if we are really bleeding!
 	bBleed |= m_Shared.InCond( TF_COND_BLEEDING );
 	
-	if ( bBleed && pTFAttacker )
+	if ( bBleed )
 	{
-		CTFWeaponBase *pWeapon = pTFAttacker->GetActiveTFWeapon();
-		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAMETHROWER )
+		if ( pTFAttackerWeapon && pTFAttackerWeapon->GetWeaponID() == TF_WEAPON_FLAMETHROWER )
 		{
 			bBleed = false;
 		}
@@ -11870,11 +11896,17 @@ bool CTFPlayer::ShouldGib( const CTakeDamageInfo &info )
 		return true;
 	}
 
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
 	// Are we set up to gib always on critical hits?
 	if ( info.GetDamageType() & DMG_CRITICAL )
 	{
 		int iAlwaysGibOnCrit = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iAlwaysGibOnCrit, crit_kill_will_gib );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iAlwaysGibOnCrit, crit_kill_will_gib );
 		if ( iAlwaysGibOnCrit )
 			return true;
 	}
@@ -11883,7 +11915,7 @@ bool CTFPlayer::ShouldGib( const CTakeDamageInfo &info )
 		return true;
 
 	int iCritOnHardHit = 0;
-	CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iCritOnHardHit, crit_on_hard_hit );
+	CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iCritOnHardHit, crit_on_hard_hit );
 	if ( iCritOnHardHit == 0 )
 	{
 		// Only blast & half falloff damage can gib.
@@ -11963,6 +11995,18 @@ void CTFPlayer::DetermineAssistForKill( const CTakeDamageInfo &info )
 void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info )
 {
 	BaseClass::Event_KilledOther( pVictim, info );
+
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
+	CTFWeaponBase* pTFAttackerWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pTFAttackerWeapon = static_cast<CTFWeaponBase*>(info.GetWeapon());
+	}
 
 	if ( pVictim->IsPlayer() )
 	{
@@ -12052,11 +12096,11 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 		bool bPlayspeech = true;
 
 		// Don't play speech if this kill disguises the spy
-		if ( IsPlayerClass( TF_CLASS_SPY ) )
+		if ( IsPlayerClass( TF_CLASS_SPY ) && pTFAttackerWeapon )
 		{
 			if ( !Q_stricmp( "customdeath:backstab", pszCustomDeath ) )
 			{
-				CTFKnife *pKnife = dynamic_cast<CTFKnife *>( GetActiveTFWeapon() );
+				CTFKnife *pKnife = dynamic_cast<CTFKnife *>( pTFAttackerWeapon );
 				if ( pKnife && pKnife->GetKnifeType() == KNIFE_DISGUISE_ONKILL )
 				{
 					bPlayspeech = false;
@@ -12069,21 +12113,20 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 			SpeakConceptIfAllowed( MP_CONCEPT_KILLED_PLAYER, modifiers );
 		}
 
-		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
-		if ( pWeapon )
+		if ( pTFAttackerWeapon )
 		{
-			pWeapon->OnPlayerKill( pTFVictim, info );
+			pTFAttackerWeapon->OnPlayerKill( pTFVictim, info );
 
 			int iCritBoost = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iCritBoost, add_onkill_critboost_time );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttackerWeapon, iCritBoost, add_onkill_critboost_time );
 			if ( iCritBoost )
 			{
 				// Perceptually, people seem to think the effect is shorter than the stated time, so we cheat by adding a tad more for that
-				m_Shared.AddCond( TF_COND_CRITBOOSTED_ON_KILL, iCritBoost+1 );
+				m_Shared.AddCond( TF_COND_CRITBOOSTED_ON_KILL, iCritBoost + 1 );
 			}
 
 			int iMiniCritBoost = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iMiniCritBoost, add_onkill_minicritboost_time );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttackerWeapon, iMiniCritBoost, add_onkill_minicritboost_time );
 			if ( iMiniCritBoost )
 			{
 				// Perceptually, people seem to think the effect is shorter than the stated time, so we cheat by adding a tad more for that
@@ -12197,8 +12240,6 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 			if ( pVictim->GetTeamNumber() != GetTeamNumber() )
 			{
 				// Check if this kill should refill the charge meter
-				CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
-
 				float flRefill = 0.0f;
 				CALL_ATTRIB_HOOK_FLOAT( flRefill, kill_refills_meter );
 				if ( m_Shared.GetCarryingRuneType() != RUNE_NONE ) // Powerups restricts charge 
@@ -12211,7 +12252,7 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 					m_Shared.SetDemomanChargeMeter( m_Shared.GetDemomanChargeMeter() + flRefill * 100.0f );
 				}
 
-				if ( ( pWeapon && pWeapon->IsCurrentAttackDuringDemoCharge() ) || ( info.GetDamageCustom() == TF_DMG_CUSTOM_CHARGE_IMPACT ) )
+				if ( ( pTFAttackerWeapon && pTFAttackerWeapon->IsCurrentAttackDuringDemoCharge() ) || ( info.GetDamageCustom() == TF_DMG_CUSTOM_CHARGE_IMPACT ) )
 				{	
 					if ( flRefill > 0 )
 					{
@@ -12242,7 +12283,7 @@ void CTFPlayer::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &
 					{
 						if ( pCP->GetOwner() == GetTeamNumber() )
 						{
-							if ( GetActiveTFWeapon() && ( GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_PIPEBOMBLAUNCHER ) )
+							if ( pTFAttackerWeapon && ( pTFAttackerWeapon->GetWeaponID() == TF_WEAPON_PIPEBOMBLAUNCHER ) )
 							{
 								// Add victim to our list
 								int iIndex = m_Cappers.Find( pTFVictim->GetUserID() );
@@ -12408,23 +12449,34 @@ void CTFPlayer::CheckSpellHalloweenDeathGhosts( const CTakeDamageInfo &info, CTF
 	if ( !pTFVictim )
 		return;
 
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
+	CTFWeaponBase* pTFAttackerWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pTFAttackerWeapon = static_cast<CTFWeaponBase*>(info.GetWeapon());
+	}
+
 	// Check the weapon I used to kill with this player and if it has my desired attribute
 	if ( TF_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) )
 	{
 		int iHalloweenDeathGhosts = 0;
-		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( info.GetWeapon() );
 
 		// was this a wrangler kill?
 		if ( info.GetDamageCustom() == TF_DMG_CUSTOM_PLAYER_SENTRY )
 		{
-			CTFLaserPointer* pLaserPointer = dynamic_cast<CTFLaserPointer *>( GetEntityForLoadoutSlot( LOADOUT_POSITION_SECONDARY ) );
+			CTFLaserPointer* pLaserPointer = static_cast<CTFLaserPointer *>( Weapon_OwnsThisID( TF_WEAPON_LASER_POINTER ) );
 			if ( pLaserPointer )
 			{
-				pWeapon = pLaserPointer;
+				pTFAttackerWeapon = pLaserPointer;
 			}
 		}
 
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iHalloweenDeathGhosts, halloween_death_ghosts );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pTFAttackerWeapon, iHalloweenDeathGhosts, halloween_death_ghosts );
 		if ( iHalloweenDeathGhosts > 0 )
 		{
 			if ( pTFVictim->GetTeamNumber() == TF_TEAM_BLUE )
@@ -12444,25 +12496,33 @@ void CTFPlayer::CheckSpellHalloweenDeathGhosts( const CTakeDamageInfo &info, CTF
 //-----------------------------------------------------------------------------
 void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageInfo &info )
 {
-	int iHealOnKill = 0;
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
 
-	if ( IsPlayerClass( TF_CLASS_SPY ) )
+	CTFWeaponBase* pWeapon = NULL;
+	if ( pAttribWeapon && info.GetWeapon()->IsBaseCombatWeapon() )
+	{
+		pWeapon = static_cast<CTFWeaponBase*>( info.GetWeapon() );
+	}
+
+	if ( !pWeapon)
+		return;
+
+	if ( IsPlayerClass( TF_CLASS_SPY ) && pWeapon)
 	{
 		int iCloakOnKill = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( GetActiveWeapon(), iCloakOnKill, add_cloak_on_kill );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iCloakOnKill, add_cloak_on_kill );
 		if ( iCloakOnKill > 0 )
 		{
 			m_Shared.AddToSpyCloakMeter( iCloakOnKill, true );
 		}
 	}
 
-	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( info.GetWeapon() );
-	if ( !pWeapon )
-		return;
-
 	int iRestoreHealthToPercentageOnKill = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iRestoreHealthToPercentageOnKill, restore_health_on_kill );
-
 	if ( iRestoreHealthToPercentageOnKill > 0 )
 	{
 		// This attribute should ignore runes
@@ -12478,6 +12538,7 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		TakeHealth( iDeltaHealth, DMG_IGNORE_MAXHEALTH );
 	}
 
+	int iHealOnKill = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iHealOnKill, heal_on_kill );
 	if ( iHealOnKill != 0 )
 	{
@@ -12518,13 +12579,13 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		// Refill weapon clips
 		for ( int i = 0; i < MAX_WEAPONS; i++ )
 		{
-			CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase* >( GetWeapon( i ) );
+			CTFWeaponBase *pInvWeapon = dynamic_cast< CTFWeaponBase* >( GetWeapon( i ) );
 			if ( !pWeapon )
 				continue;
 
-			pWeapon->GiveDefaultAmmo();
+			pInvWeapon->GiveDefaultAmmo();
 
-			pWeapon->WeaponRegenerate();
+			pInvWeapon->WeaponRegenerate();
 		}
 
 		// Siphon some health
@@ -12552,9 +12613,9 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	CTFWeaponBase *pKillerWeapon = NULL;
-	if ( pPlayerAttacker )
+	if ( pPlayerAttacker && info.GetWeapon() && info.GetWeapon()->IsBaseCombatWeapon() )
 	{
-		pKillerWeapon = dynamic_cast < CTFWeaponBase * > ( info.GetWeapon() );
+		pKillerWeapon = static_cast < CTFWeaponBase * > ( info.GetWeapon() );
 	}
 
 	if ( m_Shared.InCond( TF_COND_TAUNTING ) )
@@ -12747,8 +12808,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	if ( m_aBurnFromBackAttackers.Count() > 0 )
 	{
-		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
-		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAMETHROWER )
+		if ( pKillerWeapon && pKillerWeapon->GetWeaponID() == TF_WEAPON_FLAMETHROWER )
 		{
 			for ( int i = 0; i < m_aBurnFromBackAttackers.Count(); i++ )
 			{
@@ -12775,8 +12835,12 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 		if ( bCharged )
 		{
 			// Had an ubercharge ready at death?
-			CEconEntity *pVictimEconWeapon = dynamic_cast<CEconEntity *>( GetActiveTFWeapon() );
-			EconEntity_OnOwnerKillEaterEventNoPartner( pVictimEconWeapon, this, kKillEaterEvent_NEGATIVE_UbersDropped );
+			EconEntity_OnOwnerKillEaterEventNoPartner( GetActiveTFWeapon(), this, kKillEaterEvent_NEGATIVE_UbersDropped );
+			if ( GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() != TF_WEAPON_MEDIGUN )
+			{
+				// also do it for the medigun
+				EconEntity_OnOwnerKillEaterEventNoPartner( pMedigun, this, kKillEaterEvent_NEGATIVE_UbersDropped );
+			}
 
 			bElectrocuted = true;
 			if ( pPlayerAttacker )
@@ -12878,8 +12942,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 				m_Shared.GetCarriedObject()->Killed( info );
 
 				// Killeater event for being killed while carrying a building
-				CEconEntity *pVictimEconWeapon = dynamic_cast<CEconEntity *>( Weapon_OwnsThisID( TF_WEAPON_WRENCH ) );
-				EconEntity_OnOwnerKillEaterEventNoPartner( pVictimEconWeapon, this, kKillEaterEvent_NEGATIVE_DeathsWhileCarryingBuilding );
+				EconEntity_OnOwnerKillEaterEventNoPartner( Weapon_OwnsThisID( TF_WEAPON_WRENCH ), this, kKillEaterEvent_NEGATIVE_DeathsWhileCarryingBuilding );
 			}
 		}
 	}
@@ -12987,7 +13050,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 		else if ( pPlayerAttacker->IsPlayerClass( TF_CLASS_DEMOMAN ) )
 		{
 			// Kill "x" players with a direct pipebomb hit
-			if ( pPlayerAttacker->GetActiveTFWeapon() && ( pPlayerAttacker->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER ) )
+			if ( pKillerWeapon && ( pKillerWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER ) )
 			{
 				CBaseEntity *pInflictor = info.GetInflictor();
 		
@@ -13040,7 +13103,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	if ( info.GetDamageCustom() == TF_DMG_CUSTOM_AXTINGUISHER_BOOSTED )
 	{
-// 		// Sketchek's Fire
+// 		// Axtinguisher Fire
 // 		for ( int i = 1; i <= gpGlobals->maxClients; ++i )
 // 		{
 // 			CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
@@ -13061,7 +13124,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 // 
 // 			pTFPlayer->m_Shared.Burn( pPlayerAttacker, pKillerWeapon, 4.f );
 // 			
-			// Sketchek's Bequest
+			// Axtinguisher Speed Boost
 			if ( pPlayerAttacker )
 			{
 				pPlayerAttacker->m_Shared.AddCond( TF_COND_SPEED_BOOST, 3.f );
@@ -13315,8 +13378,6 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 			{
 				if ( pPlayerAttacker && pPlayerAttacker->IsPlayerClass( TF_CLASS_SNIPER ) )
 				{
-					CTFWeaponBase *pKillerWeapon = dynamic_cast < CTFWeaponBase * > ( info.GetWeapon() );
-
 					if ( pKillerWeapon && pKillerWeapon->GetWeaponID() == TF_WEAPON_COMPOUND_BOW )
 					{
 						pPlayerAttacker->AwardAchievement( ACHIEVEMENT_TF_SNIPER_BOW_KILL_FLAGCARRIER );
@@ -13331,23 +13392,21 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	CTFWeaponBase* pActiveWeapon = GetActiveTFWeapon();
-	if( pActiveWeapon  )
+	if ( pActiveWeapon  )
 	{
-		CEconEntity *pVictimEconWeapon = dynamic_cast<CEconEntity *>( pActiveWeapon );
-
-		EconEntity_OnOwnerKillEaterEventNoPartner( pVictimEconWeapon, this, kKillEaterEvent_NEGATIVE_Deaths );
+		EconEntity_OnOwnerKillEaterEventNoPartner( pActiveWeapon, this, kKillEaterEvent_NEGATIVE_Deaths );
 
 		// Check if we died from environmental damage
 		CBaseTrigger *pTrigger = dynamic_cast< CBaseTrigger *>( info.GetInflictor() );
 		if ( pTrigger )
 		{
-			EconEntity_OnOwnerKillEaterEventNoPartner( pVictimEconWeapon, this, kKillEaterEvent_NEGATIVE_DeathsFromEnvironment );
+			EconEntity_OnOwnerKillEaterEventNoPartner( pActiveWeapon, this, kKillEaterEvent_NEGATIVE_DeathsFromEnvironment );
 		}
 		
 		// Check if we died from fall damage
 		if( info.GetDamageType() == DMG_FALL )
 		{
-			EconEntity_OnOwnerKillEaterEventNoPartner( pVictimEconWeapon, this, kKillEaterEvent_NEGATIVE_DeathsFromCratering );
+			EconEntity_OnOwnerKillEaterEventNoPartner( pActiveWeapon, this, kKillEaterEvent_NEGATIVE_DeathsFromCratering );
 		}
 	}
 	
@@ -13664,9 +13723,8 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	CTFPlayer *pInflictor = ToTFPlayer( info.GetInflictor() );
 	if ( ( IsHeadshot( info.GetDamageCustom() ) ) && pPlayerAttacker )
 	{
-		CTFWeaponBase *pWpn = ( CTFWeaponBase *) info.GetWeapon();
 		bool bBowShot = false;
-		if ( pWpn && pWpn->GetWeaponID() == TF_WEAPON_COMPOUND_BOW )
+		if ( pKillerWeapon && pKillerWeapon->GetWeaponID() == TF_WEAPON_COMPOUND_BOW )
 		{
 			bBowShot = true;
 		}
@@ -13699,15 +13757,15 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	int iRagdollsBecomeAsh = 0;
-	if ( info.GetWeapon() )
+	if ( pKillerWeapon )
 	{
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iRagdollsBecomeAsh, ragdolls_become_ash );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pKillerWeapon, iRagdollsBecomeAsh, ragdolls_become_ash );
 	}
 
 	int iRagdollsPlasmaEffect = 0;
-	if ( info.GetWeapon() )
+	if ( pKillerWeapon )
 	{
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iRagdollsPlasmaEffect, ragdolls_plasma_effect );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pKillerWeapon, iRagdollsPlasmaEffect, ragdolls_plasma_effect );
 	}
 
 	int iCustomDamage = info.GetDamageCustom();
@@ -13717,9 +13775,9 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	int iCritOnHardHit = 0;
-	if ( info.GetWeapon() )
+	if ( pKillerWeapon )
 	{
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iCritOnHardHit, crit_on_hard_hit );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pKillerWeapon, iCritOnHardHit, crit_on_hard_hit );
 	}
 
 	// Create the ragdoll entity.
@@ -13797,9 +13855,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 		if ( bBurning && pPlayerAttacker->IsPlayerClass( TF_CLASS_PYRO ) )
 		{
 			// ACHIEVEMENT_TF_PYRO_KILL_MULTIWEAPONS - Pyro kills previously ignited target with other weapon
-			CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
-
-			if ( ( pOriginalBurner == pPlayerAttacker || pLastBurner == pPlayerAttacker ) && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SHOTGUN_PYRO )
+			if ( ( pOriginalBurner == pPlayerAttacker || pLastBurner == pPlayerAttacker ) && pKillerWeapon && pKillerWeapon->GetWeaponID() == TF_WEAPON_SHOTGUN_PYRO )
 			{
 				pPlayerAttacker->AwardAchievement( ACHIEVEMENT_TF_PYRO_KILL_MULTIWEAPONS );
 			}
