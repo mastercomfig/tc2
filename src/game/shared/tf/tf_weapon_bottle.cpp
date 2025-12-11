@@ -255,11 +255,7 @@ void CTFStickBomb::Smack( void )
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
 			// TODO(mcoms): use DMG_MELEE? (Fixed the Ullapool Caber's explosion not being counted as melee damage (for kill_refills_meter))
-#if defined(MCOMS_BALANCE_PACK)
-			int dmgType = DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF;
-#else
-			int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
-#endif
+			int dmgType = TFGameRules()->IsBetaActive() ? (DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF) : DMG_BLAST | DMG_HALF_FALLOFF;
 			const bool bIsCrit = IsCurrentAttackACrit();
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
@@ -272,37 +268,34 @@ void CTFStickBomb::Smack( void )
 			}
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
-#if defined(MCOMS_BALANCE_PACK)
-			float flRadius = 146.0f;
-#else
-			float flRadius = 100.0f;
-#endif
+			float flRadius = TFGameRules()->IsBetaActive() ? 146.0f : 100.0f;
 			CALL_ATTRIB_HOOK_FLOAT( flRadius, mult_explosion_radius );
 
 			CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius );
 
 			TFGameRules()->RadiusDamage( radiusinfo );
 
-#if defined(MCOMS_BALANCE_PACK)
-			// at position
-			Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-			float timer1 = RandomFloat(0.6f, 0.8f);
-			CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
-			// at swing direction
-			Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-			vel2 += vecForward * 50.0f;
-			float timer2 = RandomFloat(0.6f, 0.8f);
-			CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
-			// at velocity
-			Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-			vel3 += pTFPlayer->GetAbsVelocity();
-			float timer3 = RandomFloat(0.6f, 0.8f);
-			CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
-			// random
-			Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
-			float timer4 = RandomFloat(0.6f, 0.8f);
-			CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
-#endif
+			if (TFGameRules()->IsBetaActive())
+			{
+				// at position
+				Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+				float timer1 = RandomFloat(0.6f, 0.8f);
+				CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
+				// at swing direction
+				Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+				vel2 += vecForward * 50.0f;
+				float timer2 = RandomFloat(0.6f, 0.8f);
+				CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
+				// at velocity
+				Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+				vel3 += pTFPlayer->GetAbsVelocity();
+				float timer3 = RandomFloat(0.6f, 0.8f);
+				CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
+				// random
+				Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
+				float timer4 = RandomFloat(0.6f, 0.8f);
+				CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
+			}
 		}
 #endif
 	}
