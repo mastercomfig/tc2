@@ -10470,7 +10470,7 @@ bool C_TFPlayer::UpdateSpyPopIn()
 	Vector vecPlayer = GetAbsOrigin();
 	Vector vecLocal = pLocalPlayer->GetAbsOrigin();
 	Vector vecDir = ( vecPlayer - vecLocal );
-	vecDir.NormalizeInPlace();
+	const float flDist = vecDir.NormalizeInPlace();
 
 	float flFovDot = DotProduct( vecForward, vecDir );
 	if ( flFovDot < 0.382f )
@@ -10480,6 +10480,12 @@ bool C_TFPlayer::UpdateSpyPopIn()
 	}
 
 	// here, we're an enemy spy in our FOV.
+
+	// far away is a "pop in" as well since they're so far that it could be a tell to help us track them down.
+	if ( flDist >= 2560.0f )
+	{
+		return true;
+	}
 
 	// invis right now. we could pop in by going visible.
 	if ( m_Shared.GetPercentInvisible() > 0.0f )
