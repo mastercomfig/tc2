@@ -894,9 +894,8 @@ bool CObjectSentrygun::FindTarget()
 	CTFPlayer* pBuilder = GetBuilder();
 	if ( pBuilder )
 	{
-		// CTFLaserPointer* pPointer = static_cast<CTFLaserPointer*>( pBuilder->Weapon_OwnsThisID( TF_WEAPON_LASER_POINTER ) );
 		// FIX ME:  Temp fix until we find out why the pointer thinks its deployed after spawn
-		CTFLaserPointer* pPointer = dynamic_cast<CTFLaserPointer*>( pBuilder->GetActiveWeapon() );
+		CTFLaserPointer* pPointer = static_cast<CTFLaserPointer*>( pBuilder->Weapon_OwnsThisID( TF_WEAPON_LASER_POINTER ) );
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
 			m_bPlayerControlled = true;
@@ -1096,14 +1095,14 @@ bool CObjectSentrygun::FindTarget()
 bool CObjectSentrygun::ValidTargetPlayer( CTFPlayer *pPlayer, const Vector &vecStart, const Vector &vecEnd )
 {
 	// Keep shooting at spies that go invisible after we acquire them as a target.
-	if ( pPlayer->m_Shared.GetPercentInvisible() > 0.5 )
+	if ( pPlayer->m_Shared.GetPercentInvisible() > 0.5f )
 		return false;
 
-	// Keep shooting at spies that disguise after we acquire them as at a target.
+	// Keep shooting at spies that disguise after we acquire them as a target.
 	if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && pPlayer->m_Shared.GetDisguiseTeam() == GetTeamNumber() && pPlayer != m_hEnemy )
 		return false;
 
-	// Don't shoot spys that are pretending to be a dispenser
+	// Don't shoot spies that are pretending to be a dispenser
 	if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED_AS_DISPENSER ) )
 		return false;
 
@@ -2075,6 +2074,12 @@ bool CObjectSentrygun::MoveTurret( void )
 //-----------------------------------------------------------------------------
 int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 {
+	CBaseEntity* pAttribWeapon = NULL;
+	if ( info.GetWeapon() && !info.GetWeapon()->IsBaseObject() )
+	{
+		pAttribWeapon = info.GetWeapon();
+	}
+
 	CTakeDamageInfo newInfo = info;
 
 	// As we increase in level, we get more resistant to minigun bullets, to compensate for
@@ -2082,12 +2087,12 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 	if ( ( info.GetDamageType() & DMG_BULLET ) && ( info.GetDamageCustom() == TF_DMG_CUSTOM_MINIGUN ) )
 	{
 		float flDamage = newInfo.GetDamage();
-		flDamage *= ( 1.0 - m_flHeavyBulletResist );
+		flDamage *= ( 1.0f - m_flHeavyBulletResist );
 		newInfo.SetDamage( flDamage );
 	}
 	
 	int iAttackIgnoresResists = 0;
-	CALL_ATTRIB_HOOK_INT_ON_OTHER( info.GetWeapon(), iAttackIgnoresResists, mod_pierce_resists_absorbs );
+	CALL_ATTRIB_HOOK_INT_ON_OTHER( pAttribWeapon, iAttackIgnoresResists, mod_pierce_resists_absorbs );
 
 	// If we are shielded due to player control, we take less damage.
 	bool bFullyShielded = ( m_nShieldLevel > 0 && !iAttackIgnoresResists ) && !HasSapper() && !IsPlasmaDisabled();
