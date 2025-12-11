@@ -2671,7 +2671,9 @@ void CChoreoScene::Think( float curtime )
 		// We hit a loop, we need to adjust the times.
 		//curtime = m_flCurrentTime + ( oldt - flLoopPoint ); // if we overshot, skip by how much we overshot
 		curtime = m_flCurrentTime;
+#ifdef _DEBUG
 		Assert( curtime > 0.0f );
+#endif
 	}
 
 	dt = curtime - oldt;
