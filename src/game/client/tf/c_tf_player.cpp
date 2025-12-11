@@ -11927,7 +11927,7 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 		// In CTF, show health for allied flag carrier
 		bShowHealthGlow = ( GetLocalPlayerTeam() >= FIRST_GAME_TEAM ) ? nTeam == GetLocalPlayerTeam() : true;
 	}
-	else if ( m_pSaveMeEffect )
+	else if ( m_pSaveMeEffect && bMedic )
 	{
 		// injured players get glow effect
 		bShowHealthGlow = true;
