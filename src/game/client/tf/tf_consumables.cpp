@@ -706,6 +706,7 @@ public:
 		, m_nSourceItemID( pItem->GetID() )
 	{
 		TFModalStack()->PushModal( this );
+		SetVisible( true );
 		GetMMDashboardParentManager()->AddPanel( this );
 
 		m_pIspectionPanel = new CTFItemInspectionPanel( this, "InspectionPanel" );
