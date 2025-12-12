@@ -267,6 +267,26 @@ private:
 	CUtlString m_sRetString;
 };
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+class CRandomCritsIssue : public CBaseTFIssue
+{
+public:
+	CRandomCritsIssue( CVoteController *pVoteController ) : CBaseTFIssue( "RandomCrits", pVoteController ) { } // This string will have "Vote_" glued onto the front for localization (i.e. "#Vote_ClassLimits")
+
+	virtual const char	*GetTypeStringLocalized( void ) OVERRIDE;
+	virtual void		ExecuteCommand( void ) OVERRIDE;
+	virtual bool		IsEnabled( void ) OVERRIDE;
+	virtual bool		RequestCallVote( int iEntIndex, const char *pszDetails, vote_create_failed_t &nFailCode, int &nTime ) OVERRIDE;
+	virtual const char *GetDisplayString( void ) OVERRIDE;
+	virtual void		ListIssueDetails( CBasePlayer *forWhom ) OVERRIDE;
+	virtual const char *GetVotePassedString( void ) OVERRIDE;
+	virtual float		GetQuorumRatio(void) OVERRIDE;
+private:
+	CUtlString m_sRetString;
+};
+
 
 static const char* g_pszVoteKickString = "#TF_Vote_kicked";
 
