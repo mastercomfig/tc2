@@ -40,6 +40,7 @@ ConVar cl_chatfilters( "cl_chatfilters", "63", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, 
 ConVar cl_chatfilter_version( "cl_chatfilter_version", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_HIDDEN, "Stores the chat filter version" );
 ConVar cl_mute_all_comms("cl_mute_all_comms", "1", FCVAR_ARCHIVE, "If 1, then all communications from a player will be blocked when that player is muted, including chat messages.");
 ConVar cl_enable_text_chat( "cl_enable_text_chat", "1", FCVAR_ARCHIVE, "Enable text chat in this game" );
+ConVar hud_chat_history_lines( "hud_chat_history_lines", "15", FCVAR_ARCHIVE, "Number of history lines to save for in-game chat." );
 
 const int kChatFilterVersion = 1;
 
@@ -600,6 +601,14 @@ void CHudChatHistory::ApplySchemeSettings( vgui::IScheme *pScheme )
 	SetAlpha( 255 );
 }
 
+void CHudChatHistory::ApplySettings(KeyValues* inResourceData)
+{
+	BaseClass::ApplySettings(inResourceData);
+
+	SetMaximumCharCount( 127 * hud_chat_history_lines.GetInt() );
+}
+
+
 int CBaseHudChat::m_nLineCounter = 1;
 //-----------------------------------------------------------------------------
 // Purpose: Text chat input/output hud element
@@ -653,7 +662,7 @@ void CBaseHudChat::CreateChatInputLine( void )
 
 	if ( GetChatHistory() )
 	{
-		GetChatHistory()->SetMaximumCharCount( 127 * 100 );
+		GetChatHistory()->SetMaximumCharCount( 127 * hud_chat_history_lines.GetInt() );
 		GetChatHistory()->SetVisible( true );
 	}
 #endif
