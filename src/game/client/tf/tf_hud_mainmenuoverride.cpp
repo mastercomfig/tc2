@@ -194,7 +194,7 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	m_bInGame = false;
 	m_bIsConnectedOnly = true; // start true so we go to false
-	m_flCurMaxFPS = -1.0f;
+	m_flCurMaxFPS = 0.0f;
 
 	m_iCharacterImageIdx = -1;
 
@@ -1428,11 +1428,11 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		m_bInGame = bInGame;
 		GetGameStateManager()->QueueEvent( "ingame", m_bInGame ? "1" : "0" );
 		
-		if ( m_bInGame )
+		if ( m_bInGame && m_flCurMaxFPS > 0.0f )
 		{
 			// after loading, restore it.
 			fps_max.SetValue( m_flCurMaxFPS );
-			m_flCurMaxFPS = -1.0f;
+			m_flCurMaxFPS = 0.0f;
 		}
 	}
 
@@ -1639,7 +1639,7 @@ void CHudMainMenuOverride::CheckUnclaimedItems()
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::OnConfirm( KeyValues *pParams )
 {
-	if ( pParams->GetBool( "confirmed" ) )
+	if ( pParams->GetBool( "confirmed" ) && !V_strcmp( pParams->GetString("name"), "ConfirmTrainingDialog" ) )
 	{
 		engine->ClientCmd_Unrestricted( "disconnect" );
 		GetClientModeTFNormal()->GameUI()->SendMainMenuCommand( "engine training_showdlg" );
