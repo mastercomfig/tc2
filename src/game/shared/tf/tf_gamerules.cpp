@@ -783,14 +783,14 @@ ConVar mp_spectators_restricted( "mp_spectators_restricted", "1", FCVAR_NONE, "P
 ConVar tf_test_special_ducks( "tf_test_special_ducks", "1", FCVAR_DEVELOPMENTONLY );
 
 ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_max", "1", FCVAR_DEVELOPMENTONLY );
+
+ConVar tf_jumpdmgreduction_always_apply( "tf_jumpdmgreduction_always_apply", "0" );
 #endif // GAME_DLL
 ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "15", FCVAR_REPLICATED );
 
 ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_REPLICATED | FCVAR_HIDDEN );
-
-ConVar tf_jumpdmgreduction_always_apply("tf_jumpdmgreduction_always_apply", "0");
 
 
 static float g_fEternaweenAutodisableTime = 0.0f;

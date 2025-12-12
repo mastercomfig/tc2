@@ -44,7 +44,9 @@ void ToolFramework_RecordMaterialParams( IMaterial *pMaterial );
 
 ConVar tf_weapon_sniperrifle_no_crit_after_zoom_time("tf_weapon_sniperrifle_no_crit_after_zoom_time", "0.2", FCVAR_REPLICATED | FCVAR_HIDDEN);
 
+#ifdef GAME_DLL
 ConVar tf_weapon_sniperrifle_disable_jump_delay("tf_weapon_sniperrifle_disable_jump_delay", "0", FCVAR_HIDDEN);
+#endif
 
 #define SNIPER_DOT_SPRITE_RED		"effects/sniperdot_red.vmt"
 #define SNIPER_DOT_SPRITE_BLUE		"effects/sniperdot_blue.vmt"
