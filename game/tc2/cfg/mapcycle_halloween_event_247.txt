@@ -1,4 +1,5 @@
-cp_gorge_event
-cp_sunshine_event
-koth_moonshine_event
-pl_millstone_event
+arena_afterlife
+cp_cowerhouse
+ctf_doublecross_event
+koth_dusker
+sd_marshlands

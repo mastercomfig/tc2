@@ -1,3 +1,7 @@
 plr_hightower
 plr_pipeline
 plr_nightfall_final
+plr_bananabay
+plr_hacksaw
+plr_cutter
+plr_matterhorn

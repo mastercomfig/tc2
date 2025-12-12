@@ -7,4 +7,9 @@ cp_foundry
 cp_gullywash_final1
 cp_snakewater_final1
 koth_viaduct
-
+pl_badwater
+cp_metalworks
+cp_sunshine
+pl_swiftwater_final1
+cp_vanguard
+koth_viaduct
