@@ -16,7 +16,7 @@
 #include "tier0/memdbgon.h"
 
 #define SENTRY_DSN_LINK "https://a037d8059c0ebd86db1a37f25cf797af@o182209.ingest.us.sentry.io/4510205029711872"
-#define SENTRY_RELEASE "tc2@1.0.6"
+#define SENTRY_RELEASE "tc2@1.0.25"
 #define SENTRY_ENVIRONMENT "prod"
 
 #if defined( _WIN32 )
@@ -39,19 +39,15 @@ CCrashReporter::CCrashReporter()
 bool CCrashReporter::Init() 
 {
 #ifdef GAME_DLL
-	if (!engine->IsDedicatedServer())
+	if ( !engine->IsDedicatedServer() )
 		return true;
 #endif
 
-	if ( CommandLine()->FindParm ( "-nosentry" ) )
+	if ( CommandLine()->FindParm( "-nosentry" ) )
 		return true;
 
-	if (m_bInit)
+	if ( m_bInit )
 		return true;
-
-	SetAssertFailedNotifyFunc( AssertCallbackFunc );
-	m_OutputFuncPrev = GetSpewOutputFunc();
-	SpewOutputFunc(&SpewFunc);
 
 	sentry_options_t* options = sentry_options_new();
 	sentry_options_set_dsn(options, SENTRY_DSN_LINK);
@@ -64,7 +60,16 @@ bool CCrashReporter::Init()
 
 	sentry_options_set_enable_logs(options, 1);
 	
-	sentry_init(options);
+	int ret = sentry_init(options);
+	if ( ret != 0 )
+	{
+		Warning("Sentry error logging did not init successfully (%d)!", ret);
+		return true;
+	}
+
+	SetAssertFailedNotifyFunc( AssertCallbackFunc );
+	m_OutputFuncPrev = GetSpewOutputFunc();
+	SpewOutputFunc( &SpewFunc );
 
 	m_bInit = true;
 
@@ -74,13 +79,13 @@ bool CCrashReporter::Init()
 void CCrashReporter::Shutdown()
 {
 #ifdef GAME_DLL
-	if (!engine->IsDedicatedServer())
+	if ( !engine->IsDedicatedServer() )
 		return;
 #endif
 
-	if (m_bInit)
+	if ( m_bInit )
 	{
-		SpewOutputFunc(m_OutputFuncPrev);
+		SpewOutputFunc( m_OutputFuncPrev );
 		sentry_close();
 	}
 }
