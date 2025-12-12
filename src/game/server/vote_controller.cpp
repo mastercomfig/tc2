@@ -605,7 +605,7 @@ bool CVoteController::CreateVote( int iEntIndex, const char *pszTypeString, cons
 					WRITE_BYTE( m_iEntityHoldingVote );
 					WRITE_STRING( pCurrentIssue->GetDisplayString() );
 					WRITE_STRING( pCurrentIssue->GetDetailsString() );
-					WRITE_BOOL( pCurrentIssue->IsYesNoVote() );
+					WRITE_BOOL( m_bIsYesNoVote );
 					WRITE_BYTE( ( pCurrentIssue->m_hPlayerTarget ) ? pCurrentIssue->m_hPlayerTarget->entindex() : 0 );
 				MessageEnd();
 
@@ -1294,7 +1294,12 @@ bool CBaseIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vote_cr
 {
 	// Automated server vote - don't bother testing against it
 	if ( !BRecordVoteFailureEventForEntity( iEntIndex ) )
+	{
+		m_bServerVote = true;
 		return true;
+	}
+
+	m_bServerVote = false;
 
 	// Bogus player
 	if ( iEntIndex == -1 )

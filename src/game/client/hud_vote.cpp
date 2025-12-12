@@ -1010,7 +1010,7 @@ CHudVote::CHudVote( const char *pElementName ) : CHudElement( pElementName ), Ba
 	m_pVoteSetupDialog = new CVoteSetupDialog( pParent );
 	RegisterForRenderGroup( "mid" );
 
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 		m_pVotePanels[ i ] = new CHudVotePanel( this, i );
 }
 
@@ -1020,7 +1020,7 @@ void CHudVote::ApplySchemeSettings( vgui::IScheme *pScheme )
 
 	SetProportional( true );
 
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 		m_pVotePanels[ i ]->SetSize( GetWide(), GetTall() );
 }
 
@@ -1034,19 +1034,19 @@ void CHudVote::Init( void )
 	HOOK_HUD_MESSAGE( CHudVote, VoteFailed );
 	HOOK_HUD_MESSAGE( CHudVote, VoteSetup );
 
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 		m_pVotePanels[ i ]->Init();
 }
 
 void CHudVote::LevelInit( void )
 {
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 		m_pVotePanels[ i ]->LevelInit();
 }
 
 bool CHudVote::ShouldDraw( void )
 {
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->ShouldDraw() )
 			return true;
@@ -1057,7 +1057,7 @@ bool CHudVote::ShouldDraw( void )
 
 bool CHudVote::IsActive()
 {
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->IsVoteUIActive() )
 			return true;
@@ -1068,7 +1068,7 @@ bool CHudVote::IsActive()
 
 CHudVotePanel *CHudVote::GetInputVotePanel()
 {
-	CHudVotePanel *pOrderedVotePanels[ 2 ] =
+	CHudVotePanel *pOrderedVotePanels[NUM_VOTE_PANELS] =
 	{
 		NULL, NULL,
 	};
@@ -1085,7 +1085,7 @@ CHudVotePanel *CHudVote::GetInputVotePanel()
 	}
 
 	CHudVotePanel *pVotePanel = NULL;
-	for ( int i = 0; i < ARRAYSIZE( pOrderedVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( pOrderedVotePanels[ i ] && pOrderedVotePanels[ i ]->m_bVotingActive && pOrderedVotePanels[ i ]->m_bShowVoteActivePanel && !pOrderedVotePanels[ i ]->m_bPlayerVoted )
 		{
@@ -1197,7 +1197,7 @@ void CHudVote::MsgFunc_CallVoteFailed( bf_read &msg )
 		return;
 
 	CHudVotePanel *pFreeVotePanel = NULL;
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( !m_pVotePanels[ i ]->m_bVotingActive )
 		{
@@ -1348,7 +1348,7 @@ void CHudVote::MsgFunc_VoteFailed( bf_read &msg )
 	int nVoteIdx = msg.ReadLong();
 
 	CHudVotePanel *pVotePanel = NULL;
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->m_nVoteIdx == nVoteIdx )
 		{
@@ -1424,21 +1424,38 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	if ( nVoteTeamIndex >= FIRST_GAME_TEAM && nVoteTeamIndex != pLocalPlayer->GetTeamNumber() )
 		return;
 
+	int nVoteIdx = msg.ReadLong();
+
 	CHudVotePanel *pVotePanel = NULL;
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	// first prefer picking up a reserved panel that's ready for this vote.
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
-		if ( !m_pVotePanels[ i ]->m_bVotingActive )
+		if ( !m_pVotePanels[ i ]->m_bVotingActive && m_pVotePanels[i]->m_nVoteIdx == nVoteIdx )
 		{
 			pVotePanel = m_pVotePanels[ i ];
 			break;
 		}
 	}
 
+	// no reserved panel, so just search all that are available.
+	if ( !pVotePanel )
+	{
+		for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
+		{
+			if ( !m_pVotePanels[ i ]->m_bVotingActive && m_pVotePanels[i]->m_nVoteIdx == nVoteIdx )
+			{
+				pVotePanel = m_pVotePanels[ i ];
+				break;
+			}
+		}
+	}
+
+	// nothing, so just ignore
 	if ( !pVotePanel )
 		return;
 
 	pVotePanel->m_nVoteTeamIndex = nVoteTeamIndex;
-	pVotePanel->m_nVoteIdx = msg.ReadLong();
+	pVotePanel->m_nVoteIdx = nVoteIdx;
 
 	// Entity calling the vote
 	bool bShowNotif = cl_vote_ui_show_notification.GetBool();
@@ -1487,17 +1504,9 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 
 	pVotePanel->m_voteBar->SetVisible( pVotePanel->m_bIsYesNoVote );
 
-	// There will always be at least two choices...
+	// There will always be at least two choices
 	pVotePanel->m_pVoteActive->SetControlVisible( "LabelOption1", true );
 	pVotePanel->m_pVoteActive->SetControlVisible( "LabelOption2", true );
-
-	// ...sometimes more
-	pVotePanel->m_pVoteActive->SetControlVisible( "LabelOption3", pVotePanel->m_VoteSetupChoices.Count() > 2 ? true : false );
-	pVotePanel->m_pVoteActive->SetControlVisible( "Option3Background_Selected", pVotePanel->m_VoteSetupChoices.Count() > 2 ? true : false );
-	pVotePanel->m_pVoteActive->SetControlVisible( "LabelOption4", pVotePanel->m_VoteSetupChoices.Count() > 3 ? true : false );
-	pVotePanel->m_pVoteActive->SetControlVisible( "Option4Background_Selected", pVotePanel->m_VoteSetupChoices.Count() > 3 ? true : false );
-	pVotePanel->m_pVoteActive->SetControlVisible( "LabelOption5", pVotePanel->m_VoteSetupChoices.Count() > 4 ? true : false );
-	pVotePanel->m_pVoteActive->SetControlVisible( "Option5Background_Selected", pVotePanel->m_VoteSetupChoices.Count() > 4 ? true : false );
 
 	pVotePanel->m_pVoteActive->SetControlVisible( "VoteCountLabel", pVotePanel->m_bIsYesNoVote );
 	pVotePanel->m_pVoteActive->SetControlVisible( "Option1CountLabel", pVotePanel->m_bIsYesNoVote );
@@ -1553,6 +1562,8 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	// Figure out which UI
 	if ( pVotePanel->m_bIsYesNoVote )
 	{
+		pVotePanel->RefreshChoiceVisibility(true);
+
 		// YES / NO UI
 		wchar_t wzFinal[k_MAX_VOTE_NAME_LENGTH] = L"";
 		wchar_t *pszText = g_pVGuiLocalize->Find( ::input->IsSteamControllerActive() ? "#GameUI_vote_yes_sc_instruction" : "#GameUI_vote_yes_pc_instruction" );
@@ -1573,48 +1584,7 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	}
 	else
 	{
-		// GENERAL UI
-		if ( pVotePanel->m_VoteSetupChoices.Count() )
-		{
-			// Clear the labels to prevent previous options from being displayed,
-			// such as when there are fewer options this vote than the previous
-			for ( int iIndex = 0; iIndex < MAX_VOTE_OPTIONS; iIndex++ )
-			{
-				// Construct Label name
-				char szOptionNum[2];
-				Q_snprintf( szOptionNum, sizeof( szOptionNum ), "%i", iIndex + 1 );
-
-				char szVoteOptionCount[13] = "LabelOption";
-				Q_strncat( szVoteOptionCount, szOptionNum, sizeof( szVoteOptionCount ), COPY_ALL_CHARACTERS );
-
-				pVotePanel->m_pVoteActive->SetControlString( szVoteOptionCount, "" );
-			}
-
-			// Set us up the vote
-			for ( int iIndex = 0; iIndex < pVotePanel->m_nVoteChoicesCount; iIndex++ )
-			{
-				// Construct Option name
-				const char *pszChoiceName = pVotePanel->m_VoteSetupChoices[iIndex];
-
-				char szOptionName[k_MAX_VOTE_NAME_LENGTH];
-				Q_snprintf( szOptionName, sizeof( szOptionName ), "F%i. ", iIndex + 1 );
-
-				Q_strncat( szOptionName, pszChoiceName, sizeof( szOptionName ), COPY_ALL_CHARACTERS );
-
-				// Construct Label name
-				char szOptionNum[2];
-				Q_snprintf( szOptionNum, sizeof( szOptionNum ), "%i", iIndex + 1 );
-
-				char szVoteOptionCount[13] = "LabelOption";
-				Q_strncat( szVoteOptionCount, szOptionNum, sizeof( szVoteOptionCount ), COPY_ALL_CHARACTERS );
-
-				// Set Label string
-				if ( pVotePanel->m_pVoteActive )
-				{
-					pVotePanel->m_pVoteActive->SetControlString( szVoteOptionCount, szOptionName );
-				}
-			}
-		}
+		InitVoteMultiChoices( pVotePanel );
 	}
 
 	// Is the target a player?
@@ -1671,7 +1641,7 @@ void CHudVote::MsgFunc_VotePass( bf_read &msg )
 	int nVoteIdx = msg.ReadLong();
 
 	CHudVotePanel *pVotePanel = NULL;
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->m_nVoteIdx == nVoteIdx )
 		{
@@ -1757,7 +1727,6 @@ void CHudVote::MsgFunc_VoteSetup( bf_read &msg )
 {
 	if ( IsPlayingDemo() )
 		return;
-
 
 	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
 	if ( !pLocalPlayer )
@@ -1880,6 +1849,66 @@ void CHudVote::MsgFunc_VoteSetup( bf_read &msg )
 	m_pVoteSetupDialog->SetVisible( true );
 }
 
+void CHudVote::InitVoteMultiChoices( CHudVotePanel *pVotePanel, bool bNeedsLayout )
+{
+	if ( !pVotePanel )
+		return;
+	
+	// GENERAL UI
+	if ( pVotePanel->m_VoteSetupChoices.Count() )
+	{
+		pVotePanel->RefreshChoiceVisibility();
+
+		// Clear the labels to prevent previous options from being displayed,
+		// such as when there are fewer options this vote than the previous
+		for ( int iIndex = 0; iIndex < MAX_VOTE_OPTIONS; iIndex++ )
+		{
+			// Construct Label name
+			char szOptionNum[2];
+			Q_snprintf( szOptionNum, sizeof( szOptionNum ), "%i", iIndex + 1 );
+
+			char szVoteOptionCount[13] = "LabelOption";
+			Q_strncat( szVoteOptionCount, szOptionNum, sizeof( szVoteOptionCount ), COPY_ALL_CHARACTERS );
+
+			pVotePanel->m_pVoteActive->SetControlString( szVoteOptionCount, "" );
+		}
+
+		// Set us up the vote
+		for ( int iIndex = 0; iIndex < pVotePanel->m_nVoteChoicesCount; iIndex++ )
+		{
+			// Construct Option name
+			const char *pszChoiceName = pVotePanel->m_VoteSetupChoices[iIndex];
+
+			char szOptionName[k_MAX_VOTE_NAME_LENGTH];
+			Q_snprintf( szOptionName, sizeof( szOptionName ), "F%i. ", iIndex + 1 );
+
+			Q_strncat( szOptionName, pszChoiceName, sizeof( szOptionName ), COPY_ALL_CHARACTERS );
+
+			// Construct Label name
+			char szOptionNum[2];
+			Q_snprintf( szOptionNum, sizeof( szOptionNum ), "%i", iIndex + 1 );
+
+			char szVoteOptionCount[13] = "LabelOption";
+			Q_strncat( szVoteOptionCount, szOptionNum, sizeof( szVoteOptionCount ), COPY_ALL_CHARACTERS );
+
+			// Set Label string
+			if ( pVotePanel->m_pVoteActive )
+			{
+				pVotePanel->m_pVoteActive->SetControlString( szVoteOptionCount, szOptionName );
+			}
+		}
+
+		// we're done. consume the choices so we don't have them lingering around for next time.
+		pVotePanel->m_VoteSetupChoices.RemoveAll();
+
+		// we updated the UI, if the vote is already set up, then we need to update.
+		if ( bNeedsLayout && pVotePanel->m_bVotingActive )
+		{
+			InvalidateLayout( true );
+		}
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1895,7 +1924,7 @@ bool CHudVote::IsShowingVoteSetupDialog()
 
 void CHudVote::ShowVoteUI( int nVoteIdx, bool bShow )
 {
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->m_nVoteIdx == nVoteIdx )
 			m_pVotePanels[ i ]->ShowVoteUI( bShow );
@@ -1904,7 +1933,7 @@ void CHudVote::ShowVoteUI( int nVoteIdx, bool bShow )
 
 bool CHudVote::IsVoteUIActive()
 {
-	for ( int i = 0; i < ARRAYSIZE( m_pVotePanels ); i++ )
+	for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 	{
 		if ( m_pVotePanels[ i ]->IsVoteUIActive() )
 			return true;
@@ -1957,6 +1986,16 @@ bool CHudVotePanel::IsFirst()
 	}
 
 	return bFirst;
+}
+
+void CHudVotePanel::RefreshChoiceVisibility(bool bForceOff)
+{
+	m_pVoteActive->SetControlVisible( "LabelOption3", !bForceOff && m_VoteSetupChoices.Count() > 2 );
+	m_pVoteActive->SetControlVisible( "Option3Background_Selected", !bForceOff && m_VoteSetupChoices.Count() > 2 );
+	m_pVoteActive->SetControlVisible( "LabelOption4", !bForceOff && m_VoteSetupChoices.Count() > 3 );
+	m_pVoteActive->SetControlVisible( "Option4Background_Selected", !bForceOff && m_VoteSetupChoices.Count() > 3 );
+	m_pVoteActive->SetControlVisible( "LabelOption5", !bForceOff && m_VoteSetupChoices.Count() > 4);
+	m_pVoteActive->SetControlVisible( "Option5Background_Selected", !bForceOff && m_VoteSetupChoices.Count() > 4 );
 }
 
 //-----------------------------------------------------------------------------
@@ -2040,8 +2079,36 @@ void CHudVotePanel::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( eventName, "vote_options" ) )
 	{
-		if ( m_nVoteIdx != event->GetInt( "voteidx" ) )
+		int iVoteIdx = event->GetInt("voteidx");
+
+		// if this panel isn't voting, that means we might use it up later when the vote gets initialized, if a panel hasn't already been initialized for this vote.
+		bool bReservingThisPanel = false;
+		if ( !m_bVotingActive )
+		{
+			bReservingThisPanel = true;
+			CHudVote* pHudVote = GET_HUDELEMENT(CHudVote);
+			if ( pHudVote )
+			{
+				for (int i = 0; i < NUM_VOTE_PANELS; i++)
+				{
+					if ( pHudVote->GetVotePanel(i)->m_nVoteIdx == iVoteIdx )
+					{
+						// we DO have a panel init with this vote. so we will wait around for that panel to get the event instead.
+						bReservingThisPanel = false;
+						break;
+					}
+				}
+			}
+		}
+
+		if ( bReservingThisPanel )
+		{
+			m_nVoteIdx = iVoteIdx;
+		}
+		else if ( m_nVoteIdx != iVoteIdx )
+		{
 			return;
+		}
 
 		m_VoteSetupChoices.RemoveAll();
 	
@@ -2056,6 +2123,12 @@ void CHudVotePanel::FireGameEvent( IGameEvent *event )
 
 			const char *pszOptionName = event->GetString( szOptionName );
 			m_VoteSetupChoices.CopyAndAddToTail( pszOptionName );
+		}
+
+		CHudVote *pHudVote = GET_HUDELEMENT( CHudVote );
+		if ( pHudVote && !bReservingThisPanel )
+		{
+			pHudVote->InitVoteMultiChoices( this, true );
 		}
 	}
 	else if ( FStrEq( eventName, "vote_cast" ) )
@@ -2142,21 +2215,27 @@ void CHudVotePanel::OnThink()
 			m_bVotingActive = false;
 			m_bShowVoteActivePanel = false;
 			m_iVoteCallerIdx = -1;
+
+			for ( int index = 0; index < MAX_VOTE_OPTIONS; index++ )
+			{
+				m_nVoteOptionCount[index] = 0;
+			}
 		}
 
 		if ( m_bVotingActive && m_bShowVoteActivePanel )
 		{
-			// driller:  Need to rewrite this to handle all vote types (Yes/No and General)
-			if ( m_bIsYesNoVote && m_pVoteActive )
+			if ( m_pVoteActive )
 			{
-				char szYesCount[k_MAX_VOTE_NAME_LENGTH] = "";
-				Q_snprintf( szYesCount, sizeof( szYesCount ), "%d", m_nVoteOptionCount[0] );
+				for (int index = 0; index < MAX_VOTE_OPTIONS; index++)
+				{
+					char szCount[k_MAX_VOTE_NAME_LENGTH] = "";
+					Q_snprintf( szCount, sizeof( szCount ), "%d", m_nVoteOptionCount[index] );
 
-				char szNoCount[k_MAX_VOTE_NAME_LENGTH] = "";
-				Q_snprintf( szNoCount, sizeof( szNoCount ), "%d", m_nVoteOptionCount[1] );
+					char szCountLabel[k_MAX_VOTE_NAME_LENGTH] = "";
+					Q_snprintf( szCountLabel, sizeof(szCountLabel), "Option%dCountLabel", index );
 
-				m_pVoteActive->SetControlString( "Option1CountLabel", szYesCount );
-				m_pVoteActive->SetControlString( "Option2CountLabel", szNoCount );
+					m_pVoteActive->SetControlString( szCountLabel, szCount );
+				}
 			}
 
 			if ( !m_pVoteActive->IsVisible() && bShowToPlayer )

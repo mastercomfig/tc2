@@ -28,6 +28,8 @@ extern INetworkStringTable *g_pStringTableServerMapCycleMvM;
 
 static const int k_MAX_VOTE_NAME_LENGTH = 256;
 
+#define NUM_VOTE_PANELS 2
+
 namespace vgui
 {
 	class SectionedListPanel;
@@ -158,6 +160,8 @@ public:
 	bool			IsShowingVotingUI();
 	bool			IsFirst();
 
+	void			RefreshChoiceVisibility(bool bForceOff = false);
+
 protected:
 
 	EditablePanel		*m_pVoteActive;
@@ -216,6 +220,8 @@ public:
 	void			MsgFunc_VoteFailed( bf_read &msg );
 	void			MsgFunc_VoteSetup( bf_read &msg );
 
+	void			InitVoteMultiChoices( CHudVotePanel *pVotePanel, bool bNeedsLayout = false );
+
 	virtual bool	IsActive();
 
 	CHudVotePanel	*GetVotePanel( int nIdx )
@@ -244,7 +250,7 @@ private:
 #endif
 
 	CVoteSetupDialog	*m_pVoteSetupDialog;
-	CHudVotePanel		*m_pVotePanels[ 2 ];
+	CHudVotePanel		*m_pVotePanels[NUM_VOTE_PANELS];
 };
 
 #endif // HUD_VOTE_H

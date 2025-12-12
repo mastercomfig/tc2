@@ -15992,8 +15992,16 @@ void CTFGameRules::ManageServerSideVoteCreation( void )
 			}
 			else if ( mp_timelimit.GetInt() > 0 )
 			{
+				// CheckTimeLimit makes us switch maps early if a round ends with less than 5 minutes left.
+				// so, in this case, make sure we pull up the next level vote.
+				// we do 320 because the min time is 5 minutes, and we want to give plenty of time before the intermission to vote.
+				int iTimeLimit = State_Get() == GR_STATE_TEAM_WIN ? 320 : 120;
+				if ( m_bChangelevelAfterStalemate )
+				{
+					iTimeLimit = 0;
+				}
 				int nTimeLeft = GetTimeLeft();
-				if ( nTimeLeft <= 120 && !m_bServerVoteOnReset )
+				if ( nTimeLeft <= iTimeLimit )
 				{
 					if ( g_voteControllerGlobal )
 					{

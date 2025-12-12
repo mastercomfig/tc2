@@ -943,7 +943,7 @@ bool CNextLevelIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vo
 		return false;
 
 	// TFGameRules created vote
-	if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && iEntIndex == 99 )
+	if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && m_bServerVote )
 	{
 		// Invokes a UI down stream
 		if ( Q_strcmp( pszDetails, "" ) == 0 )
@@ -1000,7 +1000,7 @@ const char *CNextLevelIssue::GetDisplayString( void )
 	// If we don't have a map passed in already...
 	if ( Q_strcmp( m_szDetailsString, "" ) == 0 )
 	{
-		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() )
+		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && m_bServerVote )
 		{
 			return "#TF_vote_nextlevel_choices";
 		}
@@ -1041,7 +1041,7 @@ void CNextLevelIssue::ListIssueDetails( CBasePlayer *pForWhom )
 	if( !sv_vote_issue_nextlevel_allowed.GetBool() )
 		return;
 
-	if ( !sv_vote_issue_nextlevel_choicesmode.GetBool() )
+	if ( !sv_vote_issue_nextlevel_choicesmode.GetBool() || !m_bServerVote )
 	{
 		char szBuffer[MAX_COMMAND_LENGTH];
 		Q_snprintf( szBuffer, MAX_COMMAND_LENGTH, "callvote %s <mapname>\n", GetTypeString() );
@@ -1057,7 +1057,7 @@ bool CNextLevelIssue::IsYesNoVote( void )
 	// If we don't have a map name already, this will trigger a list of choices
 	if ( Q_strcmp( m_szDetailsString, "" ) == 0 )
 	{
-		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() )
+		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && m_bServerVote )
 			return false;
 	}
 	
@@ -1072,7 +1072,7 @@ int CNextLevelIssue::GetNumberVoteOptions( void )
 	// If we don't have a map name already, this will trigger a list of choices
 	if ( Q_strcmp( m_szDetailsString, "" ) == 0 )
 	{
-		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() )
+		if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && m_bServerVote )
 			return MAX_VOTE_OPTIONS;
 	}
 
@@ -1088,7 +1088,7 @@ float CNextLevelIssue::GetQuorumRatio( void )
 	// We don't really care about a quorum in this case.  If a few
 	// people have a preference on the next level, and no one else
 	// bothers to vote, just let their choice pass.
-	if ( sv_vote_issue_nextlevel_choicesmode.GetBool() )
+	if ( sv_vote_issue_nextlevel_choicesmode.GetBool() && m_bServerVote )
 		return 0.1f;
 
 	// Default
