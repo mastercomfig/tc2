@@ -11932,7 +11932,7 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
 	C_TFPlayer* pLocalPlayer = GetLocalTFPlayer();
 
 	bool bShowHealthGlow = false;
-	bool bMedic = IsPlayerClass( TF_CLASS_MEDIC );
+	bool bMedic = pLocalPlayer && pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC );
 	if ( TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
 	{
 		// In CTF, show health for allied flag carrier
