@@ -95,6 +95,7 @@ protected:
 	CNetworkVar( float, m_flSmackTime );
 	bool	m_bConnected;
 	bool	m_bMiniCrit;
+	bool 	m_bWasCharging;
 
 #ifdef GAME_DLL
 	CUtlVector< CHandle< CTFPlayer > > m_potentialVictimVector;
