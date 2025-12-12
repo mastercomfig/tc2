@@ -11767,18 +11767,32 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		pTFAttacker->RecordDamageEvent( info, (m_iHealth <= 0), iPrevHealth );
 	}
 
-	//No bleeding while invul or disguised.
-	bool bBleed = ( ( m_Shared.InCond( TF_COND_DISGUISED ) == false || m_Shared.GetDisguiseTeam() != pAttacker->GetTeamNumber() )
-					&& !m_Shared.IsInvulnerable() );
+	// No bleeding while disguised
+	bool bBleed = ( m_Shared.InCond( TF_COND_DISGUISED ) == false || m_Shared.GetDisguiseTeam() != pAttacker->GetTeamNumber() );
 
 	// No bleed effects for DMG_GENERIC
 	if ( info.GetDamageType() == 0 )
 	{
 		bBleed = false;
 	}
-										   
-	// Except if we are really bleeding!
-	bBleed |= m_Shared.InCond( TF_COND_BLEEDING );
+
+	// If we're bleeding, our base condition is to bleed, ignoring the damage type filter and disguised check.
+	if ( m_Shared.InCond( TF_COND_BLEEDING ) )
+	{
+		bBleed = true;
+	}
+
+	// Absolutely no bleeding while invulnerable
+	if ( m_Shared.IsInvulnerable() )
+	{
+		bBleed = false;
+	}
+	
+	// No bleed effects from fire either
+	if ( info.GetDamageType() & ( DMG_BURN | DMG_IGNITE ) )
+	{
+		bBleed = false;
+	}
 	
 	if ( bBleed )
 	{
