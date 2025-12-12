@@ -1501,10 +1501,10 @@ public:
 
 		// the player count in the dialog includes the human player, so decrease the bot count by one
 		ConVarRef tf_bot_quota( "tf_bot_quota" );
-		tf_bot_quota.SetValue( nQuota - 1 );
+		tf_bot_quota.SetValue( nQuota );
 
 		ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
-		tf_bot_quota_mode.SetValue( "normal" );
+		tf_bot_quota_mode.SetValue( "fill" );
 
 		ConVarRef tf_bot_auto_vacate( "tf_bot_auto_vacate" );
 		tf_bot_auto_vacate.SetValue( 0 );
