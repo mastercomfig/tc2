@@ -7856,7 +7856,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 
 				if ( pVictim->m_Shared.InCond( TF_COND_GAS_DRIP ) && IsBetaActive() )
 				{
-					flDamageBase *= 1.2f;
+					flDamageBase *= 1.3f;
 				}
 
 				// Check for medic resist
