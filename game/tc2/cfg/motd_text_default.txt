@@ -1,1 +1,14 @@
-Welcome to Team Comtress 2
+Hello mercenary, we've been expecting you on the battlefield.
+
+New here? The community can help!
+TF2 Wiki: https://wiki.tf
+Discord: https://discord.gg/comfig
+
+Here are some basic tips to get started:
+- Communicate: Use voice or text chat to coordinate with your team.
+- Stick with the Medic: Keep your team's healer alive; they are vital to your success.
+- Have fun: Enjoy the game and respect other players.
+
+And always remember to play the objective and work with your team! Good luck out there! You'll need it.
+
+Hint: press your Show Information key (default: 'I') to view this message again.
