@@ -50,6 +50,8 @@ protected:
 
 	void				FinishUp();		// Hide the panel, mark for deletion, remove from modal stack.
 
+	virtual const char* GetConfirmId() { return GetName(); }
+
 	// Override these in a derived class to override the action set and action names specified in the res file in the case of Steam Controller.
 	virtual const char* GetActionSet() const { return nullptr; }
 	virtual const char* GetCancelActionName() const { return nullptr; }

@@ -75,6 +75,11 @@ public:
 			pTitle->SetText( m_pTitle );
 		}
 	}
+
+	virtual const char* GetConfirmId() OVERRIDE
+	{
+		return "ConfirmTrainingDialog";
+	}
 protected:
 	const char *m_pText;
 	const char *m_pTitle;
@@ -1490,7 +1495,7 @@ void CTFMatchmakingDashboard::UpdateJoinPartyLobbyPanel()
 //-----------------------------------------------------------------------------
 void CTFMatchmakingDashboard::OnConfirm( KeyValues *pParams )
 {
-	if ( pParams->GetBool( "confirmed" ) )
+	if ( pParams->GetBool( "confirmed" ) && !V_strcmp( pParams->GetString("name"), "ConfirmTrainingDialog" ) )
 	{
 		engine->ClientCmd_Unrestricted( "disconnect" );
 		GetClientModeTFNormal()->GameUI()->SendMainMenuCommand( "engine training_showdlg" );
