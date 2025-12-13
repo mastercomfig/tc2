@@ -115,6 +115,7 @@ for F in "${DLLS[@]}"; do
       cp -f ${DEV_DIR}/${F}${DLL_EXT} ${DEV_DIR}/${F}_srv${DLL_EXT}
       patchelf --replace-needed libtier0.so libtier0_srv.so --replace-needed libvstdlib.so libvstdlib_srv.so ${DEV_DIR}/${F}_srv${DLL_EXT}
       cp ${DEV_DIR}/${F}_srv${DLL_EXT} ${CLEAN_DIR}/${F}_srv${DLL_EXT}
+      strip ${CLEAN_DIR}/${F}_srv${DLL_EXT}
     fi
   fi
 done
