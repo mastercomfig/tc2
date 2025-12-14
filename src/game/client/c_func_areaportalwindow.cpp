@@ -27,6 +27,7 @@ public:
 public:
 
 	virtual void	ComputeFxBlend();
+	virtual int		GetFxBlend( void );
 	virtual bool	IsTransparent();
 	virtual int		DrawModel( int flags );
 	virtual bool	ShouldReceiveProjectedTextures( int flags );
@@ -60,13 +61,14 @@ END_RECV_TABLE()
 
 void C_FuncAreaPortalWindow::ComputeFxBlend()
 {
+	// Do nothing
+}
+
+
+int C_FuncAreaPortalWindow::GetFxBlend( void )
+{
 	// We reset our blend down below so pass anything except 0 to the renderer.
-	m_nRenderFXBlend = 255;
-
-#ifdef _DEBUG
-	m_nFXComputeFrame = gpGlobals->framecount;
-#endif
-
+	return 255;
 }
 
 
