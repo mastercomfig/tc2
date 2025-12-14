@@ -526,6 +526,7 @@ void CTFGCClientSystem::WebapiInventoryThink()
 		// our message to the server.
 		state.m_bDidApplyLocalChanges = state.m_bLocalChangesApplied;
 		state.m_bLocalChangesApplied = false;
+		state.m_flNextPartTime = -1.0f;
 
 		state.m_eState = kWebapiInventoryState_RequestServerAuthToken;
 		//fallthrough
