@@ -265,8 +265,14 @@ static bool PerformNewCustomEffects( const Vector &vecOrigin, trace_t &tr, const
 		bNoFlecks = ( ( nFlags & FLAGS_CUSTIOM_EFFECTS_NOFLECKS ) != 0  );
 	}
 
+	const int iEffectIdx = iMaterial - 'A';
+	if ( iEffectIdx < 0 || iEffectIdx >= ARRAYSIZE( s_pImpactEffect ) )
+	{
+		return false;
+	}
+
 	// Compute the impact effect name
-	const ImpactEffect_t &effect = s_pImpactEffect[ iMaterial - 'A' ];
+	const ImpactEffect_t &effect = s_pImpactEffect[ iEffectIdx ];
 	const char *pImpactName = effect.m_pName;
 	if ( bNoFlecks && effect.m_pNameNoFlecks )
 	{
