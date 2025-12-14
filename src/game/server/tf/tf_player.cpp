@@ -12585,7 +12585,7 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
 	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
-	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( pVictim != this && tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		// give ammo for the sound
 		GiveAmmo( 1, TF_AMMO_PRIMARY );
@@ -12594,7 +12594,7 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		for ( int i = 0; i < MAX_WEAPONS; i++ )
 		{
 			CTFWeaponBase *pInvWeapon = dynamic_cast< CTFWeaponBase* >( GetWeapon( i ) );
-			if ( !pWeapon )
+			if ( !pInvWeapon )
 				continue;
 
 			pInvWeapon->GiveDefaultAmmo();
