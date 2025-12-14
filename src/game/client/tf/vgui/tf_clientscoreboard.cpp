@@ -65,7 +65,7 @@ using namespace vgui;
 #define SCOREBOARD_MAX_LIST_ENTRIES 12
 
 ConVar tf_scoreboard_mouse_mode( "tf_scoreboard_mouse_mode", "2", FCVAR_ARCHIVE );
-ConVar sv_vote_issue_kick_allowed( "sv_vote_issue_kick_allowed", "0", FCVAR_REPLICATED, "Can players call votes to kick players from the server?" );
+ConVar sv_vote_issue_kick_allowed( "sv_vote_issue_kick_allowed", "1", FCVAR_REPLICATED, "Can players call votes to kick players from the server?" );
 
 ConVar tf_show_all_scoreboard_elements( "tf_show_all_scoreboard_elements", "0", FCVAR_DEVELOPMENTONLY );
 
