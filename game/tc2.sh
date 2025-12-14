@@ -3,6 +3,9 @@
 script=$(readlink -f -- "$0")
 pushd "$(dirname -- "$script")" > /dev/null
 
+#ulimit -c unlimited
+#sudo bash -c 'echo "core.%p" > /proc/sys/kernel/core_pattern 2>/dev/null || true'
+
 # Launch the game under the steam runtime
 if [ -z $SLR_SNIPER_PATH ]; then
   SLR_SNIPER_PATH="$HOME/.steam/steam/steamapps/common/SteamLinuxRuntime_sniper/run"
@@ -19,6 +22,9 @@ if [ -z $SLR_SNIPER_PATH ]; then
     fi
   fi
 fi
+
+#trap 'echo "Received SIGTERM, shutting down gracefully..." && kill -TERM $!' SIGTERM
+#trap 'echo "Received SIGPIPE, shutting down gracefully..." && continue' SIGPIPE
 
 ${SLR_SNIPER_PATH} --devel -- ./tc2_linux64 -steam -particles 1 -nobreakpad -nominidumps "$@" +ip 127.0.0.1
 

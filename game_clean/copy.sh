@@ -90,6 +90,7 @@ elif [ $PLATFORM = "linux" ]; then
     update_dedicated.sh
     srcds_run_64
     tc2.sh
+    hl2.sh
   )
 fi
 

@@ -726,7 +726,7 @@ int main( int argc, char *argv[] )
 		{
 			bLaunchDedicated = true;
 		}
-		else if ( !strcmp(argv[i], "-gatherdedi") )
+		else if ( !strcmp(argv[i], "-gatherdedi") || !strcmp(argv[i], "-gathermod") )
 		{
 			bGatherDedicated = true;
 		}
@@ -737,7 +737,7 @@ int main( int argc, char *argv[] )
 	}
 
 	// cannot use dedicated launch options on non-dedicated
-	if ( !bLaunchDedicated && ( bGatherDedicated || bForceNoSteamClient ) )
+	if ( !bLaunchDedicated && bForceNoSteamClient )
 	{
 		return 1;
 	}
@@ -768,28 +768,54 @@ int main( int argc, char *argv[] )
 		pBinaryGameDir = (char*) strGameInstallDir.c_str();
 	}
 
-	// if we don't need to gather anymore, we just run dedicated
-	if ( bLaunchDedicated && !bGatherDedicated )
+	// if we don't need to gather anymore, we just run
+	if ( !bGatherDedicated )
 	{
-		#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
-		char szExecutable[8192];
-		snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, pBinaryGameDir );
-
-		void* launcher = Launcher_LoadModule(szExecutable);
-		if (!launcher)
+		LauncherMain_t entryFunc;
+		if (bLaunchDedicated)
 		{
-			fprintf(stderr, "Failed to load the launcher: %s\n", szExecutable);
-			return 0;
+			#define DEDICATED_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/dedicated_srv.so"
+			char szExecutable[8192];
+			snprintf(szExecutable, sizeof(szExecutable), DEDICATED_DLL_PATH, pBinaryGameDir );
+
+			void* launcher = Launcher_LoadModule(szExecutable);
+			if (!launcher)
+			{
+				fprintf(stderr, "Failed to load the launcher: %s\n", szExecutable);
+				return 0;
+			}
+
+			entryFunc = (LauncherMain_t)Launcher_GetProcAddress(launcher, "DedicatedMain");
+			if (!entryFunc)
+			{
+				fprintf(stderr, "Failed to load the launcher entry proc\n");
+				return 0;
+			}
+		}
+		else
+		{
+			#define LAUNCHER_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/launcher.so"
+			char szExecutable[8192];
+			snprintf(szExecutable, sizeof(szExecutable), LAUNCHER_DLL_PATH, pBinaryGameDir );
+
+			void* launcher = Launcher_LoadModule(szExecutable);
+			if (!launcher)
+			{
+				fprintf(stderr, "Failed to load the launcher: %s\n", szExecutable);
+				return 0;
+			}
+
+			entryFunc = (LauncherMain_t)Launcher_GetProcAddress(launcher, "LauncherMain");
+			if (!entryFunc)
+			{
+				fprintf(stderr, "Failed to load the launcher entry proc\n");
+				return 0;
+			}
+
+			WaitForDebuggerConnect( argc, argv, 30 );
 		}
 
-		LauncherMain_t main = (LauncherMain_t)Launcher_GetProcAddress(launcher, "DedicatedMain");
-		if (!main)
-		{
-			fprintf(stderr, "Failed to load the launcher entry proc\n");
-			return 0;
-		}
-
-		return main(argc, argv);
+		return entryFunc( argc, argv );
 	}
 	
 	char szExecutable[8192];
@@ -819,7 +845,7 @@ int main( int argc, char *argv[] )
 			bHasGame = true;
 		}
 
-		if ( !strcmp( argv[i], "-gatherdedi" ) )
+		if ( !strcmp( argv[i], "-gatherdedi" ) || !strcmp( argv[i], "-gathermod" ) )
 		{
 			continue;
 		}

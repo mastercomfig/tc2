@@ -5,7 +5,9 @@
 //===========================================================================//
 
 //#define ASIO_NO_EXCEPTIONS
+#ifdef _WIN32
 #define _WIN32_WINNT 0x0602
+#endif
 #define CROW_STATIC_DIRECTORY "tc2/loose/resource/html/"
 #define CROW_STATIC_ENDPOINT "/ui/<path>"
 

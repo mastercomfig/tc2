@@ -6,8 +6,6 @@
 # directory lives - and all this in a subshell, so we don't affect
 # $PWD
 
-EXEC_NAME=$(basename "$0" .sh)
-
 GAMEROOT=$(cd "${0%/*}" && echo $PWD)
 
 BASEEXEC_NAME="tf"
@@ -20,7 +18,8 @@ shift;
 # Save the original argument list
 original_args=("$@")
 
-game_dir="tc2"
+EXEC_NAME="tc2"
+game_dir=$EXEC_NAME
 # Loop through arguments to find -game
 while [[ $# -gt 0 ]]; do
     case $1 in
