@@ -3475,7 +3475,7 @@ public:
 		C_TFPlayer *pOwner = GetOwnerFromProxyEntity( pC_BaseEntity );
 		int desiredW = m_pBaseTextureOrig->GetActualWidth();
 		int desiredH = m_pBaseTextureOrig->GetActualHeight();
-		const bool cbPlayerIsLocalPlayer = C_TFPlayer::GetLocalTFPlayer() && pOwner == C_TFPlayer::GetLocalTFPlayer();
+		const bool cbPlayerIsLocalPlayer = ( C_TFPlayer::GetLocalTFPlayer() && pOwner == C_TFPlayer::GetLocalTFPlayer() ) || ( pOwner && pOwner->InFirstPersonView() );
 
 		// Doing material overrides from the econ definitions can cause the same 
 		// item to be referred to from multiple materials. The code treats the 

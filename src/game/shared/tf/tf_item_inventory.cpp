@@ -1747,7 +1747,8 @@ void CTFPlayerInventory::UpdateWeaponSkinRequest()
 			mdl.SetMDL( req.m_hModel );
 			mdl.m_pProxyData = static_cast<IClientRenderable*>( pItem );
 
-			pItem->SetWeaponSkinUseLowRes( true );
+			// TODO: mcoms: don't use low res!
+			//pItem->SetWeaponSkinUseLowRes( true );
 			int nRestoreTeam = pItem->GetTeamNumber();
 			pItem->SetTeamNumber( req.m_nTeam );
 
@@ -1764,7 +1765,7 @@ void CTFPlayerInventory::UpdateWeaponSkinRequest()
 				modelrender->ForcedMaterialOverride( NULL );
 
 			pItem->SetTeamNumber( nRestoreTeam );
-			pItem->SetWeaponSkinUseLowRes( false );
+			//pItem->SetWeaponSkinUseLowRes( false );
 		}
 
 		// Don't remove until it's complete. 

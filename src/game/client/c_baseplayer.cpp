@@ -2029,6 +2029,37 @@ bool C_BasePlayer::ShouldDrawThisPlayer()
 	return false;
 }
 
+bool C_BasePlayer::IsPersonalPerspective( bool bRequireSpectator, bool bRequireFirstPerson, bool bAlwaysForLocalPlayer )
+{
+	if ( IsLocalPlayer() )
+	{
+		return bAlwaysForLocalPlayer || !bRequireFirstPerson || InFirstPersonView();
+	}
+
+	if ( bRequireSpectator && GetTeamNumber() != TEAM_SPECTATOR )
+	{
+		return false;
+	}
+
+	C_BasePlayer* pLocalPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( pLocalPlayer == NULL )
+	{
+		return false;
+	}
+
+	bool bInView = pLocalPlayer->GetObserverMode() == OBS_MODE_IN_EYE;
+	if ( !bRequireFirstPerson && !bInView )
+	{
+		bInView = pLocalPlayer->GetObserverMode() == OBS_MODE_CHASE;
+	}
+	
+	if ( bInView && pLocalPlayer->GetObserverTarget() == ToBasePlayer( this ) )
+	{
+		return true;
+	}
+
+	return false;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -2446,6 +2477,7 @@ bool C_BasePlayer::IsUseableEntity( CBaseEntity *pEntity, unsigned int requiredC
 	return false;
 }
 
+ConVar cl_spec_use_target_fov( "cl_spec_use_target_fov", "1", FCVAR_ARCHIVE );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -2463,7 +2495,7 @@ float C_BasePlayer::GetFOV( void )
 		return clamp( demo_fov_override.GetFloat(), 10.0f, 90.0f );
 	}
 
-	if ( GetObserverMode() == OBS_MODE_IN_EYE )
+	if ( cl_spec_use_target_fov.GetBool() && GetObserverMode() == OBS_MODE_IN_EYE )
 	{
 		C_BasePlayer *pTargetPlayer = dynamic_cast<C_BasePlayer*>( GetObserverTarget() );
 
