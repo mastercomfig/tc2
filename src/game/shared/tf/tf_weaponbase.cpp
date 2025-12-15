@@ -2178,7 +2178,8 @@ void CTFWeaponBase::IncrementAmmo( void )
 		else
 		{
 			const bool bMisfired = CheckReloadMisfire();
-			if ( pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 )
+			const bool bReloadClip = TFGameRules()->IsBetaActive() || !bMisfired;
+			if ( bReloadClip && pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 )
 			{
 				if ( m_iClip1 < GetMaxClip1() || bMisfired )
 				{
