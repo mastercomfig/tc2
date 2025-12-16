@@ -1,9 +1,7 @@
 cp_dustbowl
-cp_granary
 cp_badlands
 pl_goldrush
 pl_badwater
-ctf_turbine
 pl_hoodoo_final
 koth_sawmill
 koth_nucleus
@@ -18,7 +16,6 @@ cp_gullywash_final1
 cp_foundry
 koth_king
 cp_process_final
-cp_snakewater_final1
 cp_powerhouse
 cp_vanguard
 cp_sunshine
