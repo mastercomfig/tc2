@@ -22,7 +22,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ISteamUGC *GetSteamUGC( bool bGetServerUGC )
+ISteamUGC *GetSteamUGC()
 {
 #ifdef GAME_DLL
 	// Use steamgameserver context if this isn't a client/listenserver.
@@ -32,10 +32,6 @@ ISteamUGC *GetSteamUGC( bool bGetServerUGC )
 		return steamgameserverapicontext ? steamgameserverapicontext->SteamUGC() : NULL;
 	}
 #endif
-	if ( bGetServerUGC && SteamGameServerUGC() )
-	{
-		return SteamGameServerUGC();
-	}
 	return steamapicontext ? steamapicontext->SteamUGC() : NULL;
 }
 
