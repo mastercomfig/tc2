@@ -31,7 +31,7 @@
 #define UGCDebug(...)
 #endif // UGC_DEBUG
 
-ISteamUGC *GetSteamUGC();
+ISteamUGC *GetSteamUGC( bool bGetServerUGC = false );
 ISteamRemoteStorage *GetSteamRemoteStorage();
 
 // Consistently set/get modified/access timestamps for UGC files.

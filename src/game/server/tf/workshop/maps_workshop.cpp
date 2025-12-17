@@ -54,40 +54,39 @@ bool PublishedFileId_t_Less( const PublishedFileId_t &a, const PublishedFileId_t
 static ISteamUGC *GetWorkshopUGC()
 {
 	static bool bInitUGC = false;
-	ISteamUGC *pUGC = GetSteamUGC();
+	ISteamUGC *pUGC = GetSteamUGC( true );
 
 	// The first time we successfully get a steam context we should call the init
 	if ( pUGC && !bInitUGC )
 	{
 		// For the dedicated server API, honor -ugcpath
 		int i = CommandLine()->FindParm( "-ugcpath" );
+		const char* pUGCPath = "maps/workshop";
 		if ( engine->IsDedicatedServer() && i )
 		{
-
-			const char *pUGCPath = CommandLine()->GetParm( i + 1 );
-			if ( pUGCPath )
-			{
-				g_pFullFileSystem->CreateDirHierarchy( pUGCPath, UGC_PATHID );
-				char szFullPath[MAX_PATH] = { 0 };
-				g_pFullFileSystem->RelativePathToFullPath( pUGCPath, UGC_PATHID, szFullPath, sizeof( szFullPath ) );
-				if ( *szFullPath )
-				{
-					// NOTE we use our own AppID here as the workshop depot id, but this should match the workshopdepotid in our steam config
-					pUGC->BInitWorkshopForGameServer( UTIL_GetEmulatedAppID(), szFullPath );
-				}
-				else
-				{
-					TFWorkshopWarning( "Could not resolve -ugcpath to absolute path: %s\n", pUGCPath );
-				}
-			}
-			else
+			pUGCPath = CommandLine()->GetParm( i + 1 );
+			if ( !pUGCPath )
 			{
 				TFWorkshopWarning( "Empty -ugcpath passed, using default\n" );
+				pUGCPath = "maps/workshop";
 			}
 		}
 		else if ( i )
 		{
-			TFWorkshopWarning( "-ugcpath is ignored for listen servers\n" );
+			TFWorkshopWarning("-ugcpath is ignored for listen servers\n");
+		}
+
+		g_pFullFileSystem->CreateDirHierarchy( pUGCPath, UGC_PATHID );
+		char szFullPath[MAX_PATH] = { 0 };
+		g_pFullFileSystem->RelativePathToFullPath( pUGCPath, UGC_PATHID, szFullPath, sizeof( szFullPath ) );
+		if ( *szFullPath )
+		{
+			// NOTE we use our own AppID here as the workshop depot id, but this should match the workshopdepotid in our steam config
+			pUGC->BInitWorkshopForGameServer( UTIL_GetEmulatedAppID(), szFullPath );
+		}
+		else
+		{
+			TFWorkshopWarning( "Could not resolve -ugcpath to absolute path: %s\n", pUGCPath );
 		}
 
 		bInitUGC = true;
