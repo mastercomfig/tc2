@@ -8,8 +8,8 @@
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0602
 #endif
-#define CROW_STATIC_DIRECTORY "tc2/loose/resource/html/"
-#define CROW_STATIC_ENDPOINT "/ui/<path>"
+#define CROW_STATIC_DIRECTORY ""
+#define CROW_STATIC_ENDPOINT "/<path>"
 
 #include <crow.h>
 
@@ -71,6 +71,8 @@ struct CWebRpcMessage
 	}
 };
 
+extern const char* COM_GetModDirectory();
+
 class CHTTPServerThread : public CThread
 {
 public:
@@ -85,9 +87,19 @@ public:
 	// Return 0 for success
 	virtual int Run() OVERRIDE
 	{
+		Msg("Initializing game state HTTP system...\n");
 		m_Crow = new crow::SimpleApp();
 		crow::SimpleApp& app = *m_Crow;
-		CROW_ROUTE(app, "/")([]() {
+		const char* pGameDir = COM_GetModDirectory();
+		CFmtStr1024 pStaticDir("%s/%s", pGameDir, "loose/resource/html");
+		crow::Blueprint ui_bp("ui", pStaticDir.Get());
+		app.register_blueprint(ui_bp);
+		CROW_BP_ROUTE(ui_bp, "/")([]
+		{
+			return "Hello UI!";
+		});
+		CROW_ROUTE(app, "/")([]
+		{
 			return "Hello world!";
 		});
 		CROW_WEBSOCKET_ROUTE(app, "/ws")
@@ -97,6 +109,7 @@ public:
 				if (!m_connectedClients.empty())
 					return;
 				m_connectedClients.push_back(&conn);
+				Msg("Game state connection created.\n");
 			}
 		})
 		.onclose([&](crow::websocket::connection& conn, const std::string& reason, uint16_t) {
@@ -104,6 +117,7 @@ public:
 				// TODO: sessions
 				AUTO_LOCK(m_clientsMutex)
 				m_connectedClients.clear();
+				Msg("Game state connection closed.\n");
 			}
 		})
 		.onmessage([&](crow::websocket::connection& conn, const std::string& in, bool is_binary) {
@@ -173,13 +187,17 @@ public:
 				m_OutgoingGameMsgs.Insert(pMessage);
 			}
 		});
+		Msg("Configured game state HTTP system.\n");
 		auto f = app.bindaddr("127.0.0.1").port(58270).run_async();
+		Msg("Running game state HTTP system.\n");
 		app.wait_for_server_start();
+		Msg("Started game state HTTP system.\n");
 		while (1)
 		{
 			m_hThreadEvent.Wait();
 			if (m_bThreadShouldExit)
 			{
+				Msg("Stopping game state HTTP system.\n");
 				m_Crow->stop();
 				f.wait();
 				delete m_Crow;
@@ -352,6 +370,8 @@ bool CGameStateManager::Init()
 
 	Assert(!m_pServerThread);
 
+	Msg("Initializing Game State HTTP thread.\n");
+
 	m_pServerThread = new CHTTPServerThread();
 	m_pServerThread->Start();
 
@@ -523,6 +543,8 @@ void CGameStateManager::Shutdown()
 {
 	if (!m_bInit)
         return;
+
+	Msg("Shutting down game state HTTP system.\n");
 
 	Assert(m_pServerThread);
 
