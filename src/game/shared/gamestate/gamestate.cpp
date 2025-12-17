@@ -71,8 +71,6 @@ struct CWebRpcMessage
 	}
 };
 
-extern const char* COM_GetModDirectory();
-
 class CHTTPServerThread : public CThread
 {
 public:
@@ -90,7 +88,7 @@ public:
 		Msg("Initializing game state HTTP system...\n");
 		m_Crow = new crow::SimpleApp();
 		crow::SimpleApp& app = *m_Crow;
-		const char* pGameDir = COM_GetModDirectory();
+		const char* pGameDir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "hl2" ) );
 		CFmtStr1024 pStaticDir("%s/%s", pGameDir, "loose/resource/html");
 		crow::Blueprint ui_bp("ui", pStaticDir.Get());
 		app.register_blueprint(ui_bp);
