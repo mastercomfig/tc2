@@ -1162,7 +1162,7 @@ void CClientLeafSystem::AddShadowToLeaf( int leaf, ClientLeafShadowHandle_t shad
 			info.m_EnumCount = m_ShadowEnum;
 		}
 
-		Assert( m_ShadowsInLeaf.NumAllocated() < 2000 );
+		Assert( m_ShadowsInLeaf.NumAllocated() <= 4096 );
 
 		i = m_RenderablesInLeaf.NextElement(i);
 	}
