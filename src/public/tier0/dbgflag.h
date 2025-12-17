@@ -55,7 +55,7 @@
 #else // _DEBUG
 
 #ifndef DBGFLAG_RELEASE_NODLG
-#define DBGFLAG_RELEASE_NODLG 1
+#define DBGFLAG_RELEASE_NODLG 0
 #endif
 
 #if defined( STEAM ) || DBGFLAG_RELEASE_NODLG
