@@ -40,6 +40,16 @@ done
 # Reset the argument list
 set -- "${original_args[@]}"
 
+# Remove -gathermod from args
+filtered_args=()
+while [[ $# -gt 0 ]]; do
+	if [[ $1 != "-gathermod" ]]; then
+		filtered_args+=("$1")
+	fi
+	shift
+done
+set -- "${filtered_args[@]}"
+
 server_64_dll="$game_dir/bin/linux64/server.so"
 
 is_64_bit=0
