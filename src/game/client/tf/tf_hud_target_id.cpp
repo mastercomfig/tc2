@@ -681,9 +681,23 @@ void CTargetID::PerformLayout( void )
 
 			int x,y;
 			m_pMoveableKeyLabel->GetPos( x, y );
-			m_pMoveableSymbolIcon->SetPos( (iMoveWide - m_pMoveableSymbolIcon->GetWide()) * 0.5, y - m_pMoveableSymbolIcon->GetTall() );
-			m_pMoveableSymbolIcon->GetPos( x, y );
-			m_pMoveableIcon->SetPos( (iMoveWide - m_pMoveableIcon->GetWide()) * 0.5, y - m_pMoveableIcon->GetTall() );
+			int iIconWide;
+			int iIconTall;
+			if ( m_pMoveableSymbolIcon->IsVisible() )
+			{
+				m_pMoveableSymbolIcon->SetPos( (iMoveWide - m_pMoveableSymbolIcon->GetWide()) * 0.5, y - m_pMoveableSymbolIcon->GetTall() );
+				m_pMoveableSymbolIcon->GetPos( x, y );
+				iIconWide = XRES( 14 );
+				iIconTall = YRES( 14 );
+			}
+			else
+			{
+				iIconWide = XRES( 14.1 );
+				iIconTall = GetTall() - m_pMoveableKeyLabel->GetTall();
+			}
+
+			m_pMoveableIcon->SetSize( iIconWide, iIconTall );
+			m_pMoveableIcon->SetPos( ( iMoveWide - iIconWide ) * 0.5f, y - iIconTall );
 			m_pMoveableIconBG->SetSize( m_pMoveableSubPanel->GetWide(), m_pMoveableSubPanel->GetTall() );
 		}
 	}
@@ -824,7 +838,26 @@ void CTargetID::UpdateID( void )
 				// We're looking at an enemy who killed us.
 				printFormatString = "#TF_playerid_diffteam";
 				bShowHealth = true;
-			}			
+			}
+
+			// if we can heal, show action.
+			CSecondaryTargetID *pSecondaryID = GET_HUDELEMENT( CSecondaryTargetID );
+			if ( pSecondaryID != this && bMedic && bInSameTeam && pLocalTFPlayer->IsAlive() && pLocalTFPlayer->GetActiveTFWeapon() && pLocalTFPlayer->GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_MEDIGUN )
+			{
+				CWeaponMedigun* pMedigun = static_cast<CWeaponMedigun*>( pLocalTFPlayer->GetActiveTFWeapon() );
+				const float flRange = pMedigun->GetTargetRange() + pEnt->WorldAlignSize().x * 0.5f;
+				const float flRangeSq = flRange * flRange;
+				if ( pLocalTFPlayer->EyePosition().DistToSqr( pEnt->WorldSpaceCenter() ) < flRangeSq )
+				{
+					pszActionCommand = "+attack";
+					pszActionIcon = "health_icon";
+
+					if ( m_pMoveableSymbolIcon )
+					{
+						m_pMoveableSymbolIcon->SetVisible( false );
+					}
+				}
+			}
 
 			if ( bShowHealth )
 			{
@@ -905,6 +938,10 @@ void CTargetID::UpdateID( void )
 							pszActionCommand = "+attack2";
 						}
 
+						if ( m_pMoveableSymbolIcon )
+						{
+							m_pMoveableSymbolIcon->SetVisible( true );
+						}
 						
 						switch ( iObj )
 						{

@@ -729,11 +729,36 @@ void CWeaponMedigun::FindNewTargetForSlot()
 	pOwner->EyeVectors( &vecAiming );
 
 	// Find a player in range of this player, and make sure they're healable.
-	Vector vecEnd = vecSrc + vecAiming * GetTargetRange();
+	const float flRange = GetTargetRange();
+	Vector vecEnd = vecSrc + vecAiming * flRange;
 	trace_t tr;
 
 	UTIL_TraceLine( vecSrc, vecEnd, (MASK_SHOT & ~CONTENTS_HITBOX), pOwner, DMG_GENERIC, &tr );
-	if ( tr.fraction != 1.0 && tr.m_pEnt )
+	bool bFound = tr.fraction != 1.0 && tr.m_pEnt;
+	if ( !bFound )
+	{
+		// if we failed to trace at our angle, maybe a flat trace will work?
+		const float flEndZ = vecEnd.z;
+		float flZ = Clamp( flEndZ, pOwner->GetAbsOrigin().z, vecSrc.z );
+		// set up forward flat aim angle.
+		Vector vecForward = vecAiming;
+		vecForward.z = 0.0f;
+		vecForward.NormalizeInPlace();
+		// project a trace outward at that z level, completely flat.
+		vecSrc.z = flZ;
+		vecEnd = vecSrc + vecForward * flRange;
+		UTIL_TraceLine( vecSrc, vecEnd, (MASK_SHOT & ~CONTENTS_HITBOX), pOwner, DMG_GENERIC, &tr );
+		bFound = tr.fraction != 1.0 && tr.m_pEnt;
+		// if we hit something, check if we're aiming at it on Z.
+		if ( bFound )
+		{
+			// our original flEndZ must be above bottom and below top.
+			const float flBaseZ = tr.m_pEnt->GetAbsOrigin().z;
+			bFound = flEndZ >= flBaseZ && flEndZ <= flBaseZ + tr.m_pEnt->WorldAlignSize().z + 0.5f;
+			
+		}
+	}
+	if ( bFound )
 	{
 		if ( !HealingTarget( tr.m_pEnt ) && AllowedToHealTarget( tr.m_pEnt ) )
 		{
