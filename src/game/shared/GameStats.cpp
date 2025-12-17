@@ -673,9 +673,11 @@ void CBaseGameStats::SendData()
 
 #endif // GAME_DLL
 
+extern const char* COM_GetModDirectory();
+
 bool CBaseGameStats_Driver::Init()
 {
-	const char *pGameDir = CommandLine()->ParmValue( "-game", "hl2" );
+	const char *pGameDir = COM_GetModDirectory();
 
 	//standardizing is a good thing
 	char szLoweredGameDir[256];

@@ -700,6 +700,8 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	GetCompRanksTooltip();
 }
 
+extern const char* COM_GetModDirectory();
+
 void CHudMainMenuOverride::PlayMainMenuMusic()
 {
 	if (CommandLine()->FindParm("-nostartupsound"))
@@ -713,7 +715,7 @@ void CHudMainMenuOverride::PlayMainMenuMusic()
 	bool bHolidayFound = false;
 
 	// only want to run the holiday check for TF2
-	const char* pGameName = CommandLine()->ParmValue("-game", "hl2");
+	const char* pGameName = COM_GetModDirectory();
 	if ((V_stricmp(pGameName, "tf") == 0) || (V_stricmp(pGameName, "tf_beta") == 0) || (V_stricmp(pGameName, "tc2") == 0))
 	{
 		// check for a holiday sound file

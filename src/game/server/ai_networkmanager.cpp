@@ -467,6 +467,8 @@ void CAI_NetworkManager::SaveNetworkGraph( void )
 }
 */
 
+extern const char* COM_GetModDirectory();
+
 //-----------------------------------------------------------------------------
 // Purpose:  Only called if network has changed since last time level
 //			 was loaded
@@ -566,7 +568,7 @@ void CAI_NetworkManager::LoadNetworkGraph( void )
 	{
 		bool bOK = false;
 		
-		const char *pGameDir = CommandLine()->ParmValue( "-game", "hl2" );		
+		const char *pGameDir = COM_GetModDirectory();
 		char szLoweredGameDir[256];
 		Q_strncpy( szLoweredGameDir, pGameDir, sizeof( szLoweredGameDir ) );
 		Q_strlower( szLoweredGameDir );
@@ -978,7 +980,7 @@ bool CAI_NetworkManager::IsAIFileCurrent ( const char *szMapName )
 	}
 	
 	{
-		const char *pGameDir = CommandLine()->ParmValue( "-game", "hl2" );		
+		const char *pGameDir = COM_GetModDirectory();
 		char szLoweredGameDir[256];
 		Q_strncpy( szLoweredGameDir, pGameDir, sizeof( szLoweredGameDir ) );
 		Q_strlower( szLoweredGameDir );

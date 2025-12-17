@@ -1683,7 +1683,7 @@ uint32 UTIL_GetEmulatedAppID()
 	const char* pGameDir = COM_GetModDirectory();
 
 	// We emulate 440 for some usages
-	if (FStrEq(pGameDir, "tc2"))
+	if ( FStrEq( pGameDir, "tc2" ) )
 	{
 		return 440;
 	}

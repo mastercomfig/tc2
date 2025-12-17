@@ -2040,7 +2040,8 @@ void CViewRender::RenderView( const CViewSetup &viewRender, int nClearFlags, int
 	{
 		// We know they were running at least 9.0 when the game started...we check the 
 		// value in ClientDLL_Init()...so they must be messing with their DirectX settings.
-		if ( ( Q_stricmp( COM_GetModDirectory(), "tc2" ) == 0 ) || ( Q_stricmp( COM_GetModDirectory(), "tf" ) == 0 ) || ( Q_stricmp( COM_GetModDirectory(), "tf_beta" ) == 0 ) )
+		const char* pGameDir = COM_GetModDirectory();
+		if ( ( Q_stricmp( pGameDir, "tc2" ) == 0 ) || ( Q_stricmp( pGameDir, "tf" ) == 0 ) || ( Q_stricmp( pGameDir, "tf_beta" ) == 0 ) )
 		{
 			static bool bFirstTime = true;
 			if ( bFirstTime )

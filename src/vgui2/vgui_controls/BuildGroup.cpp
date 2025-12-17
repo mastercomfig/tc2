@@ -869,6 +869,8 @@ void BuildGroup::PanelAdded(Panel *panel)
 	_panelDar.AddToTail(temp);
 }
 
+extern const char* COM_GetModDirectory();
+
 //-----------------------------------------------------------------------------
 // Purpose: loads the control settings from file
 //-----------------------------------------------------------------------------
@@ -916,7 +918,8 @@ void BuildGroup::LoadControlSettings(const char *controlResourceName, const char
 			bSuccess = rDat->LoadFromFile( g_pFullFileSystem, controlResourceName, "SKIN" );
 		}
 
-		if ( !V_stricmp( CommandLine()->ParmValue( "-game", "hl2" ), "tc2" ) )
+		const char* pGameDir = COM_GetModDirectory();
+		if ( !V_stricmp( pGameDir, "tc2" ) )
 		{
 			if ( !bSuccess )
 			{
