@@ -3464,7 +3464,11 @@ CChoreoScene *CSceneEntity::LoadScene( const char *filename, IChoreoEventCallbac
 
 	CChoreoScene* pCachedScene = new CChoreoScene(NULL);
 	*pCachedScene = *pScene;
-	m_mapSceneMemCache.Insert(loadfile, pCachedScene);
+	// TODO(mcoms): LRU but this will stop crashes for now.
+	if ( m_mapSceneMemCache.Count() <= 1024 )
+	{
+		m_mapSceneMemCache.Insert(loadfile, pCachedScene);
+	}
 
 	FreeSceneFileMemory( pBuffer );
 	return pScene;
