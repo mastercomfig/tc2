@@ -96,6 +96,7 @@ ConVar sg_net("sg_net", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_shadows("sg_shadows", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_shaders("sg_shaders", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_effects("sg_effects", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_models("sg_models", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_reflections("sg_reflections", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_postprocess("sg_postprocess", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
 ConVar sg_sound("sg_sound", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
