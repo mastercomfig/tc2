@@ -208,7 +208,7 @@ void CTFProjectile_EnergyRing::Spawn()
 #ifdef GAME_DLL
 	if ( ShouldPenetrate() && TFGameRules()->IsBetaActive() )
 	{
-		SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink");
+		SetContextThink( &CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink" );
 	}
 #endif
 }
@@ -319,11 +319,14 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 
 		PlayImpactEffects( vecNewPos, pOther->IsPlayer() );
 
-		if ( ShouldPenetrate() && TFGameRules()->IsBetaActive() )
+		if ( ShouldPenetrate() )
 		{
-			Vector dir;
-			AngleVectors(GetAbsAngles(), &dir);
-			SetAbsVelocity(dir * GetInitialVelocity() * tf_bison_in_enemy_slow.GetFloat());
+			if ( TFGameRules()->IsBetaActive() )
+			{
+				Vector dir;
+				AngleVectors( GetAbsAngles(), &dir );
+				SetAbsVelocity( dir * GetInitialVelocity() * tf_bison_in_enemy_slow.GetFloat() );
+			}
 			return;
 		}
 		
@@ -348,14 +351,14 @@ void CTFProjectile_EnergyRing::ProjectileTouch( CBaseEntity *pOther )
 //-----------------------------------------------------------------------------
 void CTFProjectile_EnergyRing::BisonThink()
 {
-	if (gpGlobals->curtime - m_flLastHitTime > GetTickTime())
+	if ( gpGlobals->curtime - m_flLastHitTime > GetTickTime() )
 	{
 		Vector dir;
-		AngleVectors(GetAbsAngles(), &dir);
-		SetAbsVelocity(dir * GetInitialVelocity());
+		AngleVectors( GetAbsAngles(), &dir );
+		SetAbsVelocity( dir * GetInitialVelocity() );
 	}
 
-	SetContextThink(&CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink");
+	SetContextThink( &CTFProjectile_EnergyRing::BisonThink, gpGlobals->curtime + GetTickTime(), "BisonThink" );
 }
 
 
