@@ -142,7 +142,7 @@ ConVar cl_gunlowerspeed( "cl_gunlowerspeed", "2", FCVAR_CLIENTDLL | FCVAR_CHEAT 
 
 ConVar tf_use_min_viewmodels( "tf_use_min_viewmodels", "1", FCVAR_ARCHIVE, "Use minimized viewmodels." );
 
-ConVar tf_viewmodels_offset_override( "tf_viewmodels_offset_override", "", 0, "If set, this will override the position of all viewmodels. Usage 'x y z'" );
+ConVar tf_viewmodels_offset_override( "tf_viewmodels_offset_override", "", 0, "If set, this will override the position of all viewmodels. Usage 'x y z'. Restricted to <-20 to 20> <-5 to 5> <-20 to 20> on normal servers." );
 #endif
 
 void CTFViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePosition, const QAngle& eyeAngles )
@@ -231,9 +231,9 @@ void CTFViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePosit
 				static ConVarRef sv_cheats("sv_cheats");
 				if (!sv_cheats.GetBool())
 				{
-					viewmodelOffset.x = clamp(viewmodelOffset.x, -2.0f, 2.5f);
-					viewmodelOffset.y = clamp(viewmodelOffset.y, -2.0f, 2.0f);
-					viewmodelOffset.z = clamp(viewmodelOffset.z, -2.0f, 2.0f);
+					viewmodelOffset.x = clamp(viewmodelOffset.x, -20.0f, 20.0f);
+					viewmodelOffset.y = clamp(viewmodelOffset.y, -5.0f, 5.0f);
+					viewmodelOffset.z = clamp(viewmodelOffset.z, -20.0f, 20.0f);
 				}
 			}
 			else
