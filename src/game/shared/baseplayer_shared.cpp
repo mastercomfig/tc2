@@ -88,12 +88,12 @@
 #endif
 
 #ifdef CLIENT_DLL
-ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
+ConVar mp_usehwmmodels( "mp_usehwmmodels", "-1", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 #endif
 
 bool UseHWMorphModels()
 {
-#ifdef CLIENT_DLL 
+#if 0 && defined( CLIENT_DLL )
 	if ( mp_usehwmmodels.GetInt() == 0 )
 		return g_pMaterialSystemHardwareConfig->HasFastVertexTextures();
 
