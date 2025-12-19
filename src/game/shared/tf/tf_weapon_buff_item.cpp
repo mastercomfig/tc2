@@ -465,7 +465,7 @@ bool CTFBuffItem::IsFull( void )
 	if ( !pPlayer )
 		return false;
 
-	return ( pPlayer->m_Shared.GetRageMeter() >= 100.0f );
+	return ( pPlayer->m_Shared.GetRageMeter() >= 100.0f && !pPlayer->m_Shared.IsRageDraining() );
 }
 
 //-----------------------------------------------------------------------------

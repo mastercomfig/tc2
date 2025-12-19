@@ -14122,7 +14122,7 @@ void CTFPlayerShared::ActivateRageBuff( CBaseEntity *pBuffItem, int iBuffType )
 	case k_RageBuffType_Sniper:
 		// Sniper Focus
 		m_pOuter->SpeakConceptIfAllowed( MP_CONCEPT_PLAYER_BATTLECRY );
-		nBuffPulses *= (m_flRageMeter / 100);
+		nBuffPulses *= Floor2Int(m_flRageMeter / 100.0f);
 		break;
 	}
 #endif
@@ -14163,7 +14163,7 @@ void CTFPlayerShared::UpdateRageBuffsAndRage( void )
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pOuter, nBuffPulses, mod_buff_duration );
 		if ( nBuffPulses > 0 )
 		{
-			m_flRageMeter -= gpGlobals->frametime * ( 100.f / (float)nBuffPulses );
+			m_flRageMeter -= gpGlobals->frametime * ( 100.f / static_cast<float>(nBuffPulses) );
 			if ( m_flRageMeter <= 0.0f )
 			{
 				m_flRageMeter = 0.0f;
