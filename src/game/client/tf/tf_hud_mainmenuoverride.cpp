@@ -194,7 +194,7 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	m_bInGame = false;
 	m_bIsConnectedOnly = true; // start true so we go to false
-	m_flCurMaxFPS = 0.0f;
+	m_flCurMaxFPS = -1.0f;
 
 	m_iCharacterImageIdx = -1;
 
@@ -1430,11 +1430,11 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		m_bInGame = bInGame;
 		GetGameStateManager()->QueueEvent( "ingame", m_bInGame ? "1" : "0" );
 		
-		if ( m_bInGame && m_flCurMaxFPS > 0.0f )
+		if ( m_bInGame )
 		{
 			// after loading, restore it.
-			fps_max.SetValue( m_flCurMaxFPS );
-			m_flCurMaxFPS = 0.0f;
+			fps_max.SetValue( m_flCurMaxFPS >= 0.0f ? m_flCurMaxFPS : 1000.0f );
+			m_flCurMaxFPS = -1.0f;
 		}
 	}
 
@@ -1443,7 +1443,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		m_bIsConnectedOnly = ( !bInGame && bIsConnected );
 		if ( m_bIsConnectedOnly )
 		{
-			if ( m_flCurMaxFPS <= 0.0f )
+			if ( m_flCurMaxFPS < 0.0f )
 			{
 				m_flCurMaxFPS = fps_max.GetFloat();
 			}
@@ -1454,12 +1454,12 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 #if 0
 		else
 		{
-			if (m_flCurMaxFPS <= 0.0f)
+			if ( m_flCurMaxFPS < 0.0f )
 			{
 				m_flCurMaxFPS = fps_max.GetFloat();
 			}
 			// if not in game, set fps_max to UI mode.
-			fps_max.SetValue(ui_fps_max.GetFloat());
+			fps_max.SetValue( ui_fps_max.GetFloat() );
 		}
 #endif
 	}
