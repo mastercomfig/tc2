@@ -83,23 +83,27 @@ ConVar hud_takesshots( "hud_takesshots", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "
 ConVar hud_freezecamhide( "hud_freezecamhide", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Hide the HUD during freeze-cam" );
 ConVar cl_show_num_particle_systems( "cl_show_num_particle_systems", "0", FCVAR_CLIENTDLL, "Display the number of active particle systems." );
 
-void CC_SG_Changed(IConVar* var, const char* pOld, float flOldValue)
+void CC_SG_Changed( IConVar* var, const char* pOld, float flOldValue )
 {
-	const ConVarRef sg_var(var);
+	const ConVarRef sg_var( var );
 	const int iVal = sg_var.GetInt();
+	if ( iVal < 0 )
+	{
+		return;
+	}
 	char szCmd[270];
-	Q_snprintf(szCmd, sizeof(szCmd), "exec this_is_a_namespace/sg/%s/%d.cfg", var->GetName(), iVal);
-	engine->ExecuteClientCmd(szCmd);
+	Q_snprintf( szCmd, sizeof(szCmd), "exec this_is_a_namespace/sg/%s/%d.cfg", var->GetName(), iVal );
+	engine->ExecuteClientCmd( szCmd );
 }
-static ConVar sg_preset("sg_preset", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_net("sg_net", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_shadows("sg_shadows", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_shaders("sg_shaders", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_effects("sg_effects", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_models("sg_models", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_reflections("sg_reflections", "3", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_postprocess("sg_postprocess", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
-ConVar sg_sound("sg_sound", "2", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_preset("sg_preset", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_net("sg_net", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_shadows("sg_shadows", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_shaders("sg_shaders", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_effects("sg_effects", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_models("sg_models", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_reflections("sg_reflections", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_postprocess("sg_postprocess", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
+ConVar sg_sound("sg_sound", "-1", FCVAR_ARCHIVE, "", CC_SG_Changed);
 
 extern ConVar v_viewmodel_fov;
 extern ConVar voice_modenable;
@@ -171,6 +175,7 @@ CON_COMMAND( hud_reloadscheme, "Reloads hud layout and animation scripts." )
 	mode->ReloadScheme(true);
 }
 
+#ifdef _DEBUG
 CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 0: read from NULL\n 1: write to NULL\n 2: DmCrashDump() (xbox360 only)", FCVAR_CHEAT )
 {
 	int crashtype = 0;
@@ -198,6 +203,7 @@ CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 
 			break;
 	}
 }
+#endif
 
 static void __MsgFunc_Rumble( bf_read &msg )
 {
@@ -400,6 +406,21 @@ void ClientModeShared::Init()
 	ReplayCamera()->Init();
 #endif
 #endif
+
+	if ( sg_preset.GetInt() < 0 )
+	{
+		engine->ClientCmd_Unrestricted( "sg_preset 2" );
+	}
+
+	if ( sg_net.GetInt() < 0 )
+	{
+		engine->ClientCmd_Unrestricted( "sg_net 2" );
+	}
+
+	if ( sg_sound.GetInt() < 0 )
+	{
+		engine->ClientCmd_Unrestricted("sg_sound 2");
+	}
 
 	m_CursorNone = vgui::dc_none;
 
