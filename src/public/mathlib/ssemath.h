@@ -2037,49 +2037,70 @@ FORCEINLINE fltx4 MsubSIMD( const fltx4 & a, const fltx4 & b, const fltx4 & c )	
 
 FORCEINLINE fltx4 Dot3SIMD( const fltx4 &a, const fltx4 &b )
 {
+#if 1
+	return DirectX::XMVector3Dot( a, b );
+#else
 	fltx4 m = MulSIMD( a, b );
 	float flDot = SubFloat( m, 0 ) + SubFloat( m, 1 ) + SubFloat( m, 2 );
 	return ReplicateX4( flDot );
+#endif
 }
 
 FORCEINLINE fltx4 Dot4SIMD( const fltx4 &a, const fltx4 &b )
 {
+#if 1
+	return DirectX::XMVector4Dot( a, b );
+#else
 	fltx4 m = MulSIMD( a, b );
 	float flDot = SubFloat( m, 0 ) + SubFloat( m, 1 ) + SubFloat( m, 2 ) + SubFloat( m, 3 );
 	return ReplicateX4( flDot );
+#endif
 }
 
-//TODO: implement as four-way Taylor series (see xbox implementation)
 FORCEINLINE fltx4 SinSIMD( const fltx4 &radians )
 {
+#if 1
+	return sin_ps( radians );
+#else
 	fltx4 result;
 	SubFloat( result, 0 ) = sin( SubFloat( radians, 0 ) );
 	SubFloat( result, 1 ) = sin( SubFloat( radians, 1 ) );
 	SubFloat( result, 2 ) = sin( SubFloat( radians, 2 ) );
 	SubFloat( result, 3 ) = sin( SubFloat( radians, 3 ) );
 	return result;
+#endif
 }
 
 FORCEINLINE void SinCos3SIMD( fltx4 &sine, fltx4 &cosine, const fltx4 &radians )
 {
+#if 1
+	sincos_ps( radians, &sine, &cosine );
+#else
 	// FIXME: Make a fast SSE version
 	SinCos( SubFloat( radians, 0 ), &SubFloat( sine, 0 ), &SubFloat( cosine, 0 ) );
 	SinCos( SubFloat( radians, 1 ), &SubFloat( sine, 1 ), &SubFloat( cosine, 1 ) );
 	SinCos( SubFloat( radians, 2 ), &SubFloat( sine, 2 ), &SubFloat( cosine, 2 ) );
+#endif
 }
 
 FORCEINLINE void SinCosSIMD( fltx4 &sine, fltx4 &cosine, const fltx4 &radians )				// a*b + c
 {
+#if 1
+	sincos_ps( radians, &sine, &cosine );
+#else
 	// FIXME: Make a fast SSE version
 	SinCos( SubFloat( radians, 0 ), &SubFloat( sine, 0 ), &SubFloat( cosine, 0 ) );
 	SinCos( SubFloat( radians, 1 ), &SubFloat( sine, 1 ), &SubFloat( cosine, 1 ) );
 	SinCos( SubFloat( radians, 2 ), &SubFloat( sine, 2 ), &SubFloat( cosine, 2 ) );
 	SinCos( SubFloat( radians, 3 ), &SubFloat( sine, 3 ), &SubFloat( cosine, 3 ) );
+#endif
 }
 
-//TODO: implement as four-way Taylor series (see xbox implementation)
 FORCEINLINE fltx4 ArcSinSIMD( const fltx4 &sine )
 {
+#if 1
+	return DirectX::XMVectorASin( sine );
+#else
 	// FIXME: Make a fast SSE version
 	fltx4 result;
 	SubFloat( result, 0 ) = asin( SubFloat( sine, 0 ) );
@@ -2087,27 +2108,36 @@ FORCEINLINE fltx4 ArcSinSIMD( const fltx4 &sine )
 	SubFloat( result, 2 ) = asin( SubFloat( sine, 2 ) );
 	SubFloat( result, 3 ) = asin( SubFloat( sine, 3 ) );
 	return result;
+#endif
 }
 
 FORCEINLINE fltx4 ArcCosSIMD( const fltx4 &cs )
 {
+#if 1
+	return DirectX::XMVectorACos( cs );
+#else
 	fltx4 result;
 	SubFloat( result, 0 ) = acos( SubFloat( cs, 0 ) );
 	SubFloat( result, 1 ) = acos( SubFloat( cs, 1 ) );
 	SubFloat( result, 2 ) = acos( SubFloat( cs, 2 ) );
 	SubFloat( result, 3 ) = acos( SubFloat( cs, 3 ) );
 	return result;
+#endif
 }
 
 // tan^1(a/b) .. ie, pass sin in as a and cos in as b
 FORCEINLINE fltx4 ArcTan2SIMD( const fltx4 &a, const fltx4 &b )
 {
+#if 1
+	return DirectX::XMVectorATan2( a, b );
+#else
 	fltx4 result;
 	SubFloat( result, 0 ) = atan2( SubFloat( a, 0 ), SubFloat( b, 0 ) );
 	SubFloat( result, 1 ) = atan2( SubFloat( a, 1 ), SubFloat( b, 1 ) );
 	SubFloat( result, 2 ) = atan2( SubFloat( a, 2 ), SubFloat( b, 2 ) );
 	SubFloat( result, 3 ) = atan2( SubFloat( a, 3 ), SubFloat( b, 3 ) );
 	return result;
+#endif
 }
 
 FORCEINLINE fltx4 NegSIMD(const fltx4 &a) // negate: -a
@@ -2195,13 +2225,16 @@ FORCEINLINE fltx4 MaxSIMD( const fltx4 & a, const fltx4 & b )				// max(a,b)
 // Round towards positive infinity
 FORCEINLINE fltx4 CeilSIMD( const fltx4 &a )
 {
+#if 1
+	return DirectX::XMVectorCeiling( a );
+#else
 	fltx4 retVal;
 	SubFloat( retVal, 0 ) = ceil( SubFloat( a, 0 ) );
 	SubFloat( retVal, 1 ) = ceil( SubFloat( a, 1 ) );
 	SubFloat( retVal, 2 ) = ceil( SubFloat( a, 2 ) );
 	SubFloat( retVal, 3 ) = ceil( SubFloat( a, 3 ) );
 	return retVal;
-
+#endif
 }
 
 fltx4 fabs( const fltx4 & x );
@@ -2297,6 +2330,9 @@ FORCEINLINE fltx4 ReciprocalSaturateSIMD( const fltx4 & a )
 // 2^x for all values (the antilog)
 FORCEINLINE fltx4 ExpSIMD( const fltx4 &toPower )
 {
+#if 1
+	return DirectX::XMVectorExp( toPower );
+#else
 	fltx4 retval;
 	SubFloat( retval, 0 ) = powf( 2, SubFloat(toPower, 0) );
 	SubFloat( retval, 1 ) = powf( 2, SubFloat(toPower, 1) );
@@ -2304,6 +2340,7 @@ FORCEINLINE fltx4 ExpSIMD( const fltx4 &toPower )
 	SubFloat( retval, 3 ) = powf( 2, SubFloat(toPower, 3) );
 
 	return retval;
+#endif
 }
 
 // Clamps the components of a vector to a specified minimum and maximum range.
@@ -2411,12 +2448,16 @@ FORCEINLINE fltx4 SignedIntConvertToFltSIMD( const shortx8 &vSrcA )
 // fixed point conversion is done.
 FORCEINLINE fltx4 UnsignedIntConvertToFltSIMD( const u32x4 &vSrcA )
 {
+#if 1
+	return DirectX::XMConvertVectorUIntToFloat( vSrcA, 0 );
+#else
 	fltx4 retval;
 	SubFloat( retval, 0 ) = ( (float) SubInt( retval, 0 ) );
 	SubFloat( retval, 1 ) = ( (float) SubInt( retval, 1 ) );
 	SubFloat( retval, 2 ) = ( (float) SubInt( retval, 2 ) );
 	SubFloat( retval, 3 ) = ( (float) SubInt( retval, 3 ) );
 	return retval;
+#endif
 }
 
 
@@ -2425,12 +2466,16 @@ FORCEINLINE fltx4 UnsignedIntConvertToFltSIMD( const u32x4 &vSrcA )
 // fixed point conversion is done.
 FORCEINLINE fltx4 SignedIntConvertToFltSIMD( const i32x4 &vSrcA )
 {
+#if 1
+	return DirectX::XMConvertVectorIntToFloat( vSrcA, 0 );
+#else
 	fltx4 retval;
 	SubFloat( retval, 0 ) = ( (float) (reinterpret_cast<const int32 *>(&vSrcA)[0]));
 	SubFloat( retval, 1 ) = ( (float) (reinterpret_cast<const int32 *>(&vSrcA)[1]));
 	SubFloat( retval, 2 ) = ( (float) (reinterpret_cast<const int32 *>(&vSrcA)[2]));
 	SubFloat( retval, 3 ) = ( (float) (reinterpret_cast<const int32 *>(&vSrcA)[3]));
 	return retval;
+#endif
 }
 
 /*

@@ -1906,7 +1906,7 @@ void CBaseAnimating::SetupBones( matrix3x4_t *pBoneToWorld, int boneMask )
 	AddEFlags( EFL_SETTING_UP_BONES );
 
 	Vector pos[MAXSTUDIOBONES];
-	Quaternion q[MAXSTUDIOBONES];
+	QuaternionAligned q[MAXSTUDIOBONES];
 
 	// adjust hit boxes based on IK driven offset
 	Vector adjOrigin = GetAbsOrigin() + Vector( 0, 0, m_flEstIkOffset );

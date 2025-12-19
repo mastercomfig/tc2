@@ -430,7 +430,7 @@ void CalcBoneQuaternion( int frame, float s,
 			AngleQuaternion( angle1, q1 );
 			AngleQuaternion( angle2, q2 );
 
-	#ifdef _X360
+	#ifdef ALLOW_SIMD_QUATERNION_MATH
 			fltx4 q1simd, q2simd, qsimd;
 			q1simd = LoadAlignedSIMD( q1 );
 			q2simd = LoadAlignedSIMD( q2 );
@@ -1442,7 +1442,7 @@ void SlerpBones(
 
 			if ( seqdesc.flags & STUDIO_POST )
 			{
-#ifndef _X360
+#ifndef ALLOW_SIMD_QUATERNION_MATH
 				QuaternionMA( q1[i], s2, q2[i], q1[i] );
 #else
 				fltx4 q1simd = LoadUnalignedSIMD( q1[i].Base() );
@@ -1457,7 +1457,7 @@ void SlerpBones(
 			}
 			else
 			{
-#ifndef _X360
+#ifndef ALLOW_SIMD_QUATERNION_MATH
 				QuaternionSM( s2, q2[i], q1[i], q1[i] );
 #else
 				fltx4 q1simd = LoadUnalignedSIMD( q1[i].Base() );
@@ -1484,14 +1484,14 @@ void SlerpBones(
 
 		s1 = 1.0 - s2;
 
-#ifdef _X360
+#ifdef ALLOW_SIMD_QUATERNION_MATH
 		fltx4  q1simd, q2simd, result;
 		q1simd = LoadUnalignedSIMD( q1[i].Base() );
 		q2simd = LoadAlignedSIMD( q2[i] );
 #endif
 		if ( pStudioHdr->boneFlags(i) & BONE_FIXED_ALIGNMENT )
 		{
-#ifndef _X360
+#ifndef ALLOW_SIMD_QUATERNION_MATH
 			QuaternionSlerpNoAlign( q2[i], q1[i], s1, q3 );
 #else
 			result = QuaternionSlerpNoAlignSIMD( q2simd, q1simd, s1 );
@@ -1499,14 +1499,14 @@ void SlerpBones(
 		}
 		else
 		{
-#ifndef _X360
+#ifndef ALLOW_SIMD_QUATERNION_MATH
 			QuaternionSlerp( q2[i], q1[i], s1, q3 );
 #else
 			result = QuaternionSlerpSIMD( q2simd, q1simd, s1 );
 #endif
 		}
 
-#ifndef _X360
+#ifndef ALLOW_SIMD_QUATERNION_MATH
 		q1[i][0] = q3[0];
 		q1[i][1] = q3[1];
 		q1[i][2] = q3[2];

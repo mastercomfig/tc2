@@ -3017,8 +3017,8 @@ bool C_BaseAnimating::SetupBones( matrix3x4_t *pBoneToWorldOut, int nMaxBones, i
 				}
 			}
 
-			Vector		pos[MAXSTUDIOBONES];
-			Quaternion	q[MAXSTUDIOBONES];
+			Vector				pos[MAXSTUDIOBONES];
+			QuaternionAligned	q[MAXSTUDIOBONES];
 #if defined(FP_EXCEPTIONS_ENABLED) || defined(DBGFLAG_ASSERT)
 			// Having these uninitialized means that some bugs are very hard
 			// to reproduce. A memset of 0xFF is a simple way of getting NaNs.

@@ -6,11 +6,18 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#if defined( _X360 ) || defined( WIN64 )
+#if defined( _X360 )
 
 bool CheckMMXTechnology(void) { return false; }
 bool CheckSSETechnology(void) { return false; }
 bool CheckSSE2Technology(void) { return false; }
+bool Check3DNowTechnology(void) { return false; }
+
+#elif defined( WIN64 )
+
+bool CheckMMXTechnology(void) { return false; }
+bool CheckSSETechnology(void) { return true; }
+bool CheckSSE2Technology(void) { return true; }
 bool Check3DNowTechnology(void) { return false; }
 
 #elif defined( _WIN32 ) && !defined( _X360 )
