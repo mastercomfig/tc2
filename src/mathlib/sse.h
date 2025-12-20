@@ -7,6 +7,7 @@
 #ifndef _SSE_H
 #define _SSE_H
 
+#if 0
 float _SSE_Sqrt(float x);
 float _SSE_RSqrtAccurate(float a);
 float _SSE_RSqrtFast(float x);
@@ -22,6 +23,7 @@ float _SSE2_cos(float x);
 #if 0
 void VectorTransformSSE(const float *in1, const matrix3x4_t& in2, float *out1);
 void VectorRotateSSE( const float *in1, const matrix3x4_t& in2, float *out1 );
+#endif
 #endif
 
 #endif // _SSE_H

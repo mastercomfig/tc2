@@ -3321,6 +3321,7 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 	pfFastSinCos = SinCos;
 	pfFastCos = cosf;
 
+#if 0
 	if ( bAllowMMX && pi.m_bMMX )
 	{
 		// Select the MMX specific routines if available
@@ -3328,13 +3329,14 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 		s_bMMXEnabled = true;
 	}
 	else
+#endif
 	{
 		s_bMMXEnabled = false;
 	}
 
 	// SSE Generally performs better than 3DNow when present, so this is placed 
 	// first to allow SSE to override these settings.
-#if !defined( OSX ) && !defined( PLATFORM_WINDOWS_PC64 ) && !defined(LINUX)
+#if 0 && !defined( OSX ) && !defined( PLATFORM_WINDOWS_PC64 ) && !defined( LINUX )
 	if ( bAllow3DNow && pi.m_b3DNow )
 	{
 		s_b3DNowEnabled = true;
@@ -3357,6 +3359,7 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 	{
 		s_bSSEEnabled = true;
 
+#if 0
 #ifndef PLATFORM_WINDOWS_PC64
 		// These are not yet available.
 		// Select the SSE specific routines if available
@@ -3371,6 +3374,7 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 		pfFastSinCos = _SSE_SinCos;
 		pfFastCos = _SSE_cos;
 #endif
+#endif
 	}
 	else
 	{
@@ -3380,9 +3384,11 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 	if ( bAllowSSE2 && pi.m_bSSE2 )
 	{
 		s_bSSE2Enabled = true;
+#if 0
 #ifdef PLATFORM_WINDOWS_PC32
 		pfFastSinCos = _SSE2_SinCos;
 		pfFastCos = _SSE2_cos;
+#endif
 #endif
 	} 
 	else

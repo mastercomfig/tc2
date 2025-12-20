@@ -2207,20 +2207,20 @@ inline void AngularImpulseToQAngle( const AngularImpulse &impulse, QAngle &angle
 FORCEINLINE vec_t InvRSquared( float const *v )
 {
 	// The compiler will make it good
-	return 1.f / ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + 1.0e-10f );
+	return 1.f / ( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + FLT_EPSILON );
 }
 
 FORCEINLINE vec_t InvRSquared( const Vector &v )
 {
 	// The compiler will make it good
-	return 1.0f / ( v.x * v.x + v.y * v.y + v.z * v.z + 1.0e-10f );
+	return 1.0f / ( v.x * v.x + v.y * v.y + v.z * v.z + FLT_EPSILON );
 }
 
 // FIXME: Change this back to a #define once we get rid of the vec_t version
 FORCEINLINE float VectorNormalize( Vector& vec )
 {
 	// The compiler will make it good
-	const float len = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + 1.0e-10f);
+	const float len = sqrtf(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + FLT_EPSILON );
 	const float invlen = 1.0f / len;
 	vec.x *= invlen;
 	vec.y *= invlen;
@@ -2237,7 +2237,7 @@ FORCEINLINE float VectorNormalize( float * v )
 FORCEINLINE void VectorNormalizeFast( Vector &vec )
 {
 	// The previous version just called VectorNormalize but it's significant to be able to do a rsqrtss here.
-	const float invlen = 1.0f / sqrtf( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + 1.0e-10f );
+	const float invlen = 1.0f / sqrtf( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z + FLT_EPSILON );
 	vec.x *= invlen;
 	vec.y *= invlen;
 	vec.z *= invlen;
