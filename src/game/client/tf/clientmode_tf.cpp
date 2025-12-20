@@ -331,6 +331,8 @@ void CTFModeManager::Init()
 
 ConVar cl_interpolate_disable("cl_interpolate_disable", "0", FCVAR_CHEAT);
 
+ConVar mat_motion_blur_first_init( "mat_motion_blur_first_init", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN );
+
 void CTFModeManager::LevelInit( const char *newmap )
 {
 	g_pClientMode->LevelInit( newmap );
@@ -554,6 +556,13 @@ void ClientModeTFNormal::Init()
 	if (mat_lodin_time.IsValid())
 	{
 		mat_lodin_time.SetValue(0.4f);
+	}
+
+	if ( !mat_motion_blur_first_init.GetBool() )
+	{
+		static ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
+		mat_motion_blur_enabled.SetValue( "0" );
+		mat_motion_blur_first_init.SetValue( "1" );
 	}
 }
 
