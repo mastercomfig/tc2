@@ -96,3 +96,9 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{secrets.REPO_TOKEN}}
+
+      - name: Cleanup
+        id: cleanup
+        run: |
+          rm -rf game_dist
+          git clean -xfd -- game src
