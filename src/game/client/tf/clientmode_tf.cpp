@@ -332,6 +332,7 @@ void CTFModeManager::Init()
 ConVar cl_interpolate_disable("cl_interpolate_disable", "0", FCVAR_CHEAT);
 
 ConVar mat_motion_blur_first_init( "mat_motion_blur_first_init", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN );
+ConVar mat_defaults_first_init("mat_defaults_first_init", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN);
 
 void CTFModeManager::LevelInit( const char *newmap )
 {
@@ -558,11 +559,41 @@ void ClientModeTFNormal::Init()
 		mat_lodin_time.SetValue(0.4f);
 	}
 
+	bool bChangedMatSettings = false;
+
 	if ( !mat_motion_blur_first_init.GetBool() )
 	{
 		static ConVarRef mat_motion_blur_enabled( "mat_motion_blur_enabled" );
 		mat_motion_blur_enabled.SetValue( "0" );
 		mat_motion_blur_first_init.SetValue( "1" );
+		bChangedMatSettings = true;
+	}
+
+	if ( !mat_defaults_first_init.GetBool() )
+	{
+		static ConVarRef mat_antialias("mat_antialias");
+		static ConVarRef mat_trilinear("mat_trilinear");
+		static ConVarRef mat_forceaniso("mat_forceaniso");
+		static ConVarRef mat_picmip("mat_picmip");
+
+		mat_antialias.SetValue("4");
+		mat_trilinear.SetValue("1");
+		mat_forceaniso.SetValue("8");
+		mat_picmip.SetValue("0");
+		bChangedMatSettings = true;
+	}
+
+	static ConVarRef mat_dxlevel("mat_dxlevel");
+	const int nDxLevel = mat_dxlevel.GetInt();
+	if ( nDxLevel != 95 || nDxLevel != 100 )
+	{
+		mat_dxlevel.SetValue("95");
+		bChangedMatSettings = true;
+	}
+
+	if ( bChangedMatSettings )
+	{
+		engine->ClientCmd_Unrestricted("mat_savechanges;host_writeconfig");
 	}
 }
 

@@ -49,7 +49,7 @@
 struct model_t;
 
 
-ConVar cl_detaildist( "cl_detaildist", "1200", 0, "Distance at which detail props are no longer visible" );
+ConVar cl_detaildist( "cl_detaildist", "4096", 0, "Distance at which detail props are no longer visible" );
 ConVar cl_detailfade( "cl_detailfade", "400", 0, "Distance across which detail props fade in" );
 #if defined( USE_DETAIL_SHAPES ) 
 ConVar cl_detail_max_sway( "cl_detail_max_sway", "0", FCVAR_ARCHIVE, "Amplitude of the detail prop sway" );
@@ -367,8 +367,11 @@ public:
 	// Init, shutdown
 	bool Init()
 	{
+		// mcoms: no more map specific detail dist
+#if 0
 		m_flDefaultFadeStart = cl_detailfade.GetFloat();
 		m_flDefaultFadeEnd = cl_detaildist.GetFloat();
+#endif
 		return true;
 	}
 	void PostInit() {}
@@ -1521,6 +1524,8 @@ void CDetailObjectSystem::LevelInitPostEntity()
 	}
 	m_DetailSpriteMaterial.Init( pDetailSpriteMaterial, TEXTURE_GROUP_OTHER );
 
+	// mcoms: no more map specific detail dist
+#if 0
 	if ( GetDetailController() )
 	{
 		cl_detailfade.SetValue( MIN( m_flDefaultFadeStart, GetDetailController()->m_flFadeStartDist ) );
@@ -1532,6 +1537,7 @@ void CDetailObjectSystem::LevelInitPostEntity()
 		cl_detailfade.SetValue( m_flDefaultFadeStart );
 		cl_detaildist.SetValue( m_flDefaultFadeEnd );
 	}
+#endif
 }
 
 void CDetailObjectSystem::LevelShutdownPreEntity()
