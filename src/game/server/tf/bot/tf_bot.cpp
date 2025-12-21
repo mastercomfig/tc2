@@ -200,7 +200,6 @@ const char *GetRandomBotName( void )
 		"Maggot",
 		"CRITRAWKETS",
 		"Herr Doktor",
-		"Gentlemanne of Leisure",
 		"Companion Cube",
 		"Target Practice",
 		"One-Man Cheeseburger Apocalypse",
