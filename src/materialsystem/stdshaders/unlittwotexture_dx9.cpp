@@ -10,9 +10,8 @@
 #include "cloak_blended_pass_helper.h"
 #include "cpp_shader_constant_register_map.h"
 
-#include "unlittwotexture_vs20.inc"
-#include "unlittwotexture_ps20.inc"
-#include "unlittwotexture_ps20b.inc"
+#include "unlittwotexture_vs30.inc"
+#include "unlittwotexture_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -191,19 +190,11 @@ BEGIN_VS_SHADER( UnlitTwoTexture_DX9, "Help for UnlitTwoTexture_DX9" )
 				}
 				pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-				DECLARE_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
-				SET_STATIC_VERTEX_SHADER( unlittwotexture_vs20 );
+				DECLARE_STATIC_VERTEX_SHADER( unlittwotexture_vs30 );
+				SET_STATIC_VERTEX_SHADER( unlittwotexture_vs30 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
-					SET_STATIC_PIXEL_SHADER( unlittwotexture_ps20b );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps20 );
-					SET_STATIC_PIXEL_SHADER( unlittwotexture_ps20 );
-				}
+				DECLARE_STATIC_PIXEL_SHADER( unlittwotexture_ps30 );
+				SET_STATIC_PIXEL_SHADER( unlittwotexture_ps30 );
 
 				DefaultFog();
 
@@ -228,29 +219,18 @@ BEGIN_VS_SHADER( UnlitTwoTexture_DX9, "Help for UnlitTwoTexture_DX9" )
 				int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 				int numBones = pShaderAPI->GetCurrentNumBones();
 
-				DECLARE_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs20 );
+				DECLARE_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs30 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-				SET_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs20 );
+				SET_DYNAMIC_VERTEX_SHADER( unlittwotexture_vs30 );
 
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO(	LIGHTING_PREVIEW, 
-						pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) );
-					SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20b );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO(	LIGHTING_PREVIEW, 
-						pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) );
-					SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps20 );
-				}
+				DECLARE_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps30 );
+				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
+				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
+				SET_DYNAMIC_PIXEL_SHADER_COMBO(	LIGHTING_PREVIEW, 
+					pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) );
+				SET_DYNAMIC_PIXEL_SHADER( unlittwotexture_ps30 );
 			}
 			Draw();
 		}

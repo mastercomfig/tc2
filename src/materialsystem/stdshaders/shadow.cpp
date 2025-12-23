@@ -8,9 +8,8 @@
 
 #include "BaseVSShader.h"
 
-#include "shadow_ps20.inc"
-#include "shadow_ps20b.inc"
-#include "shadow_vs20.inc"
+#include "shadow_vs30.inc"
+#include "shadow_ps30.inc"
 
 BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 
@@ -66,19 +65,11 @@ BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 			int numTexCoords = 1;
 			pShaderShadow->VertexShaderVertexFormat( flags, numTexCoords, 0, 0 );
 
-			DECLARE_STATIC_VERTEX_SHADER( shadow_vs20 );
-			SET_STATIC_VERTEX_SHADER( shadow_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( shadow_vs30 );
+			SET_STATIC_VERTEX_SHADER( shadow_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shadow_ps20b );
-				SET_STATIC_PIXEL_SHADER( shadow_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( shadow_ps20 );
-				SET_STATIC_PIXEL_SHADER( shadow_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( shadow_ps30 );
+			SET_STATIC_PIXEL_SHADER( shadow_ps30 );
 
 			pShaderShadow->EnableSRGBWrite( true );
 
@@ -111,22 +102,13 @@ BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 			MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
 			int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( shadow_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( shadow_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
-			SET_DYNAMIC_VERTEX_SHADER( shadow_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( shadow_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( shadow_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( shadow_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
+			SET_DYNAMIC_PIXEL_SHADER( shadow_ps30 );
 
 			float eyePos[4];
 			pShaderAPI->GetWorldSpaceCameraPosition( eyePos );

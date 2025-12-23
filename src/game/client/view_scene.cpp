@@ -117,7 +117,7 @@ int HudTransform( const Vector& point, Vector& screen )
 void UpdateFullScreenDepthTexture( void )
 {
 	CMatRenderContextPtr pRenderContext( materials );
-	if( !g_pMaterialSystemHardwareConfig->SupportsPixelShaders_2_b() || g_pMaterialSystemHardwareConfig->PreferReducedFillrate() )
+	if ( g_pMaterialSystemHardwareConfig->PreferReducedFillrate() )
 	{
 		pRenderContext->SetFullScreenDepthTextureValidityFlag( false );
 		return;

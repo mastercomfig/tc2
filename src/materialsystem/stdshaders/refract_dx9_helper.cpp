@@ -8,9 +8,8 @@
 #include "BaseVSShader.h"
 #include "refract_dx9_helper.h"
 #include "convar.h"
-#include "Refract_vs20.inc"
-#include "Refract_ps20.inc"
-#include "Refract_ps20b.inc"
+#include "Refract_vs30.inc"
+#include "Refract_ps30.inc"
 #include "cpp_shader_constant_register_map.h"
 
 #define MAXBLUR 1
@@ -176,40 +175,21 @@ void DrawRefract_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyna
 
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 		
-		DECLARE_STATIC_VERTEX_SHADER( refract_vs20 );
+		DECLARE_STATIC_VERTEX_SHADER( refract_vs30 );
 		SET_STATIC_VERTEX_SHADER_COMBO( MODEL,  bIsModel );
 		SET_STATIC_VERTEX_SHADER_COMBO( COLORMODULATE, bColorModulate );
-		SET_STATIC_VERTEX_SHADER( refract_vs20 );
+		SET_STATIC_VERTEX_SHADER( refract_vs30 );
 
-		// We have to do this in the shader on R500 or Leopard
-		bool bShaderSRGBConvert = IsOSX() && ( g_pHardwareConfig->FakeSRGBWrite() || !g_pHardwareConfig->CanDoSRGBReadFromRTs() );
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() ) // always send OpenGL down the ps2b path
-		{
-			DECLARE_STATIC_PIXEL_SHADER( refract_ps20b );
-			SET_STATIC_PIXEL_SHADER_COMBO( BLUR,  blurAmount );
-			SET_STATIC_PIXEL_SHADER_COMBO( FADEOUTONSILHOUETTE,  bFadeOutOnSilhouette );
-			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
-			SET_STATIC_PIXEL_SHADER_COMBO( REFRACTTINTTEXTURE,  bRefractTintTexture );
-			SET_STATIC_PIXEL_SHADER_COMBO( MASKED, bMasked );
-			SET_STATIC_PIXEL_SHADER_COMBO( COLORMODULATE, bColorModulate );
-			SET_STATIC_PIXEL_SHADER_COMBO( SECONDARY_NORMAL, bSecondaryNormal );
-			SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-			SET_STATIC_PIXEL_SHADER_COMBO( SHADER_SRGB_READ, bShaderSRGBConvert );
-			SET_STATIC_PIXEL_SHADER( refract_ps20b );
-		}
-		else
-		{
-			DECLARE_STATIC_PIXEL_SHADER( refract_ps20 );
-			SET_STATIC_PIXEL_SHADER_COMBO( BLUR,  blurAmount );
-			SET_STATIC_PIXEL_SHADER_COMBO( FADEOUTONSILHOUETTE,  bFadeOutOnSilhouette );
-			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
-			SET_STATIC_PIXEL_SHADER_COMBO( REFRACTTINTTEXTURE,  bRefractTintTexture );
-			SET_STATIC_PIXEL_SHADER_COMBO( MASKED, bMasked );
-			SET_STATIC_PIXEL_SHADER_COMBO( COLORMODULATE, bColorModulate );
-			SET_STATIC_PIXEL_SHADER_COMBO( SECONDARY_NORMAL, bSecondaryNormal );
-			SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-			SET_STATIC_PIXEL_SHADER( refract_ps20 );
-		}
+		DECLARE_STATIC_PIXEL_SHADER( refract_ps30 );
+		SET_STATIC_PIXEL_SHADER_COMBO( BLUR,  blurAmount );
+		SET_STATIC_PIXEL_SHADER_COMBO( FADEOUTONSILHOUETTE,  bFadeOutOnSilhouette );
+		SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
+		SET_STATIC_PIXEL_SHADER_COMBO( REFRACTTINTTEXTURE,  bRefractTintTexture );
+		SET_STATIC_PIXEL_SHADER_COMBO( MASKED, bMasked );
+		SET_STATIC_PIXEL_SHADER_COMBO( COLORMODULATE, bColorModulate );
+		SET_STATIC_PIXEL_SHADER_COMBO( SECONDARY_NORMAL, bSecondaryNormal );
+		SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
+		SET_STATIC_PIXEL_SHADER( refract_ps30 );
 		pShader->DefaultFog();
 		if( bMasked )
 		{
@@ -249,24 +229,15 @@ void DrawRefract_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyna
 			pShader->BindTexture( SHADER_SAMPLER5, info.m_nRefractTintTexture, info.m_nRefractTintTextureFrame );
 		}
 
-		DECLARE_DYNAMIC_VERTEX_SHADER( refract_vs20 );
+		DECLARE_DYNAMIC_VERTEX_SHADER( refract_vs30 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-		SET_DYNAMIC_VERTEX_SHADER( refract_vs20 );
+		SET_DYNAMIC_VERTEX_SHADER( refract_vs30 );
 
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() ) // always send Posix down the ps2b path
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( refract_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteZ && bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
-			SET_DYNAMIC_PIXEL_SHADER( refract_ps20b );
-		}
-		else
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( refract_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-			SET_DYNAMIC_PIXEL_SHADER( refract_ps20 );
-		}
+		DECLARE_DYNAMIC_PIXEL_SHADER( refract_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteZ && bFullyOpaque && pShaderAPI->ShouldWriteDepthToDestAlpha() );
+		SET_DYNAMIC_PIXEL_SHADER( refract_ps30 );
 
 		pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_1, info.m_nBumpTransform );	// 1 & 2
 		pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3, info.m_nBumpTransform2 );	// 3 & 4

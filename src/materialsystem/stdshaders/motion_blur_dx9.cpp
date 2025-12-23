@@ -6,9 +6,8 @@
 //===========================================================================//
 
 #include "BaseVSShader.h"
-#include "motion_blur_vs20.inc"
-#include "motion_blur_ps20.inc"
-#include "motion_blur_ps20b.inc"
+#include "motion_blur_vs30.inc"
+#include "motion_blur_ps30.inc"
 #include "convar.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -40,7 +39,7 @@ BEGIN_VS_SHADER_FLAGS( MotionBlur_dx9, "Motion Blur", SHADER_NOT_EDITABLE )
 	{
 		if ( params[BASETEXTURE]->IsDefined() )
 		{
-			LoadTexture( BASETEXTURE, IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs() ? TEXTUREFLAGS_SRGB : 0 );
+			LoadTexture( BASETEXTURE, 0 );
 		}
 	}
 
@@ -49,28 +48,17 @@ BEGIN_VS_SHADER_FLAGS( MotionBlur_dx9, "Motion Blur", SHADER_NOT_EDITABLE )
 		SHADOW_STATE
 		{
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
-
-			// On OpenGL OSX, we must do sRGB reads and writes since these render targets are tagged as such
-			bool bForceSRGBReadsAndWrites = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
 			
 			// NOTE: sRGB is disabled because of the NV8800 brokenness
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, bForceSRGBReadsAndWrites );
-			pShaderShadow->EnableSRGBWrite( bForceSRGBReadsAndWrites );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
+			pShaderShadow->EnableSRGBWrite( false );
 
-			DECLARE_STATIC_VERTEX_SHADER( motion_blur_vs20 );
-			SET_STATIC_VERTEX_SHADER( motion_blur_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( motion_blur_vs30 );
+			SET_STATIC_VERTEX_SHADER( motion_blur_vs30 );
 
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( motion_blur_ps20b );
-				SET_STATIC_PIXEL_SHADER( motion_blur_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( motion_blur_ps20 );
-				SET_STATIC_PIXEL_SHADER( motion_blur_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( motion_blur_ps30 );
+			SET_STATIC_PIXEL_SHADER( motion_blur_ps30 );
 
 			pShaderShadow->EnableDepthWrites( false );
 			pShaderShadow->EnableAlphaWrites( false );
@@ -78,8 +66,8 @@ BEGIN_VS_SHADER_FLAGS( MotionBlur_dx9, "Motion Blur", SHADER_NOT_EDITABLE )
 
 		DYNAMIC_STATE
 		{
-			DECLARE_DYNAMIC_VERTEX_SHADER( motion_blur_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( motion_blur_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( motion_blur_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( motion_blur_vs30 );
 
 			// Bind textures
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE );
@@ -113,18 +101,9 @@ BEGIN_VS_SHADER_FLAGS( MotionBlur_dx9, "Motion Blur", SHADER_NOT_EDITABLE )
 				nQuality = 0;
 			}
 
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( motion_blur_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( QUALITY, nQuality );
-				SET_DYNAMIC_PIXEL_SHADER( motion_blur_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( motion_blur_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( QUALITY, nQuality );
-				SET_DYNAMIC_PIXEL_SHADER( motion_blur_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( motion_blur_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( QUALITY, nQuality );
+			SET_DYNAMIC_PIXEL_SHADER( motion_blur_ps30 );
 		}
 
 		Draw();

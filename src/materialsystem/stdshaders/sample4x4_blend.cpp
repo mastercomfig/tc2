@@ -12,7 +12,7 @@
 BEGIN_VS_SHADER( Sample4x4_Blend, "Help for Sample4x4_Blend" )
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( BASETEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "" )
-		SHADER_PARAM( PIXSHADER, SHADER_PARAM_TYPE_STRING, "sample4x4_ps20", "Name of the pixel shader to use" )
+		SHADER_PARAM( PIXSHADER, SHADER_PARAM_TYPE_STRING, "sample4x4_ps30", "Name of the pixel shader to use" )
 	END_SHADER_PARAMS
 
 	SHADER_INIT
@@ -42,7 +42,7 @@ BEGIN_VS_SHADER( Sample4x4_Blend, "Help for Sample4x4_Blend" )
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 			
-			pShaderShadow->SetVertexShader( "Downsample_vs20", 0 );
+			pShaderShadow->SetVertexShader( "Downsample_vs30", 0 );
 			
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{

@@ -418,6 +418,18 @@ static CDllDemandLoader g_GameUI( "GameUI" );
 //-----------------------------------------------------------------------------
 void ClientModeTFNormal::Init()
 {
+	if ( !g_pMaterialSystemHardwareConfig->SupportsShaderModel_3_0() )
+	{
+		Error(
+			"Your graphics card falls below our official minimum specs.\n"
+			"In previous versions, this spec was recommended for minor\n"
+			"graphical improvements using these hardware capabilities.\n"
+			"However, Team Fortress 2 now relies heavily on graphics features such as Shader Model 3.0\n"
+			"and so adherence to the prior recommended spec is now the minimum requirement.\n"
+			"Unfortunately this means that Team Fortress 2 will not be able to run\n"
+			"on some graphics cards from 2006 or before.\n");
+	}
+
 	m_pMenuEngyBuild = ( CHudMenuEngyBuild * )GET_HUDELEMENT( CHudMenuEngyBuild );
 	Assert( m_pMenuEngyBuild );
 

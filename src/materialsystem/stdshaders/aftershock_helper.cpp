@@ -6,9 +6,8 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "aftershock_vs20.inc"
-#include "aftershock_ps20.inc"
-#include "aftershock_ps20b.inc"
+#include "aftershock_vs30.inc"
+#include "aftershock_ps30.inc"
 
 
 void InitParamsAftershock( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, AftershockVars_t &info )
@@ -87,20 +86,12 @@ void DrawAftershock( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynam
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
 		// Vertex Shader
-		DECLARE_STATIC_VERTEX_SHADER( aftershock_vs20 );
-		SET_STATIC_VERTEX_SHADER( aftershock_vs20 );
+		DECLARE_STATIC_VERTEX_SHADER( aftershock_vs30 );
+		SET_STATIC_VERTEX_SHADER( aftershock_vs30 );
 	
 		// Pixel Shader
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-			DECLARE_STATIC_PIXEL_SHADER( aftershock_ps20b );
-			SET_STATIC_PIXEL_SHADER( aftershock_ps20b );
-		}
-		else
-		{
-			DECLARE_STATIC_PIXEL_SHADER( aftershock_ps20 );
-			SET_STATIC_PIXEL_SHADER( aftershock_ps20 );
-		}
+		DECLARE_STATIC_PIXEL_SHADER( aftershock_ps30 );
+		SET_STATIC_PIXEL_SHADER( aftershock_ps30 );
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true ); // Refraction texture
@@ -119,10 +110,10 @@ void DrawAftershock( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynam
 	DYNAMIC_STATE
 	{
 		// Set Vertex Shader Combos
-		DECLARE_DYNAMIC_VERTEX_SHADER( aftershock_vs20 );
+		DECLARE_DYNAMIC_VERTEX_SHADER( aftershock_vs30 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-		SET_DYNAMIC_VERTEX_SHADER( aftershock_vs20 );
+		SET_DYNAMIC_VERTEX_SHADER( aftershock_vs30 );
 
 		// Set Vertex Shader Constants 
 		if ( info.m_nBumpTransform != -1 )
@@ -138,16 +129,8 @@ void DrawAftershock( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynam
 		pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, vPackedVsConst1, 1 );
 
 		// Set Pixel Shader Combos
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( aftershock_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER( aftershock_ps20b );
-		}
-		else
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( aftershock_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER( aftershock_ps20 );
-		}
+		DECLARE_DYNAMIC_PIXEL_SHADER( aftershock_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER( aftershock_ps30 );
 
 		// Bind textures
 		pShaderAPI->BindStandardTexture( SHADER_SAMPLER0, TEXTURE_FRAME_BUFFER_FULL_TEXTURE_0 ); // Refraction Map

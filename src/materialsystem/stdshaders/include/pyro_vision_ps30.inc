@@ -1,312 +1,207 @@
+// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
+// ( STRIPES == 0 ) &&  ( STRIPES_USE_NORMAL2 == 1 )
+// ( EFFECT != 1 ) &&  ( COLOR_BAR == 1 )
+// ( EFFECT != 2 ) &&  ( VISUALIZE_DOF == 1 )
+// ( EFFECT == 2 || EFFECT == 3 ) && ( STRIPES == 1 || STRIPES_USE_NORMAL2 == 1 || COLOR_BAR == 1 || BASETEXTURE2 == 1 || FANCY_BLENDING == 1 || VERTEX_LIT == 1 || PIXELFOGTYPE == 1 || SELFILLUM == 1 )
+// ( EFFECT != 3 ) && ( HEATHAZE == 1 )
+// defined $HDRTYPE && defined $HDRENABLED && !$HDRTYPE && $HDRENABLED
+// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
+// defined $LIGHTING_PREVIEW && defined $HDRTYPE && $LIGHTING_PREVIEW && $HDRTYPE != 0
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
+// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
+// defined $HDRTYPE && defined $HDRENABLED && !$HDRTYPE && $HDRENABLED
+// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
+// defined $LIGHTING_PREVIEW && defined $HDRTYPE && $LIGHTING_PREVIEW && $HDRTYPE != 0
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
+// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
+
+#pragma once
 #include "shaderlib/cshader.h"
 class pyro_vision_ps30_Static_Index
 {
-private:
-	int m_nEFFECT;
+	unsigned int m_nEFFECT : 3;
+	unsigned int m_nVERTEX_LIT : 2;
+	unsigned int m_nBASETEXTURE2 : 2;
+	unsigned int m_nFANCY_BLENDING : 2;
+	unsigned int m_nSELFILLUM : 2;
+	unsigned int m_nCOLOR_BAR : 2;
+	unsigned int m_nSTRIPES : 2;
+	unsigned int m_nSTRIPES_USE_NORMAL2 : 2;
 #ifdef _DEBUG
-	bool m_bEFFECT;
-#endif
+	bool m_bEFFECT : 1;
+	bool m_bVERTEX_LIT : 1;
+	bool m_bBASETEXTURE2 : 1;
+	bool m_bFANCY_BLENDING : 1;
+	bool m_bSELFILLUM : 1;
+	bool m_bCOLOR_BAR : 1;
+	bool m_bSTRIPES : 1;
+	bool m_bSTRIPES_USE_NORMAL2 : 1;
+#endif	// _DEBUG
 public:
 	void SetEFFECT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 3 );
+		Assert( i >= 0 && i <= 3 );
 		m_nEFFECT = i;
 #ifdef _DEBUG
 		m_bEFFECT = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetEFFECT( bool i )
-	{
-		m_nEFFECT = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bEFFECT = true;
-#endif
-	}
-private:
-	int m_nVERTEX_LIT;
-#ifdef _DEBUG
-	bool m_bVERTEX_LIT;
-#endif
-public:
+
 	void SetVERTEX_LIT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nVERTEX_LIT = i;
 #ifdef _DEBUG
 		m_bVERTEX_LIT = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetVERTEX_LIT( bool i )
-	{
-		m_nVERTEX_LIT = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bVERTEX_LIT = true;
-#endif
-	}
-private:
-	int m_nBASETEXTURE2;
-#ifdef _DEBUG
-	bool m_bBASETEXTURE2;
-#endif
-public:
+
 	void SetBASETEXTURE2( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nBASETEXTURE2 = i;
 #ifdef _DEBUG
 		m_bBASETEXTURE2 = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetBASETEXTURE2( bool i )
-	{
-		m_nBASETEXTURE2 = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bBASETEXTURE2 = true;
-#endif
-	}
-private:
-	int m_nFANCY_BLENDING;
-#ifdef _DEBUG
-	bool m_bFANCY_BLENDING;
-#endif
-public:
+
 	void SetFANCY_BLENDING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nFANCY_BLENDING = i;
 #ifdef _DEBUG
 		m_bFANCY_BLENDING = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetFANCY_BLENDING( bool i )
-	{
-		m_nFANCY_BLENDING = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bFANCY_BLENDING = true;
-#endif
-	}
-private:
-	int m_nSELFILLUM;
-#ifdef _DEBUG
-	bool m_bSELFILLUM;
-#endif
-public:
+
 	void SetSELFILLUM( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSELFILLUM = i;
 #ifdef _DEBUG
 		m_bSELFILLUM = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetSELFILLUM( bool i )
-	{
-		m_nSELFILLUM = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bSELFILLUM = true;
-#endif
-	}
-private:
-	int m_nCOLOR_BAR;
-#ifdef _DEBUG
-	bool m_bCOLOR_BAR;
-#endif
-public:
+
 	void SetCOLOR_BAR( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCOLOR_BAR = i;
 #ifdef _DEBUG
 		m_bCOLOR_BAR = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetCOLOR_BAR( bool i )
-	{
-		m_nCOLOR_BAR = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bCOLOR_BAR = true;
-#endif
-	}
-private:
-	int m_nSTRIPES;
-#ifdef _DEBUG
-	bool m_bSTRIPES;
-#endif
-public:
+
 	void SetSTRIPES( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSTRIPES = i;
 #ifdef _DEBUG
 		m_bSTRIPES = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetSTRIPES( bool i )
-	{
-		m_nSTRIPES = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bSTRIPES = true;
-#endif
-	}
-private:
-	int m_nSTRIPES_USE_NORMAL2;
-#ifdef _DEBUG
-	bool m_bSTRIPES_USE_NORMAL2;
-#endif
-public:
+
 	void SetSTRIPES_USE_NORMAL2( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSTRIPES_USE_NORMAL2 = i;
 #ifdef _DEBUG
 		m_bSTRIPES_USE_NORMAL2 = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetSTRIPES_USE_NORMAL2( bool i )
+
+	pyro_vision_ps30_Static_Index(  )
 	{
-		m_nSTRIPES_USE_NORMAL2 = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bSTRIPES_USE_NORMAL2 = true;
-#endif
-	}
-public:
-	pyro_vision_ps30_Static_Index( )
-	{
+		m_nEFFECT = 0;
+		m_nVERTEX_LIT = 0;
+		m_nBASETEXTURE2 = 0;
+		m_nFANCY_BLENDING = 0;
+		m_nSELFILLUM = 0;
+		m_nCOLOR_BAR = 0;
+		m_nSTRIPES = 0;
+		m_nSTRIPES_USE_NORMAL2 = 0;
 #ifdef _DEBUG
 		m_bEFFECT = false;
-#endif // _DEBUG
-		m_nEFFECT = 0;
-#ifdef _DEBUG
 		m_bVERTEX_LIT = false;
-#endif // _DEBUG
-		m_nVERTEX_LIT = 0;
-#ifdef _DEBUG
 		m_bBASETEXTURE2 = false;
-#endif // _DEBUG
-		m_nBASETEXTURE2 = 0;
-#ifdef _DEBUG
 		m_bFANCY_BLENDING = false;
-#endif // _DEBUG
-		m_nFANCY_BLENDING = 0;
-#ifdef _DEBUG
 		m_bSELFILLUM = false;
-#endif // _DEBUG
-		m_nSELFILLUM = 0;
-#ifdef _DEBUG
 		m_bCOLOR_BAR = false;
-#endif // _DEBUG
-		m_nCOLOR_BAR = 0;
-#ifdef _DEBUG
 		m_bSTRIPES = false;
-#endif // _DEBUG
-		m_nSTRIPES = 0;
-#ifdef _DEBUG
 		m_bSTRIPES_USE_NORMAL2 = false;
-#endif // _DEBUG
-		m_nSTRIPES_USE_NORMAL2 = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bEFFECT && m_bVERTEX_LIT && m_bBASETEXTURE2 && m_bFANCY_BLENDING && m_bSELFILLUM && m_bCOLOR_BAR && m_bSTRIPES && m_bSTRIPES_USE_NORMAL2;
-		DebugAssert( bAllStaticVarsDefined );
-#endif // _DEBUG
+		Assert( m_bEFFECT && m_bVERTEX_LIT && m_bBASETEXTURE2 && m_bFANCY_BLENDING && m_bSELFILLUM && m_bCOLOR_BAR && m_bSTRIPES && m_bSTRIPES_USE_NORMAL2 );
 		return ( 8 * m_nEFFECT ) + ( 32 * m_nVERTEX_LIT ) + ( 64 * m_nBASETEXTURE2 ) + ( 128 * m_nFANCY_BLENDING ) + ( 256 * m_nSELFILLUM ) + ( 512 * m_nCOLOR_BAR ) + ( 1024 * m_nSTRIPES ) + ( 2048 * m_nSTRIPES_USE_NORMAL2 ) + 0;
 	}
 };
-#define shaderStaticTest_pyro_vision_ps30 psh_forgot_to_set_static_EFFECT + psh_forgot_to_set_static_VERTEX_LIT + psh_forgot_to_set_static_BASETEXTURE2 + psh_forgot_to_set_static_FANCY_BLENDING + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_COLOR_BAR + psh_forgot_to_set_static_STRIPES + psh_forgot_to_set_static_STRIPES_USE_NORMAL2 + 0
+
+#define shaderStaticTest_pyro_vision_ps30 psh_forgot_to_set_static_EFFECT + psh_forgot_to_set_static_VERTEX_LIT + psh_forgot_to_set_static_BASETEXTURE2 + psh_forgot_to_set_static_FANCY_BLENDING + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_COLOR_BAR + psh_forgot_to_set_static_STRIPES + psh_forgot_to_set_static_STRIPES_USE_NORMAL2
+
+
 class pyro_vision_ps30_Dynamic_Index
 {
-private:
-	int m_nPIXELFOGTYPE;
+	unsigned int m_nPIXELFOGTYPE : 2;
+	unsigned int m_nVISUALIZE_DOF : 2;
+	unsigned int m_nHEATHAZE : 2;
 #ifdef _DEBUG
-	bool m_bPIXELFOGTYPE;
-#endif
+	bool m_bPIXELFOGTYPE : 1;
+	bool m_bVISUALIZE_DOF : 1;
+	bool m_bHEATHAZE : 1;
+#endif	// _DEBUG
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetPIXELFOGTYPE( bool i )
-	{
-		m_nPIXELFOGTYPE = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bPIXELFOGTYPE = true;
-#endif
-	}
-private:
-	int m_nVISUALIZE_DOF;
-#ifdef _DEBUG
-	bool m_bVISUALIZE_DOF;
-#endif
-public:
+
 	void SetVISUALIZE_DOF( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nVISUALIZE_DOF = i;
 #ifdef _DEBUG
 		m_bVISUALIZE_DOF = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetVISUALIZE_DOF( bool i )
-	{
-		m_nVISUALIZE_DOF = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bVISUALIZE_DOF = true;
-#endif
-	}
-private:
-	int m_nHEATHAZE;
-#ifdef _DEBUG
-	bool m_bHEATHAZE;
-#endif
-public:
+
 	void SetHEATHAZE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nHEATHAZE = i;
 #ifdef _DEBUG
 		m_bHEATHAZE = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetHEATHAZE( bool i )
+
+	pyro_vision_ps30_Dynamic_Index(  )
 	{
-		m_nHEATHAZE = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bHEATHAZE = true;
-#endif
-	}
-public:
-	pyro_vision_ps30_Dynamic_Index()
-	{
+		m_nPIXELFOGTYPE = 0;
+		m_nVISUALIZE_DOF = 0;
+		m_nHEATHAZE = 0;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = false;
-#endif // _DEBUG
-		m_nPIXELFOGTYPE = 0;
-#ifdef _DEBUG
 		m_bVISUALIZE_DOF = false;
-#endif // _DEBUG
-		m_nVISUALIZE_DOF = 0;
-#ifdef _DEBUG
 		m_bHEATHAZE = false;
-#endif // _DEBUG
-		m_nHEATHAZE = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllDynamicVarsDefined = m_bPIXELFOGTYPE && m_bVISUALIZE_DOF && m_bHEATHAZE;
-		DebugAssert( bAllDynamicVarsDefined );
-#endif // _DEBUG
+		Assert( m_bPIXELFOGTYPE && m_bVISUALIZE_DOF && m_bHEATHAZE );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 2 * m_nVISUALIZE_DOF ) + ( 4 * m_nHEATHAZE ) + 0;
 	}
 };
-#define shaderDynamicTest_pyro_vision_ps30 psh_forgot_to_set_dynamic_PIXELFOGTYPE + psh_forgot_to_set_dynamic_VISUALIZE_DOF + psh_forgot_to_set_dynamic_HEATHAZE + 0
+
+#define shaderDynamicTest_pyro_vision_ps30 psh_forgot_to_set_dynamic_PIXELFOGTYPE + psh_forgot_to_set_dynamic_VISUALIZE_DOF + psh_forgot_to_set_dynamic_HEATHAZE
+

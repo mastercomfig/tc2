@@ -30,7 +30,7 @@ const float4 cFlashlighAtten	:  register( SHADER_SPECIFIC_CONST_5 ); // const, l
 const float4 cIrisProjectionU	:  register( SHADER_SPECIFIC_CONST_8 );
 const float4 cIrisProjectionV	:  register( SHADER_SPECIFIC_CONST_9 );
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim : register( SHADER_SPECIFIC_CONST_10 );
@@ -50,7 +50,7 @@ struct VS_INPUT
 	// Position and normal/tangent deltas
 	float3 vPosFlex					: POSITION1;
 	float3 vNormalFlex				: NORMAL1;
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 	float vVertexID					: POSITION2;
 #endif
 };
@@ -85,7 +85,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float3 vNormal;
 	DecompressVertex_Normal( v.vNormal, vNormal );
 
-#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 	ApplyMorph( v.vPosFlex, v.vNormalFlex, vPosition.xyz, vNormal );
 #else
 	ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, v.vVertexID, float3( 0, 0, 0 ), vPosition.xyz, vNormal );

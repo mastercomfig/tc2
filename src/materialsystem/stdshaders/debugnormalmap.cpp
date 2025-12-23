@@ -14,9 +14,8 @@
 
 #ifdef USE_NEW_SHADER
 
-#include "unlitgeneric_vs20.inc"
-#include "unlitgeneric_ps20.inc"
-#include "unlitgeneric_ps20b.inc"
+#include "unlitgeneric_vs30.inc"
+#include "unlitgeneric_ps30.inc"
 
 #endif
 
@@ -69,19 +68,19 @@ BEGIN_VS_SHADER_FLAGS( DebugNormalMap, "Help for DebugNormalMap", SHADER_NOT_EDI
 #ifdef USE_NEW_SHADER
 			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
 			{
-				DECLARE_STATIC_VERTEX_SHADER( unlitgeneric_vs20 );
+				DECLARE_STATIC_VERTEX_SHADER( unlitgeneric_vs30 );
 				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, 0  );
-				SET_STATIC_VERTEX_SHADER( unlitgeneric_vs20 );
+				SET_STATIC_VERTEX_SHADER( unlitgeneric_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_ps20b );
-					SET_STATIC_PIXEL_SHADER( unlitgeneric_ps20b );
+					DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_ps30 );
+					SET_STATIC_PIXEL_SHADER( unlitgeneric_ps30 );
 				}
 				else
 				{
-					DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_ps20 );
-					SET_STATIC_PIXEL_SHADER( unlitgeneric_ps20 );
+					DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_ps30 );
+					SET_STATIC_PIXEL_SHADER( unlitgeneric_ps30 );
 				}
 			}
 			else
@@ -116,21 +115,21 @@ BEGIN_VS_SHADER_FLAGS( DebugNormalMap, "Help for DebugNormalMap", SHADER_NOT_EDI
 				float vVertexColor[4] = { 0, 0, 0, 0 };
 				pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, vVertexColor, 1 );
 
-				DECLARE_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs20 );
+				DECLARE_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs30 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-				SET_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs20 );
+				SET_DYNAMIC_VERTEX_SHADER( unlitgeneric_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps20b );
+					DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps30 );
 				}
 				else
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps20 );
+					DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_ps30 );
 				}
 			}
 			else

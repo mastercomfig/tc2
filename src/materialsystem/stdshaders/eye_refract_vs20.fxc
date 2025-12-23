@@ -35,7 +35,7 @@ const float4 g_vFlashlightMatrixRow2  :  register( SHADER_SPECIFIC_CONST_7 );
 const float4 g_vFlashlightMatrixRow3  :  register( SHADER_SPECIFIC_CONST_8 );
 const float4 g_vFlashlightMatrixRow4  :  register( SHADER_SPECIFIC_CONST_9 );
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim		: register( SHADER_SPECIFIC_CONST_10 );
@@ -54,7 +54,7 @@ struct VS_INPUT
 	// Position deltas
 	float3 vPosFlex				: POSITION1;
 	
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 	float vVertexID				: POSITION2;
 #endif
 };
@@ -87,7 +87,7 @@ VS_OUTPUT main( const VS_INPUT v )
 
 	float4 vPosition = v.vPos;
 
-#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 	ApplyMorph( v.vPosFlex, vPosition.xyz );
 #else
 	ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, v.vVertexID, float3( 0, 0, 0 ), vPosition.xyz );

@@ -8,8 +8,7 @@
 #include "BaseVSShader.h"
 #include "common_hlsl_cpp_consts.h"
 
-#include "HDRSelectRange_ps20.inc"
-#include "HDRSelectRange_ps20b.inc"
+#include "HDRSelectRange_ps30.inc"
 
 
 BEGIN_VS_SHADER_FLAGS( HDRSelectRange, "Help for HDRSelectRange", SHADER_NOT_EDITABLE )
@@ -46,19 +45,10 @@ BEGIN_VS_SHADER_FLAGS( HDRSelectRange, "Help for HDRSelectRange", SHADER_NOT_EDI
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			pShaderShadow->SetVertexShader( "HDRSelectRange_vs20", 0 );
+			pShaderShadow->SetVertexShader( "HDRSelectRange_vs30", 0 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( hdrselectrange_ps20b );
-				SET_STATIC_PIXEL_SHADER( hdrselectrange_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( hdrselectrange_ps20 );
-				SET_STATIC_PIXEL_SHADER( hdrselectrange_ps20 );
-			}
-			
+			DECLARE_STATIC_PIXEL_SHADER( hdrselectrange_ps30 );
+			SET_STATIC_PIXEL_SHADER( hdrselectrange_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -66,16 +56,8 @@ BEGIN_VS_SHADER_FLAGS( HDRSelectRange, "Help for HDRSelectRange", SHADER_NOT_EDI
 			BindTexture( SHADER_SAMPLER0, SOURCEMRTRENDERTARGET, -1 );
 			pShaderAPI->SetVertexShaderIndex( 0 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( hdrselectrange_ps30 );
 		}
 		Draw();
 	}

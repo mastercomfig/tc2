@@ -12,7 +12,7 @@ class teeth_vs30_Static_Index
 public:
 	void SetINTRO( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nINTRO = i;
 #ifdef _DEBUG
 		m_bINTRO = true;
@@ -29,7 +29,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bINTRO );
+		Assert( m_bINTRO );
 		return ( 64 * m_nINTRO ) + 0;
 	}
 };
@@ -56,7 +56,7 @@ class teeth_vs30_Dynamic_Index
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -65,7 +65,7 @@ public:
 
 	void SetDOWATERFOG( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -74,7 +74,7 @@ public:
 
 	void SetSKINNING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -83,7 +83,7 @@ public:
 
 	void SetDYNAMIC_LIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDYNAMIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bDYNAMIC_LIGHT = true;
@@ -92,7 +92,7 @@ public:
 
 	void SetSTATIC_LIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSTATIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bSTATIC_LIGHT = true;
@@ -101,7 +101,7 @@ public:
 
 	void SetMORPHING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nMORPHING = i;
 #ifdef _DEBUG
 		m_bMORPHING = true;
@@ -128,7 +128,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT && m_bMORPHING );
+		Assert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT && m_bMORPHING );
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nSKINNING ) + ( 8 * m_nDYNAMIC_LIGHT ) + ( 16 * m_nSTATIC_LIGHT ) + ( 32 * m_nMORPHING ) + 0;
 	}
 };

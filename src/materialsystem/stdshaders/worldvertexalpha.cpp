@@ -9,8 +9,7 @@
 #include "BaseVSShader.h"
 
 #include "WorldVertexAlpha.inc"
-#include "worldvertexalpha_ps20.inc"
-#include "worldvertexalpha_ps20b.inc"
+#include "worldvertexalpha_ps30.inc"
 
 BEGIN_VS_SHADER( WorldVertexAlpha, 
 			  "Help for WorldVertexAlpha" )
@@ -113,19 +112,9 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					worldvertexalpha_Static_Index vshIndex;
 					pShaderShadow->SetVertexShader( "WorldVertexAlpha", vshIndex.GetIndex() );
 
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-						SET_STATIC_PIXEL_SHADER_COMBO( PASS, 0 );
-						SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-					}
-					else
-					{
-						DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-						SET_STATIC_PIXEL_SHADER_COMBO( PASS, 0 );
-						SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-					}
-
+					DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
+					SET_STATIC_PIXEL_SHADER_COMBO( PASS, 0 );
+					SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 
 					FogToFogColor();
 				}
@@ -140,16 +129,8 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 					pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
 
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-						SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-					}
-					else
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-						SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-					}
+					DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 				}
 				Draw();
 
@@ -180,18 +161,9 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					worldvertexalpha_Static_Index vshIndex;
 					pShaderShadow->SetVertexShader( "WorldVertexAlpha", vshIndex.GetIndex() );
 
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-						SET_STATIC_PIXEL_SHADER_COMBO( PASS, 1 );
-						SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-					}
-					else
-					{
-						DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-						SET_STATIC_PIXEL_SHADER_COMBO( PASS, 1 );
-						SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-					}
+					DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
+					SET_STATIC_PIXEL_SHADER_COMBO( PASS, 1 );
+					SET_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 
 					FogToFogColor();
 				}
@@ -206,16 +178,8 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 					pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
 
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-						SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20b );
-					}
-					else
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-						SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps20 );
-					}
+					DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 				}
 				Draw();
 			}

@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2004, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2004, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -27,7 +27,7 @@ static const int g_FogType					= DOWATERFOG;
 
 struct VS_INPUT
 {
-	float3 vPos							: POSITION; //This HAS to match lightmappedgeneric_vs20.fxc's position input. Otherwise depth fighting errors occur on the 360
+	float3 vPos							: POSITION; //This HAS to match lightmappedgeneric_vs30.fxc's position input. Otherwise depth fighting errors occur on the 360
 	float4 vNormal						: NORMAL;
 	float2 vBaseTexCoord				: TEXCOORD0;
 #if WORLDVERTEXTRANSITION
@@ -90,7 +90,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float3 worldNormal;
 	float3 eyeVector;
 
-	//Projection math HAS to match lightmappedgeneric_vs20.fxc's math exactly. Otherwise depth fighting errors occur on the 360
+	//Projection math HAS to match lightmappedgeneric_vs30.fxc's math exactly. Otherwise depth fighting errors occur on the 360
 	projPos = mul( float4( v.vPos, 1 ), cModelViewProj );
 	o.projPos = projPos;
 	o.vProjPos.xyz = projPos.xyw;

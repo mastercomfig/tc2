@@ -1,87 +1,69 @@
+#pragma once
 #include "shaderlib/cshader.h"
 class depthwrite_ps30_Static_Index
 {
-private:
-	int m_nCOLOR_DEPTH;
+	unsigned int m_nCOLOR_DEPTH : 2;
 #ifdef _DEBUG
-	bool m_bCOLOR_DEPTH;
-#endif
+	bool m_bCOLOR_DEPTH : 1;
+#endif	// _DEBUG
 public:
 	void SetCOLOR_DEPTH( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCOLOR_DEPTH = i;
 #ifdef _DEBUG
 		m_bCOLOR_DEPTH = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetCOLOR_DEPTH( bool i )
+
+	depthwrite_ps30_Static_Index(  )
 	{
-		m_nCOLOR_DEPTH = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bCOLOR_DEPTH = true;
-#endif
-	}
-public:
-	depthwrite_ps30_Static_Index( )
-	{
+		m_nCOLOR_DEPTH = 0;
 #ifdef _DEBUG
 		m_bCOLOR_DEPTH = false;
-#endif // _DEBUG
-		m_nCOLOR_DEPTH = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bCOLOR_DEPTH;
-		DebugAssert( bAllStaticVarsDefined );
-#endif // _DEBUG
+		Assert( m_bCOLOR_DEPTH );
 		return ( 2 * m_nCOLOR_DEPTH ) + 0;
 	}
 };
-#define shaderStaticTest_depthwrite_ps30 psh_forgot_to_set_static_COLOR_DEPTH + 0
+
+#define shaderStaticTest_depthwrite_ps30 psh_forgot_to_set_static_COLOR_DEPTH
+
+
 class depthwrite_ps30_Dynamic_Index
 {
-private:
-	int m_nALPHACLIP;
+	unsigned int m_nALPHACLIP : 2;
 #ifdef _DEBUG
-	bool m_bALPHACLIP;
-#endif
+	bool m_bALPHACLIP : 1;
+#endif	// _DEBUG
 public:
 	void SetALPHACLIP( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nALPHACLIP = i;
 #ifdef _DEBUG
 		m_bALPHACLIP = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetALPHACLIP( bool i )
+
+	depthwrite_ps30_Dynamic_Index(  )
 	{
-		m_nALPHACLIP = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bALPHACLIP = true;
-#endif
-	}
-public:
-	depthwrite_ps30_Dynamic_Index()
-	{
+		m_nALPHACLIP = 0;
 #ifdef _DEBUG
 		m_bALPHACLIP = false;
-#endif // _DEBUG
-		m_nALPHACLIP = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllDynamicVarsDefined = m_bALPHACLIP;
-		DebugAssert( bAllDynamicVarsDefined );
-#endif // _DEBUG
+		Assert( m_bALPHACLIP );
 		return ( 1 * m_nALPHACLIP ) + 0;
 	}
 };
-#define shaderDynamicTest_depthwrite_ps30 psh_forgot_to_set_dynamic_ALPHACLIP + 0
+
+#define shaderDynamicTest_depthwrite_ps30 psh_forgot_to_set_dynamic_ALPHACLIP
+

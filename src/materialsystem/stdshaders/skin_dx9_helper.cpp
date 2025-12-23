@@ -9,14 +9,9 @@
 #include "skin_dx9_helper.h"
 #include "convar.h"
 #include "cpp_shader_constant_register_map.h"
-#include "skin_vs20.inc"
-#include "skin_ps20b.inc"
-#include "commandbuilder.h"
-
-#ifndef _X360
 #include "skin_vs30.inc"
 #include "skin_ps30.inc"
-#endif
+#include "commandbuilder.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -432,9 +427,10 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 		int pTexCoordDim[3] = { 2, 0, 3 };
 		int nTexCoordCount = 1;
 
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 #ifndef _X360
 		// Special morphed decal information 
-		if ( bIsDecal && g_pHardwareConfig->HasFastVertexTextures() )
+		if ( bIsDecal && bFastVertexTextures )
 		{
 			nTexCoordCount = 3;
 		}
@@ -445,63 +441,31 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, pTexCoordDim, userDataSize );
 
-
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
-
-			DECLARE_STATIC_VERTEX_SHADER( skin_vs20 );
-			SET_STATIC_VERTEX_SHADER_COMBO( USE_STATIC_CONTROL_FLOW, bUseStaticControlFlow );
-			SET_STATIC_VERTEX_SHADER( skin_vs20 );
-
-			// Assume we're only going to get in here if we support 2b
-			DECLARE_STATIC_PIXEL_SHADER( skin_ps20b );
-			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUM,  bHasSelfIllum && !bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUMFRESNEL,  bHasSelfIllumFresnel && !bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( LIGHTWARPTEXTURE, bHasDiffuseWarp && bHasPhong );
-			SET_STATIC_PIXEL_SHADER_COMBO( PHONGWARPTEXTURE, bHasPhongWarp && bHasPhong );
-			SET_STATIC_PIXEL_SHADER_COMBO( WRINKLEMAP, bHasBaseTextureWrinkle || bHasBumpWrinkle );
-			SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE,  hasDetailTexture );
-			SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
-			SET_STATIC_PIXEL_SHADER_COMBO( RIMLIGHT, bHasRimLight );
-			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP, bHasEnvmap );
-			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
-			SET_STATIC_PIXEL_SHADER_COMBO( CONVERT_TO_SRGB, 0 );
-			SET_STATIC_PIXEL_SHADER_COMBO( FASTPATH_NOBUMP, pContextData->m_bFastPath );
-			SET_STATIC_PIXEL_SHADER_COMBO( BLENDTINTBYBASEALPHA, bBlendTintByBaseAlpha );
-			SET_STATIC_PIXEL_SHADER( skin_ps20b );
-		}
-#ifndef _X360
-		else
+		if ( bFastVertexTextures )
 		{
 			// The vertex shader uses the vertex id stream
 			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
-
-			DECLARE_STATIC_VERTEX_SHADER( skin_vs30 );
-			SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bIsDecal );
-			SET_STATIC_VERTEX_SHADER( skin_vs30 );
-
-			DECLARE_STATIC_PIXEL_SHADER( skin_ps30 );
-			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUM,  bHasSelfIllum && !bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUMFRESNEL,  bHasSelfIllumFresnel && !bHasFlashlight );
-			SET_STATIC_PIXEL_SHADER_COMBO( LIGHTWARPTEXTURE, bHasDiffuseWarp && bHasPhong );
-			SET_STATIC_PIXEL_SHADER_COMBO( PHONGWARPTEXTURE, bHasPhongWarp && bHasPhong );
-			SET_STATIC_PIXEL_SHADER_COMBO( WRINKLEMAP, bHasBaseTextureWrinkle || bHasBumpWrinkle );
-			SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE,  hasDetailTexture );
-			SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
-			SET_STATIC_PIXEL_SHADER_COMBO( RIMLIGHT, bHasRimLight );
-			SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP, bHasEnvmap );
-			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
-			SET_STATIC_PIXEL_SHADER_COMBO( CONVERT_TO_SRGB, 0 );
-			SET_STATIC_PIXEL_SHADER_COMBO( FASTPATH_NOBUMP, pContextData->m_bFastPath );
-			SET_STATIC_PIXEL_SHADER_COMBO( BLENDTINTBYBASEALPHA, bBlendTintByBaseAlpha );
-			SET_STATIC_PIXEL_SHADER( skin_ps30 );
 		}
-#endif
+
+		DECLARE_STATIC_VERTEX_SHADER( skin_vs30 );
+		SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bFastVertexTextures && bIsDecal );
+		SET_STATIC_VERTEX_SHADER( skin_vs30 );
+
+		DECLARE_STATIC_PIXEL_SHADER( skin_ps30 );
+		SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
+		SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUM,  bHasSelfIllum && !bHasFlashlight );
+		SET_STATIC_PIXEL_SHADER_COMBO( SELFILLUMFRESNEL,  bHasSelfIllumFresnel && !bHasFlashlight );
+		SET_STATIC_PIXEL_SHADER_COMBO( LIGHTWARPTEXTURE, bHasDiffuseWarp && bHasPhong );
+		SET_STATIC_PIXEL_SHADER_COMBO( PHONGWARPTEXTURE, bHasPhongWarp && bHasPhong );
+		SET_STATIC_PIXEL_SHADER_COMBO( WRINKLEMAP, bHasBaseTextureWrinkle || bHasBumpWrinkle );
+		SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE,  hasDetailTexture );
+		SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
+		SET_STATIC_PIXEL_SHADER_COMBO( RIMLIGHT, bHasRimLight );
+		SET_STATIC_PIXEL_SHADER_COMBO( CUBEMAP, bHasEnvmap );
+		SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
+		SET_STATIC_PIXEL_SHADER_COMBO( FASTPATH_NOBUMP, pContextData->m_bFastPath );
+		SET_STATIC_PIXEL_SHADER_COMBO( BLENDTINTBYBASEALPHA, bBlendTintByBaseAlpha );
+		SET_STATIC_PIXEL_SHADER( skin_ps30 );
 
 		if( bHasFlashlight )
 		{
@@ -659,55 +623,34 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 			AssertMsg( !(bWriteDepthToAlpha && bWriteWaterFogToAlpha), "Can't write two values to alpha at the same time." );
 		}
 
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			bool bUseStaticControlFlow = g_pHardwareConfig->SupportsStaticControlFlow();
-
-			DECLARE_DYNAMIC_VERTEX_SHADER( skin_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( LIGHTING_PREVIEW, pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING)!=0);
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( NUM_LIGHTS, bUseStaticControlFlow ? 0 : lightState.m_nNumLights );
-			SET_DYNAMIC_VERTEX_SHADER( skin_vs20 );
-
-			DECLARE_DYNAMIC_PIXEL_SHADER( skin_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS, lightState.m_nNumLights );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( FLASHLIGHTSHADOWS, bFlashlightShadows );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PHONG_USE_EXPONENT_FACTOR, bHasPhongExponentFactor );
-			SET_DYNAMIC_PIXEL_SHADER( skin_ps20b );
-		}
-#ifndef _X360
-		else
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+		if ( bFastVertexTextures )
 		{
 			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
+		}
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( skin_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( LIGHTING_PREVIEW, pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING)!=0);
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( skin_vs30 );
+		DECLARE_DYNAMIC_VERTEX_SHADER( skin_vs30 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( LIGHTING_PREVIEW, pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING)!=0);
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
+		SET_DYNAMIC_VERTEX_SHADER( skin_vs30 );
 
-			DECLARE_DYNAMIC_PIXEL_SHADER( skin_ps30 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS,  lightState.m_nNumLights );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( FLASHLIGHTSHADOWS, bFlashlightShadows );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PHONG_USE_EXPONENT_FACTOR, bHasPhongExponentFactor );
-			SET_DYNAMIC_PIXEL_SHADER( skin_ps30 );
+		DECLARE_DYNAMIC_PIXEL_SHADER( skin_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS,  lightState.m_nNumLights );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( FLASHLIGHTSHADOWS, bFlashlightShadows );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( PHONG_USE_EXPONENT_FACTOR, bHasPhongExponentFactor );
+		SET_DYNAMIC_PIXEL_SHADER( skin_ps30 );
 
+		if ( bFastVertexTextures )
+		{
 			bool bUnusedTexCoords[3] = { false, false, !pShaderAPI->IsHWMorphingEnabled() || !bIsDecal };
 			pShaderAPI->MarkUnusedVertexFields( 0, 3, bUnusedTexCoords );
 		}
-#endif
 
 		pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.m_nBaseTextureTransform );
 

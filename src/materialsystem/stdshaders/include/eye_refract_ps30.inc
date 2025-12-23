@@ -36,7 +36,7 @@ class eye_refract_ps30_Static_Index
 public:
 	void SetFLASHLIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHT = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = true;
@@ -45,7 +45,7 @@ public:
 
 	void SetLIGHTWARPTEXTURE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nLIGHTWARPTEXTURE = i;
 #ifdef _DEBUG
 		m_bLIGHTWARPTEXTURE = true;
@@ -54,7 +54,7 @@ public:
 
 	void SetSPHERETEXKILLCOMBO( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSPHERETEXKILLCOMBO = i;
 #ifdef _DEBUG
 		m_bSPHERETEXKILLCOMBO = true;
@@ -63,7 +63,7 @@ public:
 
 	void SetRAYTRACESPHERE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nRAYTRACESPHERE = i;
 #ifdef _DEBUG
 		m_bRAYTRACESPHERE = true;
@@ -72,7 +72,7 @@ public:
 
 	void SetFLASHLIGHTDEPTHFILTERMODE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 2 );
+		Assert( i >= 0 && i <= 2 );
 		m_nFLASHLIGHTDEPTHFILTERMODE = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTDEPTHFILTERMODE = true;
@@ -97,7 +97,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bSPHERETEXKILLCOMBO && m_bRAYTRACESPHERE && m_bFLASHLIGHTDEPTHFILTERMODE );
+		Assert( m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE && m_bSPHERETEXKILLCOMBO && m_bRAYTRACESPHERE && m_bFLASHLIGHTDEPTHFILTERMODE );
 		AssertMsg( !( ( m_nRAYTRACESPHERE == 0 ) && ( m_nSPHERETEXKILLCOMBO == 1 ) ), "Invalid combo combination ( ( RAYTRACESPHERE == 0 ) && ( SPHERETEXKILLCOMBO == 1 ) )" );
 		return ( 30 * m_nFLASHLIGHT ) + ( 60 * m_nLIGHTWARPTEXTURE ) + ( 120 * m_nSPHERETEXKILLCOMBO ) + ( 240 * m_nRAYTRACESPHERE ) + ( 480 * m_nFLASHLIGHTDEPTHFILTERMODE ) + 0;
 	}
@@ -119,7 +119,7 @@ class eye_refract_ps30_Dynamic_Index
 public:
 	void SetNUM_LIGHTS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 4 );
+		Assert( i >= 0 && i <= 4 );
 		m_nNUM_LIGHTS = i;
 #ifdef _DEBUG
 		m_bNUM_LIGHTS = true;
@@ -128,7 +128,7 @@ public:
 
 	void SetFLASHLIGHTSHADOWS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHTSHADOWS = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHTSHADOWS = true;
@@ -137,7 +137,7 @@ public:
 
 	void SetPIXELFOGTYPE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 2 );
+		Assert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -158,7 +158,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bNUM_LIGHTS && m_bFLASHLIGHTSHADOWS && m_bPIXELFOGTYPE );
+		Assert( m_bNUM_LIGHTS && m_bFLASHLIGHTSHADOWS && m_bPIXELFOGTYPE );
 		return ( 1 * m_nNUM_LIGHTS ) + ( 5 * m_nFLASHLIGHTSHADOWS ) + ( 10 * m_nPIXELFOGTYPE ) + 0;
 	}
 };

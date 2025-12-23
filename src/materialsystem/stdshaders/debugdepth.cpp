@@ -8,9 +8,8 @@
 
 #include "shaderlib/cshader.h"
 #include "convar.h"
-#include "debugdrawdepth_vs20.inc"
-#include "debugdrawdepth_ps20.inc"
-#include "debugdrawdepth_ps20b.inc"
+#include "debugdrawdepth_vs30.inc"
+#include "debugdrawdepth_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -52,26 +51,26 @@ BEGIN_SHADER_FLAGS( DebugDepth, "Help for DebugDepth", SHADER_NOT_EDITABLE )
 			int userDataSize = 0;
 			pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-			DECLARE_STATIC_VERTEX_SHADER( debugdrawdepth_vs20 );
-			SET_STATIC_VERTEX_SHADER( debugdrawdepth_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( debugdrawdepth_vs30 );
+			SET_STATIC_VERTEX_SHADER( debugdrawdepth_vs30 );
 
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
-				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps20b );
+				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps30 );
+				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps30 );
 			}
 			else
 			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps20 );
-				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps20 );
+				DECLARE_STATIC_PIXEL_SHADER( debugdrawdepth_ps30 );
+				SET_STATIC_PIXEL_SHADER( debugdrawdepth_ps30 );
 			}
 		}
 		DYNAMIC_STATE
 		{
-			DECLARE_DYNAMIC_VERTEX_SHADER( debugdrawdepth_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( debugdrawdepth_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  s_pShaderAPI->GetCurrentNumBones() > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( debugdrawdepth_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( debugdrawdepth_vs30 );
 
 			Vector4D vecZFilter( 0, 0, 0, 1 );
 			int nDepthMode = mat_debugdepthmode.GetInt();

@@ -8,8 +8,7 @@
 #include "BaseVSShader.h"
 #include "common_hlsl_cpp_consts.h"
 
-#include "Downsample_ps20.inc"
-#include "Downsample_ps20b.inc"
+#include "Downsample_ps30.inc"
 
 BEGIN_VS_SHADER_FLAGS( sfm_downsample_shader, "Help for Downsample", SHADER_NOT_EDITABLE )
 	BEGIN_SHADER_PARAMS
@@ -42,18 +41,10 @@ BEGIN_VS_SHADER_FLAGS( sfm_downsample_shader, "Help for Downsample", SHADER_NOT_
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			pShaderShadow->SetVertexShader( "downsample_vs20", 0 );
+			pShaderShadow->SetVertexShader( "downsample_vs30", 0 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_ps20b );
-				SET_STATIC_PIXEL_SHADER( downsample_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_ps20 );
-				SET_STATIC_PIXEL_SHADER( downsample_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( downsample_ps30 );
+			SET_STATIC_PIXEL_SHADER( downsample_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -87,16 +78,9 @@ BEGIN_VS_SHADER_FLAGS( sfm_downsample_shader, "Help for Downsample", SHADER_NOT_
 			pShaderAPI->SetPixelShaderConstant( 0, v, 1 );
 
 			pShaderAPI->SetVertexShaderIndex( 0 );
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_ps20 );
-			}
+
+			DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( downsample_ps30 );
 		}
 		Draw();
 	}

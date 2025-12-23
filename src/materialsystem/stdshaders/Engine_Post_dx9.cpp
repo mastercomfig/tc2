@@ -7,9 +7,8 @@
 
 #include "BaseVSShader.h"
 
-#include "screenspaceeffect_vs20.inc"
-#include "engine_post_ps20.inc"
-#include "engine_post_ps20b.inc"
+#include "screenspaceeffect_vs30.inc"
+#include "engine_post_ps30.inc"
 
 #include "../materialsystem_global.h"
 
@@ -83,25 +82,16 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			// one; gamma colours more closely match luminance perception. The color-correction process
 			// has always taken gamma-space values as input anyway).
 
-			// On OpenGL OSX, we MUST do sRGB reads from the bloom and full framebuffer textures AND sRGB
-			// writes on the way out to the framebuffer.  Hence, our colors are linear in the shader.
-			// Given this, we use the LINEAR_INPUTS combo to convert to sRGB for the purposes of color
-			// correction, since that is how the color correction textures are authored.
-			bool bLinearInput = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-			bool bLinearOutput = IsOSX() && !g_pHardwareConfig->FakeSRGBWrite() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-
-			bool bForceSRGBReadsAndWrites = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-
 			pShaderShadow->EnableBlending( false );
 
 			// The (sRGB) bloom texture is bound to sampler 0
 			pShaderShadow->EnableTexture(  SHADER_SAMPLER0, true  );
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, bForceSRGBReadsAndWrites );
-			pShaderShadow->EnableSRGBWrite( bForceSRGBReadsAndWrites );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
+			pShaderShadow->EnableSRGBWrite( false );
 
 			// The (sRGB) full framebuffer texture is bound to sampler 1:
 			pShaderShadow->EnableTexture(  SHADER_SAMPLER1, true  );
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, bForceSRGBReadsAndWrites );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, false );
 
 			// Up to 4 (sRGB) color-correction lookup textures are bound to samplers 2-5:
 			pShaderShadow->EnableTexture(  SHADER_SAMPLER2, true );
@@ -119,21 +109,12 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			int		userDataSize		= 0;
 			pShaderShadow->VertexShaderVertexFormat( format, numTexCoords, pTexCoordDimensions, userDataSize );
 
-			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() ) // GL always goes the ps2b way for this shader, even on "ps20" parts
-			{
-				DECLARE_STATIC_PIXEL_SHADER( engine_post_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( LINEAR_INPUT,  bLinearInput );
-				SET_STATIC_PIXEL_SHADER_COMBO( LINEAR_OUTPUT, bLinearOutput );
-				SET_STATIC_PIXEL_SHADER( engine_post_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( engine_post_ps20 );
-				SET_STATIC_PIXEL_SHADER( engine_post_ps20 );
-			}
+			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+
+			DECLARE_STATIC_PIXEL_SHADER( engine_post_ps30 );
+			SET_STATIC_PIXEL_SHADER( engine_post_ps30 );
+
 		}
 		DYNAMIC_STATE
 		{
@@ -197,30 +178,17 @@ BEGIN_VS_SHADER_FLAGS( Engine_Post_dx9, "Engine post-processing effects (softwar
 			{
 				colCorrectNumLookups = 0;
 			}
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() ) // GL always goes the ps2b way for this shader, even on "ps20" parts
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_QUALITY_MODE,				aaQualityMode );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_REDUCE_ONE_PIXEL_LINE_BLUR,	aaReduceOnePixelLineBlur );
-//				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_DEBUG_MODE,					aaDebugMode );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
-				SET_DYNAMIC_PIXEL_SHADER( engine_post_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_QUALITY_MODE,				0 ); // Only enough instruction slots in ps2b
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_REDUCE_ONE_PIXEL_LINE_BLUR,	0 );
-//				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_DEBUG_MODE,					aaDebugMode );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
-				SET_DYNAMIC_PIXEL_SHADER( engine_post_ps20 );
-			}
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			DECLARE_DYNAMIC_PIXEL_SHADER( engine_post_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_ENABLE,						aaEnabled );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_QUALITY_MODE,				aaQualityMode );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_REDUCE_ONE_PIXEL_LINE_BLUR,	aaReduceOnePixelLineBlur );
+//				SET_DYNAMIC_PIXEL_SHADER_COMBO( AA_DEBUG_MODE,					aaDebugMode );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( COL_CORRECT_NUM_LOOKUPS,		colCorrectNumLookups );
+			SET_DYNAMIC_PIXEL_SHADER( engine_post_ps30 );
+
+			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 		}
 		Draw();
 	}

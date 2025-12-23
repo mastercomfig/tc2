@@ -10,14 +10,8 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "weapon_sheen_pass_vs20.inc"
-#include "weapon_sheen_pass_ps20.inc"
-#include "weapon_sheen_pass_ps20b.inc"
-
-#ifndef _X360
 #include "weapon_sheen_pass_vs30.inc"
 #include "weapon_sheen_pass_ps30.inc"
-#endif
 
 void InitParamsWeaponSheenPass( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, WeaponSheenPassVars_t &info )
 {
@@ -110,46 +104,22 @@ void DrawWeaponSheenPass( CBaseVSShader *pShader, IMaterialVar** params, IShader
 		int userDataSize = 0;
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			// Vertex Shader
-			DECLARE_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs20 );
-			SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs20 );
-
-			// Pixel Shader
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-				SET_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-				SET_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps20 );
-			}
-		}
-#ifndef _X360
-		else
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+		if ( bFastVertexTextures )
 		{
 			// The vertex shader uses the vertex id stream
 			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
-
-			// Vertex Shader
-			DECLARE_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
-			SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
-
-			// Pixel Shader
-			DECLARE_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
-			SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
-			SET_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
 		}
-#endif
+
+		// Vertex Shader
+		DECLARE_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
+		SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
+		SET_STATIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
+
+		// Pixel Shader
+		DECLARE_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
+		SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP, bBumpMapping ? 1 : 0 );
+		SET_STATIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true ); // Refraction texture
@@ -191,45 +161,22 @@ void DrawWeaponSheenPass( CBaseVSShader *pShader, IMaterialVar** params, IShader
 			pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.m_nBumpTransform );
 		}
 
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs20 );
-
-			// Set Pixel Shader Combos
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps20 );
-			}
-		}
-#ifndef _X360
-		else
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+		if ( bFastVertexTextures )
 		{
 			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
-
-			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
-
-			// Set Pixel Shader Combos
-			DECLARE_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
-			SET_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
 		}
-#endif
+
+		// Set Vertex Shader Combos
+		DECLARE_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
+		SET_DYNAMIC_VERTEX_SHADER( weapon_sheen_pass_vs30 );
+
+		// Set Pixel Shader Combos
+		DECLARE_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER( weapon_sheen_pass_ps30 );
 
 		// Bind textures
 		pShaderAPI->BindStandardTexture( SHADER_SAMPLER0, TEXTURE_FRAME_BUFFER_FULL_TEXTURE_0 ); // Refraction Map

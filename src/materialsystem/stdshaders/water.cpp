@@ -10,12 +10,10 @@
 #include "common_hlsl_cpp_consts.h" // hack hack hack!
 #include "convar.h"
 
-#include "WaterCheap_vs20.inc"
-#include "WaterCheap_ps20.inc"
-#include "WaterCheap_ps20b.inc"
-#include "Water_vs20.inc"
-#include "Water_ps20.inc"
-#include "water_ps20b.inc"
+#include "WaterCheap_vs30.inc"
+#include "WaterCheap_ps30.inc"
+#include "Water_vs30.inc"
+#include "Water_ps30.inc"
 
 #ifndef _X360
 static ConVar r_waterforceexpensive( "r_waterforceexpensive", "0", FCVAR_ARCHIVE );
@@ -225,37 +223,23 @@ BEGIN_VS_SHADER( Water_DX90,
 			Vector4D Scroll1;
 			params[SCROLL1]->GetVecValue( Scroll1.Base(), 4 );
 
-			DECLARE_STATIC_VERTEX_SHADER( water_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( water_vs30 );
 			SET_STATIC_VERTEX_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
 			SET_STATIC_VERTEX_SHADER_COMBO( BASETEXTURE, params[BASETEXTURE]->IsTexture() );
-			SET_STATIC_VERTEX_SHADER( water_vs20 );
+			SET_STATIC_VERTEX_SHADER( water_vs30 );
 
 			// "REFLECT" "0..1"
 			// "REFRACT" "0..1"
-			
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( water_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFLECT,  bReflection );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFRACT,  bRefraction );
-				SET_STATIC_PIXEL_SHADER_COMBO( ABOVEWATER,  params[ABOVEWATER]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
-				SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE, params[BASETEXTURE]->IsTexture() );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLURRY_REFRACT, params[BLURREFRACT]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-				SET_STATIC_PIXEL_SHADER( water_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( water_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFLECT,  bReflection );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFRACT,  bRefraction );
-				SET_STATIC_PIXEL_SHADER_COMBO( ABOVEWATER,  params[ABOVEWATER]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
-				SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE, params[BASETEXTURE]->IsTexture() );
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-				SET_STATIC_PIXEL_SHADER( water_ps20 );
-			}
+
+			DECLARE_STATIC_PIXEL_SHADER( water_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( REFLECT,  bReflection );
+			SET_STATIC_PIXEL_SHADER_COMBO( REFRACT,  bRefraction );
+			SET_STATIC_PIXEL_SHADER_COMBO( ABOVEWATER,  params[ABOVEWATER]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
+			SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE, params[BASETEXTURE]->IsTexture() );
+			SET_STATIC_PIXEL_SHADER_COMBO( BLURRY_REFRACT, params[BLURREFRACT]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
+			SET_STATIC_PIXEL_SHADER( water_ps30 );
 
 			FogToFogColor();
 
@@ -363,22 +347,13 @@ BEGIN_VS_SHADER( Water_DX90,
 			vEyePos[3] = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 9, vEyePos );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( water_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( water_vs20 );
-			
-			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( water_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
-				SET_DYNAMIC_PIXEL_SHADER( water_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( water_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( water_ps20 );
-			}
+			DECLARE_DYNAMIC_VERTEX_SHADER( water_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( water_vs30 );
+
+			DECLARE_DYNAMIC_PIXEL_SHADER( water_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, pShaderAPI->ShouldWriteDepthToDestAlpha() );
+			SET_DYNAMIC_PIXEL_SHADER( water_ps30 );
 		}
 		Draw();
 	}
@@ -414,36 +389,20 @@ BEGIN_VS_SHADER( Water_DX90,
 			int fmt = VERTEX_POSITION | VERTEX_NORMAL | VERTEX_TANGENT_S | VERTEX_TANGENT_T;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			DECLARE_STATIC_VERTEX_SHADER( watercheap_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( watercheap_vs30 );
 			SET_STATIC_VERTEX_SHADER_COMBO( BLEND,  bBlend && bRefraction );
-			SET_STATIC_VERTEX_SHADER( watercheap_vs20 );
+			SET_STATIC_VERTEX_SHADER( watercheap_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( watercheap_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( FRESNEL,  params[NOFRESNEL]->GetIntValue() == 0 );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLEND,  bBlend );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFRACTALPHA,  bRefraction );
-				SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
-				Vector4D Scroll1;
-				params[SCROLL1]->GetVecValue( Scroll1.Base(), 4 );
-				SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-				SET_STATIC_PIXEL_SHADER( watercheap_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( watercheap_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( FRESNEL,  params[NOFRESNEL]->GetIntValue() == 0 );
-				SET_STATIC_PIXEL_SHADER_COMBO( BLEND,  bBlend );
-				SET_STATIC_PIXEL_SHADER_COMBO( REFRACTALPHA,  bRefraction );
-				SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
-				Vector4D Scroll1;
-				params[SCROLL1]->GetVecValue( Scroll1.Base(), 4 );
-				SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
-				SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-				SET_STATIC_PIXEL_SHADER( watercheap_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( watercheap_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( FRESNEL,  params[NOFRESNEL]->GetIntValue() == 0 );
+			SET_STATIC_PIXEL_SHADER_COMBO( BLEND,  bBlend );
+			SET_STATIC_PIXEL_SHADER_COMBO( REFRACTALPHA,  bRefraction );
+			SET_STATIC_PIXEL_SHADER_COMBO( HDRTYPE,  g_pHardwareConfig->GetHDRType() );
+			Vector4D Scroll1;
+			params[SCROLL1]->GetVecValue( Scroll1.Base(), 4 );
+			SET_STATIC_PIXEL_SHADER_COMBO( MULTITEXTURE,fabs(Scroll1.x) > 0.0);
+			SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int) NORMAL_DECODE_NONE );
+			SET_STATIC_PIXEL_SHADER( watercheap_ps30 );
 
 			// HDRFIXME: test cheap water!
 			if( g_pHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
@@ -510,23 +469,13 @@ BEGIN_VS_SHADER( Water_DX90,
 				pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3, vc0, 1 );
 			}
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( watercheap_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( watercheap_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( watercheap_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( watercheap_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( watercheap_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED,  IsHDREnabled() );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
-				SET_DYNAMIC_PIXEL_SHADER( watercheap_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( watercheap_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED,  IsHDREnabled() );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( watercheap_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( watercheap_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED,  IsHDREnabled() );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo1( true ) );
+			SET_DYNAMIC_PIXEL_SHADER( watercheap_ps30 );
 		}
 		Draw();
 	}

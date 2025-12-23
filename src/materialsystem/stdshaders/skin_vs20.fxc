@@ -1,7 +1,6 @@
 //======= Copyright (c) 1996-2007, Valve Corporation, All rights reserved. ======
 
 //  STATIC: "DECAL"						"0..1" [vs30]
-//  STATIC: "USE_STATIC_CONTROL_FLOW"	"0..1" [vs20]
 
 //  DYNAMIC: "COMPRESSED_VERTS"			"0..1"
 //	DYNAMIC: "DOWATERFOG"				"0..1"
@@ -9,10 +8,6 @@
 //  DYNAMIC: "LIGHTING_PREVIEW"			"0..1" [PC]
 //  DYNAMIC: "LIGHTING_PREVIEW"			"0..0" [XBOX]
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
-//  DYNAMIC: "NUM_LIGHTS"				"0..2" [vs20]
-
-// If using static control flow on Direct3D, we should use the NUM_LIGHTS=0 combo
-//  SKIP: $USE_STATIC_CONTROL_FLOW && ( $NUM_LIGHTS > 0 ) [vs20]
 
 #include "common_vs_fxc.h"
 
@@ -22,7 +17,7 @@ static const int g_FogType			= DOWATERFOG;
 const float4 cBaseTexCoordTransform[2]		: register( SHADER_SPECIFIC_CONST_0 );
 const float4 cDetailTexCoordTransform[2]	: register( SHADER_SPECIFIC_CONST_4 );
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_6 );
@@ -57,7 +52,7 @@ struct VS_INPUT
 	float4 vPosFlex					: POSITION1;
 	float4 vNormalFlex				: NORMAL1;
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 	float vVertexID					: POSITION2;
 #endif
 };
@@ -92,7 +87,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 vTangent;
 	DecompressVertex_NormalTangent( v.vNormal, v.vUserData, vNormal, vTangent );
 
-#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 	ApplyMorph( v.vPosFlex, v.vNormalFlex, 
 		vPosition.xyz, vNormal, vTangent.xyz, o.projPos_fWrinkleWeight.w );
 #else
@@ -112,7 +107,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	worldTangentS = normalize( worldTangentS );
 	worldTangentT = normalize( worldTangentT );
 
-#if defined( SHADER_MODEL_VS_3_0 ) && MORPHING && DECAL
+#if defined( FAST_VERTEX_TEXTURES ) && MORPHING && DECAL
 	// Avoid z precision errors
 	worldPos += worldNormal * 0.05f * v.vTexCoord2.z;
 #endif
@@ -136,27 +131,10 @@ VS_OUTPUT main( const VS_INPUT v )
 
 	// Compute bumped lighting
 	// FIXME: We shouldn't have to compute this for unlit materials
-#if defined ( SHADER_MODEL_VS_2_0 ) && ( !USE_STATIC_CONTROL_FLOW )
-	o.lightAtten.xyz = float3(0,0,0);
-	o.worldPos_atten3.w = 0.0f;
-	#if ( NUM_LIGHTS > 0 )
-		o.lightAtten.x = GetVertexAttenForLight( worldPos, 0, false );
-	#endif
-	#if ( NUM_LIGHTS > 1 )
-		o.lightAtten.y = GetVertexAttenForLight( worldPos, 1, false );
-	#endif
-	#if ( NUM_LIGHTS > 2 )
-		o.lightAtten.z = GetVertexAttenForLight( worldPos, 2, false );
-	#endif
-	#if ( NUM_LIGHTS > 3 )
-		o.worldPos_atten3.w = GetVertexAttenForLight( worldPos, 3, false );
-	#endif
-#else
-	o.lightAtten.x = GetVertexAttenForLight( worldPos, 0, true );
-	o.lightAtten.y = GetVertexAttenForLight( worldPos, 1, true );
-	o.lightAtten.z = GetVertexAttenForLight( worldPos, 2, true );
-	o.worldPos_atten3.w = GetVertexAttenForLight( worldPos, 3, true );
-#endif
+	o.lightAtten.x = GetVertexAttenForLight( worldPos, 0 );
+	o.lightAtten.y = GetVertexAttenForLight( worldPos, 1 );
+	o.lightAtten.z = GetVertexAttenForLight( worldPos, 2 );
+	o.worldPos_atten3.w = GetVertexAttenForLight( worldPos, 3 );
 
 	// Base texture coordinate transform
 	o.baseTexCoord.x = dot( v.vTexCoord0, cBaseTexCoordTransform[0] );

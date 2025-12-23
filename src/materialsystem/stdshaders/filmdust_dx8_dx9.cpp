@@ -8,8 +8,8 @@
 #include "BaseVSShader.h"
 
 #ifdef STDSHADER_DX9_DLL_EXPORT
-#include "screenspaceeffect_vs20.inc"
-#include "filmdust_ps20.inc"
+#include "screenspaceeffect_vs30.inc"
+#include "filmdust_ps30.inc"
 #else
 #include "screenspaceeffect_vs11.inc"
 #include "filmdust_ps11.inc"
@@ -74,11 +74,11 @@ BEGIN_VS_SHADER_FLAGS( FilmDust_dx8, "Help for FilmDust", SHADER_NOT_EDITABLE )
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
 #ifdef STDSHADER_DX9_DLL_EXPORT
-			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-			DECLARE_STATIC_PIXEL_SHADER( filmdust_ps20 );
-			SET_STATIC_PIXEL_SHADER( filmdust_ps20 );
+			DECLARE_STATIC_PIXEL_SHADER( filmdust_ps30 );
+			SET_STATIC_PIXEL_SHADER( filmdust_ps30 );
 #else
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs11 );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs11 );
@@ -93,11 +93,11 @@ BEGIN_VS_SHADER_FLAGS( FilmDust_dx8, "Help for FilmDust", SHADER_NOT_EDITABLE )
 						
 			SetPixelShaderConstant( 0, CHANNEL_SELECT );
 #ifdef STDSHADER_DX9_DLL_EXPORT
-			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-			DECLARE_DYNAMIC_PIXEL_SHADER( filmdust_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER( filmdust_ps20 );
+			DECLARE_DYNAMIC_PIXEL_SHADER( filmdust_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( filmdust_ps30 );
 #else
 			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs11 );
 			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs11 );

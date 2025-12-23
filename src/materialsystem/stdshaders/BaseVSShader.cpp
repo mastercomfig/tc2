@@ -14,22 +14,16 @@
 #include "convar.h"
 
 #ifndef GAME_SHADER_DLL
-#ifdef HDR
-#include "vertexlit_and_unlit_generic_hdr_ps20.inc"
-#include "vertexlit_and_unlit_generic_hdr_ps20b.inc"
-#endif
-
 #if SUPPORT_DX8
 #include "lightmappedgeneric_flashlight_vs11.inc"
 #include "flashlight_ps11.inc"
 #endif
 
 #ifdef STDSHADER_DX9_DLL_EXPORT
-#include "lightmappedgeneric_flashlight_vs20.inc"
+#include "lightmappedgeneric_flashlight_vs30.inc"
 #endif
 #ifdef STDSHADER_DX9_DLL_EXPORT
-#include "flashlight_ps20.inc"
-#include "flashlight_ps20b.inc"
+#include "flashlight_ps30.inc"
 #endif
 #include "unlitgeneric_vs11.inc"
 #include "VertexLitGeneric_EnvmappedBumpmap_NoLighting_ps14.inc"
@@ -1885,12 +1879,12 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 
 		if( vars.m_bLightmappedGeneric )
 		{
-			lightmappedgeneric_flashlight_vs20_Static_Index	vshIndex;
+			lightmappedgeneric_flashlight_vs30_Static_Index	vshIndex;
 			vshIndex.SetWORLDVERTEXTRANSITION( vars.m_bWorldVertexTransition );
 			vshIndex.SetNORMALMAP( vars.m_bBump );
 			vshIndex.SetSEAMLESS( bSeamless );
 			vshIndex.SetDETAIL( bDetail );
-			pShaderShadow->SetVertexShader( "lightmappedgeneric_flashlight_vs20", vshIndex.GetIndex() );
+			pShaderShadow->SetVertexShader( "lightmappedgeneric_flashlight_vs30", vshIndex.GetIndex() );
 
 			unsigned int flags = VERTEX_POSITION | VERTEX_NORMAL;
 			if( vars.m_bBump )
@@ -1921,31 +1915,17 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 		{
 			nBumpMapVariant = ( vars.m_bSSBump ) ? 2 : 1;
 		}
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-			int nShadowFilterMode = g_pHardwareConfig->GetShadowFilterMode();
+		int nShadowFilterMode = g_pHardwareConfig->GetShadowFilterMode();
 
-			flashlight_ps20b_Static_Index	pshIndex;
-			pshIndex.SetNORMALMAP( nBumpMapVariant );
-			pshIndex.SetNORMALMAP2( bBump2 );
-			pshIndex.SetWORLDVERTEXTRANSITION( vars.m_bWorldVertexTransition );
-			pshIndex.SetSEAMLESS( bSeamless );
-			pshIndex.SetDETAILTEXTURE( bDetail );
-			pshIndex.SetDETAIL_BLEND_MODE( nDetailBlendMode );
-			pshIndex.SetFLASHLIGHTDEPTHFILTERMODE( nShadowFilterMode );
-			pShaderShadow->SetPixelShader( "flashlight_ps20b", pshIndex.GetIndex() );
-		}
-		else
-		{
-			flashlight_ps20_Static_Index	pshIndex;
-			pshIndex.SetNORMALMAP( nBumpMapVariant );
-			pshIndex.SetNORMALMAP2( bBump2 );
-			pshIndex.SetWORLDVERTEXTRANSITION( vars.m_bWorldVertexTransition );
-			pshIndex.SetSEAMLESS( bSeamless );
-			pshIndex.SetDETAILTEXTURE( bDetail );
-			pshIndex.SetDETAIL_BLEND_MODE( nDetailBlendMode );
-			pShaderShadow->SetPixelShader( "flashlight_ps20", pshIndex.GetIndex() );
-		}
+		flashlight_ps30_Static_Index	pshIndex;
+		pshIndex.SetNORMALMAP( nBumpMapVariant );
+		pshIndex.SetNORMALMAP2( bBump2 );
+		pshIndex.SetWORLDVERTEXTRANSITION( vars.m_bWorldVertexTransition );
+		pshIndex.SetSEAMLESS( bSeamless );
+		pshIndex.SetDETAILTEXTURE( bDetail );
+		pshIndex.SetDETAIL_BLEND_MODE( nDetailBlendMode );
+		pshIndex.SetFLASHLIGHTDEPTHFILTERMODE( nShadowFilterMode );
+		pShaderShadow->SetPixelShader( "flashlight_ps30", pshIndex.GetIndex() );
 		FogToBlack();
 	}
 	else
@@ -2017,9 +1997,9 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 
 		if( vars.m_bLightmappedGeneric )
 		{
-			DECLARE_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_flashlight_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_flashlight_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			SET_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_flashlight_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_flashlight_vs30 );
 			if ( bSeamless )
 			{
 				float const0[4]={ vars.m_fSeamlessScale,0,0,0};
@@ -2068,19 +2048,10 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 		vEyePos_SpecExponent[3] = 0.0f;
 		pShaderAPI->SetPixelShaderConstant( PSREG_EYEPOS_SPEC_EXPONENT, vEyePos_SpecExponent, 1 );
 
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( flashlight_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE,  pShaderAPI->GetPixelFogCombo() );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( FLASHLIGHTSHADOWS, flashlightState.m_bEnableShadows && ( pFlashlightDepthTexture != NULL ) );
-			SET_DYNAMIC_PIXEL_SHADER( flashlight_ps20b );
-		}
-		else
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( flashlight_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE,  pShaderAPI->GetPixelFogCombo() );
-			SET_DYNAMIC_PIXEL_SHADER( flashlight_ps20 );
-		}
+		DECLARE_DYNAMIC_PIXEL_SHADER( flashlight_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE,  pShaderAPI->GetPixelFogCombo() );
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( FLASHLIGHTSHADOWS, flashlightState.m_bEnableShadows && ( pFlashlightDepthTexture != NULL ) );
+		SET_DYNAMIC_PIXEL_SHADER( flashlight_ps30 );
 
 		float atten[4];										// Set the flashlight attenuation factors
 		atten[0] = flashlightState.m_fConstantAtten;
@@ -2218,31 +2189,28 @@ void CBaseVSShader::HashShadow2DJitter( const float fJitterSeed, float *fU, floa
 void CBaseVSShader::DrawEqualDepthToDestAlpha( void )
 {
 #ifdef STDSHADER_DX9_DLL_EXPORT
-	if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
+	bool bMakeActualDrawCall = false;
+	if ( s_pShaderShadow )
 	{
-		bool bMakeActualDrawCall = false;
-		if( s_pShaderShadow )
-		{
-			s_pShaderShadow->EnableColorWrites( false );
-			s_pShaderShadow->EnableAlphaWrites( true );
-			s_pShaderShadow->EnableDepthWrites( false );
-			s_pShaderShadow->EnableAlphaTest( false );
-			s_pShaderShadow->EnableBlending( false );
+		s_pShaderShadow->EnableColorWrites( false );
+		s_pShaderShadow->EnableAlphaWrites( true );
+		s_pShaderShadow->EnableDepthWrites( false );
+		s_pShaderShadow->EnableAlphaTest( false );
+		s_pShaderShadow->EnableBlending( false );
 
-			s_pShaderShadow->DepthFunc( SHADER_DEPTHFUNC_EQUAL );
+		s_pShaderShadow->DepthFunc( SHADER_DEPTHFUNC_EQUAL );
 
-			s_pShaderShadow->SetVertexShader( "depthtodestalpha_vs20", 0 );
-			s_pShaderShadow->SetPixelShader( "depthtodestalpha_ps20b", 0 );
-		}
-		if( s_pShaderAPI )
-		{
-			s_pShaderAPI->SetVertexShaderIndex( 0 );
-			s_pShaderAPI->SetPixelShaderIndex( 0 );
-
-			bMakeActualDrawCall = s_pShaderAPI->ShouldWriteDepthToDestAlpha();
-		}
-		Draw( bMakeActualDrawCall );
+		s_pShaderShadow->SetVertexShader( "depthtodestalpha_vs30", 0 );
+		s_pShaderShadow->SetPixelShader( "depthtodestalpha_ps30", 0 );
 	}
+	if ( s_pShaderAPI )
+	{
+		s_pShaderAPI->SetVertexShaderIndex( 0 );
+		s_pShaderAPI->SetPixelShaderIndex( 0 );
+
+		bMakeActualDrawCall = s_pShaderAPI->ShouldWriteDepthToDestAlpha();
+	}
+	Draw( bMakeActualDrawCall );
 #else
 	Assert( 0 ); //probably just needs a shader update to the latest
 #endif

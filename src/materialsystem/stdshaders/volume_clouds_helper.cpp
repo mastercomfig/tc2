@@ -6,9 +6,8 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "volume_clouds_vs20.inc"
-#include "volume_clouds_ps20.inc"
-#include "volume_clouds_ps20b.inc"
+#include "volume_clouds_vs30.inc"
+#include "volume_clouds_ps30.inc"
 
 
 void InitParamsVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, VolumeCloudsVars_t &info )
@@ -54,20 +53,12 @@ void DrawVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
 		// Vertex Shader
-		DECLARE_STATIC_VERTEX_SHADER( volume_clouds_vs20 );
-		SET_STATIC_VERTEX_SHADER( volume_clouds_vs20 );
+		DECLARE_STATIC_VERTEX_SHADER( volume_clouds_vs30 );
+		SET_STATIC_VERTEX_SHADER( volume_clouds_vs30 );
 	
 		// Pixel Shader
-		if( g_pHardwareConfig->SupportsPixelShaders_2_b() && !IsOpenGL() ) // Always send POSIX down the 20 path (rg - why?)
-		{
-			DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
-			SET_STATIC_PIXEL_SHADER( volume_clouds_ps20b );
-		}
-		else
-		{
-			DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps20 );
-			SET_STATIC_PIXEL_SHADER( volume_clouds_ps20 );
-		}
+		DECLARE_STATIC_PIXEL_SHADER( volume_clouds_ps30 );
+		SET_STATIC_PIXEL_SHADER( volume_clouds_ps30 );
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
@@ -88,10 +79,10 @@ void DrawVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 	DYNAMIC_STATE
 	{
 		// Set Vertex Shader Combos
-		DECLARE_DYNAMIC_VERTEX_SHADER( volume_clouds_vs20 );
+		DECLARE_DYNAMIC_VERTEX_SHADER( volume_clouds_vs30 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-		SET_DYNAMIC_VERTEX_SHADER( volume_clouds_vs20 );
+		SET_DYNAMIC_VERTEX_SHADER( volume_clouds_vs30 );
 
 		// Set Vertex Shader Constants 
 
@@ -108,16 +99,9 @@ void DrawVolumeClouds( CBaseVSShader *pShader, IMaterialVar** params, IShaderDyn
 		pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, vPackedVsConst1, 1 );
 
 		// Set Pixel Shader Combos
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() && !IsOpenGL() ) // Always send POSIX down the 20 path (rg - why?)
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
-			SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20b );
-		}
-		else
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps20 );
-		}
+		DECLARE_DYNAMIC_PIXEL_SHADER( volume_clouds_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER( volume_clouds_ps30 );
+
 
 		// Bind textures
 		pShader->BindTexture( SHADER_SAMPLER0, info.m_nTexture1 );

@@ -8,9 +8,8 @@
 
 #include "BaseVSShader.h"
 
-#include "particlesphere_vs20.inc"
-#include "particlesphere_ps20.inc"
-#include "particlesphere_ps20b.inc"
+#include "particlesphere_vs30.inc"
+#include "particlesphere_ps30.inc"
 
 #include "cpp_shader_constant_register_map.h"
 
@@ -21,7 +20,7 @@ int GetDefaultDepthFeatheringValue( void ); //defined in spritecard.cpp
 
 DEFINE_FALLBACK_SHADER( ParticleSphere, ParticleSphere_DX9 )
 
-BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_NOT_EDITABLE  )
+BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for ParticleSphere", SHADER_NOT_EDITABLE  )
 			   
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( DEPTHBLEND, SHADER_PARAM_TYPE_INTEGER, "0", "fade at intersection boundaries" )
@@ -39,10 +38,6 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 		{
 			params[ DEPTHBLEND ]->SetIntValue( GetDefaultDepthFeatheringValue() );
 		}
-		if ( !g_pHardwareConfig->SupportsPixelShaders_2_b() )
-		{
-			params[ DEPTHBLEND ]->SetIntValue( 0 );
-		}
 		if ( !params[DEPTHBLENDSCALE]->IsDefined() )
 		{
 			params[ DEPTHBLENDSCALE ]->SetFloatValue( 50.0f );
@@ -51,7 +46,8 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 
 	bool UsePixelShaders( IMaterialVar **params ) const
 	{
-		return  (!params || params[BUMPMAP]->IsDefined()) && g_pHardwareConfig->SupportsVertexAndPixelShaders();
+		//return  (!params || params[BUMPMAP]->IsDefined()) && g_pHardwareConfig->SupportsVertexAndPixelShaders();
+		return true;
 	}
 
 	SHADER_INIT
@@ -97,20 +93,12 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 			pShaderShadow->BlendFunc( SHADER_BLEND_SRC_ALPHA, SHADER_BLEND_ONE_MINUS_SRC_ALPHA );
 			pShaderShadow->EnableDepthWrites( false );
 
-			DECLARE_STATIC_VERTEX_SHADER( particlesphere_vs20 );
-			SET_STATIC_VERTEX_SHADER( particlesphere_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( particlesphere_vs30 );
+			SET_STATIC_VERTEX_SHADER( particlesphere_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( DEPTHBLEND, params[DEPTHBLEND]->GetIntValue() );
-				SET_STATIC_PIXEL_SHADER( particlesphere_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps20 );
-				SET_STATIC_PIXEL_SHADER( particlesphere_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( particlesphere_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( DEPTHBLEND, params[DEPTHBLEND]->GetIntValue() );
+			SET_STATIC_PIXEL_SHADER( particlesphere_ps30 );
 
 			FogToFogColor();
 		}
@@ -153,22 +141,13 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for BumpmappedEnvMap", SHADER_N
 
 
 			// Compute the vertex shader index.
-			DECLARE_DYNAMIC_VERTEX_SHADER( particlesphere_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( particlesphere_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( FOGTYPE, s_pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			SET_DYNAMIC_VERTEX_SHADER( particlesphere_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( particlesphere_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
+			SET_DYNAMIC_PIXEL_SHADER( particlesphere_ps30 );
 		}
 		Draw();
 	}

@@ -16,14 +16,14 @@ struct VS_OUTPUT
 	float2 vSrcCoord			: TEXCOORD0;
 	float2 vSideSpeedCoord		: TEXCOORD1;
 	
-#if CONSTANTBASEDMORPH
+#if CONSTANTBASEDMORPH && defined ( FAST_VERTEX_TEXTURES )
 	float4 vMorphWeights		: TEXCOORD2;
 #else
 	float2 vMorphWeightCoord	: TEXCOORD2;
 #endif
 };
 
-#if !CONSTANTBASEDMORPH
+#if !CONSTANTBASEDMORPH || !defined ( FAST_VERTEX_TEXTURES )
 const float4 vMorphWeightSubrect	 :  register( SHADER_SPECIFIC_CONST_0 );
 const float4 vMorphWeightDimensions	 :  register( SHADER_SPECIFIC_CONST_1 );
 #endif
@@ -42,7 +42,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.vSrcCoord = v.vSrcCoord.xy;
 	o.vSideSpeedCoord = v.vSrcCoord.xy;
 
-#if CONSTANTBASEDMORPH
+#if CONSTANTBASEDMORPH && defined ( FAST_VERTEX_TEXTURES )
 	o.vMorphWeights = cFlexWeights[ v.vMorphWeightId ];
 #else
 	float flColumn = floor( v.vMorphWeightId / vMorphWeightSubrect.w );

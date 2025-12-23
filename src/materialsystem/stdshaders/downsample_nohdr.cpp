@@ -8,8 +8,7 @@
 #include "common_hlsl_cpp_consts.h"
 #include "convar.h"
 
-#include "Downsample_nohdr_ps20.inc"
-#include "Downsample_nohdr_ps20b.inc"
+#include "Downsample_nohdr_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -57,30 +56,16 @@ BEGIN_VS_SHADER_FLAGS( Downsample_nohdr, "Help for Downsample_nohdr", SHADER_NOT
 			pShaderShadow->EnableAlphaWrites( true );
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
 
-			// Render targets are pegged as sRGB on OSX, so just force these reads and writes
-			bool bForceSRGBReadAndWrite = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, bForceSRGBReadAndWrite );
-			pShaderShadow->EnableSRGBWrite( bForceSRGBReadAndWrite );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
+			pShaderShadow->EnableSRGBWrite( false );
 
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 
-			pShaderShadow->SetVertexShader( "Downsample_vs20", 0 );
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( CSTRIKE, params[CSTRIKE]->GetIntValue() ? 1 : 0 );
-#ifndef _X360
-				SET_STATIC_PIXEL_SHADER_COMBO( SRGB_ADAPTER, bForceSRGBReadAndWrite );
-#endif
-				SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( CSTRIKE, params[CSTRIKE]->GetIntValue() ? 1 : 0 );
-				SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-			}
+			pShaderShadow->SetVertexShader( "Downsample_vs30", 0 );
+
+			DECLARE_STATIC_PIXEL_SHADER( downsample_nohdr_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( CSTRIKE, params[CSTRIKE]->GetIntValue() ? 1 : 0 );
+			SET_STATIC_PIXEL_SHADER( downsample_nohdr_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -118,17 +103,9 @@ BEGIN_VS_SHADER_FLAGS( Downsample_nohdr, "Help for Downsample_nohdr", SHADER_NOT
 				flPixelShaderParams[3] = 1.0f;
 			}
 			pShaderAPI->SetPixelShaderConstant( 0, flPixelShaderParams, 1 );
-						
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() || g_pHardwareConfig->ShouldAlwaysUseShaderModel2bShaders() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps20 );
-			}
+
+			DECLARE_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( downsample_nohdr_ps30 );
 		}
 		Draw();
 	}

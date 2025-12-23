@@ -302,30 +302,6 @@ float3 BlendPixelFog( const float3 vShaderColor, float pixelFogFactor, const flo
 	}
 }
 
-
-#if ((defined(SHADER_MODEL_PS_2_B) || defined(SHADER_MODEL_PS_3_0)) && ( CONVERT_TO_SRGB != 0 ) )
-sampler1D GammaTableSampler : register( s15 );
-
-float3 SRGBOutput( const float3 vShaderColor )
-{	
-	//On ps2b capable hardware we always have the linear->gamma conversion table texture in sampler s15.
-	float3 result;
-	result.r = tex1D( GammaTableSampler, vShaderColor.r ).r;
-	result.g = tex1D( GammaTableSampler, vShaderColor.g ).r;
-	result.b = tex1D( GammaTableSampler, vShaderColor.b ).r;
-	return result;	
-}
-
-#else
-
-float3 SRGBOutput( const float3 vShaderColor )
-{
-	return vShaderColor; //ps 1.1, 1.4, and 2.0 never do srgb conversion in the pixel shader
-}
-
-#endif
-
-
 float SoftParticleDepth( float flDepth )
 {
 	return flDepth * OO_DESTALPHA_DEPTH_RANGE;
@@ -364,10 +340,6 @@ float4 FinalOutput( const float4 vShaderColor, float pixelFogFactor, const int i
 		result.a = vShaderColor.a;
 
 	result.rgb = BlendPixelFog( result.rgb, pixelFogFactor, g_LinearFogColor.rgb, iPIXELFOGTYPE );
-	
-#if !(defined(SHADER_MODEL_PS_1_1) || defined(SHADER_MODEL_PS_1_4) || defined(SHADER_MODEL_PS_2_0)) //Minimum requirement of ps2b
-	result.rgb = SRGBOutput( result.rgb ); //SRGB in pixel shader conversion
-#endif
 
 	return result;
 }
@@ -376,13 +348,13 @@ LPREVIEW_PS_OUT FinalOutput( const LPREVIEW_PS_OUT vShaderColor, float pixelFogF
 {
 	LPREVIEW_PS_OUT result;
 	result.color = FinalOutput( vShaderColor.color, pixelFogFactor, iPIXELFOGTYPE, iTONEMAP_SCALE_TYPE );
-	result.normal.rgb = SRGBOutput( vShaderColor.normal.rgb );
+	result.normal.rgb = vShaderColor.normal.rgb;
 	result.normal.a = vShaderColor.normal.a;
 
-	result.position.rgb = SRGBOutput( vShaderColor.position.rgb );
+	result.position.rgb = vShaderColor.position.rgb;
 	result.position.a = vShaderColor.position.a;
 
-	result.flags.rgb = SRGBOutput( vShaderColor.flags.rgb );	
+	result.flags.rgb = vShaderColor.flags.rgb;	
 	result.flags.a = vShaderColor.flags.a;
 
 	return result;

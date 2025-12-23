@@ -1,10 +1,7 @@
-// STATIC: "CONVERT_TO_SRGB"		"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"		"0..0"	[= 0] [XBOX]
 // STATIC: "VERTEXCOLOR"			"0..1"
 // STATIC: "CONSTANTCOLOR"			"0..1"
 // STATIC: "HDRTYPE"				"0..2"
 // STATIC: "SRGB"					"0..1"
-// STATIC: "SRGB_OUTPUT_ADAPTER"	"0..1"	[ps20b]
 
 // DYNAMIC: "HDRENABLED"			"0..1"
 // DYNAMIC: "PIXELFOGTYPE"			"0..2"
@@ -49,11 +46,6 @@ float4 main( PS_INPUT i ) : COLOR
 	result = FinalOutput( sample, fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
 #else
 	result = FinalOutput( sample, fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_GAMMA );
-#endif
-
-	// On Posix, we're being forced through a linear-to-gamma curve but don't want it, so we do the opposite here first
-#if SRGB_OUTPUT_ADAPTER
-	result = GammaToLinear( result );
 #endif
 
 	return result;

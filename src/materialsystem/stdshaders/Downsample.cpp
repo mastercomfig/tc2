@@ -8,8 +8,7 @@
 #include "BaseVSShader.h"
 #include "common_hlsl_cpp_consts.h"
 
-#include "Downsample_ps20.inc"
-#include "Downsample_ps20b.inc"
+#include "Downsample_ps30.inc"
 
 
 BEGIN_VS_SHADER_FLAGS( Downsample, "Help for Downsample", SHADER_NOT_EDITABLE )
@@ -41,26 +40,16 @@ BEGIN_VS_SHADER_FLAGS( Downsample, "Help for Downsample", SHADER_NOT_EDITABLE )
 
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
 
-			// Render targets are pegged as sRGB on OSX GL, so just force these reads and writes
-			bool bForceSRGBReadAndWrite = IsOSX() && g_pHardwareConfig->CanDoSRGBReadFromRTs();
-			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, bForceSRGBReadAndWrite );
-			pShaderShadow->EnableSRGBWrite( bForceSRGBReadAndWrite );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, false );
+			pShaderShadow->EnableSRGBWrite( false );
 
 			int fmt = VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-			pShaderShadow->SetVertexShader( "Downsample_vs20", 0 );
-			
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_ps20b );
-				SET_STATIC_PIXEL_SHADER( downsample_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( downsample_ps20 );
-				SET_STATIC_PIXEL_SHADER( downsample_ps20 );
-			}
+			pShaderShadow->SetVertexShader( "Downsample_vs30", 0 );
+
+			DECLARE_STATIC_PIXEL_SHADER( downsample_ps30 );
+			SET_STATIC_PIXEL_SHADER( downsample_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -94,16 +83,8 @@ BEGIN_VS_SHADER_FLAGS( Downsample, "Help for Downsample", SHADER_NOT_EDITABLE )
 
 			pShaderAPI->SetVertexShaderIndex( 0 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( downsample_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( downsample_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( downsample_ps30 );
 		}
 		Draw();
 	}

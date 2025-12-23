@@ -90,14 +90,8 @@
 #include "convar.h"
 
 // Auto generated inc files
-#include "emissive_scroll_blended_pass_vs20.inc"
-#include "emissive_scroll_blended_pass_ps20.inc"
-#include "emissive_scroll_blended_pass_ps20b.inc"
-
-#ifndef _X360
 #include "emissive_scroll_blended_pass_vs30.inc"
 #include "emissive_scroll_blended_pass_ps30.inc"
-#endif
 
 void InitParamsEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, const char *pMaterialName, EmissiveScrollBlendedPassVars_t &info )
 {
@@ -143,39 +137,18 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 		int userDataSize = 0;
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			// Vertex Shader
-			DECLARE_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs20 );
-			SET_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs20 );
-
-			// Pixel Shader
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20b );
-				SET_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20 );
-				SET_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20 );
-			}
-		}
-#ifndef _X360
-		else
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+		if ( bFastVertexTextures )
 		{
 			// The vertex shader uses the vertex id stream
 			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
-
-			DECLARE_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
-			SET_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
-
-			DECLARE_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
-			SET_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
 		}
-#endif
+
+		DECLARE_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
+		SET_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
+
+		DECLARE_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
+		SET_STATIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
 
 		// Textures
 		pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
@@ -195,47 +168,21 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 		// Reset render state manually since we're drawing from two materials
 		pShaderAPI->SetDefaultState();
 
-#ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
-#endif
-		{
-			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs20 );
-
-			// Set Vertex Shader Constants 
-			// None?
-
-			// Set Pixel Shader Combos
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps20 );
-			}
-		}
-#ifndef _X360
-		else
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+		if ( bFastVertexTextures )
 		{
 			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
-
-			// Set Vertex Shader Combos
-			DECLARE_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
-
-			DECLARE_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
-			SET_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
 		}
-#endif
+
+		// Set Vertex Shader Combos
+		DECLARE_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
+		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
+		SET_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
+
+		DECLARE_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
+		SET_DYNAMIC_PIXEL_SHADER( emissive_scroll_blended_pass_ps30 );
 
 		// Bind textures
 		pShader->BindTexture( SHADER_SAMPLER0, info.m_nBaseTexture );

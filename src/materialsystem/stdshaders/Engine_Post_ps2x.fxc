@@ -1,8 +1,3 @@
-// STATIC: "CONVERT_TO_SRGB"				"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"				"0..0"	[= 0] [XBOX]
-// STATIC: "LINEAR_INPUT"					"0..1"  [ps20b]
-// STATIC: "LINEAR_OUTPUT"					"0..1"  [ps20b]
-
 // DYNAMIC: "AA_ENABLE"						"0..1"
 // rem DYNAMIC: "AA_DEBUG_MODE"				"0..3"
 #define AA_DEBUG_MODE						0	
@@ -97,17 +92,7 @@ float	BloomFactor						: register( c5 );
 
 float4 GetBloomColor( float2 bloomUV )
 {
-	#if ( LINEAR_INPUT == 1 )
-	{
-		// In this case, which is only used on OpenGL, we want sRGB data from this tex2D.
-		// Hence, we have to undo the sRGB conversion that we are forced to apply by OpenGL
-		return LinearToGamma( tex2D( BaseTextureSampler, bloomUV ) );
-	}
-	#else
-	{
-		return tex2D( BaseTextureSampler, bloomUV );
-	}
-	#endif
+	return tex2D( BaseTextureSampler, bloomUV );
 }
 
 float4 PerformColorCorrection( float4 outColor, float2 fbTexCoord )
@@ -392,14 +377,6 @@ float4 main( PS_INPUT i ) : COLOR
 	float2 fbTexCoord = PerformUVTransform( i.baseTexCoord );
 	float3 baseColor  = tex2D( FBTextureSampler, fbTexCoord ).rgb;
 
-	#if ( LINEAR_INPUT == 1 )
-	{
-		// In this case, which is only used on OpenGL, we want sRGB data from this tex2D.
-		// Hence, we have to undo the sRGB conversion that we are forced to apply by OpenGL
-		baseColor = LinearToGamma( baseColor );
-	}
-	#endif
-
 	float4 outColor = float4( baseColor, 1 );
 
 	#if ( AA_ENABLE == 1 )
@@ -421,13 +398,6 @@ float4 main( PS_INPUT i ) : COLOR
 	outColor.rgb += bloomColor.rgb;
 	outColor = PerformColorCorrection( outColor, fbTexCoord );
 	outColor = FinalOutput( outColor, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
-
-	// Go to linear since we're forced to do an sRGB write on OpenGL in ps2b
-	#if ( LINEAR_OUTPUT == 1 )
-	{
-		outColor = GammaToLinear( outColor );
-	}
-	#endif
 
 	return outColor;
 }

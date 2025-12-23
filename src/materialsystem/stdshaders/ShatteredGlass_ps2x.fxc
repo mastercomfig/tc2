@@ -1,5 +1,3 @@
-// STATIC: "CONVERT_TO_SRGB"		"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"		"0..0"	[= 0] [XBOX]
 // STATIC: "CUBEMAP"				"0..1"
 // STATIC: "VERTEXCOLOR"			"0..1"
 // STATIC: "ENVMAPMASK"				"0..1"

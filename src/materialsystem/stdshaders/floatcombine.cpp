@@ -7,9 +7,8 @@
 
 #include "BaseVSShader.h"
 
-#include "screenspaceeffect_vs20.inc"
-#include "floatcombine_ps20.inc"
-#include "floatcombine_ps20b.inc"
+#include "screenspaceeffect_vs30.inc"
+#include "floatcombine_ps30.inc"
 
 BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABLE )
 	BEGIN_SHADER_PARAMS
@@ -62,19 +61,11 @@ BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABL
 			pShaderShadow->EnableSRGBWrite( true );
 
 			// Pre-cache shaders
-			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps20b );
-				SET_STATIC_PIXEL_SHADER( floatcombine_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps20 );
-				SET_STATIC_PIXEL_SHADER( floatcombine_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps30 );
+			SET_STATIC_PIXEL_SHADER( floatcombine_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -99,19 +90,11 @@ BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABL
 				      (float)(1.0/bloom_texture->GetActualWidth()), (float)(1.0/bloom_texture->GetActualHeight()) };
 			pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, v0, 1 );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( floatcombine_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( floatcombine_ps30 );
 		}
 		Draw();
 	}

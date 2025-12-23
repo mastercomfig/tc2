@@ -39,7 +39,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float2 texCoord;
 	worldPos = mul( v.vPos, cModel[0] );
 	float4 vProjPos = mul( float4( worldPos, 1 ), cViewProj );
-	o.projPos = projPos;
+	o.projPos = vProjPos;
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
 #if !defined( _X360 )

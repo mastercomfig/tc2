@@ -1,85 +1,60 @@
+// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
+// defined $HDRTYPE && defined $HDRENABLED && !$HDRTYPE && $HDRENABLED
+// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
+// defined $LIGHTING_PREVIEW && defined $HDRTYPE && $LIGHTING_PREVIEW && $HDRTYPE != 0
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
+// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
+// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
+
+#pragma once
 #include "shaderlib/cshader.h"
 class cloak_blended_pass_ps30_Static_Index
 {
-private:
-	int m_nCONVERT_TO_SRGB;
+	unsigned int m_nBUMPMAP : 2;
 #ifdef _DEBUG
-	bool m_bCONVERT_TO_SRGB;
-#endif
-public:
-	void SetCONVERT_TO_SRGB( int i )
-	{
-		DebugAssert( i >= 0 && i <= 1 );
-		m_nCONVERT_TO_SRGB = i;
-#ifdef _DEBUG
-		m_bCONVERT_TO_SRGB = true;
-#endif
-	}
-	void SetCONVERT_TO_SRGB( bool i )
-	{
-		m_nCONVERT_TO_SRGB = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bCONVERT_TO_SRGB = true;
-#endif
-	}
-private:
-	int m_nBUMPMAP;
-#ifdef _DEBUG
-	bool m_bBUMPMAP;
-#endif
+	bool m_bBUMPMAP : 1;
+#endif	// _DEBUG
 public:
 	void SetBUMPMAP( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nBUMPMAP = i;
 #ifdef _DEBUG
 		m_bBUMPMAP = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetBUMPMAP( bool i )
+
+	cloak_blended_pass_ps30_Static_Index(  )
 	{
-		m_nBUMPMAP = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bBUMPMAP = true;
-#endif
-	}
-public:
-	cloak_blended_pass_ps30_Static_Index( )
-	{
-#ifdef _DEBUG
-		m_bCONVERT_TO_SRGB = true;
-#endif // _DEBUG
-		m_nCONVERT_TO_SRGB =  g_pHardwareConfig->NeedsShaderSRGBConversion();
+		m_nBUMPMAP = 0;
 #ifdef _DEBUG
 		m_bBUMPMAP = false;
-#endif // _DEBUG
-		m_nBUMPMAP = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB && m_bBUMPMAP;
-		DebugAssert( bAllStaticVarsDefined );
-#endif // _DEBUG
-		return ( 1 * m_nCONVERT_TO_SRGB ) + ( 2 * m_nBUMPMAP ) + 0;
+		Assert( m_bBUMPMAP );
+		return ( 1 * m_nBUMPMAP ) + 0;
 	}
 };
-#define shaderStaticTest_cloak_blended_pass_ps30 psh_forgot_to_set_static_BUMPMAP + 0
+
+#define shaderStaticTest_cloak_blended_pass_ps30 psh_forgot_to_set_static_BUMPMAP
+
+
 class cloak_blended_pass_ps30_Dynamic_Index
 {
 public:
-	cloak_blended_pass_ps30_Dynamic_Index()
+	cloak_blended_pass_ps30_Dynamic_Index(  )
 	{
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-#endif // _DEBUG
 		return 0;
 	}
 };
-#define shaderDynamicTest_cloak_blended_pass_ps30 0
+
+#define shaderDynamicTest_cloak_blended_pass_ps30 1
+

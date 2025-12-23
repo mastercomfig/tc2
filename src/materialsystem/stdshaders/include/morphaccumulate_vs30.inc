@@ -1,60 +1,54 @@
+// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
+// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+
+#pragma once
 #include "shaderlib/cshader.h"
 class morphaccumulate_vs30_Static_Index
 {
-private:
-	int m_nCONSTANTBASEDMORPH;
+	unsigned int m_nCONSTANTBASEDMORPH : 2;
 #ifdef _DEBUG
-	bool m_bCONSTANTBASEDMORPH;
-#endif
+	bool m_bCONSTANTBASEDMORPH : 1;
+#endif	// _DEBUG
 public:
 	void SetCONSTANTBASEDMORPH( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCONSTANTBASEDMORPH = i;
 #ifdef _DEBUG
 		m_bCONSTANTBASEDMORPH = true;
-#endif
+#endif	// _DEBUG
 	}
-	void SetCONSTANTBASEDMORPH( bool i )
+
+	morphaccumulate_vs30_Static_Index(  )
 	{
-		m_nCONSTANTBASEDMORPH = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bCONSTANTBASEDMORPH = true;
-#endif
-	}
-public:
-	morphaccumulate_vs30_Static_Index( )
-	{
+		m_nCONSTANTBASEDMORPH = 0;
 #ifdef _DEBUG
 		m_bCONSTANTBASEDMORPH = false;
-#endif // _DEBUG
-		m_nCONSTANTBASEDMORPH = 0;
+#endif	// _DEBUG
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bCONSTANTBASEDMORPH;
-		DebugAssert( bAllStaticVarsDefined );
-#endif // _DEBUG
+		Assert( m_bCONSTANTBASEDMORPH );
 		return ( 1 * m_nCONSTANTBASEDMORPH ) + 0;
 	}
 };
-#define shaderStaticTest_morphaccumulate_vs30 vsh_forgot_to_set_static_CONSTANTBASEDMORPH + 0
+
+#define shaderStaticTest_morphaccumulate_vs30 vsh_forgot_to_set_static_CONSTANTBASEDMORPH
+
+
 class morphaccumulate_vs30_Dynamic_Index
 {
 public:
-	morphaccumulate_vs30_Dynamic_Index()
+	morphaccumulate_vs30_Dynamic_Index(  )
 	{
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-#endif // _DEBUG
 		return 0;
 	}
 };
-#define shaderDynamicTest_morphaccumulate_vs30 0
+
+#define shaderDynamicTest_morphaccumulate_vs30 1
+

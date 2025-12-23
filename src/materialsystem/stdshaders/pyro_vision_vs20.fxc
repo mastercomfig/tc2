@@ -1,9 +1,8 @@
-// STATIC: "EFFECT"						"0..3"
+// STATIC: "EFFECT"						"0..1"
 // STATIC: "VERTEXCOLOR"				"0..1"
 // STATIC: "HALFLAMBERT"				"0..1"
 // STATIC: "VERTEX_LIT"					"0..1"
 // STATIC: "FULLBRIGHT"					"0..1"
-// STATIC: "USE_STATIC_CONTROL_FLOW"	"0..1" [vs20]
 // STATIC: "BASETEXTURE2"				"0..1"
 // STATIC: "STRIPES"					"0..1"
 // STATIC: "STRIPES_USE_NORMAL2"		"0..1"
@@ -12,12 +11,9 @@
 // DYNAMIC: "SKINNING"					"0..1"
 // DYNAMIC: "DYNAMIC_LIGHT"				"0..1"
 // DYNAMIC: "STATIC_LIGHT"				"0..1"
-// DYNAMIC: "NUM_LIGHTS"				"0..2"	[vs20]
 
 // SKIP: ( STRIPES == 0 ) &&  ( STRIPES_USE_NORMAL2 == 1 )
-// SKIP: ( EFFECT == 2 || EFFECT == 3 ) && ( VERTEXCOLOR == 1 || HALFLAMBERT == 1 || VERTEX_LIT == 1 || FULLBRIGHT == 1 || USE_STATIC_CONTROL_FLOW == 1 || BASETEXTURE2 == 1 || STRIPES == 1 || STRIPES_USE_NORMAL2 == 1 )
-// SKIP: ( EFFECT == 2 || EFFECT == 3 ) && ( SKINNING == 1 || DYNAMIC_LIGHT == 1 || STATIC_LIGHT == 1 || NUM_LIGHTS != 0 )
-// SKIP: ( FULLBRIGHT == 1 ) &&  ( VERTEX_LIT == 0 || DYNAMIC_LIGHT == 1 || STATIC_LIGHT == 1 || NUM_LIGHTS != 0 )
+// SKIP: ( FULLBRIGHT == 1 ) &&  ( VERTEX_LIT == 0 || DYNAMIC_LIGHT == 1 || STATIC_LIGHT == 1 )
 
 
 #include "common_vs_fxc.h"
@@ -156,15 +152,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	bool bDynamicLight = DYNAMIC_LIGHT ? true : false;
 	bool bStaticLight = STATIC_LIGHT ? true : false;
 
-	#if ( ( USE_STATIC_CONTROL_FLOW ) ||  defined ( SHADER_MODEL_VS_3_0 ) )
-	{
-		o.vVertexColor.xyz = DoLighting( vWorldPos, vWorldNormal, v.vSpecular, bStaticLight, bDynamicLight, g_bHalfLambert );
-	}
-	#else
-	{
-		o.vVertexColor.xyz = DoLightingUnrolled( vWorldPos, vWorldNormal, v.vSpecular, bStaticLight, bDynamicLight, g_bHalfLambert, NUM_LIGHTS );
-	}
-	#endif
+	o.vVertexColor.xyz = DoLighting( vWorldPos, vWorldNormal, v.vSpecular, bStaticLight, bDynamicLight, g_bHalfLambert );
 
 	o.vVertexColor.a = 1.0f;
 

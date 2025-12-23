@@ -18,22 +18,14 @@
 #include "shaderlib/cshader.h"
 class teeth_ps30_Static_Index
 {
-	unsigned int m_nCONVERT_TO_SRGB : 2;
 public:
-	void SetCONVERT_TO_SRGB( int i )
-	{
-		DebugAssert( i >= 0 && i <= 1 );
-		m_nCONVERT_TO_SRGB = i;
-	}
-
 	teeth_ps30_Static_Index(  )
 	{
-		m_nCONVERT_TO_SRGB = g_pHardwareConfig->NeedsShaderSRGBConversion();
 	}
 
 	int GetIndex() const
 	{
-		return ( 6 * m_nCONVERT_TO_SRGB ) + 0;
+		return 0;
 	}
 };
 
@@ -51,7 +43,7 @@ class teeth_ps30_Dynamic_Index
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 2 );
+		Assert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -60,7 +52,7 @@ public:
 
 	void SetWRITE_DEPTH_TO_DESTALPHA( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nWRITE_DEPTH_TO_DESTALPHA = i;
 #ifdef _DEBUG
 		m_bWRITE_DEPTH_TO_DESTALPHA = true;
@@ -79,7 +71,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bPIXELFOGTYPE && m_bWRITE_DEPTH_TO_DESTALPHA );
+		Assert( m_bPIXELFOGTYPE && m_bWRITE_DEPTH_TO_DESTALPHA );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 3 * m_nWRITE_DEPTH_TO_DESTALPHA ) + 0;
 	}
 };

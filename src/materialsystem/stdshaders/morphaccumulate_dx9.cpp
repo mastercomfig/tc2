@@ -42,7 +42,7 @@ BEGIN_VS_SHADER_FLAGS( MorphAccumulate_DX9, "Help for MorphAccumulate", SHADER_N
 
 	SHADER_DRAW
 	{
-		bool bUseConstantBasedAccum = ( g_pHardwareConfig->NumVertexShaderConstants() >= VERTEX_SHADER_FLEX_WEIGHTS + VERTEX_SHADER_MAX_FLEX_WEIGHT_COUNT );
+		bool bUseConstantBasedAccum = ( g_pHardwareConfig->NumVertexShaderConstants() >= VERTEX_SHADER_FLEX_WEIGHTS + VERTEX_SHADER_MAX_FLEX_WEIGHT_COUNT ) && g_pHardwareConfig->HasFastVertexTextures();
 
 		SHADOW_STATE
 		{

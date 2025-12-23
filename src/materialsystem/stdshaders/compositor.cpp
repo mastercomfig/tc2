@@ -7,8 +7,7 @@
 
 #include "BaseVSShader.h"
 
-#include "compositor_ps20.inc"
-#include "compositor_ps20b.inc"
+#include "compositor_ps30.inc"
 #include "materialsystem/combineoperations.h"
 
 #include "tier0/memdbgon.h"
@@ -32,8 +31,7 @@ struct CompositorInfo_t
 };
 
 
-static void DrawCompositorStage_ps20( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info );
-static void DrawCompositorStage_ps20b( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info );
+static void DrawCompositorStage_ps30( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info );
 
 BEGIN_VS_SHADER( Compositor, "Help for Compositor" )
 	BEGIN_SHADER_PARAMS
@@ -110,17 +108,12 @@ BEGIN_VS_SHADER( Compositor, "Help for Compositor" )
 		( *pOutInfo ).m_nSelector[ 14 ]			= SELECTOR14;
 		( *pOutInfo ).m_nSelector[ 15 ]			= SELECTOR15;
 		( *pOutInfo ).m_bDebug					= DEBUG_MODE;
-
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			( *pOutInfo).m_nTexturesPerPass = 4;
-		else
-			( *pOutInfo).m_nTexturesPerPass = 2;
+		( *pOutInfo).m_nTexturesPerPass = 4;
 	}
 
 
 	SHADER_INIT
 	{
-
 	}
 	
 	SHADER_FALLBACK
@@ -139,10 +132,7 @@ BEGIN_VS_SHADER( Compositor, "Help for Compositor" )
 		CompositorInfo_t info;
 		SetupVarsCompositorInfo( &info );
 
-		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			DrawCompositorStage_ps20b( this, params, pShaderShadow, pShaderAPI, vertexCompression, info );
-		else
-			DrawCompositorStage_ps20( this, params, pShaderShadow, pShaderAPI, vertexCompression, info );
+		DrawCompositorStage_ps30( this, params, pShaderShadow, pShaderAPI, vertexCompression, info );
 	}
 END_SHADER
 
@@ -163,11 +153,7 @@ static void DrawCompositorStage_common( CBaseVSShader *pShader, IMaterialVar **p
 
 		// In 2.0b shaders, we use the skin shader and alpha carries specular mask information--
 		// so we need to write it
-		// But with 2.0 shaders used by at least one customer in 2015, we fall back to 
-		// vertexlitgeneric and it doesn't do the same transforms as skin to the alpha shader
-		// Since it won't be used anyways and it breaks the item model panel icons to write alpha
-		// DON'T when we're running with 2.0 shaders.
-		pShaderShadow->EnableAlphaWrites( g_pHardwareConfig->SupportsPixelShaders_2_b() );
+		pShaderShadow->EnableAlphaWrites( true );
 
 		pShaderShadow->EnableSRGBWrite( true );
 
@@ -180,7 +166,7 @@ static void DrawCompositorStage_common( CBaseVSShader *pShader, IMaterialVar **p
 		int fmt = VERTEX_POSITION;
 		pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
-		pShaderShadow->SetVertexShader( "compositor_vs20", 0 );
+		pShaderShadow->SetVertexShader( "compositor_vs30", 0 );
 	}
 
 	DYNAMIC_STATE
@@ -229,174 +215,7 @@ static void DrawCompositorStage_common( CBaseVSShader *pShader, IMaterialVar **p
 	}
 }
 
-// Helper function when using ps20 and performing multiply and add operations.
-static void DrawCompositorStage_ps20_muladdblend( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
-{
-	int nCombineMode = params[ info.m_nCombineMode ]->GetIntValue();
-
-	SHADOW_STATE
-	{
-		{
-			DECLARE_STATIC_PIXEL_SHADER( compositor_ps20 );
-			SET_STATIC_PIXEL_SHADER_COMBO( COMBINE_MODE, nCombineMode );
-			SET_STATIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-
-		// We can blend on top for second and subsequent writes. 
-		pShaderShadow->EnableBlending( true );
-		if ( nCombineMode == ECO_Multiply )
-			pShaderShadow->BlendFunc( SHADER_BLEND_DST_COLOR, SHADER_BLEND_ZERO );
-		else
-			pShaderShadow->BlendFunc( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
-
-		pShader->Draw();
-	}
-
-	DYNAMIC_STATE
-	{
-		int textureCount = GetIntParam( info.m_nTextureInputCount, params );
-		int textureCountThisPass = Min( textureCount, info.m_nTexturesPerPass );
-		Assert( textureCount > 0 ); // Valid, but would be really weird. 
-		Assert( textureCountThisPass > 0 ); // That's bogus
-
-		if ( textureCountThisPass > 0 ) pShader->SetPixelShaderConstantGammaToLinear( 2, info.m_nTexAdjustLevels[ 0 ] );
-
-		if ( textureCountThisPass > 1 ) pShader->BindTexture( SHADER_SAMPLER1, info.m_nSrcTexture[ 1 ] );
-		if ( textureCountThisPass > 1 ) pShader->SetVertexShaderMatrix2x4( 4, info.m_nTexTransform[ 1 ] );
-		if ( textureCountThisPass > 1 ) pShader->SetPixelShaderConstantGammaToLinear( 3, info.m_nTexAdjustLevels[ 1 ] );
-
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
-			SET_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-
-		textureCountThisPass = Max( 0, textureCount - textureCountThisPass );
-		Assert( textureCountThisPass <= info.m_nTexturesPerPass );
-
-		float f4TextureCountThisPass[] = { (float)textureCountThisPass, 0.0f, 0.0f, 0.0f };
-		Assert( ARRAYSIZE( f4TextureCountThisPass ) == 4 );
-
-		pShaderAPI->SetPixelShaderConstant( 6, f4TextureCountThisPass );
-
-		if ( textureCountThisPass > 0 ) pShader->BindTexture( SHADER_SAMPLER0, info.m_nSrcTexture[ 2 ] );
-		if ( textureCountThisPass > 0 ) pShader->SetVertexShaderMatrix2x4( 2, info.m_nTexTransform[ 2 ] );
-		if ( textureCountThisPass > 0 ) pShader->SetPixelShaderConstantGammaToLinear( 2, info.m_nTexAdjustLevels[ 2 ] );
-
-		if ( textureCountThisPass > 1 ) pShader->BindTexture( SHADER_SAMPLER1, info.m_nSrcTexture[ 3 ] );
-		if ( textureCountThisPass > 1 ) pShader->SetVertexShaderMatrix2x4( 4, info.m_nTexTransform[ 3 ] );
-		if ( textureCountThisPass > 1 ) pShader->SetPixelShaderConstantGammaToLinear( 3, info.m_nTexAdjustLevels[ 3 ] );
-
-		pShader->Draw( textureCountThisPass > 0 );
-	}
-}
-
-// Helper function when using ps20 and performing lerp operations.
-static void DrawCompositorStage_ps20_lerp( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
-{
-	SHADOW_STATE
-	{
-		{
-			DECLARE_STATIC_PIXEL_SHADER( compositor_ps20 );
-			SET_STATIC_PIXEL_SHADER_COMBO( COMBINE_MODE, ECO_Legacy_Lerp_FirstPass );
-			SET_STATIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-
-		// We can blend on top for second write.
-		pShaderShadow->EnableBlending( true );
-		pShaderShadow->BlendFunc( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
-
-		{
-			DECLARE_STATIC_PIXEL_SHADER( compositor_ps20 );
-			SET_STATIC_PIXEL_SHADER_COMBO( COMBINE_MODE, ECO_Legacy_Lerp_SecondPass );
-			SET_STATIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-	}
-
-	DYNAMIC_STATE
-	{
-		Assert( GetIntParam( info.m_nTextureInputCount, params ) == 3 );
-
-		pShader->SetPixelShaderConstantGammaToLinear( 2, info.m_nTexAdjustLevels[ 0 ] );
-
-		pShader->BindTexture( SHADER_SAMPLER1, info.m_nSrcTexture[ 2 ] );
-		pShader->SetVertexShaderMatrix2x4( 4, info.m_nTexTransform[ 2 ] );
-		pShader->SetPixelShaderConstantGammaToLinear( 3, info.m_nTexAdjustLevels[ 2 ] );
-
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
-			SET_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-
-		pShader->BindTexture( SHADER_SAMPLER0, info.m_nSrcTexture[ 1 ] );
-		pShader->SetVertexShaderMatrix2x4( 2, info.m_nTexTransform[ 1 ] );
-		pShader->SetPixelShaderConstantGammaToLinear( 2, info.m_nTexAdjustLevels[ 1 ] );
-
-		pShader->Draw();
-	}
-}
-
-// Helper function when using ps20 and performing lerp operations.
-static void DrawCompositorStage_ps20_select( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
-{
-	int nCombineMode = params[ info.m_nCombineMode ]->GetIntValue();
-
-	SHADOW_STATE
-	{
-		{
-			DECLARE_STATIC_PIXEL_SHADER( compositor_ps20 );
-			SET_STATIC_PIXEL_SHADER_COMBO( COMBINE_MODE, nCombineMode );
-			SET_STATIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-	}
-
-	DYNAMIC_STATE
-	{
-		Assert( GetIntParam( info.m_nTextureInputCount, params ) == 1 );
-
-		pShader->SetPixelShaderConstantGammaToLinear( 2, info.m_nTexAdjustLevels[ 0 ] );
-		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
-			SET_DYNAMIC_PIXEL_SHADER( compositor_ps20 );
-		}
-		pShader->Draw();
-	}
-}
-
-static void DrawCompositorStage_ps20( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
-{
-	DrawCompositorStage_common( pShader, params, pShaderShadow, pShaderAPI, vertexCompression, info );
-
-	int nCombineMode = params[ info.m_nCombineMode ]->GetIntValue();
-
-	switch ( nCombineMode )
-	{
-	case ECO_Multiply:
-	case ECO_Add:
-	case ECO_Blend:
-		DrawCompositorStage_ps20_muladdblend( pShader, params, pShaderShadow, pShaderAPI, vertexCompression, info );
-		return;
-	case ECO_Lerp:
-		DrawCompositorStage_ps20_lerp( pShader, params, pShaderShadow, pShaderAPI, vertexCompression, info );
-		return;
-	case ECO_Select:
-		DrawCompositorStage_ps20_select( pShader, params, pShaderShadow, pShaderAPI, vertexCompression, info );
-		return;
-	default:
-		Assert( !"Need to update DrawCompositoreStage_ps20 with how to draw this mode." );
-		break;
-	}
-}
-
-static void DrawCompositorStage_ps20b( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
+static void DrawCompositorStage_ps30( CBaseVSShader *pShader, IMaterialVar **params, IShaderShadow* pShaderShadow, IShaderDynamicAPI* pShaderAPI, VertexCompressionType_t vertexCompression, const CompositorInfo_t &info )
 {
 	int nCombineMode = params[ info.m_nCombineMode ]->GetIntValue();
 
@@ -409,9 +228,9 @@ static void DrawCompositorStage_ps20b( CBaseVSShader *pShader, IMaterialVar **pa
 		pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
 		pShaderShadow->EnableSRGBRead( SHADER_SAMPLER3, true );
 
-		DECLARE_STATIC_PIXEL_SHADER( compositor_ps20b );
+		DECLARE_STATIC_PIXEL_SHADER( compositor_ps30 );
 		SET_STATIC_PIXEL_SHADER_COMBO( COMBINE_MODE, nCombineMode );
-		SET_STATIC_PIXEL_SHADER( compositor_ps20b );
+		SET_STATIC_PIXEL_SHADER( compositor_ps30 );
 
 		pShader->Draw();
 	}
@@ -438,9 +257,9 @@ static void DrawCompositorStage_ps20b( CBaseVSShader *pShader, IMaterialVar **pa
 		if ( textureCountThisPass > 3 ) pShader->SetVertexShaderMatrix2x4( 8,  info.m_nTexTransform[ 3 ] );
 		if ( textureCountThisPass > 3 ) pShader->SetPixelShaderConstant( 5, info.m_nTexAdjustLevels[ 3 ] );
 			
-		DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps20b );
+		DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps30 );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
-		SET_DYNAMIC_PIXEL_SHADER( compositor_ps20b );
+		SET_DYNAMIC_PIXEL_SHADER( compositor_ps30 );
 
 		pShader->Draw();
 	}

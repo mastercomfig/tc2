@@ -5,9 +5,8 @@
 //===========================================================================//
 
 #include "BaseVSShader.h"
-#include "debugdrawenvmapmask_vs20.inc"
-#include "debugdrawenvmapmask_ps20.inc"
-#include "debugdrawenvmapmask_ps20b.inc"
+#include "debugdrawenvmapmask_vs30.inc"
+#include "debugdrawenvmapmask_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -49,41 +48,41 @@ BEGIN_VS_SHADER_FLAGS( DebugDrawEnvmapMask, "Help for DebugDrawEnvmapMask", SHAD
 			int userDataSize = 0;
 			pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-			DECLARE_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs20 );
-			SET_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
+			SET_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps20b );
-				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps20b );
+				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
+				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 			}
 			else
 			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps20 );
-				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps20 );
+				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
+				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 			}
 		}
 		DYNAMIC_STATE
 		{
 			int numBones	= s_pShaderAPI->GetCurrentNumBones();
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( debugdrawenvmapmask_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( debugdrawenvmapmask_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 
 			bool bShowAlpha = params[SHOWALPHA]->GetIntValue() ? true : false;
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps20b );
+				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 				SET_DYNAMIC_PIXEL_SHADER_COMBO( SHOWALPHA,  bShowAlpha );
-				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps20b );
+				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 			}
 			else
 			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps20 );
+				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 				SET_DYNAMIC_PIXEL_SHADER_COMBO( SHOWALPHA,  bShowAlpha );
-				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps20 );
+				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 			}
 
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );

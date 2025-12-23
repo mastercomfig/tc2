@@ -3,9 +3,8 @@
 #include "BaseVSShader.h"
 #include "shaderlib/cshader.h"
 
-#include "debugtextureview_vs20.inc"
-#include "debugtextureview_ps20.inc"
-#include "debugtextureview_ps20b.inc"
+#include "debugtextureview_vs30.inc"
+#include "debugtextureview_ps30.inc"
 
 DEFINE_FALLBACK_SHADER( DebugTextureView, DebugTextureView_dx9 )
 BEGIN_VS_SHADER( DebugTextureView_dx9, "Help for DebugTextureView" )
@@ -45,21 +44,12 @@ BEGIN_VS_SHADER( DebugTextureView_dx9, "Help for DebugTextureView" )
 			int userDataSize = 0;
 			pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-			DECLARE_STATIC_VERTEX_SHADER( debugtextureview_vs20 );
-			SET_STATIC_VERTEX_SHADER( debugtextureview_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( debugtextureview_vs30 );
+			SET_STATIC_VERTEX_SHADER( debugtextureview_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugtextureview_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHOWALPHA, params[SHOWALPHA]->GetIntValue() != 0 );
-				SET_STATIC_PIXEL_SHADER( debugtextureview_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugtextureview_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( SHOWALPHA, params[SHOWALPHA]->GetIntValue() != 0 );
-				SET_STATIC_PIXEL_SHADER( debugtextureview_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( debugtextureview_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( SHOWALPHA, params[SHOWALPHA]->GetIntValue() != 0 );
+			SET_STATIC_PIXEL_SHADER( debugtextureview_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -82,22 +72,13 @@ BEGIN_VS_SHADER( DebugTextureView_dx9, "Help for DebugTextureView" )
 			}
 			pShaderAPI->SetPixelShaderConstant( 0, cPsConst0 );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( debugtextureview_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( debugtextureview_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( debugtextureview_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( debugtextureview_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugtextureview_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( ISCUBEMAP, pTexture->IsCubeMap() );
-				SET_DYNAMIC_PIXEL_SHADER( debugtextureview_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugtextureview_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( ISCUBEMAP, pTexture->IsCubeMap() );
-				SET_DYNAMIC_PIXEL_SHADER( debugtextureview_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( debugtextureview_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( ISCUBEMAP, pTexture->IsCubeMap() );
+			SET_DYNAMIC_PIXEL_SHADER( debugtextureview_ps30 );
 		}
 		Draw();
 	}

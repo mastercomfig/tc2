@@ -20,6 +20,9 @@
 //	SKIP: defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 // --------------------------------------------------------------------------------
 
+#if 0 && defined( SHADER_MODEL_VS_3_0 )
+#define FAST_VERTEX_TEXTURES 1
+#endif
 
 #ifndef COMPRESSED_VERTS
 // Default to no vertex compression
@@ -105,7 +108,7 @@ const float3 cAmbientCubeX [ 2 ] : register ( c21 ) ;
 const float3 cAmbientCubeY [ 2 ] : register ( c23 ) ;
 const float3 cAmbientCubeZ [ 2 ] : register ( c25 ) ;
 
-#if defined ( SHADER_MODEL_VS_3_0 )
+#if defined ( FAST_VERTEX_TEXTURES )
 const float4 cFlexWeights [ 512 ] : register ( c1024 ) ;
 #endif
 
@@ -314,7 +317,7 @@ void DecompressVertex_NormalTangent( float4 inputNormal,  float4 inputTangent, o
 }
 
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 
 //-----------------------------------------------------------------------------
 // Methods to sample morph data from a vertex texture
@@ -350,7 +353,7 @@ void SampleMorphDelta2( sampler2D vt, const float3 vMorphTargetTextureDim, const
 	delta2 = tex2Dlod( vt, t );
 }
 
-#endif // SHADER_MODEL_VS_3_0
+#endif // FAST_VERTEX_TEXTURES
 
 
 #if ( defined( SHADER_MODEL_VS_2_0 ) || defined( SHADER_MODEL_VS_3_0 ) )
@@ -404,7 +407,7 @@ bool ApplyMorph( float4 vPosFlex, float3 vNormalFlex,
 #endif // defined( SHADER_MODEL_VS_2_0 ) || defined( SHADER_MODEL_VS_3_0 )
 
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 
 bool ApplyMorph( sampler2D morphSampler, const float3 vMorphTargetTextureDim, const float4 vMorphSubrect, 
 				const float flVertexID, const float3 vMorphTexCoord,
@@ -521,7 +524,7 @@ bool ApplyMorph( sampler2D morphSampler, const float3 vMorphTargetTextureDim, co
 #endif
 }
 
-#endif   // SHADER_MODEL_VS_3_0
+#endif   // FAST_VERTEX_TEXTURES
 
 
 float RangeFog( const float3 projPos )
@@ -832,19 +835,11 @@ float CosineTermInternal( const float3 worldPos, const float3 worldNormal, int l
 }
 
 // This routine uses booleans to do early-outs and is meant to be called by routines OUTSIDE of this file
-float GetVertexAttenForLight( const float3 worldPos, int lightNum, bool bUseStaticControlFlow )
+float GetVertexAttenForLight( const float3 worldPos, int lightNum )
 {
 	float result = 0.0f;
 
-	// Direct3D uses static control flow but OpenGL currently does not
-	if ( bUseStaticControlFlow )
-	{
-		if ( g_bLightEnabled[lightNum] )
-		{
-			result = VertexAttenInternal( worldPos, lightNum );
-		}
-	}
-	else // OpenGL non-static-control-flow path
+	if ( g_bLightEnabled[lightNum] )
 	{
 		result = VertexAttenInternal( worldPos, lightNum );
 	}

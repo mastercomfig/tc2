@@ -11,22 +11,14 @@
 #include "shaderlib/cshader.h"
 class teeth_bump_ps30_Static_Index
 {
-	unsigned int m_nCONVERT_TO_SRGB : 2;
 public:
-	void SetCONVERT_TO_SRGB( int i )
-	{
-		DebugAssert( i >= 0 && i <= 1 );
-		m_nCONVERT_TO_SRGB = i;
-	}
-
 	teeth_bump_ps30_Static_Index(  )
 	{
-		m_nCONVERT_TO_SRGB = g_pHardwareConfig->NeedsShaderSRGBConversion();
 	}
 
 	int GetIndex() const
 	{
-		return ( 60 * m_nCONVERT_TO_SRGB ) + 0;
+		return 0;
 	}
 };
 
@@ -48,7 +40,7 @@ class teeth_bump_ps30_Dynamic_Index
 public:
 	void SetPIXELFOGTYPE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 2 );
+		Assert( i >= 0 && i <= 2 );
 		m_nPIXELFOGTYPE = i;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
@@ -57,7 +49,7 @@ public:
 
 	void SetNUM_LIGHTS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 4 );
+		Assert( i >= 0 && i <= 4 );
 		m_nNUM_LIGHTS = i;
 #ifdef _DEBUG
 		m_bNUM_LIGHTS = true;
@@ -66,7 +58,7 @@ public:
 
 	void SetAMBIENT_LIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nAMBIENT_LIGHT = i;
 #ifdef _DEBUG
 		m_bAMBIENT_LIGHT = true;
@@ -75,7 +67,7 @@ public:
 
 	void SetWRITE_DEPTH_TO_DESTALPHA( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nWRITE_DEPTH_TO_DESTALPHA = i;
 #ifdef _DEBUG
 		m_bWRITE_DEPTH_TO_DESTALPHA = true;
@@ -98,7 +90,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bPIXELFOGTYPE && m_bNUM_LIGHTS && m_bAMBIENT_LIGHT && m_bWRITE_DEPTH_TO_DESTALPHA );
+		Assert( m_bPIXELFOGTYPE && m_bNUM_LIGHTS && m_bAMBIENT_LIGHT && m_bWRITE_DEPTH_TO_DESTALPHA );
 		return ( 1 * m_nPIXELFOGTYPE ) + ( 3 * m_nNUM_LIGHTS ) + ( 15 * m_nAMBIENT_LIGHT ) + ( 30 * m_nWRITE_DEPTH_TO_DESTALPHA ) + 0;
 	}
 };

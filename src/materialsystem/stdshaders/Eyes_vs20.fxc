@@ -9,7 +9,6 @@
 
 //	STATIC: "INTRO"						"0..1"
 //  STATIC: "HALFLAMBERT"				"0..1"
-//  STATIC: "USE_STATIC_CONTROL_FLOW"	"0..1" [vs20]
 
 //	DYNAMIC: "COMPRESSED_VERTS"			"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
@@ -17,10 +16,6 @@
 //	DYNAMIC: "DYNAMIC_LIGHT"			"0..1"
 //	DYNAMIC: "STATIC_LIGHT"				"0..1"
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
-//  DYNAMIC: "NUM_LIGHTS"				"0..2" [vs20]
-
-// If using static control flow on Direct3D, we should use the NUM_LIGHTS=0 combo
-//  SKIP: $USE_STATIC_CONTROL_FLOW && ( $NUM_LIGHTS > 0 ) [vs20]
 
 #include "vortwarp_vs20_helper.h"
 
@@ -40,7 +35,7 @@ const float4 const4							:  register( SHADER_SPECIFIC_CONST_6 );
 #define modelOrigin const4.xyz
 #endif
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_7 );
@@ -57,7 +52,7 @@ struct VS_INPUT
 	float4 vTexCoord0			: TEXCOORD0;		// Base (sclera) texture coordinates
 
 	float3 vPosFlex				: POSITION1;		// Delta positions for flexing
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 	float vVertexID				: POSITION2;
 #endif
 };
@@ -87,7 +82,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 vPosition = v.vPos;
 	float3 dummy = v.vPos.xyz;		// dummy values that can't be optimized out
 
-#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 	ApplyMorph( v.vPosFlex, vPosition.xyz );
 #else
 	ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, v.vVertexID, dummy, vPosition.xyz );
@@ -124,11 +119,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	worldNormal = normalize(normalDotUp * cHalfEyeballUp + worldNormal);
 
 	// Vertex lighting
-#if ( USE_STATIC_CONTROL_FLOW || defined ( SHADER_MODEL_VS_3_0 ) )
 	o.vColor = DoLighting( worldPos, worldNormal, float3(0.0f, 0.0f, 0.0f), bStaticLight, bDynamicLight, g_bHalfLambert );
-#else
-	o.vColor = DoLightingUnrolled( worldPos, worldNormal, float3(0.0f, 0.0f, 0.0f), bStaticLight, bDynamicLight, g_bHalfLambert, NUM_LIGHTS );
-#endif
 
 	// Texture 0 is the base texture
 	// Texture 1 is a planar projection used for the iris

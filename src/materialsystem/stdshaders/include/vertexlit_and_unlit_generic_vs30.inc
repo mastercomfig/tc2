@@ -35,7 +35,7 @@ class vertexlit_and_unlit_generic_vs30_Static_Index
 public:
 	void SetVERTEXCOLOR( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nVERTEXCOLOR = i;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -44,7 +44,7 @@ public:
 
 	void SetCUBEMAP( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCUBEMAP = i;
 #ifdef _DEBUG
 		m_bCUBEMAP = true;
@@ -53,7 +53,7 @@ public:
 
 	void SetHALFLAMBERT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
@@ -62,7 +62,7 @@ public:
 
 	void SetFLASHLIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nFLASHLIGHT = i;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = true;
@@ -71,7 +71,7 @@ public:
 
 	void SetSEAMLESS_BASE( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSEAMLESS_BASE = i;
 #ifdef _DEBUG
 		m_bSEAMLESS_BASE = true;
@@ -80,7 +80,7 @@ public:
 
 	void SetSEAMLESS_DETAIL( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSEAMLESS_DETAIL = i;
 #ifdef _DEBUG
 		m_bSEAMLESS_DETAIL = true;
@@ -89,7 +89,7 @@ public:
 
 	void SetSEPARATE_DETAIL_UVS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSEPARATE_DETAIL_UVS = i;
 #ifdef _DEBUG
 		m_bSEPARATE_DETAIL_UVS = true;
@@ -98,7 +98,7 @@ public:
 
 	void SetDECAL( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDECAL = i;
 #ifdef _DEBUG
 		m_bDECAL = true;
@@ -107,7 +107,7 @@ public:
 
 	void SetDONT_GAMMA_CONVERT_VERTEX_COLOR( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDONT_GAMMA_CONVERT_VERTEX_COLOR = i;
 #ifdef _DEBUG
 		m_bDONT_GAMMA_CONVERT_VERTEX_COLOR = true;
@@ -116,7 +116,7 @@ public:
 
 	void SetTREESWAY( int i )
 	{
-		DebugAssert( i >= 0 && i <= 2 );
+		Assert( i >= 0 && i <= 2 );
 		m_nTREESWAY = i;
 #ifdef _DEBUG
 		m_bTREESWAY = true;
@@ -151,7 +151,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bVERTEXCOLOR && m_bCUBEMAP && m_bHALFLAMBERT && m_bFLASHLIGHT && m_bSEAMLESS_BASE && m_bSEAMLESS_DETAIL && m_bSEPARATE_DETAIL_UVS && m_bDECAL && m_bDONT_GAMMA_CONVERT_VERTEX_COLOR && m_bTREESWAY );
+		Assert( m_bVERTEXCOLOR && m_bCUBEMAP && m_bHALFLAMBERT && m_bFLASHLIGHT && m_bSEAMLESS_BASE && m_bSEAMLESS_DETAIL && m_bSEPARATE_DETAIL_UVS && m_bDECAL && m_bDONT_GAMMA_CONVERT_VERTEX_COLOR && m_bTREESWAY );
 		AssertMsg( !( m_nSEPARATE_DETAIL_UVS && m_nSEAMLESS_DETAIL ), "Invalid combo combination ( SEPARATE_DETAIL_UVS && SEAMLESS_DETAIL )" );
 		AssertMsg( !( m_nDONT_GAMMA_CONVERT_VERTEX_COLOR && !m_nVERTEXCOLOR ), "Invalid combo combination ( DONT_GAMMA_CONVERT_VERTEX_COLOR && !VERTEXCOLOR )" );
 		AssertMsg( !( m_nTREESWAY && ( m_nSEAMLESS_DETAIL || m_nSEAMLESS_BASE ) ), "Invalid combo combination ( TREESWAY && ( SEAMLESS_DETAIL || SEAMLESS_BASE ) )" );
@@ -185,7 +185,7 @@ class vertexlit_and_unlit_generic_vs30_Dynamic_Index
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -194,7 +194,7 @@ public:
 
 	void SetDYNAMIC_LIGHT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDYNAMIC_LIGHT = i;
 #ifdef _DEBUG
 		m_bDYNAMIC_LIGHT = true;
@@ -203,7 +203,7 @@ public:
 
 	void SetSTATIC_LIGHT_VERTEX( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSTATIC_LIGHT_VERTEX = i;
 #ifdef _DEBUG
 		m_bSTATIC_LIGHT_VERTEX = true;
@@ -212,7 +212,7 @@ public:
 
 	void SetSTATIC_LIGHT_LIGHTMAP( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSTATIC_LIGHT_LIGHTMAP = i;
 #ifdef _DEBUG
 		m_bSTATIC_LIGHT_LIGHTMAP = true;
@@ -221,7 +221,7 @@ public:
 
 	void SetDOWATERFOG( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -230,7 +230,7 @@ public:
 
 	void SetSKINNING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -239,7 +239,7 @@ public:
 
 	void SetLIGHTING_PREVIEW( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nLIGHTING_PREVIEW = i;
 #ifdef _DEBUG
 		m_bLIGHTING_PREVIEW = true;
@@ -248,7 +248,7 @@ public:
 
 	void SetMORPHING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nMORPHING = i;
 #ifdef _DEBUG
 		m_bMORPHING = true;
@@ -279,7 +279,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bCOMPRESSED_VERTS && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT_VERTEX && m_bSTATIC_LIGHT_LIGHTMAP && m_bDOWATERFOG && m_bSKINNING && m_bLIGHTING_PREVIEW && m_bMORPHING );
+		Assert( m_bCOMPRESSED_VERTS && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT_VERTEX && m_bSTATIC_LIGHT_LIGHTMAP && m_bDOWATERFOG && m_bSKINNING && m_bLIGHTING_PREVIEW && m_bMORPHING );
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDYNAMIC_LIGHT ) + ( 4 * m_nSTATIC_LIGHT_VERTEX ) + ( 8 * m_nSTATIC_LIGHT_LIGHTMAP ) + ( 16 * m_nDOWATERFOG ) + ( 32 * m_nSKINNING ) + ( 64 * m_nLIGHTING_PREVIEW ) + ( 128 * m_nMORPHING ) + 0;
 	}
 };

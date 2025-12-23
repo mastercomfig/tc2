@@ -14,9 +14,8 @@
 
 #include "fillrate_vs11.inc"
 #include "fillrate_ps11.inc"
-#include "fillrate_vs20.inc"
-#include "fillrate_ps20.inc"
-#include "fillrate_ps20b.inc"
+#include "fillrate_vs30.inc"
+#include "fillrate_ps30.inc"
 
 #else
 
@@ -61,18 +60,18 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 
 			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
 			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs20 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs20 );
+				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
+				SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps20b );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps20b );
+					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 				else
 				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps20 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps20 );
+					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 			}
 			else
@@ -116,20 +115,20 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 
 			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
 			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs20 );
+				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs20 );
+				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps20b );
+					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 				else
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps20 );
+					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 			}
 			else
@@ -167,18 +166,18 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 
 			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
 			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs20 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs20 );
+				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
+				SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps20b );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps20b );
+					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 				else
 				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps20 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps20 );
+					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 			}
 			else
@@ -208,20 +207,20 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 
 			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
 			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs20 );
+				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs20 );
+				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 
 				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps20b );
+					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 				else
 				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps20 );
+					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 				}
 			}
 			else

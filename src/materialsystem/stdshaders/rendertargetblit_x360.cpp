@@ -5,9 +5,8 @@
 //=============================================================================
 
 #include "BaseVSShader.h"
-#include "rendertargetblit_vs20.inc"
-#include "rendertargetblit_ps20.inc"
-#include "rendertargetblit_ps20b.inc"
+#include "rendertargetblit_vs30.inc"
+#include "rendertargetblit_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -44,18 +43,18 @@ BEGIN_VS_SHADER_FLAGS( RenderTargetBlit_X360, "", SHADER_NOT_EDITABLE )
 
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 
-			DECLARE_STATIC_VERTEX_SHADER( rendertargetblit_vs20 );
-			SET_STATIC_VERTEX_SHADER( rendertargetblit_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( rendertargetblit_vs30 );
+			SET_STATIC_VERTEX_SHADER( rendertargetblit_vs30 );
 
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
-				DECLARE_STATIC_PIXEL_SHADER( rendertargetblit_ps20b );
-				SET_STATIC_PIXEL_SHADER( rendertargetblit_ps20b );
+				DECLARE_STATIC_PIXEL_SHADER( rendertargetblit_ps30 );
+				SET_STATIC_PIXEL_SHADER( rendertargetblit_ps30 );
 			}
 			else
 			{
-				DECLARE_STATIC_PIXEL_SHADER( rendertargetblit_ps20 );
-				SET_STATIC_PIXEL_SHADER( rendertargetblit_ps20 );
+				DECLARE_STATIC_PIXEL_SHADER( rendertargetblit_ps30 );
+				SET_STATIC_PIXEL_SHADER( rendertargetblit_ps30 );
 			}
 		}
 
@@ -63,18 +62,18 @@ BEGIN_VS_SHADER_FLAGS( RenderTargetBlit_X360, "", SHADER_NOT_EDITABLE )
 		{
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( rendertargetblit_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( rendertargetblit_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( rendertargetblit_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( rendertargetblit_vs30 );
 
 			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps20b );
+				DECLARE_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps30 );
+				SET_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps30 );
 			}
 			else
 			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps20 );
+				DECLARE_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps30 );
+				SET_DYNAMIC_PIXEL_SHADER( rendertargetblit_ps30 );
 			}
 		}
 

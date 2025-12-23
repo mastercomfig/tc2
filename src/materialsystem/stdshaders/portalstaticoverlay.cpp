@@ -7,9 +7,8 @@
 
 #include "BaseVSShader.h"
 #include "convar.h"
-#include "portalstaticoverlay_vs20.inc"
-#include "portalstaticoverlay_ps20.inc"
-#include "portalstaticoverlay_ps20b.inc"
+#include "portalstaticoverlay_vs30.inc"
+#include "portalstaticoverlay_ps30.inc"
 #include "cpp_shader_constant_register_map.h"
 
 BEGIN_VS_SHADER( PortalStaticOverlay, 
@@ -115,27 +114,17 @@ SHADER_DRAW
 		}
 		pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, userDataSize );
 
-		DECLARE_STATIC_VERTEX_SHADER( portalstaticoverlay_vs20 );
+		DECLARE_STATIC_VERTEX_SHADER( portalstaticoverlay_vs30 );
 		SET_STATIC_VERTEX_SHADER_COMBO( MODEL,  bIsModel );
-		SET_STATIC_VERTEX_SHADER( portalstaticoverlay_vs20 );
+		SET_STATIC_VERTEX_SHADER( portalstaticoverlay_vs30 );
 
 		// Avoid setting a pixel shader when only doing depth/stencil operations, as recommended by PIX
 		if( bColorWrites || bAlphaMaskTexture || g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
 		{
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( portalstaticoverlay_ps20b );
-				SET_STATIC_PIXEL_SHADER_COMBO( HASALPHAMASK, bAlphaMaskTexture );
-				SET_STATIC_PIXEL_SHADER_COMBO( HASSTATICTEXTURE, bStaticBlendTexture );
-				SET_STATIC_PIXEL_SHADER( portalstaticoverlay_ps20b );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( portalstaticoverlay_ps20 );
-				SET_STATIC_PIXEL_SHADER_COMBO( HASALPHAMASK, bAlphaMaskTexture );
-				SET_STATIC_PIXEL_SHADER_COMBO( HASSTATICTEXTURE, bStaticBlendTexture );
-				SET_STATIC_PIXEL_SHADER( portalstaticoverlay_ps20 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( portalstaticoverlay_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( HASALPHAMASK, bAlphaMaskTexture );
+			SET_STATIC_PIXEL_SHADER_COMBO( HASSTATICTEXTURE, bStaticBlendTexture );
+			SET_STATIC_PIXEL_SHADER( portalstaticoverlay_ps30 );
 		}
 	}
 	DYNAMIC_STATE
@@ -166,27 +155,17 @@ SHADER_DRAW
 		vEyePos_SpecExponent[3] = 0.0f;
 		pShaderAPI->SetPixelShaderConstant( PSREG_EYEPOS_SPEC_EXPONENT, vEyePos_SpecExponent, 1 );
 
-		DECLARE_DYNAMIC_VERTEX_SHADER( portalstaticoverlay_vs20 );
+		DECLARE_DYNAMIC_VERTEX_SHADER( portalstaticoverlay_vs30 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-		SET_DYNAMIC_VERTEX_SHADER( portalstaticoverlay_vs20 );
+		SET_DYNAMIC_VERTEX_SHADER( portalstaticoverlay_vs30 );
 
 		// Avoid setting a pixel shader when only doing depth/stencil operations, as recommended by PIX
-		if( bColorWrites || bAlphaMaskTexture || g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
+		if ( bColorWrites || bAlphaMaskTexture || g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
 		{
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps20b );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED, IsHDREnabled() );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps20b );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED, IsHDREnabled() );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
-				SET_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps20 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( HDRENABLED, IsHDREnabled() );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
+			SET_DYNAMIC_PIXEL_SHADER( portalstaticoverlay_ps30 );
 		}
 	}
 

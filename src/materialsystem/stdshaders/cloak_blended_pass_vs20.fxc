@@ -13,7 +13,7 @@
 static const bool g_bSkinning		= SKINNING ? true : false;
 const float4 cBaseTexCoordTransform[2]	:  register( SHADER_SPECIFIC_CONST_0 );
 
-#ifdef SHADER_MODEL_VS_3_0
+#ifdef FAST_VERTEX_TEXTURES
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_6 );
@@ -39,7 +39,7 @@ struct VS_INPUT
 	float3 vPosFlex				: POSITION1;
 	float3 vNormalFlex			: NORMAL1;
 
-	#ifdef SHADER_MODEL_VS_3_0
+	#ifdef FAST_VERTEX_TEXTURES
 		float vVertexID				: POSITION2;
 	#endif
 };
@@ -72,7 +72,7 @@ VS_OUTPUT main( const VS_INPUT i )
 		float4 vObjTangent;
 		DecompressVertex_NormalTangent( i.vNormal, i.vTangent, vObjNormal, vObjTangent );
 
-		#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+		#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 			ApplyMorph( i.vPosFlex, i.vNormalFlex, vObjPosition.xyz, vObjNormal, vObjTangent.xyz );
 		#else
 			ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, i.vVertexID, float3( 0, 0, 0 ), vObjPosition.xyz, vObjNormal, vObjTangent.xyz );
@@ -80,7 +80,7 @@ VS_OUTPUT main( const VS_INPUT i )
 	#else // !BUMPMAP
 		DecompressVertex_Normal( i.vNormal, vObjNormal );
 
-		#if !defined( SHADER_MODEL_VS_3_0 ) || !MORPHING
+		#if !defined( FAST_VERTEX_TEXTURES ) || !MORPHING
 			ApplyMorph( i.vPosFlex, i.vNormalFlex, vObjPosition.xyz, vObjNormal );
 		#else
 			ApplyMorph( morphSampler, cMorphTargetTextureDim, cMorphSubrect, i.vVertexID, float3( 0, 0, 0 ), 

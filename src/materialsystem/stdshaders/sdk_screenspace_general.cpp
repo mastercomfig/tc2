@@ -7,7 +7,7 @@
 
 #include "BaseVSShader.h"
 
-#include "sdk_screenspaceeffect_vs20.inc"
+#include "sdk_screenspaceeffect_vs30.inc"
 
 DEFINE_FALLBACK_SHADER( SDK_screenspace_general, SDK_screenspace_general_dx9 )
 BEGIN_VS_SHADER_FLAGS( SDK_screenspace_general_dx9, "Help for screenspace_general", SHADER_NOT_EDITABLE )
@@ -134,10 +134,10 @@ BEGIN_VS_SHADER_FLAGS( SDK_screenspace_general_dx9, "Help for screenspace_genera
 			pShaderShadow->EnableSRGBWrite( srgb_write );
 
 			// Pre-cache shaders
-			DECLARE_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs30 );
 			SET_STATIC_VERTEX_SHADER_COMBO( X360APPCHOOSER, IS_PARAM_DEFINED( X360APPCHOOSER ) ? params[X360APPCHOOSER]->GetIntValue() : 0 );
 			vsh_forgot_to_set_static_X360APPCHOOSER = 0; // This is a dirty workaround to the shortcut [= 0] in the fxc
-			SET_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
+			SET_STATIC_VERTEX_SHADER( sdk_screenspaceeffect_vs30 );
 
 			if (params[DISABLE_COLOR_WRITES]->GetIntValue())
 			{
@@ -158,7 +158,7 @@ BEGIN_VS_SHADER_FLAGS( SDK_screenspace_general_dx9, "Help for screenspace_genera
 				const char *szPixelShader = params[PIXSHADER]->GetStringValue();
 				size_t iLength = Q_strlen( szPixelShader );
 
-				if( (iLength > 5) && (Q_stricmp( &szPixelShader[iLength - 5], "_ps20" ) == 0) ) //detect if it's trying to load a ps20 shader
+				if( (iLength > 5) && (Q_stricmp( &szPixelShader[iLength - 5], "_ps30" ) == 0) ) //detect if it's trying to load a ps20 shader
 				{
 					//replace it with the ps20b shader
 					char *szNewName = (char *)stackalloc( sizeof( char ) * (iLength + 2) );
@@ -224,8 +224,8 @@ BEGIN_VS_SHADER_FLAGS( SDK_screenspace_general_dx9, "Help for screenspace_genera
 			pShaderAPI->SetVertexShaderIndex( 0 );
 			pShaderAPI->SetPixelShaderIndex( 0 );
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
-			SET_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( sdk_screenspaceeffect_vs30 );
 		}
 		Draw();
 	}

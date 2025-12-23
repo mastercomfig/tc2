@@ -1,9 +1,5 @@
 // DYNAMIC: "MODE"				"0..9"
 
-// STATIC: "CONVERT_TO_SRGB"	"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"	"0..0"	[= 0] [XBOX]
-// STATIC: "LINEAR_TO_SRGB"		"0..1"	[ps20b]
-
 #define HDRTYPE HDR_TYPE_NONE
 #include "common_ps_fxc.h"
 
@@ -112,27 +108,13 @@ float3 HSVtoRGB( in float3 hsv )
 // rest of the shader code is expecting sRGB values
 float3 SampleTexture( sampler texSampler, float2 tc )
 {
-	float3 c = tex2D( texSampler, tc ).xyz;
-
-	#if ( LINEAR_TO_SRGB )
-	{
-		c = LinearToGamma( c );
-	}
-	#endif
-
-	return c;
+	return tex2D( texSampler, tc ).xyz;
 }
 
 // We have to run through this output converter on OpenGL if we
 // expect to be writing out sRGB values (since sRGB will be forced on)
 float3 OutputColor( float3 result )
 {
-	#if ( LINEAR_TO_SRGB )
-	{
-		return GammaToLinear( result );
-	}
-	#endif
-
 	return result;
 }
 

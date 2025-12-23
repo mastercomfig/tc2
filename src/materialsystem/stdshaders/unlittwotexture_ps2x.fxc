@@ -1,11 +1,8 @@
 // DYNAMIC: "PIXELFOGTYPE"				"0..1"
 // DYNAMIC: "LIGHTING_PREVIEW"			"0..2"	[PC]
 // DYNAMIC: "LIGHTING_PREVIEW"			"0..0"	[XBOX]
-// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..1"	[ps20b] [PC]
+// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..1"	[ps20b] [ps30] [PC]
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..0"	[ps20b] [XBOX]
-
-// STATIC: "CONVERT_TO_SRGB"			"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"			"0..0"	[= 0] [XBOX]
 
 #if defined( SHADER_MODEL_PS_2_0 )
 #	define WRITE_DEPTH_TO_DESTALPHA 0

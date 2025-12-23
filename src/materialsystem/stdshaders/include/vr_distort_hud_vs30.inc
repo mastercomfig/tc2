@@ -1,33 +1,36 @@
+// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
+// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
+
+#pragma once
 #include "shaderlib/cshader.h"
 class vr_distort_hud_vs30_Static_Index
 {
 public:
-	vr_distort_hud_vs30_Static_Index( )
+	vr_distort_hud_vs30_Static_Index(  )
 	{
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-#endif // _DEBUG
 		return 0;
 	}
 };
-#define shaderStaticTest_vr_distort_hud_vs30 0
+
+#define shaderStaticTest_vr_distort_hud_vs30 1
+
+
 class vr_distort_hud_vs30_Dynamic_Index
 {
 public:
-	vr_distort_hud_vs30_Dynamic_Index()
+	vr_distort_hud_vs30_Dynamic_Index(  )
 	{
 	}
-	int GetIndex()
+
+	int GetIndex() const
 	{
-		// Asserts to make sure that we aren't using any skipped combinations.
-		// Asserts to make sure that we are setting all of the combination vars.
-#ifdef _DEBUG
-#endif // _DEBUG
 		return 0;
 	}
 };
-#define shaderDynamicTest_vr_distort_hud_vs30 0
+
+#define shaderDynamicTest_vr_distort_hud_vs30 1
+

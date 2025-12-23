@@ -7,9 +7,8 @@
 
 #include "BaseVSShader.h"
 
-#include "writez_vs20.inc"
-#include "white_ps20.inc"
-#include "white_ps20b.inc"
+#include "writez_vs30.inc"
+#include "white_ps30.inc"
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -49,14 +48,14 @@ BEGIN_VS_SHADER_FLAGS( Occlusion_DX9, "Help for Occlusion", SHADER_NOT_EDITABLE 
 			pShaderShadow->EnableAlphaWrites( false );
 			pShaderShadow->EnableDepthWrites( false );
 
-			DECLARE_STATIC_VERTEX_SHADER( writez_vs20 );
-			SET_STATIC_VERTEX_SHADER( writez_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( writez_vs30 );
+			SET_STATIC_VERTEX_SHADER( writez_vs30 );
 
 			// No pixel shader on Direct3D, doubles fill rate
 			if ( g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
 			{
-				DECLARE_STATIC_PIXEL_SHADER( white_ps20 );
-				SET_STATIC_PIXEL_SHADER( white_ps20 );
+				DECLARE_STATIC_PIXEL_SHADER( white_ps30 );
+				SET_STATIC_PIXEL_SHADER( white_ps30 );
 
 				// Workaround for weird AMD bug - if sRGB write isn't enabled here then sRGB write enable in subsequent world rendering passes will randomly not take effect (even though we're enabling it) in the driver.
 				if ( ( IsLinux() || IsWindows() ) && gl_amd_occlusion_workaround.GetBool() )
@@ -73,16 +72,16 @@ BEGIN_VS_SHADER_FLAGS( Occlusion_DX9, "Help for Occlusion", SHADER_NOT_EDITABLE 
 		}
 		DYNAMIC_STATE
 		{
-			DECLARE_DYNAMIC_VERTEX_SHADER( writez_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( writez_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-			SET_DYNAMIC_VERTEX_SHADER( writez_vs20 );
+			SET_DYNAMIC_VERTEX_SHADER( writez_vs30 );
 
 			// No pixel shader on Direct3D, doubles fill rate
 			if ( g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() )
 			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( white_ps20 );
-				SET_DYNAMIC_PIXEL_SHADER( white_ps20 );
+				DECLARE_DYNAMIC_PIXEL_SHADER( white_ps30 );
+				SET_DYNAMIC_PIXEL_SHADER( white_ps30 );
 			}
 		}
 		Draw();

@@ -6,35 +6,24 @@
 class vertexlit_and_unlit_generic_bump_vs30_Static_Index
 {
 	unsigned int m_nHALFLAMBERT : 2;
-	unsigned int m_nUSE_WITH_2B : 2;
 	unsigned int m_nDECAL : 2;
 #ifdef _DEBUG
 	bool m_bHALFLAMBERT : 1;
-	bool m_bUSE_WITH_2B : 1;
 	bool m_bDECAL : 1;
 #endif	// _DEBUG
 public:
 	void SetHALFLAMBERT( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nHALFLAMBERT = i;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = true;
 #endif	// _DEBUG
 	}
 
-	void SetUSE_WITH_2B( int i )
-	{
-		DebugAssert( i >= 0 && i <= 1 );
-		m_nUSE_WITH_2B = i;
-#ifdef _DEBUG
-		m_bUSE_WITH_2B = true;
-#endif	// _DEBUG
-	}
-
 	void SetDECAL( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDECAL = i;
 #ifdef _DEBUG
 		m_bDECAL = true;
@@ -44,23 +33,21 @@ public:
 	vertexlit_and_unlit_generic_bump_vs30_Static_Index(  )
 	{
 		m_nHALFLAMBERT = 0;
-		m_nUSE_WITH_2B = 0;
 		m_nDECAL = 0;
 #ifdef _DEBUG
 		m_bHALFLAMBERT = false;
-		m_bUSE_WITH_2B = false;
 		m_bDECAL = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bHALFLAMBERT && m_bUSE_WITH_2B && m_bDECAL );
-		return ( 16 * m_nHALFLAMBERT ) + ( 32 * m_nUSE_WITH_2B ) + ( 64 * m_nDECAL ) + 0;
+		Assert( m_bHALFLAMBERT && m_bDECAL );
+		return ( 16 * m_nHALFLAMBERT ) + ( 32 * m_nDECAL ) + 0;
 	}
 };
 
-#define shaderStaticTest_vertexlit_and_unlit_generic_bump_vs30 vsh_forgot_to_set_static_HALFLAMBERT + vsh_forgot_to_set_static_USE_WITH_2B + vsh_forgot_to_set_static_DECAL
+#define shaderStaticTest_vertexlit_and_unlit_generic_bump_vs30 vsh_forgot_to_set_static_HALFLAMBERT + vsh_forgot_to_set_static_DECAL
 
 
 class vertexlit_and_unlit_generic_bump_vs30_Dynamic_Index
@@ -78,7 +65,7 @@ class vertexlit_and_unlit_generic_bump_vs30_Dynamic_Index
 public:
 	void SetCOMPRESSED_VERTS( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nCOMPRESSED_VERTS = i;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -87,7 +74,7 @@ public:
 
 	void SetDOWATERFOG( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nDOWATERFOG = i;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
@@ -96,7 +83,7 @@ public:
 
 	void SetSKINNING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
@@ -105,7 +92,7 @@ public:
 
 	void SetMORPHING( int i )
 	{
-		DebugAssert( i >= 0 && i <= 1 );
+		Assert( i >= 0 && i <= 1 );
 		m_nMORPHING = i;
 #ifdef _DEBUG
 		m_bMORPHING = true;
@@ -128,7 +115,7 @@ public:
 
 	int GetIndex() const
 	{
-		DebugAssert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bMORPHING );
+		Assert( m_bCOMPRESSED_VERTS && m_bDOWATERFOG && m_bSKINNING && m_bMORPHING );
 		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nSKINNING ) + ( 8 * m_nMORPHING ) + 0;
 	}
 };

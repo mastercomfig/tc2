@@ -1,5 +1,3 @@
-// STATIC: "CONVERT_TO_SRGB"		"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"		"0..0"	[= 0] [XBOX]
 // STATIC: "DUALSEQUENCE"			"0..1"
 // STATIC: "SEQUENCE_BLEND_MODE"	"0..2"
 // STATIC: "ADDBASETEXTURE2"		"0..1"
@@ -9,7 +7,7 @@
 // STATIC: "COLORRAMP"				"0..1"
 // STATIC: "ANIMBLEND"				"0..1"
 // STATIC: "ADDSELF"				"0..1"
-// STATIC: "DEPTHBLEND"				"0..1"	[ps20b]
+// STATIC: "DEPTHBLEND"				"0..1"	[ps20b] [ps30]
 
 #define COMBINE_MODE_AVERAGE							0
 #define COMBINE_MODE_USE_FIRST_AS_ALPHA_MASK_ON_SECOND	1

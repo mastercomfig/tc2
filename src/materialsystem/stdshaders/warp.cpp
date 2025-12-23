@@ -8,11 +8,8 @@
 #include "BaseVSShader.h"
 #include "commandbuilder.h"
 
-#include "warp_ps20.inc"
-#include "warp_ps20b.inc"
-#include "warp_vs20.inc"
-#include "warp_ps30.inc"
 #include "warp_vs30.inc"
+#include "warp_ps30.inc"
 
 #include "../materialsystem_global.h"
 
@@ -134,30 +131,11 @@ BEGIN_VS_SHADER( warp, "Help for warp" )
 			nFormat |= VERTEX_POSITION;
 			pShaderShadow->VertexShaderVertexFormat( nFormat, 2, 0, 0 );
 
-			if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
-			{
-				DECLARE_STATIC_VERTEX_SHADER( warp_vs20 );
-				SET_STATIC_VERTEX_SHADER( warp_vs20 );
+			DECLARE_STATIC_VERTEX_SHADER( warp_vs30 );
+			SET_STATIC_VERTEX_SHADER( warp_vs30 );
 
-				if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( warp_ps20b );
-					SET_STATIC_PIXEL_SHADER( warp_ps20b );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( warp_ps20 );
-					SET_STATIC_PIXEL_SHADER( warp_ps20 );
-				}
-			}
-			else
-			{
-				DECLARE_STATIC_VERTEX_SHADER( warp_vs30 );
-				SET_STATIC_VERTEX_SHADER( warp_vs30 );
-
-				DECLARE_STATIC_PIXEL_SHADER( warp_ps30 );
-				SET_STATIC_PIXEL_SHADER( warp_ps30 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( warp_ps30 );
+			SET_STATIC_PIXEL_SHADER( warp_ps30 );
 		}
 
 		DYNAMIC_STATE
@@ -215,33 +193,12 @@ BEGIN_VS_SHADER( warp, "Help for warp" )
 
 			int nDistortType = pShaderAPI->GetIntRenderingParameter( INT_RENDERPARM_DISTORTION_TYPE );
 
-			if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( warp_vs20 );
-				SET_DYNAMIC_VERTEX_SHADER( warp_vs20 );
+			DECLARE_DYNAMIC_VERTEX_SHADER( warp_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER( warp_vs30 );
 
-				if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( warp_ps20b );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( DISTORT_TYPE, nDistortType );
-					SET_DYNAMIC_PIXEL_SHADER( warp_ps20b );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( warp_ps20 );
-					SET_DYNAMIC_PIXEL_SHADER_COMBO( DISTORT_TYPE, nDistortType );
-					SET_DYNAMIC_PIXEL_SHADER( warp_ps20 );
-				}
-			}
-			else
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( warp_vs30 );
-				SET_DYNAMIC_VERTEX_SHADER( warp_vs30 );
-
-				DECLARE_DYNAMIC_PIXEL_SHADER( warp_ps30 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( DISTORT_TYPE, nDistortType );
-				SET_DYNAMIC_PIXEL_SHADER( warp_ps30 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( warp_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( DISTORT_TYPE, nDistortType );
+			SET_DYNAMIC_PIXEL_SHADER( warp_ps30 );
 
 			DynamicCmdsOut.End();
 			pShaderAPI->ExecuteCommandBuffer( DynamicCmdsOut.Base() );

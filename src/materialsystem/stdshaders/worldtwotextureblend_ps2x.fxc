@@ -5,8 +5,6 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-// STATIC: "CONVERT_TO_SRGB"				"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
-// STATIC: "CONVERT_TO_SRGB"				"0..0"	[= 0] [XBOX]
 // STATIC: "DETAILTEXTURE"					"0..1"
 // STATIC: "BUMPMAP"						"0..1"
 // STATIC: "VERTEXCOLOR"					"0..1"
@@ -15,14 +13,14 @@
 // STATIC: "DETAIL_ALPHA_MASK_BASE_TEXTURE"	"0..1"
 // STATIC: "FLASHLIGHT"						"0..1"
 // STATIC: "SEAMLESS"						"0..1"
-// STATIC: "FLASHLIGHTDEPTHFILTERMODE"		"0..2"	[ps20b] [PC]
+// STATIC: "FLASHLIGHTDEPTHFILTERMODE"		"0..2"	[ps20b] [ps30] [PC]
 // STATIC: "FLASHLIGHTDEPTHFILTERMODE"		"0..0"	[ps20b] [XBOX]
 
 // DYNAMIC: "WRITEWATERFOGTODESTALPHA"		"0..1"
 // DYNAMIC: "PIXELFOGTYPE"					"0..2"
-// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"		"0..1" [ps20b] [PC]
+// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"		"0..1" [ps20b] [ps30] [PC]
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"		"0..0" [ps20b] [XBOX]
-// DYNAMIC: "FLASHLIGHTSHADOWS"				"0..1" [ps20b]
+// DYNAMIC: "FLASHLIGHTSHADOWS"				"0..1" [ps20b] [ps30]
 
 //	SKIP: $DETAILTEXTURE && ( $BUMPMAP && !$DETAIL_ALPHA_MASK_BASE_TEXTURE )
 //  SKIP: !$BUMPMAP && $DIFFUSEBUMPMAP
@@ -32,7 +30,7 @@
 //  SKIP: FLASHLIGHT && ($BUMPMAP || $DIFFUSEBUMPMAP)
 
 // We don't care about flashlight depth unless the flashlight is on
-// SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTSHADOWS == 1 )	[ps20b]
+// SKIP: ( $FLASHLIGHT == 0 ) && ( $FLASHLIGHTSHADOWS == 1 )	[ps20b] [ps30]
 
 #if defined( SHADER_MODEL_PS_2_0 )
 #	define WRITE_DEPTH_TO_DESTALPHA 0
