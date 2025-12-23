@@ -38,7 +38,6 @@ cp_sulfur
 cp_hardwood_final
 pl_camber
 pl_odyssey
-pd_atom_smash
 pl_patagonia
 pl_aquarius
 koth_boardwalk
