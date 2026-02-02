@@ -33,7 +33,7 @@ BEGIN_VS_SHADER_FLAGS( IntroScreenSpaceEffect, "Help for IntroScreenSpaceEffect"
 	SHADER_FALLBACK
 	{
 		// Requires DX9 + above
-		if ( IsWindows() && ( g_pHardwareConfig->GetDXSupportLevel() < 90 || g_pHardwareConfig->PreferReducedFillrate() ) )
+		if ( IsPC() && ( g_pHardwareConfig->GetDXSupportLevel() < 90 || g_pHardwareConfig->PreferReducedFillrate() ) )
 			return "IntroScreenSpaceEffect_dx80";
 		return 0;
 	}
