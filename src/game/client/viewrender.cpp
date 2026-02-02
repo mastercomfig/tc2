@@ -2035,22 +2035,18 @@ void CViewRender::RenderView( const CViewSetup &viewRender, int nClearFlags, int
 	VPROF( "CViewRender::RenderView" );
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
 
-	// Don't want TF2 running less than DX 9
-	if ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 90 )
+	// Don't want TF2 running less than DX9.0c
+	if ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 95 )
 	{
-		// We know they were running at least 9.0 when the game started...we check the 
+		// We know they were running at least 9.0c when the game started...we check the 
 		// value in ClientDLL_Init()...so they must be messing with their DirectX settings.
-		const char* pGameDir = COM_GetModDirectory();
-		if ( ( Q_stricmp( pGameDir, "tc2" ) == 0 ) || ( Q_stricmp( pGameDir, "tf" ) == 0 ) || ( Q_stricmp( pGameDir, "tf_beta" ) == 0 ) )
+		static bool bFirstTime = true;
+		if ( bFirstTime )
 		{
-			static bool bFirstTime = true;
-			if ( bFirstTime )
-			{
-				bFirstTime = false;
-				Msg( "This game has a minimum requirement of DirectX 9.0 to run properly.\n" );
-			}
-			return;
+			bFirstTime = false;
+			Error( "This game has a minimum requirement of DirectX 9.0c to run properly.\n" );
 		}
+		return;
 	}
 
 	CMatRenderContextPtr pRenderContext( materials );
