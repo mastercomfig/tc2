@@ -8,7 +8,7 @@
 #include "BaseVSShader.h"
 #include "common_hlsl_cpp_consts.h"
 #include "screenspaceeffect_vs30.inc"
-#include "accumbuff4sample_ps30.inc"
+#include "AccumBuff4Sample_ps30.inc"
 #include "convar.h"
 
 BEGIN_VS_SHADER_FLAGS( accumbuff4sample, "Help for AccumBuff4Sample", SHADER_NOT_EDITABLE )
