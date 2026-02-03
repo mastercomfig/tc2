@@ -325,9 +325,9 @@ CTFWeaponBase::CTFWeaponBase()
 
 	m_flEnergy = Energy_GetMaxEnergy();
 
-	m_iAmmoToAdd = 0;
-
 #ifdef GAME_DLL
+	m_iClipToAdd = 0;
+	m_iAmmoToAdd = 0;
 	m_iHitsInTime = 0;
 	m_iProjectilesFiredInTime = 0;
 	m_iConsecutiveKills = 0;
@@ -473,6 +473,94 @@ void CTFWeaponBase::GiveDefaultAmmo( void )
 		m_flEnergy = Energy_GetMaxEnergy();
 	}
 }
+
+#if GAME_DLL
+void CTFWeaponBase::RestockWeaponAfterShot()
+{
+	// DANGER!!! this function is only meant to provide utility for a "replenish after kill" effect.
+	// thus, it will NOT work as intended if you call it outside of shooting logic: on kill/hit effects, but before projectile removal.
+	// is this a bit contrived? yes. is our shooting / consumption code a bit contrived too? also yes.
+	
+	// primary -- provide them with clip / ammo after the shot.
+	int iClipToGive = 0;
+	int iAmmoToGive = 0;
+	if ( IsEnergyWeapon() )
+	{
+		// refill the energy weapon: 100%
+		iClipToGive = 100;
+	}
+	else if ( UsesClipsForAmmo1() )
+	{
+		if ( AutoFiresFullClip() )
+		{
+			// since our clip should be empty, just give us a full load into ammo.
+			iAmmoToGive = GetMaxClip1();
+		}
+		else
+		{
+			// give us the default clip back.
+			iClipToGive = GetDefaultClip1();
+		}
+	}
+	else
+	{
+		// we don't use clips, so just give our ammo directly.
+		iAmmoToGive = GetDefaultClip1();
+	}
+	AwardAmmo( iClipToGive, iAmmoToGive );
+	
+	// secondary -- just give them the default secondary. this probably won't work well after shooting secondary mode but it's rare.
+	if ( UsesClipsForAmmo2() )
+	{
+		m_iClip2 = GetDefaultClip2();
+	}
+	else
+	{
+		SetSecondaryAmmoCount( GetDefaultClip2() );
+		m_iClip2 = WEAPON_NOCLIP;
+	}
+}
+
+void CTFWeaponBase::UpdateAmmoToAdd( CTFPlayer* pPlayer )
+{
+	int iClipToAdd = m_iClipToAdd;
+	int iAmmoToAdd = m_iAmmoToAdd;
+	if ( IsEnergyWeapon() )
+	{
+		const float flEnergyToAdd = m_iClipToAdd + m_iAmmoToAdd;
+		if ( flEnergyToAdd > 0.0f )
+		{
+			const float flEnergyPct = flEnergyToAdd / 100.0f;
+			const float flMaxEnergy = Energy_GetMaxEnergy();
+			const float flEnergy = flEnergyPct * flMaxEnergy;
+			m_flEnergy += flEnergy;
+			if ( m_flEnergy > flMaxEnergy )
+			{
+				m_flEnergy = flMaxEnergy;
+			}
+			m_iClipToAdd = 0;
+			m_iAmmoToAdd = 0;
+		}
+	}
+	else
+	{
+		if ( m_iClip1 != WEAPON_NOCLIP && iClipToAdd > 0 && !AutoFiresFullClip() )
+		{
+			int iLeft = Min( iClipToAdd, GetMaxClip1() - m_iClip1 );
+			iClipToAdd -= iLeft;
+			m_iClip1 += iLeft;
+			m_iClipToAdd = 0;
+		}
+		iAmmoToAdd += iClipToAdd;
+		// delayed ammo adding for the onhit attribute
+		if ( iAmmoToAdd > 0 )
+		{
+			pPlayer->GiveAmmo( iAmmoToAdd, m_iWeaponMode == TF_WEAPON_PRIMARY_MODE ? m_iPrimaryAmmoType.Get() : m_iSecondaryAmmoType.Get() );
+			m_iAmmoToAdd = 0;
+		}
+	}
+}
+#endif
 
 // -----------------------------------------------------------------------------
 // Purpose:
@@ -2523,11 +2611,13 @@ void CTFWeaponBase::ItemBusyFrame( void )
 	}
 
 #ifdef GAME_DLL
-
 	// If we have an active-weapon-only regen, we accumulate regen time while active, so that
 	// they can't avoid the regen/degen by weapon switching rapidly.
 	ApplyItemRegen();
+#endif
 
+#ifdef GAME_DLL
+	UpdateAmmoToAdd( pOwner );
 #endif
 
 	CheckEffectBarRegen();
@@ -2592,6 +2682,10 @@ void CTFWeaponBase::ItemPostFrame( void )
 	{
 		FireFullClipAtOnce();
 	}
+
+#ifdef GAME_DLL
+	UpdateAmmoToAdd( pOwner );
+#endif
 }
 
 

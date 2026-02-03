@@ -629,7 +629,7 @@ float CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlay
 
 	float flDeathAnimLength = 2.0f;
 
-	if ( mp_disable_respawn_times.GetInt() == 2 )
+	if ( GetRespawnTimeMode() == 2 )
 	{
 		flDeathAnimLength += 0.01f;
 	}
@@ -646,6 +646,11 @@ float CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlay
 	}
 
 	return pPlayer->GetDeathTime() + fMinDelay;
+}
+
+int CTeamplayRoundBasedRules::GetRespawnTimeMode()
+{
+	return mp_disable_respawn_times.GetInt();
 }
 
 //-----------------------------------------------------------------------------
@@ -3527,7 +3532,7 @@ float CTeamplayRoundBasedRules::GetRespawnWaveMaxLength( int iTeam, bool bScaleW
 	if ( State_Get() != GR_STATE_RND_RUNNING )
 		return 0;
 
-	if ( mp_disable_respawn_times.GetBool() == true )
+	if ( GetRespawnTimeMode() )
 		return 0.0f;
 
 	//Let's just turn off respawn times while players are messing around waiting for the tournament to start

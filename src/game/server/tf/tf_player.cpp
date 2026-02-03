@@ -6102,8 +6102,6 @@ bool IsValidRaidRespawnTarget( CBaseEntity *entity )
 extern ConVar tf_gamemode_payload;
 extern ConVar tf_gamemode_ctf;
 
-ConVar tf_tournament_preround_spawns("tf_tournament_preround_spawns", "1");
-
 //-----------------------------------------------------------------------------
 // Purpose: Find a spawn point for the player.
 //-----------------------------------------------------------------------------
@@ -6186,9 +6184,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	}
 
 	// TODO(mcoms): how to prevent out of bounds?
-	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
-	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
-	if ( tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( TFGameRules() && TFGameRules()->IsInPreMatchTournamentWarmup() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
 		bool bPLR = tf_gamemode_payload.GetBool() && TFGameRules()->HasMultipleTrains();
@@ -12530,10 +12526,10 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		pWeapon = static_cast<CTFWeaponBase*>( info.GetWeapon() );
 	}
 
-	if ( !pWeapon)
+	if ( !pWeapon )
 		return;
 
-	if ( IsPlayerClass( TF_CLASS_SPY ) && pWeapon)
+	if ( IsPlayerClass( TF_CLASS_SPY ) && pWeapon )
 	{
 		int iCloakOnKill = 0;
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iCloakOnKill, add_cloak_on_kill );
@@ -12590,10 +12586,7 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnKill );
 	}
 
-	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
-	const bool bValidPreSpawnState = TFGameRules()->State_Get() == GR_STATE_PREGAME || TFGameRules()->IsInPreMatch();
-	const bool bInCountdown = TFGameRules()->PlayerReadyStatus_ShouldStartCountdown() || TFGameRules()->BInMatchStartCountdown();
-	if ( pVictim != this && tf_tournament_preround_spawns.GetBool() && bValidPreSpawnState && !bInCountdown && !bMatchSummary && TFGameRules()->IsCompetitiveGame() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( pVictim != this && TFGameRules()->IsInPreMatchTournamentWarmup() && GetTeamNumber() >= FIRST_GAME_TEAM )
 	{
 		// give ammo for the sound
 		GiveAmmo( 1, TF_AMMO_PRIMARY );
@@ -12605,8 +12598,14 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 			if ( !pInvWeapon )
 				continue;
 
-			pInvWeapon->GiveDefaultAmmo();
-
+			if ( pInvWeapon == pWeapon )
+			{
+				pInvWeapon->RestockWeaponAfterShot();
+			}
+			else
+			{
+				pInvWeapon->GiveDefaultAmmo();
+			}
 			pInvWeapon->WeaponRegenerate();
 		}
 
@@ -15002,20 +15001,20 @@ void CTFPlayer::StateThinkDYING( void )
 		RemoveEffects( EF_NODRAW | EF_NOSHADOW );	// still draw player body
 	}
 
-	static ConVarRef mp_disable_respawn_times("mp_disable_respawn_times");
-	float flTimeInFreeze = mp_disable_respawn_times.GetInt() == 2 ? ( 0.01f ) : ( spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
+	float flTimeInFreeze = TFGameRules()->GetRespawnTimeMode() == 2 ? ( 0.01f ) : ( spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
 	float flFreezeEnd = (m_flDeathTime + TF_DEATH_ANIMATION_TIME + flTimeInFreeze );
 
-	if ( !m_bPlayedFreezeCamSound && mp_disable_respawn_times.GetInt() == 2 )
+	if ( !m_bPlayedFreezeCamSound && TFGameRules()->GetRespawnTimeMode() == 2 )
 	{
 		m_bPlayedFreezeCamSound = true;
+		m_bAbortFreezeCam = true;
 	}
 
 	if ( !m_bPlayedFreezeCamSound && GetObserverTarget() && GetObserverTarget() != this )
 	{
 		// Start the sound so that it ends at the freezecam lock on time
 		float flFreezeSoundLength = 0.3f;
-		float flFreezeSoundTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( mp_disable_respawn_times.GetInt() == 2 ? 0.01f : spec_freeze_traveltime.GetFloat() ) - flFreezeSoundLength;
+		float flFreezeSoundTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( TFGameRules()->GetRespawnTimeMode() == 2 ? 0.01f : spec_freeze_traveltime.GetFloat() ) - flFreezeSoundLength;
 		if ( gpGlobals->curtime >= flFreezeSoundTime )
 		{
 			CSingleUserRecipientFilter filter( this );
@@ -15125,8 +15124,7 @@ void CTFPlayer::StateThinkDYING( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::AttemptToExitFreezeCam( void )
 {
-	static ConVarRef mp_disable_respawn_times("mp_disable_respawn_times");
-	float flFreezeTravelTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( mp_disable_respawn_times.GetInt() == 2 ? 0.01f : spec_freeze_traveltime.GetFloat() ) + 0.5f;
+	float flFreezeTravelTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( spec_freeze_traveltime.GetFloat() ) + 0.5f;
 	if ( gpGlobals->curtime < flFreezeTravelTime )
 		return;
 

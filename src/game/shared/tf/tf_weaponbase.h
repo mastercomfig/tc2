@@ -278,6 +278,11 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	virtual bool IsPredicted() const			{ return true; }
 	virtual void FallInit( void );
 
+#if GAME_DLL
+	void RestockWeaponAfterShot();
+	void UpdateAmmoToAdd( CTFPlayer* pPlayer );
+#endif
+
 	// Weapon Data.
 	CTFWeaponInfo const	&GetTFWpnData() const;
 	virtual int GetWeaponID( void ) const;
@@ -717,7 +722,10 @@ protected:
 
 	CNetworkVar(	bool, m_bResetParity );
 
+#ifdef GAME_DLL
+	int				m_iClipToAdd;
 	int				m_iAmmoToAdd;
+#endif
 	float			m_flLastPrimaryAttackTime;
 
 #ifdef CLIENT_DLL
@@ -763,6 +771,14 @@ public:
 	CNetworkHandle( CTFWearable, m_hExtraWearableViewModel );
 
 	CNetworkVar( float, m_flObservedCritChance );
+
+#ifdef GAME_DLL
+	void AwardAmmo( int iClipToAdd, int iAmmoToAdd )
+	{
+		m_iClipToAdd += iClipToAdd;
+		m_iAmmoToAdd += iAmmoToAdd;
+	}
+#endif
 
 	virtual bool CanInspect() const { return true; }
 	void HandleInspect();

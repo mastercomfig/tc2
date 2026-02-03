@@ -75,7 +75,6 @@ ConVar tf_pipebomb_disable_random_launch("tf_pipebomb_disable_random_launch", "0
 CTFWeaponBaseGun::CTFWeaponBaseGun()
 {
 	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
-	m_iAmmoToAdd = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -407,8 +406,7 @@ CBaseEntity *CTFWeaponBaseGun::FireProjectile( CTFPlayer *pPlayer )
 //-----------------------------------------------------------------------------
 void CTFWeaponBaseGun::RemoveProjectileAmmo( CTFPlayer *pPlayer )
 {
-
-	if ( m_iClip1 != -1 )
+	if ( m_iClip1 != WEAPON_NOCLIP )
 	{
 		m_iClip1 -= GetAmmoPerShot();
 	}
@@ -417,31 +415,15 @@ void CTFWeaponBaseGun::RemoveProjectileAmmo( CTFPlayer *pPlayer )
 		if ( m_iWeaponMode == TF_WEAPON_PRIMARY_MODE )
 		{
 			pPlayer->RemoveAmmo( GetAmmoPerShot(), m_iPrimaryAmmoType );
-
-#ifndef CLIENT_DLL
-			// delayed ammo adding for the onhit attribute
-			if ( m_iAmmoToAdd > 0 )
-			{
-				pPlayer->GiveAmmo( m_iAmmoToAdd, m_iPrimaryAmmoType );
-				m_iAmmoToAdd = 0;
-			}
-#endif
 		}
 		else
 		{
 			pPlayer->RemoveAmmo( GetAmmoPerShot(), m_iSecondaryAmmoType );
 
-#ifndef CLIENT_DLL
-			// delayed ammo adding for the onhit attribute
-			if ( m_iAmmoToAdd > 0 )
-			{
-				pPlayer->GiveAmmo( m_iAmmoToAdd, m_iSecondaryAmmoType );
-				m_iAmmoToAdd = 0;
-			}
-#endif
 		}
 	}
 }
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

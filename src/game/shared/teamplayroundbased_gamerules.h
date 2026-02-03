@@ -187,6 +187,7 @@ public:
 	virtual float	GetRespawnWaveMaxLength( int iTeam, bool bScaleWithNumPlayers = true );
 	virtual bool	ShouldRespawnQuickly( CBasePlayer *pPlayer ) { return false; }
 	float	GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlayer );
+	virtual int GetRespawnTimeMode();
 
 	// Return false if players aren't allowed to cap points at this time (i.e. in WaitingForPlayers)
 	virtual bool PointsMayBeCaptured( void ) { return ((State_Get() == GR_STATE_RND_RUNNING || State_Get() == GR_STATE_STALEMATE) && !IsInWaitingForPlayers()); }

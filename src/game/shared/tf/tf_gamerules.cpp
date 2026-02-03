@@ -792,6 +792,8 @@ ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_H
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_REPLICATED | FCVAR_HIDDEN );
 
+ConVar tf_tournament_prematch_warmup("tf_tournament_prematch_warmup", "1", FCVAR_REPLICATED);
+
 
 static float g_fEternaweenAutodisableTime = 0.0f;
 
@@ -3969,6 +3971,38 @@ float CTFGameRules::GetRespawnWaveMaxLength( int iTeam, bool bScaleWithNumPlayer
 	}
 
 	return flTime;
+}
+
+int CTFGameRules::GetRespawnTimeMode()
+{
+	if ( IsInPreMatchTournamentWarmup() )
+	{
+		if ( IsHighSkillCompetitive() )
+		{
+			return 2;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	return BaseClass::GetRespawnTimeMode();
+}
+
+bool CTFGameRules::IsInPreMatchTournamentWarmup()
+{
+	const bool bValidPreSpawnState = State_Get() == GR_STATE_PREGAME || IsInPreMatch();
+#ifdef GAME_DLL
+	const bool bInCountdown = PlayerReadyStatus_ShouldStartCountdown() || BInMatchStartCountdown();
+#else
+	const bool bInCountdown = BInMatchStartCountdown();
+#endif
+	if ( tf_tournament_prematch_warmup.GetBool() && bValidPreSpawnState && !bInCountdown && !ShowMatchSummary() && IsCompetitiveGame() )
+	{
+		return true;
+	}
+	return false;
 }
 
 

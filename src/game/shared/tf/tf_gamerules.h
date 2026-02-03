@@ -352,6 +352,9 @@ public:
 	virtual void	LevelInitPostEntity( void );
 	virtual float	GetRespawnTimeScalar( int iTeam );
 	virtual float	GetRespawnWaveMaxLength( int iTeam, bool bScaleWithNumPlayers = true );
+	virtual int     GetRespawnTimeMode() override;
+
+	bool			IsInPreMatchTournamentWarmup();
 
 	// Damage Queries.
 	virtual bool	Damage_IsTimeBased( int iDmgType );			// Damage types that are time-based.
