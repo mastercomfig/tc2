@@ -1263,8 +1263,6 @@ CTFPlayer::CTFPlayer()
 
 	SetDefLessFunc( m_PlayersExtinguished );
 
-	m_flLastAutobalanceTime = 0.f;
-
 	m_bViewingCYOAPDA = false;
 
 	ResetMaxHealthDrain();

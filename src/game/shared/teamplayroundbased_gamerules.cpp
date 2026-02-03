@@ -249,7 +249,7 @@ ConVar mp_showcleanedupents( "mp_showcleanedupents", "0", FCVAR_CHEAT | FCVAR_DE
 ConVar mp_restartround( "mp_restartround", "0", FCVAR_GAMEDLL, "If non-zero, the current round will restart in the specified number of seconds" );	
 
 ConVar mp_stalemate_timelimit( "mp_stalemate_timelimit", "240", FCVAR_REPLICATED, "Timelimit (in seconds) of the stalemate round." );
-ConVar mp_autoteambalance( "mp_autoteambalance", "1", FCVAR_NOTIFY, "Automatically balance the teams based on mp_teams_unbalance_limit. 0 = off, 1 = forcibly switch, 2 = ask volunteers", true, 0, true, 2 );
+ConVar mp_autoteambalance( "mp_autoteambalance", "2", FCVAR_NOTIFY, "Automatically balance the teams based on mp_teams_unbalance_limit. 0 = off, 1 = legacy system, 2 = new system", true, 0, true, 2 );
 
 #ifdef TF2_OG
 #define DEFAULT_STALEMATE "1"

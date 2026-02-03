@@ -1516,7 +1516,7 @@ void CTeamAutoBalanceIssue::ExecuteCommand( void )
 	// Enable
 	else
 	{
-		engine->ServerCommand( "mp_autoteambalance 1;" );
+		engine->ServerCommand( "mp_autoteambalance 2;" );
 	}
 }
 

@@ -13,6 +13,8 @@
 #include "minigames/tf_duel.h"
 #include "player_resource.h"
 #include "tf_player_resource.h"
+#include "tf_gamestats.h"
+#include "tf_weapon_medigun.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -25,6 +27,8 @@ extern ConVar tf_autobalance_ask_candidates_maxtime;
 extern ConVar tf_autobalance_dead_candidates_maxtime;
 extern ConVar tf_autobalance_force_candidates_maxtime;
 extern ConVar tf_autobalance_xp_bonus;
+
+ConVar tf_autobalance_detected_delay( "tf_autobalance_detected_delay", "5", FCVAR_NONE );
 
 
 //-----------------------------------------------------------------------------
@@ -51,6 +55,7 @@ void CTFAutobalance::Reset()
 	m_iLightestTeam = m_iHeaviestTeam = TEAM_INVALID;
 	m_nNeeded = 0;
 	m_flNextStateChange = -1.f;
+	m_bRanOnPreRound = false;
 
 	m_vecCandidates.Purge();
 }
@@ -122,10 +127,6 @@ bool CTFAutobalance::AreTeamsUnbalanced()
 	if ( !TFGameRules() )
 		return false;
 
-	// don't bother switching teams if the round isn't running
-	if ( TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
-		return false;
-
 	if ( mp_teams_unbalance_limit.GetInt() <= 0 )
 		return false;
 
@@ -135,46 +136,64 @@ bool CTFAutobalance::AreTeamsUnbalanced()
 	if ( !IsOkayToBalancePlayers() )
 		return false;
 
-	int nDiffBetweenTeams = 0;
+	gamerules_roundstate_t eState = TFGameRules()->State_Get();
+
+	if ( eState == GR_STATE_PREROUND )
+	{
+		// in pre-round, do a single autobalance run to make sure we start with even teams.
+		if ( m_bRanOnPreRound )
+		{
+			return false;
+		}
+	}
+	else if ( eState != GR_STATE_RND_RUNNING )
+	{
+		// don't bother switching teams if the round isn't running
+		return false;
+	}
+	else
+	{
+		// once we're in a running round, the next pre-round should autobalance again.
+		m_bRanOnPreRound = false;
+		// we don't balance if there are less than 60 seconds on the active timer.
+		// added note(mcoms): this was missing in the new autobalance system.
+		// besides the obvious benefits to players who don't want to get switched at this point,
+		// i figure that in this case, we just want to get the round over with.
+		// it's much better to just go to a new round where we can rebalance the teams, rather than
+		// just cause a cycle of frustration during the last minute of a round.
+		CTeamRoundTimer* pActiveTimer = TFGameRules()->GetActiveRoundTimer();
+		if ( pActiveTimer && pActiveTimer->GetTimeRemaining() < 60 )
+		{
+			return false;
+		}
+		// don't balance in the first 60 seconds of a round
+		if ( gpGlobals->curtime - TFGameRules()->GetStateTransitionTime() < 60.0f )
+		{
+			return false;
+		}
+	}
+
 	m_iLightestTeam = m_iHeaviestTeam = TEAM_INVALID;
 	m_nNeeded = 0;
+	int nNumTeamRed;
+	int nNumTeamBlue;
 
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetLiveMatch();
 	if ( pMatch )
 	{
-		int nNumTeamRed = pMatch->GetNumActiveMatchPlayersForTeam( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) );
-		int nNumTeamBlue = pMatch->GetNumActiveMatchPlayersForTeam( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) );
-
-		m_iLightestTeam = ( nNumTeamRed > nNumTeamBlue ) ? TF_TEAM_BLUE : TF_TEAM_RED;
-		m_iHeaviestTeam = ( nNumTeamRed > nNumTeamBlue ) ? TF_TEAM_RED : TF_TEAM_BLUE;
-
-		nDiffBetweenTeams = abs( nNumTeamRed - nNumTeamBlue );
+		nNumTeamRed = pMatch->GetNumActiveMatchPlayersForTeam( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) );
+		nNumTeamBlue = pMatch->GetNumActiveMatchPlayersForTeam( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) );
 	}
 	else
 	{
-		int iMostPlayers = 0;
-		int iLeastPlayers = MAX_PLAYERS_ARRAY_SAFE;
-		int i = FIRST_GAME_TEAM;
-
-		for ( CTeam *pTeam = GetGlobalTeam( i ); pTeam != NULL; pTeam = GetGlobalTeam( ++i ) )
-		{
-			int iNumPlayers = pTeam->GetNumPlayers();
-
-			if ( iNumPlayers < iLeastPlayers )
-			{
-				iLeastPlayers = iNumPlayers;
-				m_iLightestTeam = i;
-			}
-
-			if ( iNumPlayers > iMostPlayers )
-			{
-				iMostPlayers = iNumPlayers;
-				m_iHeaviestTeam = i;
-			}
-		}
-
-		nDiffBetweenTeams = ( iMostPlayers - iLeastPlayers );
+		nNumTeamRed = GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers();
+		nNumTeamBlue = GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers();
 	}
+
+	m_iLightestTeam = ( nNumTeamRed > nNumTeamBlue ) ? TF_TEAM_BLUE : TF_TEAM_RED;
+	m_iHeaviestTeam = ( nNumTeamRed > nNumTeamBlue ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+
+	int nDiffBetweenTeams = abs( nNumTeamRed - nNumTeamBlue );
 
 	if ( nDiffBetweenTeams > mp_teams_unbalance_limit.GetInt() ) 
 	{
@@ -204,19 +223,11 @@ bool CTFAutobalance::IsAlreadyCandidate( CTFPlayer *pTFPlayer ) const
 //-----------------------------------------------------------------------------
 double CTFAutobalance::GetTeamAutoBalanceScore( int nTeam ) const
 {
-	CMatchInfo *pMatch = GTFGCClientSystem()->GetLiveMatch();
-	if ( pMatch && TFGameRules() )
-	{
-		return pMatch->GetTotalSkillRatingForTeam( TFGameRules()->GetGCTeamForGameTeam( nTeam ) );
-	}
-
-	int nTotalScore = 0;
-	int nTeamScore = 0;
-	CTFPlayerResource *pTFPlayerResource = dynamic_cast<CTFPlayerResource *>( g_pPlayerResource );
+	double flTeamScore = 0;
 	CTeam *pTeam = GetGlobalTeam( nTeam );
-	if ( pTFPlayerResource && pTeam )
+	if ( pTeam )
 	{
-		// Tally up total score across everyone and for the specified team
+		// Tally up total for the specified team
 		for ( int i = 1; i <= MAX_PLAYERS; i++ )
 		{
 			CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
@@ -225,14 +236,12 @@ double CTFAutobalance::GetTeamAutoBalanceScore( int nTeam ) const
 
 			if ( pPlayer->GetTeam() == pTeam )
 			{
-				nTeamScore = pTFPlayerResource->GetTotalScore( pPlayer->entindex() );
+				flTeamScore += GetPlayerAutoBalanceScore( pPlayer );
 			}
-
-			nTotalScore += pTFPlayerResource->GetTotalScore( pPlayer->entindex() );
 		}
 	}
 
-	return (double)nTeamScore / (double)nTotalScore;
+	return flTeamScore;
 }
 
 //-----------------------------------------------------------------------------
@@ -243,7 +252,28 @@ double CTFAutobalance::GetPlayerAutoBalanceScore( CTFPlayer *pTFPlayer ) const
 	if ( !pTFPlayer )
 		return 0.0;
 
-	CMatchInfo *pMatch = GTFGCClientSystem()->GetLiveMatch();
+	double flPlayerScore = 0;
+	PlayerStats_t* pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
+	if ( TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && pStats )
+	{
+		const float flRoundTime = gpGlobals->curtime - TFGameRules()->GetStateTransitionTime();
+		flPlayerScore = TFGameRules()->CalcPlayerScore( &pStats->statsCurrentRound, pTFPlayer );
+		// score per minute
+		flPlayerScore /= Min( flRoundTime, pTFPlayer->GetConnectionTime() ) / 60.0;
+	}
+	else
+	{
+		CTFPlayerResource* pTFPlayerResource = dynamic_cast<CTFPlayerResource*>( g_pPlayerResource );
+		if ( pTFPlayerResource )
+		{
+			flPlayerScore = pTFPlayerResource->GetTotalScore( pTFPlayer->entindex() );
+			// score per minute
+			flPlayerScore /= pTFPlayer->GetConnectionTime() / 60.0;
+		}
+	}
+	flPlayerScore *= 1000.0f;
+
+	CMatchInfo* pMatch = GTFGCClientSystem()->GetLiveMatch();
 	if ( pMatch )
 	{
 		CSteamID steamID;
@@ -254,34 +284,14 @@ double CTFAutobalance::GetPlayerAutoBalanceScore( CTFPlayer *pTFPlayer ) const
 			const CMatchInfo::PlayerMatchData_t* pPlayerMatchData = pMatch->GetMatchDataForPlayer( steamID );
 			if ( pPlayerMatchData )
 			{
-				return pPlayerMatchData->flNormalizedMMSkillRating;
+				// reduce the factor of game score, and then bring in the rating.
+				flPlayerScore *= 0.5f;
+				flPlayerScore += pPlayerMatchData->flNormalizedMMSkillRating * 0.5f;
 			}
 		}
 	}
 
-	int nPlayerScore = 0;
-	int nTotalScore = 0;
-	CTFPlayerResource *pTFPlayerResource = dynamic_cast<CTFPlayerResource *>( g_pPlayerResource );
-	if ( pTFPlayerResource )
-	{
-		// Tally up total score across everyone and find the particular player's score
-		for ( int i = 1; i <= MAX_PLAYERS; i++ )
-		{
-			CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
-			if ( !pPlayer )
-				continue;
-
-			if ( pPlayer == pTFPlayer )
-			{
-				nPlayerScore = pTFPlayerResource->GetTotalScore( pPlayer->entindex() );
-			}
-
-			nTotalScore += pTFPlayerResource->GetTotalScore( pPlayer->entindex() );
-		}
-		
-	}
-
-	return (double)nPlayerScore / (double)nTotalScore;
+	return flPlayerScore;
 }
 
 //-----------------------------------------------------------------------------
@@ -312,38 +322,114 @@ CTFPlayer *CTFAutobalance::FindNextCandidate()
 	CTeam *pTeam = GetGlobalTeam( m_iHeaviestTeam );
 	if ( pTeam )
 	{
-		// loop through and get a list of possible candidates
-		for ( int i = 0; i < pTeam->GetNumPlayers(); i++ )
+		for ( int DesperationLevel = 0; DesperationLevel < 2; DesperationLevel++ )
 		{
-			CTFPlayer *pTFPlayer = ToTFPlayer( pTeam->GetPlayer( i ) );
-			if ( pTFPlayer && !IsAlreadyCandidate( pTFPlayer ) && pTFPlayer->CanBeAutobalanced() )
+			// loop through and get a list of possible candidates
+			for ( int i = 0; i < pTeam->GetNumPlayers(); i++ )
 			{
+				CTFPlayer* pTFPlayer = ToTFPlayer( pTeam->GetPlayer( i ) );
+				if ( !pTFPlayer )
+					continue;
+				if ( IsAlreadyCandidate( pTFPlayer ) )
+					continue;
+				if ( !pTFPlayer->CanBeAutobalanced() )
+					continue;
+				
+				// skip candidates which were already switched recently. unless there's no one else to find.
+				float flLastSwitchedTime = pTFPlayer->GetLastAutobalanceTime();
+				if ( DesperationLevel < 1 && flLastSwitchedTime > 0 && ( gpGlobals->curtime - flLastSwitchedTime ) < 300 )
+					continue;
+
 				vecCandidates.AddToTail( pTFPlayer );
+			}
+			if ( vecCandidates.Count() > 0 )
+			{
+				break;
 			}
 		}
 	}
-
-	// no need to go any further if there's only one candidate
-	if ( vecCandidates.Count() == 1 )
+	
+	if ( vecCandidates.Count() > 1 )
 	{
-		pRetVal = vecCandidates[0];
-	}
-	else if ( vecCandidates.Count() > 1 )
-	{
+		const float flScoreWeight = 100.0f;
+		const float flConnectionWeight = 75.0f;
+		const float flClassWeight = 50.0f;
+		
+		// calculate the average skill rating needed to balance out missing chunks
 		double fTotalDiff = fabs( GetTeamAutoBalanceScore( m_iHeaviestTeam ) - GetTeamAutoBalanceScore( m_iLightestTeam ) );
 		double fAverageNeeded = ( fTotalDiff / 2.0 ) / m_nNeeded;
 
-		// now look for a player on the heaviest team with skill rating closest to that average
-		float fClosest = FLT_MAX;
+		// gather the bounds for scoring weights
+		double fClosestScore = (std::numeric_limits<double>::max)();
+		double fFurthestScore = -1;
+		float fClosestTime = (std::numeric_limits<double>::max)();
+		float fFurthestTime = -1;
 		FOR_EACH_VEC( vecCandidates, iIndex )
 		{
-			double fDiff = fabs( fAverageNeeded - GetPlayerAutoBalanceScore( vecCandidates[iIndex] ) );
-			if ( fDiff < fClosest )
+			CTFPlayer* pTFPlayer = vecCandidates[iIndex];
+			// skill rating closest to average
+			double fDiff = fabs( fAverageNeeded - GetPlayerAutoBalanceScore( pTFPlayer ) );
+			if ( fDiff < fClosestScore )
 			{
-				fClosest = fDiff;
+				fClosestScore = fDiff;
+			}
+			else if ( fDiff > fFurthestScore )
+			{
+				fFurthestScore = fDiff;
+			}
+
+			float flTime = pTFPlayer->GetConnectionTime();
+			if ( flTime < fClosestTime )
+			{
+				fClosestTime = flTime;
+			}
+			else if ( flTime > fFurthestTime )
+			{
+				fFurthestTime = flTime;
+			}
+		}
+		
+		float fBest = -1;
+		FOR_EACH_VEC( vecCandidates, iIndex )
+		{
+			CTFPlayer* pTFPlayer = vecCandidates[iIndex];
+			double fDiff = fabs( fAverageNeeded - GetPlayerAutoBalanceScore( pTFPlayer ) );
+			float fScoreVal = RemapValClamped( fDiff, fClosestScore, fFurthestScore, flScoreWeight, 0.0f );
+
+			float flTime = pTFPlayer->GetConnectionTime();
+			float flConnectionVal = RemapValClamped( flTime, fClosestTime, fFurthestTime, flConnectionWeight, 0.0f );
+
+			float flClassVal = flClassWeight;
+			if ( pTFPlayer->IsPlayerClass( TF_CLASS_ENGINEER ) )
+			{
+				if ( pTFPlayer->GetObjectOfType( OBJ_SENTRYGUN ) ||
+					pTFPlayer->GetObjectOfType( OBJ_TELEPORTER, MODE_TELEPORTER_EXIT ) )
+				{
+					flClassVal = 0.0f;
+				}
+			}
+			else if ( pTFPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+			{
+				CWeaponMedigun* medigun = dynamic_cast<CWeaponMedigun*>( pTFPlayer->m_Shared.GetActiveTFWeapon() );
+				if ( medigun && medigun->GetChargeLevel() > 0.25f )
+				{
+					flClassVal = 0.0f;
+				}
+			}
+
+			float fTotalScore = fScoreVal + flConnectionVal + flClassVal;
+
+			if ( fTotalScore > fBest )
+			{
+				fBest = fTotalScore;
 				pRetVal = vecCandidates[iIndex];
 			}
 		}
+	}
+	// no need to go any further if there's only one candidate
+	if ( !pRetVal )
+	{
+		pRetVal = vecCandidates[0];
 	}
 
 	return pRetVal;
@@ -550,7 +636,7 @@ void CTFAutobalance::FrameUpdatePostEntityThink()
 		{
 			if ( FindCandidates() )
 			{
-				m_eCurrentState = AB_STATE_FORCE_DEAD_CANDIDATES;
+				m_eCurrentState = TFGameRules()->State_Get() == GR_STATE_PREROUND || tf_autobalance_detected_delay.GetFloat() <= 0.01f ? AB_STATE_FORCE_DEAD_CANDIDATES : AB_STATE_WAIT;
 				m_flNextStateChange = -1.f;
 			}
 		}
@@ -569,6 +655,21 @@ void CTFAutobalance::FrameUpdatePostEntityThink()
 			}
 		}
 		break;
+	case AB_STATE_WAIT:
+		if ( ( m_flNextStateChange > 0 ) && ( m_flNextStateChange < gpGlobals->curtime ) )
+		{
+			m_eCurrentState = AB_STATE_FORCE_DEAD_CANDIDATES;
+			m_flNextStateChange = -1.f;
+		}
+		else
+		{
+			if ( m_flNextStateChange < 0 )
+			{
+				m_flNextStateChange = gpGlobals->curtime + tf_autobalance_detected_delay.GetFloat();
+				UTIL_ClientPrintAll( HUD_PRINTTALK, "#game_auto_team_balance_in", tf_autobalance_detected_delay.GetString() );
+			}
+		}
+		break;
 	case AB_STATE_FORCE_DEAD_CANDIDATES:
 		if ( ( m_flNextStateChange > 0 ) && ( m_flNextStateChange < gpGlobals->curtime ) )
 		{
@@ -579,7 +680,7 @@ void CTFAutobalance::FrameUpdatePostEntityThink()
 		{
 			if ( m_flNextStateChange < 0 )
 			{
-				m_flNextStateChange = gpGlobals->curtime + tf_autobalance_dead_candidates_maxtime.GetFloat();
+				m_flNextStateChange = gpGlobals->curtime + ( TFGameRules()->State_Get() == GR_STATE_PREROUND ? 0.01f : tf_autobalance_dead_candidates_maxtime.GetFloat() );
 			}
 			ForceDeadCandidates();
 		}
@@ -594,7 +695,7 @@ void CTFAutobalance::FrameUpdatePostEntityThink()
 		{
 			if ( m_flNextStateChange < 0 )
 			{
-				m_flNextStateChange = gpGlobals->curtime + tf_autobalance_force_candidates_maxtime.GetFloat();
+				m_flNextStateChange = gpGlobals->curtime + ( TFGameRules()->State_Get() == GR_STATE_PREROUND ? 0.01f : tf_autobalance_force_candidates_maxtime.GetFloat() );
 				ForceCandidatesSetup();
 			}
 		}

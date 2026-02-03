@@ -96,12 +96,12 @@ protected:
 	virtual CAI_Expresser *CreateExpresser( void );
 
 	int		m_iCurrentConcept;
+	float m_flLastForcedChangeTeamTime;
 private:
 	//---------------------------------
 	CMultiplayer_Expresser		*m_pExpresser;
 
 	float m_flConnectionTime;
-	float m_flLastForcedChangeTeamTime;
 
 	int m_iBalanceScore;	// a score used to determine which players are switched to balance the teams
 

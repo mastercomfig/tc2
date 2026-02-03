@@ -1566,8 +1566,8 @@ public:
 
 	bool ShouldGetBonusPointsForExtinguishEvent( int userID );
 
-	void SetLastAutobalanceTime( float flTime ) { m_flLastAutobalanceTime = flTime; }
-	float GetLastAutobalanceTime() { return m_flLastAutobalanceTime; }
+	void  SetLastAutobalanceTime( float flTime ) { m_flLastForcedChangeTeamTime = flTime; }
+	float GetLastAutobalanceTime() { return m_flLastForcedChangeTeamTime; }
 	bool IsMaxHealthDraining( void ) { return m_nMaxHealthDrainBucket != 0.0; }
 
 private:
@@ -1611,8 +1611,6 @@ private:
 	CUtlMap<int, float> m_PlayersExtinguished;	// userID and most recent time they were extinguished for bonus points
 
 	CUtlMap<itemid_t, int> m_mapNoiseMakerUses;		// noise maker item index and number of uses
-
-	float m_flLastAutobalanceTime;
 
 	void ResetMaxHealthDrain( void );
 	int m_nMaxHealthDrainBucket;

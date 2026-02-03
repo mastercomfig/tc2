@@ -23651,6 +23651,9 @@ void CTFGameRules::BalanceTeams( bool bRequireSwitcheesToBeDead )
 	if ( mp_autoteambalance.GetInt() == 2 )
 		return;
 
+	if ( IsCommunityGameMode() )
+		return;
+
 	BaseClass::BalanceTeams( bRequireSwitcheesToBeDead );
 }
 #endif
