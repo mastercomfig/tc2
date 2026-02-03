@@ -1340,8 +1340,11 @@ void CTFBotMainAction::FireWeaponAtEnemy( CTFBot *me )
 
 	if ( TFGameRules()->InSetup() )
 	{
-		// wait until the gates open
-		return;
+		if ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->State_Get() != GR_STATE_BETWEEN_RNDS )
+		{
+			// wait until the gates open
+			return;
+		}
 	}
 
 	if ( myWeapon->IsMeleeWeapon() )
