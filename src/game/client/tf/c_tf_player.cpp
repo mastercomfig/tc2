@@ -8479,12 +8479,15 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 
 	if ( nType == CALLER_TYPE_AUTO )
 	{
-		m_pSaveMeEffect = ParticleProp()->Create( "speech_mediccall_auto", PATTACH_POINT_FOLLOW, "head" );
-		// sound should only play if they're close and we're not already healing them.
-		const float flDistSq = GetAbsOrigin().DistToSqr( pLocalPlayer->GetAbsOrigin() );
-		if ( flDistSq < 1000 * 1000 && ( !pLocalPlayer->MedicGetHealTarget() || ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) != this ) )
+		if ( pLocalPlayer )
 		{
-			EmitSound( "Medic.AutoCallerAnnounce" );
+			m_pSaveMeEffect = ParticleProp()->Create( "speech_mediccall_auto", PATTACH_POINT_FOLLOW, "head" );
+			// sound should only play if they're close and we're not already healing them.
+			const float flDistSq = GetAbsOrigin().DistToSqr( pLocalPlayer->GetAbsOrigin() );
+			if ( flDistSq < 1000 * 1000 && ( !pLocalPlayer->MedicGetHealTarget() || ToTFPlayer( pLocalPlayer->MedicGetHealTarget() ) != this ) )
+			{
+				EmitSound( "Medic.AutoCallerAnnounce" );
+			}
 		}
 	}
 	else

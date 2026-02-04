@@ -1793,10 +1793,10 @@ void CTFPlayer::TFPlayerThink()
 
 			if ( nClip >= 0 && nClip != m_nActiveWpnClipPrev )
 			{
-				if ( nClip > 500 )
+				if ( nClip > UINT16_MAX )
 				{
-					Warning( "Heal Target: ClipSize Data Limit Exceeded: %d (max 500)\n", nClip );
-					nClip = MIN( nClip, 500 );
+					Warning( "Heal Target: ClipSize Data Limit Exceeded: %d (max %d)\n", nClip, UINT16_MAX );
+					nClip = MIN( nClip, UINT16_MAX );
 				}
 				m_nActiveWpnClip.Set( nClip );
 				m_nActiveWpnClipPrev = m_nActiveWpnClip;
