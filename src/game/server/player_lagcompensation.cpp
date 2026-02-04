@@ -418,9 +418,9 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	// so it makes more sense to keep sv_maxunlag as just
 	// a latency limit for gameplay.
 	float flLerpTime = player->m_fLerpTime;
-	if ( flLerpTime >= TICK_INTERVAL && cmd )
+	if ( cmd )
 	{
-		flLerpTime -= Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
+		flLerpTime += Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
 	}
 
 	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()

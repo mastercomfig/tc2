@@ -160,6 +160,7 @@ public:
 
 	// Eye position..
 	virtual Vector		 EyePosition();
+	Vector               EyePositionOld();
 	virtual const QAngle &EyeAngles();		// Direction of eyes
 	void				 EyePositionAndVectors( Vector *pPosition, Vector *pForward, Vector *pRight, Vector *pUp );
 	virtual const QAngle &LocalEyeAngles();		// Direction of eyes
@@ -336,6 +337,9 @@ public:
 
 	void		SetPreviouslyPredictedOrigin( const Vector &vecAbsOrigin );
 	const Vector &GetPreviouslyPredictedOrigin() const;
+
+	void SetInPostThink( bool bInPostThink ) { m_bInPostThink = bInPostThink; };
+	bool IsInPostThink( void ) const { return m_bInPostThink; }
 
 	// CS wants to allow small FOVs for zoomed-in AWPs.
 	virtual float GetMinFOV() const;
@@ -522,6 +526,8 @@ private:
 	Vector			m_vecLadderNormal;
 	
 	QAngle			m_vecOldViewAngles;
+
+	bool			m_bInPostThink = false;
 
 	bool			m_bWasFrozen;
 	int				m_flPhysics;

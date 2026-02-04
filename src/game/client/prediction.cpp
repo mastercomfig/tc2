@@ -831,7 +831,9 @@ void CPrediction::RunPostThink( C_BasePlayer *player )
 	VPROF( "CPrediction::RunPostThink" );
 
 	// Run post-think
+	player->SetInPostThink( true );
 	player->PostThink();
+	player->SetInPostThink( false );
 #endif
 }
 

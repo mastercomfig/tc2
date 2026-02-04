@@ -2670,6 +2670,10 @@ void C_BasePlayer::LeaveVehicle( void )
 #endif
 }
 
+Vector C_BasePlayer::EyePositionOld()
+{
+	return m_vecPreviouslyPredictedOrigin + GetViewOffset();
+}
 
 float C_BasePlayer::GetMinFOV()	const
 {
