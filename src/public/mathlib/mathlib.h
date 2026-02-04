@@ -1172,6 +1172,26 @@ FORCEINLINE int RoundFloatToInt(float f)
 #endif
 }
 
+// RoundFloatToInt rounds .5 to nearest even. this function rounds up on .5.
+FORCEINLINE int RoundFloatToNearestInt(float f)
+{
+#if defined( __i386__ ) || defined( _M_IX86 ) || defined( PLATFORM_WINDOWS_PC64 ) || defined( __x86_64__ )
+	return _mm_cvt_ss2si(_mm_set_ss(f + f + 0.5f)) >> 1;
+#elif defined( _X360 )
+#ifdef Assert
+	Assert( IsFPUControlWordSet() );
+#endif
+	union {
+		double flResult;
+		int    pResult[2];
+	};
+	flResult = __fctiw( f );
+	return pResult[1];
+#else
+#error Unknown architecture
+#endif
+}
+
 FORCEINLINE unsigned char RoundFloatToByte(float f)
 {
 	int nResult = RoundFloatToInt(f);
@@ -1237,7 +1257,7 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 
 FORCEINLINE bool IsIntegralValue( float flValue, float flTolerance = 0.001f )
 {
-	return fabs( RoundFloatToInt( flValue ) - flValue ) < flTolerance;
+	return fabsf( RoundFloatToInt( flValue ) - flValue ) < flTolerance;
 }
 
 // Fast, accurate ftol:
@@ -1416,7 +1436,7 @@ FORCEINLINE float LinearToVertexLight( float f )
 
 	// Gotta clamp before the multiply; could overflow...
 	// assume 0..4 range
-	int i = RoundFloatToInt( f * 1024.f );
+	int i = RoundFloatToNearestInt( f * 1024.f );
 
 	// Presumably the comman case will be not to clamp, so check that first:
 	if( (unsigned)i > 4095 )
@@ -1436,7 +1456,7 @@ FORCEINLINE unsigned char LinearToLightmap( float f )
 	extern unsigned char lineartolightmap[4096];	
 
 	// Gotta clamp before the multiply; could overflow...
-	int i = RoundFloatToInt( f * 1024.f );	// assume 0..4 range
+	int i = RoundFloatToNearestInt( f * 1024.f );	// assume 0..4 range
 
 	// Presumably the comman case will be not to clamp, so check that first:
 	if ( (unsigned)i > 4095 )

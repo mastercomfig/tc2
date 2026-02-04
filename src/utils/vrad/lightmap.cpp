@@ -8,6 +8,8 @@
 
 #include "vrad.h"
 #include "lightmap.h"
+
+#include "Color.h"
 #include "radial.h"
 #include "mathlib/bumpvects.h"
 #include "tier1/utlvector.h"
@@ -3532,18 +3534,18 @@ static void LinearToBumpedLightmap(
 
 	ColorClampBumped( correctedBumpColor1, correctedBumpColor2, correctedBumpColor3 );
 
-	ret[0] = RoundFloatToByte( gammaGoal[0] * 255.0f );
-	ret[1] = RoundFloatToByte( gammaGoal[1] * 255.0f );
-	ret[2] = RoundFloatToByte( gammaGoal[2] * 255.0f );
-	retBump1[0] = RoundFloatToByte( correctedBumpColor1[0] * 255.0f );
-	retBump1[1] = RoundFloatToByte( correctedBumpColor1[1] * 255.0f );
-	retBump1[2] = RoundFloatToByte( correctedBumpColor1[2] * 255.0f );
-	retBump2[0] = RoundFloatToByte( correctedBumpColor2[0] * 255.0f );
-	retBump2[1] = RoundFloatToByte( correctedBumpColor2[1] * 255.0f );
-	retBump2[2] = RoundFloatToByte( correctedBumpColor2[2] * 255.0f );
-	retBump3[0] = RoundFloatToByte( correctedBumpColor3[0] * 255.0f );
-	retBump3[1] = RoundFloatToByte( correctedBumpColor3[1] * 255.0f );
-	retBump3[2] = RoundFloatToByte( correctedBumpColor3[2] * 255.0f );
+	ret[0] = Float2Byte( gammaGoal[0] );
+	ret[1] = Float2Byte( gammaGoal[1] );
+	ret[2] = Float2Byte( gammaGoal[2] );
+	retBump1[0] = Float2Byte( correctedBumpColor1[0] );
+	retBump1[1] = Float2Byte( correctedBumpColor1[1] );
+	retBump1[2] = Float2Byte( correctedBumpColor1[2] );
+	retBump2[0] = Float2Byte( correctedBumpColor2[0] );
+	retBump2[1] = Float2Byte( correctedBumpColor2[1] );
+	retBump2[2] = Float2Byte( correctedBumpColor2[2] );
+	retBump3[0] = Float2Byte( correctedBumpColor3[0] );
+	retBump3[1] = Float2Byte( correctedBumpColor3[1] );
+	retBump3[2] = Float2Byte( correctedBumpColor3[2] );
 }
 
 //-----------------------------------------------------------------------------
@@ -3593,8 +3595,8 @@ void ConvertLinearToRGBA8888(const Vector *pSrcLinear, unsigned char *pDst)
 	ColorClamp(vertexColor);
 
 	// final [0..255] scale
-	pDst[0] = RoundFloatToByte(vertexColor[0] * 255.0f);
-	pDst[1] = RoundFloatToByte(vertexColor[1] * 255.0f);
-	pDst[2] = RoundFloatToByte(vertexColor[2] * 255.0f);
+	pDst[0] = Float2Byte( vertexColor[0] );
+	pDst[1] = Float2Byte( vertexColor[1] );
+	pDst[2] = Float2Byte( vertexColor[2] );
 	pDst[3] = 255;
 }

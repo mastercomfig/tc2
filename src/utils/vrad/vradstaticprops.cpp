@@ -830,8 +830,8 @@ public:
 		if ( bBackface && !tex.allowBackface )
 			return 0;
 		Vector2D uv = coords.x * mat.uv[0] + coords.y * mat.uv[1] + coords.z * mat.uv[2];
-		int u = RoundFloatToInt( uv[0] * tex.width );
-		int v = RoundFloatToInt( uv[1] * tex.height );
+		int u = RoundFloatToNearestInt( uv[0] * tex.width );
+		int v = RoundFloatToNearestInt( uv[1] * tex.height );
 		
 		// asume power of 2, clamp or wrap
 		// UNDONE: Support clamp?  This code should work
@@ -2708,9 +2708,9 @@ static void DumpLightmapLinear( const char* _dstFilename, const CUtlVector<color
 	linearBuffer.SetCount( linearFloats.Count() );
 
 	for ( int i = 0; i < linearFloats.Count(); ++i ) {
-		linearBuffer[i].b = RoundFloatToByte(linearFloats[i].z * 255.0f);
-		linearBuffer[i].g = RoundFloatToByte(linearFloats[i].y * 255.0f);
-		linearBuffer[i].r = RoundFloatToByte(linearFloats[i].x * 255.0f);
+		linearBuffer[i].b = Float2Byte( linearFloats[i].z );
+		linearBuffer[i].g = Float2Byte( linearFloats[i].y );
+		linearBuffer[i].r = Float2Byte( linearFloats[i].x );
 	}
 	
 	TGAWriter::WriteTGAFile( _dstFilename, _width, _height, IMAGE_FORMAT_BGR888, (uint8*)(linearBuffer.Base()), _width * ImageLoader::SizeInBytes(IMAGE_FORMAT_BGR888) );

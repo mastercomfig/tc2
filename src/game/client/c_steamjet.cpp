@@ -350,10 +350,10 @@ inline void RenderParticle_ColorSizePerturbNormal(
 		return;
 
 	unsigned char ubColor[4];
-	ubColor[0] = (unsigned char)RoundFloatToInt( color.x * 254.9f );
-	ubColor[1] = (unsigned char)RoundFloatToInt( color.y * 254.9f );
-	ubColor[2] = (unsigned char)RoundFloatToInt( color.z * 254.9f );
-	ubColor[3] = (unsigned char)RoundFloatToInt( alpha * 254.9f );
+	ubColor[0] = Float2Byte( color.x );
+	ubColor[1] = Float2Byte( color.y );
+	ubColor[2] = Float2Byte( color.z );
+	ubColor[3] = Float2Byte( alpha );
 
 	Vector vNorm;
 	

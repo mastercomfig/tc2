@@ -101,13 +101,12 @@ private:
 	unsigned char _color[4];
 };
 
-
 constexpr float MAXCOLOR = 256.0f - FLT_EPSILON * 128;
 
 // Converts 0..1 to 0..255
-inline int Float2Byte(float flNum)
+inline int Float2Byte( float flNum )
 {
-	return static_cast<int>(flNum * MAXCOLOR);
+	return static_cast<int>( flNum * MAXCOLOR );
 }
 
 // Converts to Color using Float2Byte

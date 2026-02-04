@@ -337,7 +337,7 @@ void CTFSpectatorGUI::Update()
 		Vector vecDelta = pLocalPlayer->GetAbsOrigin() - vecTarget;
 		float flDistance = vecDelta.Length();
 		const float kInchesToMeters = 0.0254f;
-		int distance = RoundFloatToInt( flDistance * kInchesToMeters );
+		int distance = RoundFloatToNearestInt( flDistance * kInchesToMeters );
 		wchar_t wzValue[32];
 		_snwprintf( wzValue, ARRAYSIZE( wzValue ), L"%u", distance );
 		wchar_t wzText[256];

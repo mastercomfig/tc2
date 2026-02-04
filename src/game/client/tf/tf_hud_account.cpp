@@ -1424,7 +1424,7 @@ void CAccountPanel::Paint( void )
 		{
 			// position and alpha are determined from the lifetime
 			Color c = m_AccountDeltaItemsSmall[i].m_color;
-			Vector rgb((float)c.r(), (float)c.g(), (float)c.b());
+			Vector rgb( (float)c.r(), (float)c.g(), (float)c.b() );
 			Vector hsv;
 			RGBtoHSV(rgb, hsv);
 			const float flSatMult = m_AccountDeltaItemsSmall[i].m_bLargeFont ? 0.87f : 0.65f;
@@ -1440,11 +1440,11 @@ void CAccountPanel::Paint( void )
 			float flLifetimePctAlpha = flLifetimePercent;
 			if (flTimeMod > 0.0f)
 			{
-				float flLifeTimeForAlpha = flMaxLifeTime - (m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime);
+				float flLifeTimeForAlpha = flMaxLifeTime - ( m_AccountDeltaItemsSmall[i].m_flDieTime - flTimeMod - gpGlobals->curtime );
 				flLifetimePctAlpha = flLifeTimeForAlpha / flMaxLifeTime;
 			}
 			const float flBaseAlpha = m_AccountDeltaItemsSmall[i].m_bLargeFont ? 150.0f : 115.0f;
-			unsigned char nAlpha = RoundFloatToByte( flBaseAlpha * ( 1.0f - flLifetimePctAlpha) );
+			unsigned char nAlpha = RoundFloatToByte( flBaseAlpha * ( 1.0f - flLifetimePctAlpha ) );
 			c[3] = nAlpha;
 
 			float flHeight = m_AccountDeltaItemsSmall[i].m_nHEnd - m_AccountDeltaItemsSmall[i].m_nHStart;

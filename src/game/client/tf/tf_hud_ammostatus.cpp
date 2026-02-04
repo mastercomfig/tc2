@@ -230,7 +230,7 @@ void CTFHudWeaponAmmo::SizeLowAmmoIndicator( float flCurrentAmount, float flMaxA
 		float flPercent = ( flMaxAmount - flCurrentAmount ) / flMaxAmount;
 		float nLowAmmoPosAdj = hud_low_ammo_warning_max_pos_adjust.GetFloat();
 
-		int nPosAdj = RoundFloatToInt( flPercent * nLowAmmoPosAdj );
+		int nPosAdj = RoundFloatToNearestInt( flPercent * nLowAmmoPosAdj );
 		int nSizeAdj = 2 * nPosAdj;
 		
 		m_pLowAmmoImage->SetBounds( m_nLowAmmoImageOrigX - nPosAdj, 

@@ -390,7 +390,7 @@ void CAmbientGeneric::InputVolume( inputdata_t &inputdata )
 	//
 	// Multiply the input value by ten since volumes are expected to be from 0 - 100.
 	//
-	m_dpv.vol = clamp( RoundFloatToInt( inputdata.value.Float() * 10.f ), 0, 100 );
+	m_dpv.vol = clamp( RoundFloatToNearestInt( inputdata.value.Float() * 10.f ), 0, 100 );
 	m_dpv.volfrac = m_dpv.vol << 8;
 
 	SendSound( SND_CHANGE_VOL );

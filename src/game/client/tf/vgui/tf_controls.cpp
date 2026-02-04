@@ -2523,7 +2523,7 @@ bool ConstrainAspect( int& nXOffset, int& nYOffset )
 		if (w > h)
 		{
 			// if width is greater than height, then height is fixed and we base width off of height.
-			nXOffset = RoundFloatToInt((w - (h * flDefaultAspect)) * 0.5f);
+			nXOffset = RoundFloatToNearestInt((w - (h * flDefaultAspect)) * 0.5f);
 			return true;
 		}
 		else

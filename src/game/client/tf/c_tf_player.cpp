@@ -9989,7 +9989,7 @@ void C_TFPlayer::ComputeFxBlend( void )
 		ClientShadowHandle_t hShadow = GetShadowHandle();
 		if ( hShadow != CLIENTSHADOW_INVALID_HANDLE )
 		{
-			g_pClientShadowMgr->SetFalloffBias( hShadow, RoundFloatToByte(flInvisible * 255) );
+			g_pClientShadowMgr->SetFalloffBias( hShadow, Float2Byte( flInvisible ) );
 		}
 	}
 }

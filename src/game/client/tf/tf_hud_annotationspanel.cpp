@@ -522,7 +522,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 		m_flAlpha[0] = Lerp( gpGlobals->frametime, m_flAlpha[0], m_flAlpha[1] );	 // Move towards target
 	}
 
-	const int fade_alpha = RoundFloatToInt(m_flAlpha[0]);
+	const int fade_alpha = RoundFloatToNearestInt(m_flAlpha[0]);
 
 	SetAlpha( fade_alpha );
 	m_pArrow->SetAlpha( fade_alpha );
@@ -624,7 +624,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 			}
 		}
 		const float kInchesToMeters = 0.0254f;
-		int distance = RoundFloatToInt( flDistance * kInchesToMeters );
+		int distance = RoundFloatToNearestInt( flDistance * kInchesToMeters );
 		wchar_t wzValue[32];
 		_snwprintf( wzValue, ARRAYSIZE( wzValue ), L"%u", distance );
 
