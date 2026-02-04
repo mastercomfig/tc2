@@ -604,6 +604,7 @@ protected:
 	CNetworkVar( bool,			m_bInWaitingForPlayers );
 	CNetworkVar( bool,			m_bAwaitingReadyRestart );
 	CNetworkVar( float,			m_flRestartRoundTime );
+	CNetworkVar( float,			m_flRestartRoundStartTime );
 	CNetworkVar( float,			m_flMapResetTime );						// Time that the map was reset
 	CNetworkArray( float,		m_flNextRespawnWave, MAX_TEAMS_ARRAY_SAFE );		// Minor waste, but cleaner code
 	CNetworkArray( bool,		m_bTeamReady, MAX_TEAMS_ARRAY_SAFE );

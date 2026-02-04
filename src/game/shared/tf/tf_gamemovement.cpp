@@ -80,7 +80,6 @@ ConVar tf_movement_lost_footing_friction( "tf_movement_lost_footing_friction", "
 extern ConVar cl_forwardspeed;
 extern ConVar cl_backspeed;
 extern ConVar cl_sidespeed;
-extern ConVar mp_tournament_readymode_countdown;
 
 #define TF_MAX_SPEED   (400 * 1.3)	// 400 is Scout max speed, and we allow up to 3% movement bonus.
 

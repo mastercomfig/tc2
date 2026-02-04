@@ -316,7 +316,7 @@ void CHudTournament::PreparePanel( void )
 		else
 		{
 			float flTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
-			int nTime = (int)( ceil( flTime ) );
+			int nTime = Ceil2Int( flTime );
 			
 			wchar szCountdown[64];
 			wchar_t wzVal[16];
@@ -343,7 +343,7 @@ void CHudTournament::PreparePanel( void )
 				m_pModeImage->SetVisible( false );
 				SetPlayerPanelsVisible( false );
 			}
-			else if ( nTime <= TOURNAMENT_NOCANCEL_TIME )
+			else if ( flTime <= TOURNAMENT_NOCANCEL_TIME )
 			{
 				SetDialogVariable( "readylabel", g_pVGuiLocalize->Find( "" ) );
 			}

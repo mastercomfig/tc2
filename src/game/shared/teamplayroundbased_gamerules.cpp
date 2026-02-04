@@ -93,6 +93,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	RecvPropInt( RECVINFO( m_bSwitchedTeamsThisRound ) ),
 	RecvPropBool( RECVINFO( m_bAwaitingReadyRestart ) ),
 	RecvPropTime( RECVINFO( m_flRestartRoundTime ) ),
+	RecvPropTime( RECVINFO( m_flRestartRoundStartTime ) ),
 	RecvPropTime( RECVINFO( m_flMapResetTime ) ),
 	RecvPropInt( RECVINFO( m_nRoundsPlayed ) ),
 	RecvPropArray3( RECVINFO_ARRAY(m_flNextRespawnWave), RecvPropTime( RECVINFO(m_flNextRespawnWave[0]) ) ),
@@ -114,6 +115,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	SendPropBool( SENDINFO( m_bSwitchedTeamsThisRound ) ),
 	SendPropBool( SENDINFO( m_bAwaitingReadyRestart ) ),
 	SendPropTime( SENDINFO( m_flRestartRoundTime ) ),
+	SendPropTime( SENDINFO( m_flRestartRoundStartTime ) ),
 	SendPropTime( SENDINFO( m_flMapResetTime ) ),
 	SendPropInt( SENDINFO( m_nRoundsPlayed ), 4, SPROP_UNSIGNED ),
 	SendPropArray3( SENDINFO_ARRAY3(m_flNextRespawnWave), SendPropTime( SENDINFO_ARRAY(m_flNextRespawnWave) ) ),
@@ -451,6 +453,7 @@ CTeamplayRoundBasedRules::CTeamplayRoundBasedRules( void )
 	m_bInWaitingForPlayers.Set( false );
 	m_bAwaitingReadyRestart.Set( false );
 	m_flRestartRoundTime.Set( -1.0f );
+	m_flRestartRoundStartTime.Set( -1.0f );
 	m_flMapResetTime.Set( 0.0f );
 	m_bStopWatch.Set( false );
 	m_bMultipleTrains.Set( false );
@@ -1009,6 +1012,7 @@ void CTeamplayRoundBasedRules::CheckWaitingForPlayers( void )
 		if( gpGlobals->curtime > m_flWaitingForPlayersTimeEnds && m_flRestartRoundTime < 0 && !m_bAwaitingReadyRestart )
 		{
 			m_flRestartRoundTime.Set( gpGlobals->curtime );	// reset asap
+			m_flRestartRoundStartTime.Set( -1.0f );
 
 			if ( IsInArenaMode() == true )
 			{
@@ -1085,7 +1089,8 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 		mp_clan_readyrestart.SetValue( 0 );
 
 		// cancel any restart round in progress
-		m_flRestartRoundTime.Set( -1.f );
+		m_flRestartRoundTime.Set( -1.0f );
+		m_flRestartRoundStartTime.Set( -1.0f );
 	}
 
 	// Restart the game if specified by the server
@@ -1103,7 +1108,7 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 #ifdef TF_DLL
 		if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() || TFGameRules()->UsePlayerReadyStatusMode() ) )
 		{
-			iDelayMax = 180;
+			iDelayMax = 150;
 		}
 #endif // #if defined(TF_CLIENT_DLL) || defined(TF_DLL)
 
@@ -1129,6 +1134,7 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 		}
 
 		m_flRestartRoundTime.Set( gpGlobals->curtime + iRestartDelay );
+		m_flRestartRoundStartTime.Set( gpGlobals->curtime );
 
 		IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_round_restart_seconds" );
 		if ( event )
@@ -1746,6 +1752,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 	if ( m_flRestartRoundTime > 0 && m_flRestartRoundTime <= gpGlobals->curtime && !g_pServerBenchmark->IsBenchmarkRunning() )
 	{
 		m_flRestartRoundTime.Set( -1.f );
+		m_flRestartRoundStartTime.Set( -1.0f );
 
 #ifdef TF_DLL
 		if ( TFGameRules() )
@@ -3647,11 +3654,11 @@ void CTeamplayRoundBasedRules::Update( float frametime )
 
 	if ( m_flRestartRoundTime > gpGlobals->curtime )
 	{
-		nTime = ceil( m_flRestartRoundTime - gpGlobals->curtime );
+		nTime = Ceil2Int( m_flRestartRoundTime - gpGlobals->curtime );
 	}
 	else if ( m_flCountdownTime > gpGlobals->curtime )
 	{
-		nTime = ceil( m_flCountdownTime - gpGlobals->curtime );
+		nTime = Ceil2Int( m_flCountdownTime - gpGlobals->curtime );
 	}
 
 	if ( nTime != m_nLastEventFiredTime )

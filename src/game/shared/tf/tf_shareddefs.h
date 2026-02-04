@@ -2728,7 +2728,7 @@ enum TemporaryRuneTypes_t
 
 const char *GetPowerupIconName( RuneTypes_t type, int iTeam );
 
-#define TOURNAMENT_NOCANCEL_TIME 10
+#define TOURNAMENT_NOCANCEL_TIME 10.1f
 
 #define TF_WEAPON_PICKUP_RANGE 150
 

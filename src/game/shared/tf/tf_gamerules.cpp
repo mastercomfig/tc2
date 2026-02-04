@@ -855,7 +855,6 @@ ConVar mp_tournament_stopwatch( "mp_tournament_stopwatch", "1", FCVAR_REPLICATED
 ConVar mp_tournament_readymode( "mp_tournament_readymode", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable per-player ready status for tournament mode." );
 ConVar mp_tournament_readymode_min( "mp_tournament_readymode_min", "2", FCVAR_REPLICATED | FCVAR_NOTIFY, "Minimum number of players required on the server before players can toggle ready status." );
 ConVar mp_tournament_readymode_team_size( "mp_tournament_readymode_team_size", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Minimum number of players required to be ready per-team before the game can begin." );
-ConVar mp_tournament_readymode_countdown( "mp_tournament_readymode_countdown", "10", FCVAR_REPLICATED | FCVAR_NOTIFY, "The number of seconds before a match begins when both teams are ready." );
 #ifdef GAME_DLL
 ConVar mp_tournament_prevent_team_switch_on_readyup( "mp_tournament_prevent_team_switch_on_readyup", "1", FCVAR_NONE, "Prevent switching teams on ready-up for subsequent rounds in tournament mode." );
 #endif
@@ -2359,12 +2358,12 @@ bool CTFGameRules::IsMatchTypeCompetitive( void ) const
 bool CTFGameRules::InMatchStartFreeze( void )
 {
 	// No one can move when in a final countdown transition.
-	if ( TFGameRules() && TFGameRules()->BInMatchStartCountdown() )
+	if ( BInMatchStartCountdown() )
 	{
 		// if preround push is enabled, we can move in the last bit.
-		if ( TFGameRules()->IsPreRoundPushEnabled() )
+		if ( IsPreRoundPushEnabled() )
 		{
-			if ( ( TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime ) > 3.0f )
+			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > 3.0f )
 			{
 				return true;
 			}
@@ -2381,8 +2380,7 @@ bool CTFGameRules::BInMatchStartCountdown() const
 {
 	if ( IsCompetitiveMode() || IsEmulatingMatch() )
 	{
-		float flTime = GetRoundRestartTime();
-		if ( ( flTime > 0.f ) && ( (int)( flTime - gpGlobals->curtime ) <= mp_tournament_readymode_countdown.GetInt() ) )
+		if ( ( m_flRestartRoundTime > 0.f ) && ( m_flRestartRoundTime - gpGlobals->curtime ) <= TOURNAMENT_NOCANCEL_TIME )
 		{
 			return true;
 		}
@@ -3137,6 +3135,8 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		if ( nMatchPlayers <= 0 )
 			return false;
 
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+		
 		int iPlayerReadyCount = 0;
 		for ( int i = 0; i < nMatchPlayers; i++ )
 		{
@@ -3149,21 +3149,31 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 				//
 				// AssertMsg( !pPlayer || ToTFPlayer( pPlayer )->GetTeamNumber() == GetGameTeamForGCTeam( pPlayerData->eGCTeam ),
 				//            "Player's GC assigned team does not match their current team" );
-				if ( !pPlayer || !m_bPlayerReady[ pPlayer->entindex() ] )
+				if ( ( !pPlayer || !m_bPlayerReady[pPlayer->entindex()] ) && pMatchDesc->BRequiresCompleteMatches() )
 					return false;
 
 				iPlayerReadyCount++;
 			}
 		}
 
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+		const int iMatchSize = pMatch->GetCanonicalMatchSize();
+		
 		if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
 		{
 			return iPlayerReadyCount > 0 || pMatch->GetNumTotalMatchPlayers() == 1 ;
 		}
 		else
 		{
-			int iTeamSize = IsMannVsMachineMode() ? pMatch->GetCanonicalMatchSize() : pMatch->GetCanonicalMatchSize() / 2;
+			int iTeamSize;
+			if (IsMannVsMachineMode())
+			{
+				iTeamSize = iMatchSize;
+			}
+			else
+			{
+				const float flMatchTeamRatio = m_flRestartRoundStartTime > 0 && gpGlobals->curtime - m_flRestartRoundStartTime > 90.0f ? 0.5f : 0.75f;
+				iTeamSize = ( iMatchSize / 2 ) * flMatchTeamRatio;
+			}
 			return iPlayerReadyCount >= iTeamSize;
 		}
 	}
@@ -3188,9 +3198,10 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 
 	if ( IsEmulatingMatch() == 1 )
 	{
-		// only auto-start an emulated match if we have a 6v6 available (our smallest match group possible).
-		// otherwise, just keep waiting for players.
-		return iPlayerReadyCount >= 6;
+		// only auto-start an emulated match if we have a 9v9 available.
+		// otherwise, just keep waiting for players, unless we've been
+		// waiting for a while, then we move down to a 6v6.
+		return m_flRestartRoundStartTime > 0 && gpGlobals->curtime - m_flRestartRoundStartTime > 90.0f ? iPlayerReadyCount >= 6 : iPlayerReadyCount >= 9;
 	}
 
 	// Team isn't ready if there was nobody on it.
@@ -3204,7 +3215,7 @@ bool CTFGameRules::PlayerReadyStatus_ShouldStartCountdown( void )
 {
 	if ( IsMannVsMachineMode() )
 	{
-		if ( !IsTeamReady( TF_TEAM_PVE_DEFENDERS ) && m_flRestartRoundTime >= gpGlobals->curtime + mp_tournament_readymode_countdown.GetInt() )
+		if ( !IsTeamReady( TF_TEAM_PVE_DEFENDERS ) && m_flRestartRoundTime - gpGlobals->curtime > TOURNAMENT_NOCANCEL_TIME )
 		{
 			bool bIsTeamReady = PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_PVE_DEFENDERS );
 			if ( bIsTeamReady )
@@ -3240,7 +3251,8 @@ void CTFGameRules::PlayerReadyStatus_ResetState( void )
 	SetTeamReadyState( false, TF_TEAM_RED );
 	SetTeamReadyState( false, TF_TEAM_BLUE );
 
-	m_flRestartRoundTime.Set( -1.f );
+	m_flRestartRoundTime.Set( -1.0f );
+	m_flRestartRoundStartTime.Set( -1.0f );
 	mp_restartgame.SetValue( 0 );
 	m_bAwaitingReadyRestart = true;
 }
@@ -3263,7 +3275,7 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 		return;
 
 	// Don't allow toggling state in the final countdown
-	if ( GetRoundRestartTime() > 0.f && GetRoundRestartTime() <= gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME )
+	if ( m_flRestartRoundTime > 0.f && m_flRestartRoundTime - gpGlobals->curtime <= TOURNAMENT_NOCANCEL_TIME )
 		return;
 
 	// Make sure we have enough to allow ready mode commands
@@ -3314,7 +3326,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 		const bool bAutoReady = IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady();
 		if ( bAutoReady ? ( !bAnyoneReady ) : ( !bAnyBluReady || !bAnyRedReady ) )
 		{
-			m_flRestartRoundTime.Set(-1.f);
+			m_flRestartRoundTime.Set(-1.0f );
+			m_flRestartRoundStartTime.Set( -1.0f );
 			mp_restartgame.SetValue(0);
 		}
 
@@ -3329,16 +3342,67 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 		if ( IsMannVsMachineMode() || IsCompetitiveMode() || IsEmulatingMatch() )
 		{
 			// Reduce timer as each player hits Ready, but only once per-player
-			if ( !m_bPlayerReadyBefore[nEntIndex] && m_flRestartRoundTime > gpGlobals->curtime + 60.f )
+			if ( !m_bPlayerReadyBefore[nEntIndex] && m_flRestartRoundTime > gpGlobals->curtime )
 			{
-				float flReduceBy = 30.f;
-				if ( m_flRestartRoundTime < gpGlobals->curtime + 90.f )
+				float flReduceBy = 0.0f;
+				float flReduceLimit = 15.0f;
+				if ( IsMannVsMachineMode() )
 				{
-					// Never reduce below 60 seconds remaining
-					flReduceBy = m_flRestartRoundTime - gpGlobals->curtime - 60.f;
+					flReduceLimit = 60.0f;
+					flReduceBy = 30.0f;
 				}
+				else
+				{
+					int nBlueCount = 0;
+					int nRedCount = 0;
 
-				m_flRestartRoundTime -= flReduceBy;
+					for ( int i = 1; i <= MAX_PLAYERS; ++i )
+					{
+						CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
+						if ( !pPlayer )
+							continue;
+
+						if ( m_bPlayerReady[i] )
+						{
+							if ( pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+							{
+								nBlueCount++;
+								
+							}
+							else if ( pPlayer->GetTeamNumber() == TF_TEAM_RED )
+							{
+								nRedCount++;
+							}
+							break;
+						}
+					}
+
+					const bool bEvenTeams = IsCommunityGameMode() || abs( nBlueCount - nRedCount ) <= 1;
+					if ( bEvenTeams )
+					{
+						// this will be a 7v7 ideally. enough to fight for 30 more seconds (our historical "waiting for players" time)
+						// 35 instead of 30 to give some time for the announcer to catch up if we play the 60 seconds line.
+						flReduceBy = 15.0f;
+						flReduceLimit = 35.0f;
+					}
+					else
+					{
+						// 15 seconds per player means 6 players will get us to our limit of 60 seconds (from 150 starting)
+						// keep in mind this can be a 0v6, or 3v3. that's why we wait 60 seconds.
+						flReduceBy = 15.0f;
+						flReduceLimit = 60.0f;
+					}
+				}
+				if ( flReduceBy > 0.0f && m_flRestartRoundTime > gpGlobals->curtime + flReduceLimit )
+				{
+					if ( m_flRestartRoundTime < gpGlobals->curtime + ( flReduceLimit + flReduceBy ) )
+					{
+						// Never reduce below the limited seconds remaining
+						flReduceBy = m_flRestartRoundTime - gpGlobals->curtime - flReduceLimit;
+					}
+
+					m_flRestartRoundTime -= flReduceBy;
+				}
 			}
 			else if ( m_flRestartRoundTime < 0 && !PlayerReadyStatus_ShouldStartCountdown() )
 			{
@@ -3385,7 +3449,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 
 				if ( bReadyForDropDeadTimer )
 				{
-					m_flRestartRoundTime.Set( gpGlobals->curtime + 150.f );
+					m_flRestartRoundTime.Set( gpGlobals->curtime + 150.0f );
+					m_flRestartRoundStartTime.Set( gpGlobals->curtime );
 					m_bAwaitingReadyRestart = false;
 
 					IGameEvent* pEvent = gameeventmanager->CreateEvent( "teamplay_round_restart_seconds" );
@@ -8547,7 +8612,8 @@ bool CTFGameRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 
 			if ( iReadyState == 0 )
 			{
-				m_flRestartRoundTime.Set( -1.f ); 
+				m_flRestartRoundTime.Set( -1.0f );
+				m_flRestartRoundStartTime.Set( -1.0f );
 				m_bAwaitingReadyRestart = true;
 			}
 
@@ -22137,14 +22203,14 @@ void CTFGameRules::BetweenRounds_Think( void )
 {
 	if ( UsePlayerReadyStatusMode() )
 	{
-		// Everyone is ready, or the drop-dead timer naturally ticked down to mp_tournament_readymode_countdown
-		bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && (int)( m_flRestartRoundTime - gpGlobals->curtime ) == mp_tournament_readymode_countdown.GetInt() ) );
+		// Everyone is ready, or the drop-dead timer naturally ticked down to countdown
+		bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) );
 
 		// It's the FINAL COUNTDOOOWWWNNnnnnnnnnn
-		float flDropDeadTime = gpGlobals->curtime + mp_tournament_readymode_countdown.GetFloat() + 0.1f;
+		float flDropDeadTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
 		if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime >= flDropDeadTime ) )
 		{
-			float flDelay = IsMannVsMachineMode() ? 10.f : mp_tournament_readymode_countdown.GetFloat();
+			const float flDelay = 10.0f;
 			m_flRestartRoundTime.Set( gpGlobals->curtime + flDelay );
 			ShouldResetScores( true, true );
 			ShouldResetRoundsPlayed( true );

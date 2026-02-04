@@ -152,7 +152,6 @@ ConVar tf_max_health_boost( "tf_max_health_boost", "1.5", FCVAR_DEVELOPMENTONLY 
 ConVar tf_invuln_time( "tf_invuln_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Time it takes for invulnerability to wear off." );
 
 extern ConVar tf_player_movement_restart_freeze;
-extern ConVar mp_tournament_readymode_countdown;
 extern ConVar tf_max_charge_speed;
 
 ConVar tf_always_loser( "tf_always_loser", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Force loserstate to true." );

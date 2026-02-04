@@ -408,7 +408,7 @@ void CTFClientScoreBoardDialog::ShowPanel( bool bShow )
 		if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 		{
 			float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
-			if ( flRestartTime > 0.f && flRestartTime < 10.f )
+			if ( flRestartTime > 0.f && flRestartTime <= TOURNAMENT_NOCANCEL_TIME )
 			{
 				return;
 			}

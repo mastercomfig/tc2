@@ -1476,10 +1476,10 @@ bool CHudItemAttributeTracker::ShouldDraw( void )
 		if ( TFGameRules()->ShowMatchSummary() )
 			return false;
 
-		if ( TFGameRules()->GetRoundRestartTime() > -1.f )
+		if ( TFGameRules()->GetRoundRestartTime() > 0.0f )
 		{
 			float flTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
-			if ( flTime <= 10.f )
+			if ( flTime <= TOURNAMENT_NOCANCEL_TIME )
 				return false;
 		}
 	}
