@@ -1255,7 +1255,10 @@ void CHudControlPointIcons::ShutdownIcons( void )
 {
 	for ( int i = 0; i < m_Icons.Count(); i++ )
 	{
-		m_Icons[i]->MarkForDeletion();
+		if ( m_Icons[i] )
+		{
+			m_Icons[i]->MarkForDeletion();
+		}
 	}
 	m_Icons.RemoveAll();
 

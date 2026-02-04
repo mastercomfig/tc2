@@ -88,13 +88,13 @@ public:
 	void			SetHighlight( bool bHighlight ) { if ( m_bPulsed ) m_bHighlight = bHighlight; }
 	bool			IsHighlighted( void ) { return m_bHighlight; }
 
-	int		m_iCachedDeflect;
-	CNewParticleEffect	*pEffectTrail;
-	CNewParticleEffect	*pEffectCrit;
-	bool		m_bHighlight;
-	bool		m_bDetonateOnPulse;
+	int				m_iCachedDeflect;
+	HPARTICLEFFECT	pEffectTrail;
+	HPARTICLEFFECT	pEffectCrit;
+	bool			m_bHighlight;
+	bool			m_bDetonateOnPulse;
 
-	CGlowObject			*m_pGlowEffect;
+	CGlowObject		*m_pGlowEffect;
 
 #else
 

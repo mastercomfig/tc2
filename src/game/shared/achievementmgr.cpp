@@ -1540,7 +1540,7 @@ void CAchievementMgr::OnKillEvent( CBaseEntity *pVictim, CBaseEntity *pAttacker,
 	}
 #else
 	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
-	bVictimIsPlayerEnemy = !pLocalPlayer->InSameTeam( pVictim );
+	bVictimIsPlayerEnemy = pLocalPlayer && !pLocalPlayer->InSameTeam( pVictim );
 	if ( pAttacker == pLocalPlayer )
 	{
 		bAttackerIsPlayer = true;

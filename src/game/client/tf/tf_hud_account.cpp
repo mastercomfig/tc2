@@ -375,7 +375,7 @@ public:
 							bShouldSpawnRedParticle = ( GetLocalPlayerTeam() == TF_TEAM_RED );
 						}
 
-						const char *pEffectName;
+						const char *pEffectName = nullptr;
 						if ( iAmount < 0 )
 						{
 							pEffectName = bShouldSpawnRedParticle ? "healthlost_red" : "healthlost_blu";
@@ -397,7 +397,10 @@ public:
 							pEffectName = bShouldSpawnRedParticle ? "healthgained_red" : "healthgained_blu";
 						}
 
-						pEventPlayer->ParticleProp()->Create( pEffectName, PATTACH_POINT, "head" );
+						if ( pEffectName && pEffectName[0] )
+						{
+							pEventPlayer->ParticleProp()->Create( pEffectName, PATTACH_POINT, "head" );
+						}
 					}
 				}
 			}

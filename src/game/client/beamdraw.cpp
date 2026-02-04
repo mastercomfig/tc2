@@ -39,6 +39,9 @@ CEngineSprite *Draw_SetSpriteTexture( const model_t *pSpriteModel, int frame, in
 	psprite = ( CEngineSprite * )modelinfo->GetModelExtraData( pSpriteModel );
 	Assert( psprite );
 
+	if ( !psprite )
+		return NULL;
+
 	material = psprite->GetMaterial( (RenderMode_t)rendermode, frame );
 	if( !material )
 		return NULL;
