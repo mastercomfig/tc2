@@ -3,8 +3,8 @@
 #include "BaseVSShader.h"
 #include "shaderlib/cshader.h"
 
-#include "debugtextureview_vs30.inc"
-#include "debugtextureview_ps30.inc"
+#include "DebugTextureView_vs30.inc"
+#include "DebugTextureView_ps30.inc"
 
 DEFINE_FALLBACK_SHADER( DebugTextureView, DebugTextureView_dx9 )
 BEGIN_VS_SHADER( DebugTextureView_dx9, "Help for DebugTextureView" )
