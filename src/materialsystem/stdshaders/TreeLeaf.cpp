@@ -8,8 +8,8 @@
 
 #include "BaseVSShader.h"
 
-#include "treeleaf_vs30.inc"
-#include "treeleaf_ps30.inc"
+#include "TreeLeaf_vs30.inc"
+#include "TreeLeaf_ps30.inc"
 
 BEGIN_VS_SHADER_FLAGS( TreeLeaf, "Help for TreeLeaf", SHADER_NOT_EDITABLE )
 

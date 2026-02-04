@@ -8,7 +8,7 @@
 #include "BaseVSShader.h"
 
 #include "screenspaceeffect_vs30.inc"
-#include "engine_post_ps30.inc"
+#include "Engine_Post_ps30.inc"
 
 #include "../materialsystem_global.h"
 

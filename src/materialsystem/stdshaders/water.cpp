@@ -13,7 +13,7 @@
 #include "WaterCheap_vs30.inc"
 #include "WaterCheap_ps30.inc"
 #include "Water_vs30.inc"
-#include "Water_ps30.inc"
+#include "water_ps30.inc"
 
 #ifndef _X360
 static ConVar r_waterforceexpensive( "r_waterforceexpensive", "0", FCVAR_ARCHIVE );

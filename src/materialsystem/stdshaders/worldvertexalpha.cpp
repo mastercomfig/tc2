@@ -9,7 +9,7 @@
 #include "BaseVSShader.h"
 
 #include "WorldVertexAlpha.inc"
-#include "worldvertexalpha_ps30.inc"
+#include "WorldVertexAlpha_ps30.inc"
 
 BEGIN_VS_SHADER( WorldVertexAlpha, 
 			  "Help for WorldVertexAlpha" )

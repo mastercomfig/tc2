@@ -9,7 +9,7 @@
 #include "BaseVSShader.h"
 #include "cpp_shader_constant_register_map.h"
 
-#include "VertexLit_and_unlit_Generic_vs30.inc"
+#include "vertexlit_and_unlit_generic_vs30.inc"
 #include "decalmodulate_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
