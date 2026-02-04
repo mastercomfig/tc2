@@ -552,23 +552,29 @@ void ClientModeTFNormal::Init()
 	m_bPendingRichPresenceUpdate = true;
 
 	// client defaults for privacy settings (so map command is Friends Only by default)
-	static ConVarRef sv_friends_only("sv_friends_only");
-	if (sv_friends_only.IsValid())
+	static ConVarRef sv_friends_only( "sv_friends_only" );
+	if ( sv_friends_only.IsValid() )
 	{
-		sv_friends_only.SetValue(true);
+		sv_friends_only.SetValue( true );
 	}
 
-	static ConVarRef sv_allow_server_adverisement_to_master_server("sv_allow_server_adverisement_to_master_server");
-	if (sv_allow_server_adverisement_to_master_server.IsValid())
+	static ConVarRef sv_allow_server_adverisement_to_master_server( "sv_allow_server_adverisement_to_master_server" );
+	if ( sv_allow_server_adverisement_to_master_server.IsValid() )
 	{
-		sv_allow_server_adverisement_to_master_server.SetValue(false);
+		sv_allow_server_adverisement_to_master_server.SetValue( false );
 	}
 
 	// Boost texture streaming time
-	static ConVarRef mat_lodin_time("mat_lodin_time");
-	if (mat_lodin_time.IsValid())
+	static ConVarRef mat_lodin_time( "mat_lodin_time" );
+	if ( mat_lodin_time.IsValid() )
 	{
 		mat_lodin_time.SetValue(0.4f);
+	}
+
+	static ConVarRef r_radiosity( "r_radiosity" );
+	if ( r_radiosity.IsValid() )
+	{
+		r_radiosity.SetValue( 2 );
 	}
 
 	bool bChangedMatSettings = false;
