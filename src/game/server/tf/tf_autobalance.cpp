@@ -427,7 +427,7 @@ CTFPlayer *CTFAutobalance::FindNextCandidate()
 		}
 	}
 	// no need to go any further if there's only one candidate
-	if ( !pRetVal )
+	if ( !pRetVal && vecCandidates.Count() > 0 )
 	{
 		pRetVal = vecCandidates[0];
 	}
