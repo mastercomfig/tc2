@@ -16,4 +16,6 @@ fi
 
 mv tc2/gameinfo_client.txt tc2/gameinfo.txt
 
+stty sane
+
 popd > /dev/null
