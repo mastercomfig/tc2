@@ -1,0 +1,24 @@
+"UnLitTwoTexture"
+{
+	"$basetexture"	"models/effects/cappoint_logo_red"
+	"$texture2"	"models/effects/cappoint_beam_lines_r"
+	"$additive" "1"
+	"$model" "1"
+//	"$nocull" "1"
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" "$texture2transform"
+			"texturescrollrate" .1
+			"texturescrollangle" 90
+		}
+		"Sine"
+		{
+			"Sineperiod" "1"
+			"SineMax" "1"
+			"SineMin" ".8"
+			"resultVar" "$color2"
+		}
+	}
+}

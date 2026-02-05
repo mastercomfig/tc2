@@ -1,0 +1,17 @@
+"UnLitTwoTexture"
+{
+	"$basetexture"	"models/effects/cappoint_beam_red"
+	"$texture2"	"models/effects/cappoint_beam_lines"
+	"$additive" "1"
+	"$model" "1"
+//	"$nocull" "1"
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" "$texture2transform"
+			"texturescrollrate" .1
+			"texturescrollangle" 90
+		}
+	}
+}

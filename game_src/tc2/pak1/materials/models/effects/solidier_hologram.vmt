@@ -1,0 +1,30 @@
+"UnLitTwoTexture"
+{
+	"$basetexture"	"models/effects/soldier_hologram"
+	"$texture2"	"models/effects/cappoint_beam_lines_b"
+	"$additive" "1"
+	"$model" "1"
+//	"$nocull" "1"
+
+	"$rimlight" "1"						
+	"$rimlightexponent" "1"				
+	"$rimlightboost" "2"
+	"$rimmask" "1"
+	
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" "$texture2transform"
+			"texturescrollrate" .1
+			"texturescrollangle" 90
+		}
+		"Sine"
+		{
+			"Sineperiod" "1"
+			"SineMax" "1"
+			"SineMin" ".8"
+			"resultVar" "$color2"
+		}
+	}
+}
