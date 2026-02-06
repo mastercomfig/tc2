@@ -25,10 +25,6 @@ BEGIN_VS_SHADER( Cable_DX8,
 
 	SHADER_FALLBACK
 	{
-		if ( IsPC() && !g_pHardwareConfig->SupportsVertexAndPixelShaders())
-		{
-			return "UnlitGeneric_DX6";
-		}
 		return 0;
 	}
 

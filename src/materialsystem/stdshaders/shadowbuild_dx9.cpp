@@ -31,12 +31,6 @@ BEGIN_VS_SHADER_FLAGS( ShadowBuild_DX9, "Help for ShadowBuild", SHADER_NOT_EDITA
 
 	SHADER_FALLBACK
 	{
-		if ( !g_pHardwareConfig->SupportsVertexAndPixelShaders() )
-			return "ShadowBuild_DX6";
-
-		if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-			return "ShadowBuild_DX8";
-
 		return 0;
 	}
 

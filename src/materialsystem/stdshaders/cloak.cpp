@@ -99,9 +99,6 @@ BEGIN_VS_SHADER( Cloak_DX90, "Help for Cloak" )
 
 	SHADER_FALLBACK
 	{
-		if( g_pHardwareConfig->GetDXSupportLevel() < 82 )
-			return "Refract_DX80";
-
 		return 0;
 	}
 

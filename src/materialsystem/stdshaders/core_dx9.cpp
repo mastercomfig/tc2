@@ -65,9 +65,6 @@ BEGIN_VS_SHADER( Core_DX90,
 
 	SHADER_FALLBACK
 	{
-		if( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-			return "Core_dx80";
-
 		return 0;
 	}
 

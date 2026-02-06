@@ -34,12 +34,6 @@ BEGIN_VS_SHADER( VolumeClouds_dx9, "VolumeClouds" )
 
 	SHADER_FALLBACK
 	{
-		if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-		{
-			// Fallback to unlit generic
-			return "UnlitGeneric_DX8";
-		}
-
 		return 0;
 	}
 

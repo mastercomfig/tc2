@@ -41,12 +41,6 @@ END_SHADER_PARAMS
 
 	SHADER_FALLBACK
 	{
-		if( g_pHardwareConfig->GetDXSupportLevel() < 80 )
-			return "WorldTwoTextureBlend_DX6";
-
-		if( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-			return "WorldTwoTextureBlend_DX8";
-
 		return 0;
 	}
 

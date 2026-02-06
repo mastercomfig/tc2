@@ -19,10 +19,6 @@ BEGIN_VS_SHADER_FLAGS( DebugMRTTexture, "Help for DebugMRTTexture", SHADER_NOT_E
 
 	SHADER_FALLBACK
 	{
-//		if( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-//		{
-//			return "UnlitGeneric_DX8";
-//		}
 		return 0;
 	}
 

@@ -1,12 +1,8 @@
-//  STATIC: "ZOOM_ANIMATE_SEQ2"		"0..1" [vs20] [vs30]
-//  STATIC: "DUALSEQUENCE"			"0..1" [vs20] [vs30]
-//	STATIC: "EXTRACTGREENALPHA"		"0..1" [vs20] [vs30]
+//  STATIC: "ZOOM_ANIMATE_SEQ2"		"0..1"
+//  STATIC: "DUALSEQUENCE"			"0..1"
+//	STATIC: "EXTRACTGREENALPHA"		"0..1"
 
-//  STATIC: "ZOOM_ANIMATE_SEQ2"		"0..0" [vs11]
-//  STATIC: "DUALSEQUENCE"			"0..0" [vs11]
-//	STATIC: "EXTRACTGREENALPHA"		"0..0" [vs11]
-
-//	STATIC: "USE_INSTANCING"		"0..1" [vs20] [vs30]
+//	STATIC: "USE_INSTANCING"		"0..1"
 //	DYNAMIC: "ORIENTATION"			"0..2"
 
 
@@ -36,7 +32,7 @@ const float4 ViewportTransformScaled : register(SHADER_SPECIFIC_CONST_10);
 #define FAR_FADE_FACTOR ( SizeParms2.y )	   // alpha = 1-min(1,max(0, (dist-start_fade)*factor))
 
 // Define stuff for instancing on 360
-#if ( defined( _X360 ) && defined( SHADER_MODEL_VS_2_0 ) )
+#if ( defined( _X360 ) && ( defined( SHADER_MODEL_VS_2_0 ) || defined( SHADER_MODEL_VS_3_0 ) ) )
 #define CONST_PC 
 #define VERTEX_INDEX_PARAM_360 ,int Index:INDEX
 #define DO_INSTANCING 1

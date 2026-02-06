@@ -1,6 +1,6 @@
 // DYNAMIC: "PIXELFOGTYPE"		"0..1"
 
-// STATIC: "DEPTHBLEND"			"0..1"	[ps20b] [ps30]
+// STATIC: "DEPTHBLEND"			"0..1"
 
 #include "shader_constant_register_map.h"
 

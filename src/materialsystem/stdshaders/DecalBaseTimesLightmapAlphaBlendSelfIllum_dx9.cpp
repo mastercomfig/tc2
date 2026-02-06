@@ -46,10 +46,6 @@ BEGIN_VS_SHADER( DecalBaseTimesLightmapAlphaBlendSelfIllum_DX9, "" )
 
 	SHADER_FALLBACK
 	{
-		if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
-		{
-			return "DecalBaseTimesLightmapAlphaBlendSelfIllum_DX8";
-		}
 		return 0;
 	}
 

@@ -79,9 +79,6 @@ BEGIN_VS_SHADER( Refract_DX90, "Help for Refract" )
 
 	SHADER_FALLBACK
 	{
-		if( g_pHardwareConfig->GetDXSupportLevel() < 82 )
-			return "Refract_DX80";
-
 		return 0;
 	}
 
