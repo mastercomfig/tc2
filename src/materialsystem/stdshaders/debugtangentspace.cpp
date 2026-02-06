@@ -8,17 +8,8 @@
 
 #include "shaderlib/cshader.h"
 
-#define USE_NEW_SHADER //Updating assembly shaders to fxc, this is for A/B testing.
-
-#ifdef USE_NEW_SHADER
-#include "debugtangentspace_vs11.inc"
 #include "debugtangentspace_vs30.inc"
-#include "unlitgeneric_notexture_ps11.inc"
 #include "unlitgeneric_notexture_ps30.inc"
-
-#else
-#include "debugtangentspace.inc"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -53,77 +44,22 @@ BEGIN_SHADER( DebugTangentSpace, "Help for DebugTangentSpace" )
 				int userDataSize = 4;
 				pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
-#ifdef USE_NEW_SHADER
-				if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-				{
-					DECLARE_STATIC_VERTEX_SHADER( debugtangentspace_vs30 );
-					SET_STATIC_VERTEX_SHADER( debugtangentspace_vs30 );
+				DECLARE_STATIC_VERTEX_SHADER( debugtangentspace_vs30 );
+				SET_STATIC_VERTEX_SHADER( debugtangentspace_vs30 );
 
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-						SET_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-					}
-					else
-					{
-						DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-						SET_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-					}
-				}
-				else
-				{
-					DECLARE_STATIC_VERTEX_SHADER( debugtangentspace_vs11 );
-					SET_STATIC_VERTEX_SHADER( debugtangentspace_vs11 );
-
-					DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps11 );
-					SET_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps11 );
-				}
-#else
-				debugtangentspace_Static_Index vshIndex;
-				pShaderShadow->SetVertexShader( "DebugTangentSpace", vshIndex.GetIndex() );
-
-				pShaderShadow->SetPixelShader( "UnlitGeneric_NoTexture" );
-#endif
+				DECLARE_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
+				SET_STATIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
 			}
 			DYNAMIC_STATE
 			{
+				DECLARE_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs30 );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
+				SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
+				SET_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs30 );
 
-#ifdef USE_NEW_SHADER
-				if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-				{					
-					DECLARE_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs30 );
-					SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-					SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-					SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
-					SET_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs30 );
-
-					if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-						SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-					}
-					else
-					{
-						DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-						SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
-					}					
-				}
-				else // legacy hardware
-				{
-					DECLARE_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs11 );
-					SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-					SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-					SET_DYNAMIC_VERTEX_SHADER( debugtangentspace_vs11 );
-
-					DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps11 );
-					SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps11 );
-				}
-#else
-				debugtangentspace_Dynamic_Index vshIndex;
-				vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-				vshIndex.SetSKINNING( pShaderAPI->GetCurrentNumBones() > 0 );
-				pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
-#endif
+				DECLARE_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
+				SET_DYNAMIC_PIXEL_SHADER( unlitgeneric_notexture_ps30 );
 			}
 			Draw();
 		}

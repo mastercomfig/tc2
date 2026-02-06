@@ -9,10 +9,8 @@
 //Note: Not upgraded to vs/ps 2.0 fxc's because this shader is unused and there are no test cases to verify against.
 #include "BaseVSShader.h"
 
-#if !defined( _X360 )
 #include "shadowmodel_vs30.inc"
 #include "shadowmodel_ps30.inc"
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

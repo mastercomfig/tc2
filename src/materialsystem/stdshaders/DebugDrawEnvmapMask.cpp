@@ -5,8 +5,8 @@
 //===========================================================================//
 
 #include "BaseVSShader.h"
-#include "debugdrawenvmapmask_vs30.inc"
-#include "debugdrawenvmapmask_ps30.inc"
+#include "DebugDrawEnvmapMask_vs30.inc"
+#include "DebugDrawEnvmapMask_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -51,16 +51,8 @@ BEGIN_VS_SHADER_FLAGS( DebugDrawEnvmapMask, "Help for DebugDrawEnvmapMask", SHAD
 			DECLARE_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 			SET_STATIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-				SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
+			SET_STATIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 		}
 		DYNAMIC_STATE
 		{
@@ -72,18 +64,9 @@ BEGIN_VS_SHADER_FLAGS( DebugDrawEnvmapMask, "Help for DebugDrawEnvmapMask", SHAD
 			SET_DYNAMIC_VERTEX_SHADER( debugdrawenvmapmask_vs30 );
 
 			bool bShowAlpha = params[SHOWALPHA]->GetIntValue() ? true : false;
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( SHOWALPHA,  bShowAlpha );
-				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-				SET_DYNAMIC_PIXEL_SHADER_COMBO( SHOWALPHA,  bShowAlpha );
-				SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER_COMBO( SHOWALPHA,  bShowAlpha );
+			SET_DYNAMIC_PIXEL_SHADER( debugdrawenvmapmask_ps30 );
 
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 			SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, BASETEXTURETRANSFORM );

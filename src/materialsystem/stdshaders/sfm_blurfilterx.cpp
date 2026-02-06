@@ -44,8 +44,8 @@ BEGIN_VS_SHADER_FLAGS( sfm_blurfilterx_shader, "Help for BlurFilterX", SHADER_NO
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
 			// Pre-cache shaders
-			blurfilter_vs30_Static_Index vshIndex;
-			pShaderShadow->SetVertexShader( "BlurFilter_vs30", vshIndex.GetIndex() );
+			DECLARE_STATIC_VERTEX_SHADER( blurfilter_vs30 );
+			SET_STATIC_VERTEX_SHADER( blurfilter_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( blurfilter_ps30 );
 			SET_STATIC_PIXEL_SHADER( blurfilter_ps30 );

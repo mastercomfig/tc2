@@ -8,20 +8,8 @@
 
 #include "BaseVSShader.h"
 
-#define USE_NEW_SHADER //Updating assembly shaders to fxc, this is for A/B testing.
-
-#ifdef USE_NEW_SHADER
-
-#include "fillrate_vs11.inc"
-#include "fillrate_ps11.inc"
 #include "fillrate_vs30.inc"
 #include "fillrate_ps30.inc"
-
-#else
-
-#include "fillrate.inc"
-
-#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -56,41 +44,11 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 			pShaderShadow->BlendFunc( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 
-#ifdef USE_NEW_SHADER
+			DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
+			SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
 
-			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
-
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-			}
-			else
-			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs11 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs11 );
-
-				DECLARE_STATIC_PIXEL_SHADER( fillrate_ps11 );
-				SET_STATIC_PIXEL_SHADER( fillrate_ps11 );
-			}
-
-#else
-
-			fillrate_Static_Index vshIndex;
-			pShaderShadow->SetVertexShader( "fillrate", vshIndex.GetIndex() );
-
-			pShaderShadow->SetPixelShader( "fillrate" );
-
-#endif
+			DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+			SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 		}
 		DYNAMIC_STATE
 		{
@@ -111,45 +69,13 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 			color[3] = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 0, color, 1 );
 
-#ifdef USE_NEW_SHADER
+			DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
+			SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 
-			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
-
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-			}
-			else
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs11 );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs11 );
-
-				DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps11 );
-				SET_DYNAMIC_PIXEL_SHADER( fillrate_ps11 );
-			}
-
-#else
-
-			fillrate_Dynamic_Index vshIndex;
-			vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			vshIndex.SetSKINNING( pShaderAPI->GetCurrentNumBones() > 0 );
-			pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
-
-#endif
+			DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 		}
 		Draw();
 
@@ -162,86 +88,24 @@ BEGIN_VS_SHADER_FLAGS( Fillrate, "Help for Fillrate", SHADER_NOT_EDITABLE )
 			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
 			pShaderShadow->PolyMode( SHADER_POLYMODEFACE_FRONT_AND_BACK, SHADER_POLYMODE_LINE );
 
-#ifdef USE_NEW_SHADER
+			DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
+			SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
 
-			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs30 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs30 );
-
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-				else
-				{
-					DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-			}
-			else
-			{
-				DECLARE_STATIC_VERTEX_SHADER( fillrate_vs11 );
-				SET_STATIC_VERTEX_SHADER( fillrate_vs11 );
-
-				DECLARE_STATIC_PIXEL_SHADER( fillrate_ps11 );
-				SET_STATIC_PIXEL_SHADER( fillrate_ps11 );
-			}
-
-#else
-
-			fillrate_Static_Index vshIndex;
-			pShaderShadow->SetVertexShader( "fillrate", vshIndex.GetIndex() );
-
-			pShaderShadow->SetPixelShader( "fillrate" );
-
-#endif
+			DECLARE_STATIC_PIXEL_SHADER( fillrate_ps30 );
+			SET_STATIC_PIXEL_SHADER( fillrate_ps30 );
 		}
 		DYNAMIC_STATE
 		{
 			float color[4] = { 0.0f, 0.05f, 0.05f, 0.0f };
 			pShaderAPI->SetPixelShaderConstant( 0, color, 1 );
 
-#ifdef USE_NEW_SHADER
+			DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
+			SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
 
-			if( g_pHardwareConfig->GetDXSupportLevel() >= 90 )
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs30 );
-
-				if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-				else
-				{
-					DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-					SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
-				}
-			}
-			else
-			{
-				DECLARE_DYNAMIC_VERTEX_SHADER( fillrate_vs11 );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-				SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-				SET_DYNAMIC_VERTEX_SHADER( fillrate_vs11 );
-
-				DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps11 );
-				SET_DYNAMIC_PIXEL_SHADER( fillrate_ps11 );
-			}
-
-#else
-	
-			fillrate_Dynamic_Index vshIndex;
-			vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			vshIndex.SetSKINNING( pShaderAPI->GetCurrentNumBones() > 0 );
-			pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
-
-#endif
+			DECLARE_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( fillrate_ps30 );
 		}
 		Draw();
 	}

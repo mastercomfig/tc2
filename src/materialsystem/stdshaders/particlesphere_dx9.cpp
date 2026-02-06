@@ -44,28 +44,14 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for ParticleSphere", SHADER_NOT
 		}
 	}
 
-	bool UsePixelShaders( IMaterialVar **params ) const
-	{
-		//return  (!params || params[BUMPMAP]->IsDefined()) && g_pHardwareConfig->SupportsVertexAndPixelShaders();
-		return true;
-	}
-
 	SHADER_INIT
 	{
-		// If this would return false, then we should have fallen back to the DX6 one.
-		Assert( UsePixelShaders( params ) );
-
 		params[USINGPIXELSHADER]->SetIntValue( true );
 		LoadBumpMap( BUMPMAP );
 	}
 
 	SHADER_FALLBACK
 	{
-		if ( !UsePixelShaders(params) )
-		{
-			return "UnlitGeneric_DX6";
-		}
-
 		if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
 		{
 			return "ParticleSphere_DX8";

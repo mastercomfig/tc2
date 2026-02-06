@@ -258,7 +258,8 @@ static void DrawCompositorStage_ps30( CBaseVSShader *pShader, IMaterialVar **par
 		if ( textureCountThisPass > 3 ) pShader->SetPixelShaderConstant( 5, info.m_nTexAdjustLevels[ 3 ] );
 			
 		DECLARE_DYNAMIC_PIXEL_SHADER( compositor_ps30 );
-			SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
+		// TODO(mcoms): stickers?
+		SET_DYNAMIC_PIXEL_SHADER_COMBO( DEBUG_MODE, 0 );
 		SET_DYNAMIC_PIXEL_SHADER( compositor_ps30 );
 
 		pShader->Draw();

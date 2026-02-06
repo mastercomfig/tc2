@@ -6,9 +6,9 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#include "shaderlib/CShader.h"
+#include "shaderlib/cshader.h"
 
-#include "debugluxel_ps30.inc"
+#include "debugluxel_vs30.inc"
 #include "debugluxel_ps30.inc"
 
 
@@ -46,16 +46,8 @@ BEGIN_SHADER_FLAGS( DebugLuxels, "Help for DebugLuxels", SHADER_NOT_EDITABLE )
 			DECLARE_STATIC_VERTEX_SHADER( debugluxel_vs30 );
 			SET_STATIC_VERTEX_SHADER( debugluxel_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps30 );
-				SET_STATIC_PIXEL_SHADER( debugluxel_ps30 );
-			}
-			else
-			{
-				DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps30 );
-				SET_STATIC_PIXEL_SHADER( debugluxel_ps30 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( debugluxel_ps30 );
+			SET_STATIC_PIXEL_SHADER( debugluxel_ps30 );
 
 			SetDefaultBlendingShadowState( BASETEXTURE );
 			DisableFog();
@@ -74,16 +66,8 @@ BEGIN_SHADER_FLAGS( DebugLuxels, "Help for DebugLuxels", SHADER_NOT_EDITABLE )
 			DECLARE_DYNAMIC_VERTEX_SHADER( debugluxel_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER( debugluxel_vs30 );
 
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
-				SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
-			}
-			else
-			{
-				DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
-				SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
-			}
+			DECLARE_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
+			SET_DYNAMIC_PIXEL_SHADER( debugluxel_ps30 );
 
 			//texture scale transform
 			Vector4D transformation[2];
