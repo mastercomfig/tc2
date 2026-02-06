@@ -1,0 +1,9 @@
+"screenspace_general"
+{
+	"$pixshader" "copy_fp_rt_ps30"
+	"$basetexture" "_rt_albedo"
+	"$texture1" "_rt_normal"
+	"$texture2" "_rt_position"
+	"$ignorez" 1
+	"$nocull" 1
+}

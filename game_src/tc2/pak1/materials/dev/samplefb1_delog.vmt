@@ -1,0 +1,6 @@
+"sample4x4"
+{
+	"$PIXSHADER" "sample4x4delog_ps30"
+	"$BASETEXTURE" "_rt_SmallFB1"
+	"%noToolTexture" 1
+}

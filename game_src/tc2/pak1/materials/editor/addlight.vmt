@@ -1,0 +1,11 @@
+"screenspace_general"
+{
+	"$pixshader" "lpreview1_ps30"
+	"$basetexture" "_rt_albedo"
+	"$texture1" "_rt_normal"
+	"$texture2" "_rt_position"
+	"$texture3" "_rt_accbuf_0"
+	"$additive" 1
+	"$ignorez" 1
+	"$nocull" 1
+}

@@ -1,0 +1,7 @@
+"floattoscreen"
+{
+	"$pixshader" "floattoscreen_ps30"
+	"$fbtexture" "_rt_FullFrameFB"
+	"$ignorez" 1
+	"$nocull" 1
+}

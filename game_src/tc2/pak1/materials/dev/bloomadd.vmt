@@ -1,0 +1,9 @@
+"screenspace_general"
+{
+	"$additive" 1
+	"$basetexture" "_rt_SmallFB0"
+	"$ignorez" 1
+	"$linearread_basetexture" 1
+	"$linearwrite" 1
+	"$PIXSHADER" "bloomadd_ps30"
+}

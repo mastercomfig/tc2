@@ -1,0 +1,12 @@
+"screenspace_general"
+{
+//	"$pixshader" "copy_fp_rt_ps30"
+	"$pixshader" "lpreview1_ps30"
+	"$basetexture" "_rt_albedo"
+	"$texture1" "_rt_normal"
+	"$texture2" "_rt_position"
+	"$texture3" "_rt_accbuf_0"
+	"$linearwrite" 1
+	"$ignorez" 1
+	"$nocull" 1
+}

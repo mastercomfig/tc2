@@ -1,0 +1,6 @@
+"sample4x4_blend"
+{
+	"$PIXSHADER" "sample4x4_blend_ps30"
+	"$BASETEXTURE" "_rt_SmallFB0"
+	"%noToolTexture" 1
+}

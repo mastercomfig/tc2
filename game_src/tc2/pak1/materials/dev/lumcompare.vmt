@@ -1,0 +1,8 @@
+"screenspace_general"
+{
+	"$PIXSHADER" "luminance_compare_ps30"
+	"$BASETEXTURE" "_rt_FullFrameFB"
+    "$ALPHATESTED" "1"
+    "$DISABLE_COLOR_WRITES" "1"
+	"%noToolTexture" 1
+}
