@@ -29,6 +29,8 @@ declare -a FILES_REP=(
   tc2/steam.inf
   #
   tc2/custom/readme.txt
+  #
+  bin/dxsupport.cfg
 )
 
 declare -a FILES=(

@@ -152,6 +152,7 @@ bld/
 **/[Bb]in/x64/*
 !**/[Bb]in/linux64
 **/[Bb]in/linux64/*
+!**/[Bb]in/dxsupport.cfg
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
