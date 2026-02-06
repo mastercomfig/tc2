@@ -498,7 +498,7 @@ Celt Codec:
 ************************************************************************************
 SPEEX Codes:
 ************************************************************************************
-	SPEEX  � 2002-2003, Jean-Marc Valin/Xiph.Org Foundation
+	SPEEX  (c) 2002-2003, Jean-Marc Valin/Xiph.Org Foundation
 	Redistribution and use in source and binary forms, with or without modification, are permitted 
 	provided that the following conditions are met: 
 	*	Redistributions of source code must retain the above copyright notice, this list of 
@@ -670,17 +670,17 @@ Fast Pow Function
 	// THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ************************************************************************************
-Autodesk� FBX�:
+Autodesk(r) FBX(r):
 ************************************************************************************
 
-	�This software contains Autodesk� FBX� code developed by Autodesk, Inc. Copyright 2012 Autodesk, Inc. 
-	All rights, reserved. Such code is provided �as is� and Autodesk, Inc. disclaims any and all warranties, 
+	This software contains Autodesk(r) FBX(r) code developed by Autodesk, Inc. Copyright 2012 Autodesk, Inc. 
+	All rights, reserved. Such code is provided "as is" and Autodesk, Inc. disclaims any and all warranties, 
 	whether express or implied, including without limitation the implied warranties of merchantability, fitness for a 
 	particular purpose or non-infringement of third party rights. In no event shall Autodesk, Inc. be liable for any 
 	direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, 
 	procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however 
 	caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or 
-	otherwise) arising in any way out of such code.�
+	otherwise) arising in any way out of such code.
 
 ************************************************************************************
 OpenSSL:

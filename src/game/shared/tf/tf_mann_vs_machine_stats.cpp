@@ -1345,7 +1345,7 @@ void CMannVsMachineStats::SW_ReportClientWaveSummary( uint16 waveID, CMannVsMach
 	// Make a V2 if this data is wanted
 	// Old Table
 	//-----------------------------------------------------------------------------   
-	// OGS TF2ClientMvMWaveSummary: MvM mode � Player wave summary information   
+	// OGS TF2ClientMvMWaveSummary: MvM mode - Player wave summary information   
 	//-----------------------------------------------------------------------------   
 	//START_TABLE( k_ESchemaCatalogOGS, TF2ClientMvMWaveSummary, TABLE_PROP_NORMAL )   
 	//INT_FIELD( nID, ID, int32 )                                           // Auto-increment fake key
