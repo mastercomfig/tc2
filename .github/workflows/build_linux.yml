@@ -39,6 +39,7 @@ jobs:
       - name: Setup Butler
         id: setup-butler
         run: |
+          sudo apt-get update
           sudo apt-get install 7zip
           mkdir -p ~/.local/bin
           7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
