@@ -2488,11 +2488,14 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 				AddToSpyCloakMeter( gpGlobals->frametime * m_aHealers[i].flAmount );	
 			}
 
-			// Being healed by a medigun, don't decay our health
-			bDecayHealth = false;
-			if (bHealDisguise)
+			if ( m_aHealers[i].flOverhealBonus > 1.0f )
 			{
-				bDecayDisguiseHealth = false;
+				// Being healed by a medigun, don't decay our health
+				bDecayHealth = false;
+				if ( bHealDisguise )
+				{
+					bDecayDisguiseHealth = false;
+				}
 			}
 
 			// Don't heal over the healer's overheal bonus
