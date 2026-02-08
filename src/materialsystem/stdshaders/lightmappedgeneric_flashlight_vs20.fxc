@@ -1,4 +1,4 @@
-//====== Copyright � 1996-2004, Valve Corporation, All rights reserved. =======
+//====== Copyright (c) 1996-2004, Valve Corporation, All rights reserved. =======
 //
 // Purpose: 
 //
@@ -8,7 +8,6 @@
 //  STATIC: "WORLDVERTEXTRANSITION" "0..1"
 //  STATIC: "SEAMLESS"				"0..1"
 //  STATIC: "DETAIL"				"0..1"
-//	DYNAMIC: "DOWATERFOG"			"0..1"
 
 #include "common_vs_fxc.h"
 
@@ -23,11 +22,9 @@ const float4 SeamlessScale : register( SHADER_SPECIFIC_CONST_6 );
 const float4 cBaseTexCoordTransform[2]					:  register( SHADER_SPECIFIC_CONST_6 );
 const float4 cNormalMapOrDetailTexCoordTransform[2]		:  register( SHADER_SPECIFIC_CONST_8 );
 
-static const int g_FogType					= DOWATERFOG;
-
 struct VS_INPUT
 {
-	float3 vPos							: POSITION; //This HAS to match lightmappedgeneric_vs30.fxc's position input. Otherwise depth fighting errors occur on the 360
+	float3 vPos							: POSITION; //This HAS to match lightmappedgeneric_vs20.fxc's position input. Otherwise depth fighting errors occur on the 360
 	float4 vNormal						: NORMAL;
 	float2 vBaseTexCoord				: TEXCOORD0;
 #if WORLDVERTEXTRANSITION
@@ -43,17 +40,8 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos					: POSITION;
-#if !defined( _X360 )
-	float  fog						: FOG;
-#endif
-
 	float4 spotTexCoord				: TEXCOORD0;
-
-#if SEAMLESS
-	float3 SeamlessTexCoord			: TEXCOORD1;
-#else
 	float2 baseTexCoord				: TEXCOORD1;
-#endif
 
 #if NORMALMAP
 	float3 tangentPosToLightVector	: TEXCOORD2;
@@ -80,7 +68,7 @@ float RemapValClamped( float val, float A, float B, float C, float D)
 
 VS_OUTPUT main( const VS_INPUT v )
 {
-	VS_OUTPUT o;
+	VS_OUTPUT o = ( VS_OUTPUT )0;
 
 	float3 vObjNormal;
 	DecompressVertex_Normal( v.vNormal, vObjNormal );
@@ -90,7 +78,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	float3 worldNormal;
 	float3 eyeVector;
 
-	//Projection math HAS to match lightmappedgeneric_vs30.fxc's math exactly. Otherwise depth fighting errors occur on the 360
+	//Projection math HAS to match lightmappedgeneric_vs20.fxc's math exactly. Otherwise depth fighting errors occur on the 360
 	projPos = mul( float4( v.vPos, 1 ), cModelViewProj );
 	o.projPos = projPos;
 	o.vProjPos.xyz = projPos.xyw;
@@ -100,11 +88,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	o.worldPos_worldTransition = float4( worldPos.xyz, 1.0f );
 
-	o.fogFactorW = CalcFog( worldPos, projPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW.w;
-#endif
-
 #if NORMALMAP
 	float3 worldTangentS = mul( v.vTangentS, cModel[0] );
 	float3 worldTangentT = mul( v.vTangentT, cModel[0] );
@@ -112,7 +95,7 @@ VS_OUTPUT main( const VS_INPUT v )
 #if SEAMLESS
 	float3 vNormal=normalize( worldNormal );
 	o.fogFactorW.xyz = vNormal * vNormal;           // sums to 1.
-	o.SeamlessTexCoord = SEAMLESS_SCALE*worldPos;
+	o.baseTexCoord = SEAMLESS_SCALE*worldPos;
 
 	// Generate new tangent and binormal with seamless projection
 	#if NORMALMAP

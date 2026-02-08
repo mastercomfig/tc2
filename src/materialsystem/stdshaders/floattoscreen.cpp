@@ -11,6 +11,9 @@
 #include "floattoscreen_ps30.inc"
 #include "convar.h"
 
+// NOTE: This has to be the last file included!
+#include "tier0/memdbgon.h"
+
 BEGIN_VS_SHADER_FLAGS( floattoscreen, "Help for floattoscreen", SHADER_NOT_EDITABLE )
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( FBTEXTURE, SHADER_PARAM_TYPE_TEXTURE, "", "" )
@@ -48,33 +51,12 @@ BEGIN_VS_SHADER_FLAGS( floattoscreen, "Help for floattoscreen", SHADER_NOT_EDITA
 
 			// Pre-cache shaders
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, false );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-//			DECLARE_STATIC_PIXEL_SHADER( floattoscreen_ps30 );
-//			SET_STATIC_PIXEL_SHADER( floattoscreen_ps30 );
-			if( g_pHardwareConfig->SupportsPixelShaders_2_b() )
-			{
-				const char *szPixelShader = params[PIXSHADER]->GetStringValue();
-				size_t iLength = Q_strlen( szPixelShader );
-
-				if( (iLength > 5) && (Q_stricmp( &szPixelShader[iLength - 5], "_ps20" ) == 0) ) //detect if it's trying to load a ps20 shader
-				{
-					//replace it with the ps20b shader
-					char *szNewName = (char *)stackalloc( sizeof( char ) * (iLength + 2) );
-					memcpy( szNewName, szPixelShader, sizeof( char ) * iLength );
-					szNewName[iLength] = 'b';
-					szNewName[iLength + 1] = '\0';
-					pShaderShadow->SetPixelShader( szNewName, 0 );
-				}
-				else
-				{
-					pShaderShadow->SetPixelShader( params[PIXSHADER]->GetStringValue(), 0 );
-				}
-			}
-			else
-			{
-				pShaderShadow->SetPixelShader( params[PIXSHADER]->GetStringValue(), 0 );
-			}
+			char szBuf[256];
+			RenameShaderToShaderModel30( params[PIXSHADER]->GetStringValue(), szBuf );
+			pShaderShadow->SetPixelShader( szBuf, 0 );
 		}
 
 		DYNAMIC_STATE
@@ -83,8 +65,6 @@ BEGIN_VS_SHADER_FLAGS( floattoscreen, "Help for floattoscreen", SHADER_NOT_EDITA
 			DECLARE_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
-//			DECLARE_DYNAMIC_PIXEL_SHADER( floattoscreen_ps30 );
-//			SET_DYNAMIC_PIXEL_SHADER( floattoscreen_ps30 );
 			pShaderAPI->SetPixelShaderIndex( 0 );
 		}
 		Draw();

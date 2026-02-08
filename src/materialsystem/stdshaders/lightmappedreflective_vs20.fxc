@@ -18,8 +18,7 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-    float4 vProjPos_POSITION		: POSITION;	
-	float  vFog						: FOG;
+    float4 vProjPos_POSITION		: POSITION;
 	float4 vBumpTexCoordXY_vTexCoordXY : TEXCOORD0;
 	float3 vTangentEyeVect			: TEXCOORD1;
 	float4 vReflectXY_vRefractYX	: TEXCOORD2;
@@ -30,7 +29,6 @@ struct VS_OUTPUT
 	HALF4 lightmapTexCoord1And2		: TEXCOORD6;
 	HALF4 lightmapTexCoord3			: TEXCOORD7;
 #endif
-	float4 fogFactorW				: COLOR1;
 };
 
 VS_OUTPUT main( const VS_INPUT v )
@@ -66,11 +64,8 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	o.screenCoord = vProjPos.x;
 
-	// Compute fog based on the position
-	float3 vWorldPos = mul( v.vPos, cModel[0] );
-	o.fogFactorW = o.vFog = CalcFog( vWorldPos, vProjPos, FOGTYPE_RANGE );
-
 	// Eye vector
+	float3 vWorldPos = mul( v.vPos, cModel[0] );
 	float3 vWorldEyeVect = cEyePos - vWorldPos;
 	// Transform to the tangent space
 	o.vTangentEyeVect.x = dot( vWorldEyeVect, v.vTangentS );

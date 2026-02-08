@@ -52,9 +52,18 @@ BEGIN_VS_SHADER_FLAGS( IntroScreenSpaceEffect, "Help for IntroScreenSpaceEffect"
 				pShaderShadow->EnableSRGBWrite( true );
 			}
 
-			pShaderShadow->VertexShaderVertexFormat( VERTEX_POSITION, 1, 0, 0 );
+			int fmt = VERTEX_POSITION;
+
+			const bool bHasVertexColor = IS_FLAG_SET( MATERIAL_VAR_VERTEXCOLOR );
+			if ( bHasVertexColor )
+			{
+				fmt |= VERTEX_COLOR;
+			}
+
+			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, bHasVertexColor );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( introscreenspaceeffect_ps30 );

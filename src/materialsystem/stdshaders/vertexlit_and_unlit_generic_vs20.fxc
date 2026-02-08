@@ -1,4 +1,4 @@
-//======= Copyright � 1996-2007, Valve Corporation, All rights reserved. ======
+//======= Copyright (c) 1996-2007, Valve Corporation, All rights reserved. ======
 
 //  STATIC: "VERTEXCOLOR"				"0..1"
 //	STATIC: "CUBEMAP"					"0..1"
@@ -14,10 +14,8 @@
 //	DYNAMIC: "DYNAMIC_LIGHT"			"0..1"
 //	DYNAMIC: "STATIC_LIGHT_VERTEX"		"0..1"
 //	DYNAMIC: "STATIC_LIGHT_LIGHTMAP"	"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
 //  DYNAMIC: "LIGHTING_PREVIEW"			"0..1"	[PC]
-//  DYNAMIC: "LIGHTING_PREVIEW"			"0..0"	[XBOX]
 //  DYNAMIC: "MORPHING"					"0..1"  [vs30]
 
 // SKIP: ($SEPARATE_DETAIL_UVS) && ($SEAMLESS_DETAIL)
@@ -29,7 +27,6 @@
 #include "common_vs_fxc.h"
 
 static const bool g_bSkinning		= SKINNING ? true : false;
-static const int  g_FogType			= DOWATERFOG;
 static const bool g_bVertexColor	= VERTEXCOLOR ? true : false;
 static const bool g_bCubemap		= CUBEMAP ? true : false;
 static const bool g_bFlashlight		= FLASHLIGHT ? true : false;
@@ -114,10 +111,7 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-    float4 projPos					: POSITION;			// Projection-space position	
-#if !defined( _X360 )
-	float  fog						: FOG;
-#endif
+    float4 projPos					: POSITION;			// Projection-space position
 
 #if SEAMLESS_BASE
 	HALF3 SeamlessTexCoord			: TEXCOORD0;		// Base texture x/y/z (indexed by swizzle)
@@ -143,7 +137,6 @@ struct VS_OUTPUT
 
 	float4 vProjPos					: TEXCOORD6;
 	float4 worldPos_ProjPosZ		: TEXCOORD7;
-	float4 fogFactorW				: COLOR1;
 #if SEAMLESS_DETAIL || SEAMLESS_BASE
 	float3 SeamlessWeights          : COLOR0;				// x y z projection weights
 #endif
@@ -213,10 +206,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 
 	o.vProjPos = vProjPos;
-	o.fogFactorW.w = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW.w;
-#endif	
 	o.worldPos_ProjPosZ.xyz = worldPos.xyz;
 	o.worldPos_ProjPosZ.w = vProjPos.z;
 

@@ -13,13 +13,11 @@
 
 //	DYNAMIC: "COMPRESSED_VERTS"		"0..1"
 //	DYNAMIC: "SKINNING"				"0..1"
-//	DYNAMIC: "DOWATERFOG"			"0..1"
 //  DYNAMIC: "MORPHING"				"0..1" [vs30]
 
 #include "common_vs_fxc.h"
 
 static const bool g_bSkinning	= SKINNING ? true : false;
-static const int g_FogType		= DOWATERFOG;
 
 const float4 cLightPosition		:  register( SHADER_SPECIFIC_CONST_0 );
 const float4 cSpotlightProj1	:  register( SHADER_SPECIFIC_CONST_1 );
@@ -58,9 +56,6 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos				: POSITION;			// Projection-space position
-#if !defined( _X360 )
-	float  fog					: FOG;				// Fixed-function fog factor
-#endif
 	float4 spotTexCoord			: TEXCOORD0;		// Spotlight texture coordinates
 	float2 baseTexCoord			: TEXCOORD1;		// Base texture coordinates
 	float2 irisTexCoord			: TEXCOORD3;		// Iris texture coordinates
@@ -106,11 +101,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.projPos    = projPos;
 	o.projPosXYZ = projPos.xyz;
 	o.worldPos   = worldPos.xyz;
-
-#if !defined( _X360 )
-	// Set fixed-function fog factor
-	o.fog = CalcFog( worldPos, o.projPos, g_FogType );
-#endif
 
 	// Base texture coordinates
 	o.baseTexCoord = v.vTexCoord0;

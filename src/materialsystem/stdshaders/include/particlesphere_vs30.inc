@@ -21,34 +21,16 @@ public:
 
 class particlesphere_vs30_Dynamic_Index
 {
-	unsigned int m_nFOGTYPE : 2;
-#ifdef _DEBUG
-	bool m_bFOGTYPE : 1;
-#endif	// _DEBUG
 public:
-	void SetFOGTYPE( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nFOGTYPE = i;
-#ifdef _DEBUG
-		m_bFOGTYPE = true;
-#endif	// _DEBUG
-	}
-
 	particlesphere_vs30_Dynamic_Index(  )
 	{
-		m_nFOGTYPE = 0;
-#ifdef _DEBUG
-		m_bFOGTYPE = false;
-#endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bFOGTYPE );
-		return ( 1 * m_nFOGTYPE ) + 0;
+		return 0;
 	}
 };
 
-#define shaderDynamicTest_particlesphere_vs30 vsh_forgot_to_set_dynamic_FOGTYPE
+#define shaderDynamicTest_particlesphere_vs30 1
 

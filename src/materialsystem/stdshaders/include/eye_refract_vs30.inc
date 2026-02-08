@@ -69,7 +69,7 @@ public:
 	int GetIndex() const
 	{
 		Assert( m_bINTRO && m_bHALFLAMBERT && m_bFLASHLIGHT && m_bLIGHTWARPTEXTURE );
-		return ( 320 * m_nINTRO ) + ( 640 * m_nHALFLAMBERT ) + ( 1280 * m_nFLASHLIGHT ) + ( 2560 * m_nLIGHTWARPTEXTURE ) + 0;
+		return ( 160 * m_nINTRO ) + ( 320 * m_nHALFLAMBERT ) + ( 640 * m_nFLASHLIGHT ) + ( 1280 * m_nLIGHTWARPTEXTURE ) + 0;
 	}
 };
 
@@ -80,7 +80,6 @@ class eye_refract_vs30_Dynamic_Index
 {
 	unsigned int m_nCOMPRESSED_VERTS : 2;
 	unsigned int m_nSKINNING : 2;
-	unsigned int m_nDOWATERFOG : 2;
 	unsigned int m_nDYNAMIC_LIGHT : 2;
 	unsigned int m_nSTATIC_LIGHT : 2;
 	unsigned int m_nNUM_LIGHTS : 3;
@@ -88,7 +87,6 @@ class eye_refract_vs30_Dynamic_Index
 #ifdef _DEBUG
 	bool m_bCOMPRESSED_VERTS : 1;
 	bool m_bSKINNING : 1;
-	bool m_bDOWATERFOG : 1;
 	bool m_bDYNAMIC_LIGHT : 1;
 	bool m_bSTATIC_LIGHT : 1;
 	bool m_bNUM_LIGHTS : 1;
@@ -110,15 +108,6 @@ public:
 		m_nSKINNING = i;
 #ifdef _DEBUG
 		m_bSKINNING = true;
-#endif	// _DEBUG
-	}
-
-	void SetDOWATERFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOWATERFOG = i;
-#ifdef _DEBUG
-		m_bDOWATERFOG = true;
 #endif	// _DEBUG
 	}
 
@@ -162,7 +151,6 @@ public:
 	{
 		m_nCOMPRESSED_VERTS = 0;
 		m_nSKINNING = 0;
-		m_nDOWATERFOG = 0;
 		m_nDYNAMIC_LIGHT = 0;
 		m_nSTATIC_LIGHT = 0;
 		m_nNUM_LIGHTS = 0;
@@ -170,7 +158,6 @@ public:
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = false;
 		m_bSKINNING = false;
-		m_bDOWATERFOG = false;
 		m_bDYNAMIC_LIGHT = false;
 		m_bSTATIC_LIGHT = false;
 		m_bNUM_LIGHTS = false;
@@ -180,10 +167,10 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bCOMPRESSED_VERTS && m_bSKINNING && m_bDOWATERFOG && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT && m_bNUM_LIGHTS && m_bMORPHING );
-		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nSKINNING ) + ( 4 * m_nDOWATERFOG ) + ( 8 * m_nDYNAMIC_LIGHT ) + ( 16 * m_nSTATIC_LIGHT ) + ( 32 * m_nNUM_LIGHTS ) + ( 160 * m_nMORPHING ) + 0;
+		Assert( m_bCOMPRESSED_VERTS && m_bSKINNING && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT && m_bNUM_LIGHTS && m_bMORPHING );
+		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nSKINNING ) + ( 4 * m_nDYNAMIC_LIGHT ) + ( 8 * m_nSTATIC_LIGHT ) + ( 16 * m_nNUM_LIGHTS ) + ( 80 * m_nMORPHING ) + 0;
 	}
 };
 
-#define shaderDynamicTest_eye_refract_vs30 vsh_forgot_to_set_dynamic_COMPRESSED_VERTS + vsh_forgot_to_set_dynamic_SKINNING + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_DYNAMIC_LIGHT + vsh_forgot_to_set_dynamic_STATIC_LIGHT + vsh_forgot_to_set_dynamic_NUM_LIGHTS + vsh_forgot_to_set_dynamic_MORPHING
+#define shaderDynamicTest_eye_refract_vs30 vsh_forgot_to_set_dynamic_COMPRESSED_VERTS + vsh_forgot_to_set_dynamic_SKINNING + vsh_forgot_to_set_dynamic_DYNAMIC_LIGHT + vsh_forgot_to_set_dynamic_STATIC_LIGHT + vsh_forgot_to_set_dynamic_NUM_LIGHTS + vsh_forgot_to_set_dynamic_MORPHING
 

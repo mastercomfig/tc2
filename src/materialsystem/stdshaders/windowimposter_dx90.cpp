@@ -29,9 +29,6 @@ BEGIN_VS_SHADER( WindowImposter_DX90,
 
 	SHADER_FALLBACK
 	{
-		if ( g_pHardwareConfig->GetDXSupportLevel() < 90)
-			return "WindowImposter_DX80";
-
 		return NULL;
 	}
 
@@ -64,7 +61,6 @@ BEGIN_VS_SHADER( WindowImposter_DX90,
 		DYNAMIC_STATE
 		{
 			DECLARE_DYNAMIC_VERTEX_SHADER( windowimposter_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 			SET_DYNAMIC_VERTEX_SHADER( windowimposter_vs30 );
 
 			DECLARE_DYNAMIC_PIXEL_SHADER( windowimposter_ps30 );

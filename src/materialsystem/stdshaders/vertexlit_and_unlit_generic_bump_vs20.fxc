@@ -4,14 +4,12 @@
 //  STATIC: "FLASHLIGHT"				"0..1" [XBOX]
 
 //  DYNAMIC: "COMPRESSED_VERTS"			"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
 
 #include "common_vs_fxc.h"
 
 static const bool g_bSkinning		= SKINNING ? true : false;
-static const int g_FogType			= DOWATERFOG;
 
 const float4 cBaseTexCoordTransform[2]	 :  register( SHADER_SPECIFIC_CONST_0 );	// 0 & 1
 const float4 cDetailTexCoordTransform[2] :  register( SHADER_SPECIFIC_CONST_4 );	// 4 & 5
@@ -63,10 +61,7 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
 	// Stuff that isn't seen by the pixel shader
-	float4 projPos												: POSITION;	
-#if !defined( _X360 )
-	float  fog													: FOG;
-#endif
+	float4 projPos												: POSITION;
 	// Stuff that is seen by the pixel shader
 
 	float4 baseTexCoord2_tangentSpaceVertToEyeVectorXY			: TEXCOORD0;
@@ -77,7 +72,6 @@ struct VS_OUTPUT
 	float4 vProjPos												: TEXCOORD5;
 	float4 worldPos_projPosZ									: TEXCOORD6;
 	float3 detailTexCoord_atten3								: TEXCOORD7;
-	float4 fogFactorW											: COLOR1;
 
 #if defined( _X360 ) && FLASHLIGHT
 	float4 flashlightSpacePos									: TEXCOORD8;
@@ -130,11 +124,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 
 	o.vProjPos = vProjPos;
-
-	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW;
-#endif
 
  	// Needed for water fog alpha and diffuse lighting
 	// FIXME: we shouldn't have to compute this all the time.

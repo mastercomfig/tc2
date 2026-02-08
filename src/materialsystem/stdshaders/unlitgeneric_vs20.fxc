@@ -1,11 +1,9 @@
 // STATIC: "VERTEXCOLOR"			"0..1"
 // DYNAMIC: "COMPRESSED_VERTS"		"0..1"
-// DYNAMIC: "DOWATERFOG"			"0..1"
 // DYNAMIC: "SKINNING"				"0..1"
 
 #include "common_vs_fxc.h"
 
-static const int g_FogType			= DOWATERFOG;
 static const bool g_bSkinning		= SKINNING ? true : false;
 
 const float4 cBaseTextureTransform[2]	: register( SHADER_SPECIFIC_CONST_0 );
@@ -36,11 +34,6 @@ struct VS_OUTPUT
 	float2 vTexCoord3	: TEXCOORD3;
 
 	float4 vColor		: COLOR0;
-	float4 fogFactorW	: COLOR1;
-
-#if !defined( _X360 )    
-	float  fog		: FOG;
-#endif
 
 	float4 worldPos_projPosZ : TEXCOORD7;		// Necessary for pixel fog
 };
@@ -62,14 +55,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.vProjPos = vProjPos;
 	vProjPos = dot( float4( worldPos, 1 ), cViewProjZ );
 	o.worldPos_projPosZ = float4( worldPos.xyz, vProjPos.z );
-
-	//------------------------------------------------------------------------------
-	// Fog
-	//------------------------------------------------------------------------------
-	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW;
-#endif
 
 	//------------------------------------------------------------------------------
 	// Texture coord transforms

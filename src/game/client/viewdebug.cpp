@@ -531,7 +531,7 @@ void CDebugViewRender::Draw3DDebuggingInfo( const CViewSetup &viewDebug )
 //-----------------------------------------------------------------------------
 void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &viewDebug )
 {
-#ifdef DEV_BUILD
+#if defined( DEV_BUILD )
 	if ( IsRetail() )
 		return;
 

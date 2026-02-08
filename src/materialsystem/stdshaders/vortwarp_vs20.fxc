@@ -3,16 +3,12 @@
 //  STATIC: "HALFLAMBERT"				"0..1"
 
 //	DYNAMIC: "COMPRESSED_VERTS"			"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
-
-//	SKIP: $DOWATERFOG
 
 #include "vortwarp_vs20_helper.h"
 
 static const bool g_bSkinning		= SKINNING ? true : false;
-static const int g_FogType			= DOWATERFOG;
 
 const float4 cBaseTexCoordTransform[2]	:  register( SHADER_SPECIFIC_CONST_0 );
 
@@ -65,10 +61,7 @@ struct VS_INPUT
 //-----------------------------------------------------------------------------
 struct VS_OUTPUT
 {
-    float4 projPos					: POSITION;	
-#if !defined( _X360 )
-	float  fog						: FOG;
-#endif
+    float4 projPos					: POSITION;
 
 	HALF4 baseTexCoord2_tangentSpaceVertToEyeVectorXY			: TEXCOORD0;
 	// bump mapping and a separate envmap mask texture are mutually exclusive.
@@ -78,7 +71,6 @@ struct VS_OUTPUT
 	//	     second row											: TEXCOORD4;
 	//	     third row											: TEXCOORD5;
 	float4 worldPos_projPosZ									: TEXCOORD6;
-	float4 fogFactorW											: COLOR1;
 };
 
 //-----------------------------------------------------------------------------
@@ -121,10 +113,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	float4 projPos = mul( float4( worldPos, 1 ), cViewProj );
 	o.projPos = projPos;
 	projPos.z = mul( float4( worldPos, 1 ), cViewProjZ );
-	o.fogFactorW = CalcFog( worldPos, projPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW;
-#endif
  	// Needed for water fog alpha and diffuse lighting 
 	// FIXME: we shouldn't have to compute this all the time.
 	o.worldPos_projPosZ = float4( worldPos, projPos.z );

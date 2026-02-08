@@ -12,7 +12,6 @@
 
 //	DYNAMIC: "COMPRESSED_VERTS"			"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //	DYNAMIC: "DYNAMIC_LIGHT"			"0..1"
 //	DYNAMIC: "STATIC_LIGHT"				"0..1"
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
@@ -20,7 +19,6 @@
 #include "vortwarp_vs20_helper.h"
 
 static const int  g_bSkinning		= SKINNING ? true : false;
-static const int  g_FogType			= DOWATERFOG;
 static const bool g_bHalfLambert	= HALFLAMBERT ? true : false;
 
 const float3 cEyeOrigin						:  register( SHADER_SPECIFIC_CONST_0 );
@@ -60,9 +58,6 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos				: POSITION;			// Projection-space position
-#if !defined( _X360 )
-	float  fog					: FOG;				// Fixed-function fog factor
-#endif
 	float2 baseTC				: TEXCOORD0;		// Base texture coordinate
 	float2 irisTC				: TEXCOORD1;		// Iris texture coordinates
 	float2 glintTC				: TEXCOORD2;		// Glint texture coordinates
@@ -105,11 +100,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	o.projPos = vProjPos;
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 	o.worldPos_projPosZ = float4( worldPos.xyz, vProjPos.z );
-
-#if !defined( _X360 )
-	// Set fixed-function fog factor
-	o.fog = CalcFog( worldPos, vProjPos, g_FogType );
-#endif
 
 	// Normal = (Pos - Eye origin) - just step on dummy normal created above
 	worldNormal = worldPos - cEyeOrigin;

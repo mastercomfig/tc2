@@ -145,7 +145,6 @@ void DrawCloak_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 		}
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-		int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 
 		LightState_t lightState;
 		pShaderAPI->GetDX9LightState( &lightState );
@@ -157,7 +156,6 @@ void DrawCloak_DX9( CBaseVSShader *pShader, IMaterialVar** params, IShaderDynami
 		}
 
 		DECLARE_DYNAMIC_VERTEX_SHADER( cloak_vs30 );
-		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );

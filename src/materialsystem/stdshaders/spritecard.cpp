@@ -216,6 +216,8 @@ SHADER_DRAW
 		if ( nSplineType )
 			bUseInstancing = false;
 
+		pShaderShadow->FogMode( SHADER_FOGMODE_FOGCOLOR );
+
 		// draw back-facing because of yaw spin
 		pShaderShadow->EnableCulling( false );
 

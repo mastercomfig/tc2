@@ -607,6 +607,7 @@ pak.zip
 gameinfo_client.txt
 
 *.la
+*.tga
 
 /src/thirdparty/sentry_native/lib/*
 /src/thirdparty/sentry_native/bin

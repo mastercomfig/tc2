@@ -5,26 +5,36 @@
 #include "shaderlib/cshader.h"
 class screenspaceeffect_vs30_Static_Index
 {
-	unsigned int m_nX360APPCHOOSER : 2;
+	unsigned int m_nVERTEXCOLOR : 2;
+#ifdef _DEBUG
+	bool m_bVERTEXCOLOR : 1;
+#endif	// _DEBUG
 public:
-	void SetX360APPCHOOSER( int i )
+	void SetVERTEXCOLOR( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
-		m_nX360APPCHOOSER = i;
+		m_nVERTEXCOLOR = i;
+#ifdef _DEBUG
+		m_bVERTEXCOLOR = true;
+#endif	// _DEBUG
 	}
 
 	screenspaceeffect_vs30_Static_Index(  )
 	{
-		m_nX360APPCHOOSER = 0;
+		m_nVERTEXCOLOR = 0;
+#ifdef _DEBUG
+		m_bVERTEXCOLOR = false;
+#endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		return ( 1 * m_nX360APPCHOOSER ) + 0;
+		Assert( m_bVERTEXCOLOR );
+		return ( 1 * m_nVERTEXCOLOR ) + 0;
 	}
 };
 
-#define shaderStaticTest_screenspaceeffect_vs30 1
+#define shaderStaticTest_screenspaceeffect_vs30 vsh_forgot_to_set_static_VERTEXCOLOR
 
 
 class screenspaceeffect_vs30_Dynamic_Index

@@ -306,7 +306,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		bool hasSSBump = hasBump && (info.m_nSelfShadowedBumpFlag != -1) &&	( params[info.m_nSelfShadowedBumpFlag]->GetIntValue() );
 		bool hasBaseTexture2 = hasBaseTexture && params[info.m_nBaseTexture2]->IsTexture();
 		bool hasLightWarpTexture = params[info.m_nLightWarpTexture]->IsTexture();
-		bool hasBump2 = hasBump && params[info.m_nBumpmap2]->IsTexture();
+		bool hasBump2 = hasBump && hasBaseTexture2 && params[info.m_nBumpmap2]->IsTexture();
 		bool hasDetailTexture = params[info.m_nDetail]->IsTexture();
 		bool hasSelfIllum = IS_FLAG_SET( MATERIAL_VAR_SELFILLUM );
 		bool hasBumpMask = hasBump && hasBump2 && params[info.m_nBumpMask]->IsTexture() && !hasSelfIllum &&
@@ -448,15 +448,12 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					pShaderShadow->EnableSRGBRead( SHADER_SAMPLER1, false );
 				}
 
-				if( hasEnvmap || ( IsX360() && hasFlashlight ) )
+				if( hasEnvmap )
 				{
-					if( hasEnvmap )
+					pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
+					if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
 					{
-						pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
-						if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
-						{
-							pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
-						}
+						pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
 					}
 					flags |= VERTEX_TANGENT_S | VERTEX_TANGENT_T | VERTEX_NORMAL;
 				}
@@ -499,14 +496,6 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					pShaderShadow->EnableTexture( SHADER_SAMPLER5, true );
 				}
 
-				if( hasFlashlight && IsX360() )
-				{
-					pShaderShadow->EnableTexture( SHADER_SAMPLER13, true );
-					pShaderShadow->EnableTexture( SHADER_SAMPLER14, true );
-					pShaderShadow->SetShadowDepthFiltering( SHADER_SAMPLER14 );
-					pShaderShadow->EnableTexture( SHADER_SAMPLER15, true );
-				}
-
 				if( hasVertexColor || hasBaseTexture2 || hasBump2 )
 				{
 					flags |= VERTEX_COLOR;
@@ -539,12 +528,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXALPHATEXBLENDFACTOR, hasBaseTexture2 || hasBump2 );
 				SET_STATIC_VERTEX_SHADER_COMBO( BUMPMASK, hasBumpMask );
 
-				bool bReliefMapping = false; //( bumpmap_variant == 2 ) && ( ! bSeamlessMapping );
-				SET_STATIC_VERTEX_SHADER_COMBO( RELIEF_MAPPING, false );//bReliefMapping );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS, bSeamlessMapping );
-#ifdef _X360
-				SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
-#endif
 				SET_STATIC_VERTEX_SHADER( lightmappedgeneric_vs30 );
 
 				DECLARE_STATIC_PIXEL_SHADER( lightmappedgeneric_ps30 );
@@ -564,16 +548,12 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				SET_STATIC_PIXEL_SHADER_COMBO( WARPLIGHTING, hasLightWarpTexture );
 				SET_STATIC_PIXEL_SHADER_COMBO( FANCY_BLENDING, bHasBlendModulateTexture );
 				SET_STATIC_PIXEL_SHADER_COMBO( MASKEDBLENDING, bMaskedBlending);
-				SET_STATIC_PIXEL_SHADER_COMBO( RELIEF_MAPPING, bReliefMapping );
 				SET_STATIC_PIXEL_SHADER_COMBO( SEAMLESS, bSeamlessMapping );
 				SET_STATIC_PIXEL_SHADER_COMBO( OUTLINE, bHasOutline );
 				SET_STATIC_PIXEL_SHADER_COMBO( SOFTEDGES, bHasSoftEdges );
 				SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 				SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int)  NORMAL_DECODE_NONE );
 				SET_STATIC_PIXEL_SHADER_COMBO( NORMALMASK_DECODE_MODE, (int) NORMAL_DECODE_NONE );
-#ifdef _X360
-				SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
-#endif
 				SET_STATIC_PIXEL_SHADER( lightmappedgeneric_ps30 );
 
 				// HACK HACK HACK - enable alpha writes all the time so that we have them for
@@ -859,7 +839,6 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
 		DECLARE_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_vs30 );
-		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( FASTPATH,  bVertexShaderFastPath );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( 
 			LIGHTING_PREVIEW, 
@@ -900,53 +879,6 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( BICUBIC_LIGHTMAP, r_lightmap_bicubic.GetBool() ? 1 : 0 );
 		
 		SET_DYNAMIC_PIXEL_SHADER_CMD( DynamicCmdsOut, lightmappedgeneric_ps30 );
-
-
-		if( hasFlashlight && IsX360() )
-		{
-			VMatrix worldToTexture;
-			ITexture *pFlashlightDepthTexture;
-			FlashlightState_t flashlightState = pShaderAPI->GetFlashlightStateEx( worldToTexture, &pFlashlightDepthTexture );
-
-			DynamicCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, worldToTexture.Base(), 4 );
-
-			SetFlashLightColorFromState( flashlightState, pShaderAPI );
-
-			float atten[4], pos[4];
-			atten[0] = flashlightState.m_fConstantAtten;		// Set the flashlight attenuation factors
-			atten[1] = flashlightState.m_fLinearAtten;
-			atten[2] = flashlightState.m_fQuadraticAtten;
-			atten[3] = flashlightState.m_FarZ;
-			DynamicCmdsOut.SetPixelShaderConstant( 13, atten, 1 );
-
-			pos[0] = flashlightState.m_vecLightOrigin[0];		// Set the flashlight origin
-			pos[1] = flashlightState.m_vecLightOrigin[1];
-			pos[2] = flashlightState.m_vecLightOrigin[2];
-			DynamicCmdsOut.SetPixelShaderConstant( 14, pos, 1 );
-
-			pShader->BindTexture( SHADER_SAMPLER13, flashlightState.m_pSpotlightTexture, flashlightState.m_nSpotlightTextureFrame );
-
-			if( pFlashlightDepthTexture && g_pConfig->ShadowDepthTexture() && flashlightState.m_bEnableShadows )
-			{
-				pShader->BindTexture( SHADER_SAMPLER14, pFlashlightDepthTexture, 0 );
-				DynamicCmdsOut.BindStandardTexture( SHADER_SAMPLER15, TEXTURE_SHADOW_NOISE_2D );
-
-				// Tweaks associated with a given flashlight
-				float tweaks[4];
-				tweaks[0] = ShadowFilterFromState( flashlightState );
-				tweaks[1] = ShadowAttenFromState( flashlightState );
-				pShader->HashShadow2DJitter( flashlightState.m_flShadowJitterSeed, &tweaks[2], &tweaks[3] );
-				DynamicCmdsOut.SetPixelShaderConstant( 19, tweaks, 1 );
-
-				// Dimensions of screen, used for screen-space noise map sampling
-				float vScreenScale[4] = {1280.0f / 32.0f, 720.0f / 32.0f, 0, 0};
-				int nWidth, nHeight;
-				pShaderAPI->GetBackBufferDimensions( nWidth, nHeight );
-				vScreenScale[0] = (float) nWidth  / 32.0f;
-				vScreenScale[1] = (float) nHeight / 32.0f;
-				DynamicCmdsOut.SetPixelShaderConstant( 31, vScreenScale, 1 );
-			}
-		}
 
 		DynamicCmdsOut.End();
 		pShaderAPI->ExecuteCommandBuffer( DynamicCmdsOut.Base() );

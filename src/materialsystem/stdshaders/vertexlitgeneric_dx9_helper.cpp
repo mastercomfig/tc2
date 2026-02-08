@@ -376,9 +376,7 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 /*^*/ // 	printf("\t\t>DrawVertexLitGeneric_DX9_Internal\n");
 
 	bool bHasBump = IsTextureSet( info.m_nBumpmap, params );
-#if !defined( _X360 )
 	bool bIsDecal = IS_FLAG_SET( MATERIAL_VAR_DECAL );
-#endif
 
 	bool hasDiffuseLighting = bVertexLitGeneric;
 /*^*/ // 	printf("\t\t[%d] bVertexLitGeneric\n",(int)bVertexLitGeneric);
@@ -644,13 +642,11 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			}
 
 			const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
-#ifndef _X360
 			// Special morphed decal information 
 			if ( bIsDecal && bFastVertexTextures )
 			{
 				nTexCoordCount = 3;
 			}
-#endif
 
 			// This shader supports compressed vertices, so OR in that flag:
 			flags |= VERTEX_FORMAT_COMPRESSED;
@@ -663,15 +659,14 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 
 			if ( bHasBump || bHasDiffuseWarp )
 			{
-				const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 				if ( bFastVertexTextures )
 				{
 					// The vertex shader uses the vertex id stream
-					SET_FLAGS2(MATERIAL_VAR2_USES_VERTEXID);
+					SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
 				}
 
 				DECLARE_STATIC_VERTEX_SHADER( vertexlit_and_unlit_generic_bump_vs30 );
-				SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT,  bHalfLambert);
+				SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT, bHalfLambert);
 				SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bFastVertexTextures && bIsDecal );
 				SET_STATIC_VERTEX_SHADER( vertexlit_and_unlit_generic_bump_vs30 );
 
@@ -708,7 +703,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 					bOutline = IsBoolSet( info.m_nOutline, params );
 				}
 
-				const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 				if ( bFastVertexTextures )
 				{
 					// The vertex shader uses the vertex id stream
@@ -716,15 +710,15 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				}
 
 				DECLARE_STATIC_VERTEX_SHADER( vertexlit_and_unlit_generic_vs30 );
-				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR,  bHasVertexColor || bHasVertexAlpha );
-				SET_STATIC_VERTEX_SHADER_COMBO( CUBEMAP,  bHasEnvmap );
-				SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT,  bHalfLambert );
-				SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT,  bHasFlashlight );
+				SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, bHasVertexColor || bHasVertexAlpha );
+				SET_STATIC_VERTEX_SHADER_COMBO( CUBEMAP, bHasEnvmap );
+				SET_STATIC_VERTEX_SHADER_COMBO( HALFLAMBERT, bHalfLambert );
+				SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS_BASE, bSeamlessBase );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS_DETAIL, bSeamlessDetail );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEPARATE_DETAIL_UVS, IsBoolSet( info.m_nSeparateDetailUVs, params ) );
 				SET_STATIC_VERTEX_SHADER_COMBO( DECAL, bFastVertexTextures && bIsDecal );
-				SET_STATIC_VERTEX_SHADER_COMBO( DONT_GAMMA_CONVERT_VERTEX_COLOR, bSRGBWrite ? 0 : 1 );
+				SET_STATIC_VERTEX_SHADER_COMBO( DONT_GAMMA_CONVERT_VERTEX_COLOR, ( !bSRGBWrite ) && bHasVertexColor );
 				SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, bTreeSway ? nTreeSwayMode : 0 );
 				SET_STATIC_VERTEX_SHADER( vertexlit_and_unlit_generic_vs30 );
 
@@ -1124,7 +1118,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 		}
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-		int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 		int numBones = pShaderAPI->GetCurrentNumBones();
 
 		bool bWriteDepthToAlpha;
@@ -1151,17 +1144,17 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 			flParams[ 3 ] = windDir.y;
 			DynamicCmdsOut.SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_2, flParams );
 		}
+		
+		const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 
 		if ( bHasBump || bHasDiffuseWarp )
 		{
-			const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 			if ( bFastVertexTextures )
 			{
 				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
 			}
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( vertexlit_and_unlit_generic_bump_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() && !bTreeSway );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
@@ -1189,7 +1182,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 				lightState.m_nNumLights = 0;
 			}
 
-			const bool bFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 			if ( bFastVertexTextures )
 			{
 				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
@@ -1197,15 +1189,15 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( vertexlit_and_unlit_generic_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DYNAMIC_LIGHT, lightState.HasDynamicLight() );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT_VERTEX,  lightState.m_bStaticLightVertex  ? 1 : 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT_LIGHTMAP,  lightState.m_bStaticLightTexel  ? 1 : 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING,  numBones > 0 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT_VERTEX, lightState.m_bStaticLightVertex ? 1 : 0 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT_LIGHTMAP, lightState.m_bStaticLightTexel ? 1 : 0 );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO(
 				LIGHTING_PREVIEW, 
-				pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING) );
+				pShaderAPI->GetIntRenderingParameter( INT_RENDERPARM_ENABLE_FIXED_LIGHTING ) != 0
+			);
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() && !bTreeSway );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, ( int )vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER_CMD( DynamicCmdsOut, vertexlit_and_unlit_generic_vs30 );
 
 			DECLARE_DYNAMIC_PIXEL_SHADER( vertexlit_and_unlit_generic_ps30 );

@@ -6,9 +6,6 @@
 
 #include "cpp_shader_constant_register_map.h"
 
-#include "eyes_flashlight_vs11.inc"
-#include "eyes_flashlight_ps11.inc"
-
 #include "eye_refract_vs30.inc"
 #include "eye_refract_ps30.inc"
 
@@ -239,7 +236,6 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 		}
 
 		DECLARE_DYNAMIC_VERTEX_SHADER( eye_refract_vs30 );
-		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( DYNAMIC_LIGHT, lightState.HasDynamicLight() );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT, lightState.m_bStaticLightVertex ? 1 : 0 );

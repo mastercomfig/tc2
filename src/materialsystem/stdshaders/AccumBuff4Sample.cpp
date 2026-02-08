@@ -68,6 +68,7 @@ BEGIN_VS_SHADER_FLAGS( accumbuff4sample, "Help for AccumBuff4Sample", SHADER_NOT
 			pShaderShadow->EnableSRGBWrite( false );
 
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, false );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( accumbuff4sample_ps30 );

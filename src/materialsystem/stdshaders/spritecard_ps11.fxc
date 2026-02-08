@@ -34,7 +34,6 @@ const float4 g_ColorPowers	: register( c1 );
 #define fAdditiveSelfBlendWeight	g_Parameters.z
 #define fSoftParticleBlendScale		g_Parameters.w
 
-#pragma warning( disable : 4707 4704 ) 
 float4 main( PS_INPUT i ) : COLOR
 {
 	// Sample frames from texture 0

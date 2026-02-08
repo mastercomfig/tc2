@@ -61,6 +61,7 @@ BEGIN_VS_SHADER_FLAGS( FilmDust_dx8, "Help for FilmDust", SHADER_NOT_EDITABLE )
 			pShaderShadow->VertexShaderVertexFormat( fmt, 1, 0, 0 );
 
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, false );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( filmdust_ps30 );

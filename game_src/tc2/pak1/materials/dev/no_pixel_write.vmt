@@ -1,8 +1,8 @@
 "screenspace_general"
 {
-	"C0_X" "0"
-	"C0_Y" "1"
-	"C0_Z" "0"
+	"$C0_X" "0"
+	"$C0_Y" "1"
+	"$C0_Z" "0"
 	"$PIXSHADER" "constant_color_ps30"
 	"$BASETEXTURE" "_rt_FullFrameFB"
 //    "$DEBUG" "1"

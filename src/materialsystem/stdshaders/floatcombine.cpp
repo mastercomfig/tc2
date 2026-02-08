@@ -62,6 +62,7 @@ BEGIN_VS_SHADER_FLAGS( floatcombine, "Help for floatcombine", SHADER_NOT_EDITABL
 
 			// Pre-cache shaders
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, false );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( floatcombine_ps30 );

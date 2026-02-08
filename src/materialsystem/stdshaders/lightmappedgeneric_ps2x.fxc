@@ -13,7 +13,6 @@
 // STATIC: "BASETEXTURE2NOENVMAP"		"0..1"
 // STATIC: "WARPLIGHTING"				"0..1"
 // STATIC: "FANCY_BLENDING"				"0..1"
-// STATIC: "RELIEF_MAPPING"				"0..0"	[ps20b] [ps30]
 // STATIC: "SEAMLESS"					"0..1"
 // STATIC: "OUTLINE"                    "0..1"
 // STATIC: "SOFTEDGES"                  "0..1"
@@ -34,8 +33,6 @@
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..1"	[ps20b] [ps30] [PC]
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..0"	[ps20b] [XBOX]
 // DYNAMIC: "BICUBIC_LIGHTMAP"           "0..1" [ps20b] [ps30]
-
-//  SKIP: $SEAMLESS && $RELIEF_MAPPING			[ps20b] [ps30]
 
 //	SKIP: (! $DETAILTEXTURE) && ( $DETAIL_BLEND_MODE != 0 )
 

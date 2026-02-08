@@ -1,5 +1,4 @@
 // ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// $SEAMLESS && $RELIEF_MAPPING
 // (! $DETAILTEXTURE) && ( $DETAIL_BLEND_MODE != 0 )
 // $SEAMLESS && ( $OUTLINE || $SOFTEDGES)
 // $BASETEXTURE2 && ( $OUTLINE || $SOFTEDGES)
@@ -31,7 +30,6 @@
 // $BASETEXTURE2NOENVMAP && ( !$BASETEXTURE2 || !$CUBEMAP )
 // $BASEALPHAENVMAPMASK && $BUMPMAP
 // $PARALLAXMAP && $DETAILTEXTURE
-// $SEAMLESS && $RELIEF_MAPPING
 // $SEAMLESS && $DETAILTEXTURE
 // $SEAMLESS && $MASKEDBLENDING
 // $BUMPMASK && ( $SEAMLESS || $DETAILTEXTURE || $SELFILLUM || $BASETEXTURENOENVMAP || $BASETEXTURE2 )
@@ -73,7 +71,6 @@ class lightmappedgeneric_ps30_Static_Index
 	unsigned int m_nBASETEXTURE2NOENVMAP : 2;
 	unsigned int m_nWARPLIGHTING : 2;
 	unsigned int m_nFANCY_BLENDING : 2;
-	unsigned int m_nRELIEF_MAPPING : 1;
 	unsigned int m_nSEAMLESS : 2;
 	unsigned int m_nOUTLINE : 2;
 	unsigned int m_nSOFTEDGES : 2;
@@ -97,7 +94,6 @@ class lightmappedgeneric_ps30_Static_Index
 	bool m_bBASETEXTURE2NOENVMAP : 1;
 	bool m_bWARPLIGHTING : 1;
 	bool m_bFANCY_BLENDING : 1;
-	bool m_bRELIEF_MAPPING : 1;
 	bool m_bSEAMLESS : 1;
 	bool m_bOUTLINE : 1;
 	bool m_bSOFTEDGES : 1;
@@ -242,15 +238,6 @@ public:
 #endif	// _DEBUG
 	}
 
-	void SetRELIEF_MAPPING( int i )
-	{
-		Assert( i >= 0 && i <= 0 );
-		m_nRELIEF_MAPPING = i;
-#ifdef _DEBUG
-		m_bRELIEF_MAPPING = true;
-#endif	// _DEBUG
-	}
-
 	void SetSEAMLESS( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
@@ -331,7 +318,6 @@ public:
 		m_nBASETEXTURE2NOENVMAP = 0;
 		m_nWARPLIGHTING = 0;
 		m_nFANCY_BLENDING = 0;
-		m_nRELIEF_MAPPING = 0;
 		m_nSEAMLESS = 0;
 		m_nOUTLINE = 0;
 		m_nSOFTEDGES = 0;
@@ -355,7 +341,6 @@ public:
 		m_bBASETEXTURE2NOENVMAP = false;
 		m_bWARPLIGHTING = false;
 		m_bFANCY_BLENDING = false;
-		m_bRELIEF_MAPPING = false;
 		m_bSEAMLESS = false;
 		m_bOUTLINE = false;
 		m_bSOFTEDGES = false;
@@ -368,8 +353,7 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bMASKEDBLENDING && m_bBASETEXTURE2 && m_bDETAILTEXTURE && m_bBUMPMAP && m_bBUMPMAP2 && m_bCUBEMAP && m_bENVMAPMASK && m_bBASEALPHAENVMAPMASK && m_bSELFILLUM && m_bNORMALMAPALPHAENVMAPMASK && m_bDIFFUSEBUMPMAP && m_bBASETEXTURENOENVMAP && m_bBASETEXTURE2NOENVMAP && m_bWARPLIGHTING && m_bFANCY_BLENDING && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bOUTLINE && m_bSOFTEDGES && m_bBUMPMASK && m_bNORMAL_DECODE_MODE && m_bNORMALMASK_DECODE_MODE && m_bDETAIL_BLEND_MODE );
-		AssertMsg( !( m_nSEAMLESS && m_nRELIEF_MAPPING ), "Invalid combo combination ( SEAMLESS && RELIEF_MAPPING )" );
+		Assert( m_bMASKEDBLENDING && m_bBASETEXTURE2 && m_bDETAILTEXTURE && m_bBUMPMAP && m_bBUMPMAP2 && m_bCUBEMAP && m_bENVMAPMASK && m_bBASEALPHAENVMAPMASK && m_bSELFILLUM && m_bNORMALMAPALPHAENVMAPMASK && m_bDIFFUSEBUMPMAP && m_bBASETEXTURENOENVMAP && m_bBASETEXTURE2NOENVMAP && m_bWARPLIGHTING && m_bFANCY_BLENDING && m_bSEAMLESS && m_bOUTLINE && m_bSOFTEDGES && m_bBUMPMASK && m_bNORMAL_DECODE_MODE && m_bNORMALMASK_DECODE_MODE && m_bDETAIL_BLEND_MODE );
 		AssertMsg( !( !m_nDETAILTEXTURE && ( m_nDETAIL_BLEND_MODE != 0 ) ), "Invalid combo combination ( !DETAILTEXTURE && ( DETAIL_BLEND_MODE != 0 ) )" );
 		AssertMsg( !( m_nSEAMLESS && ( m_nOUTLINE || m_nSOFTEDGES ) ), "Invalid combo combination ( SEAMLESS && ( OUTLINE || SOFTEDGES ) )" );
 		AssertMsg( !( m_nBASETEXTURE2 && ( m_nOUTLINE || m_nSOFTEDGES ) ), "Invalid combo combination ( BASETEXTURE2 && ( OUTLINE || SOFTEDGES ) )" );
@@ -396,7 +380,6 @@ public:
 		AssertMsg( !( m_nBASETEXTURENOENVMAP && ( !m_nBASETEXTURE2 || !m_nCUBEMAP ) ), "Invalid combo combination ( BASETEXTURENOENVMAP && ( !BASETEXTURE2 || !CUBEMAP ) )" );
 		AssertMsg( !( m_nBASETEXTURE2NOENVMAP && ( !m_nBASETEXTURE2 || !m_nCUBEMAP ) ), "Invalid combo combination ( BASETEXTURE2NOENVMAP && ( !BASETEXTURE2 || !CUBEMAP ) )" );
 		AssertMsg( !( m_nBASEALPHAENVMAPMASK && m_nBUMPMAP ), "Invalid combo combination ( BASEALPHAENVMAPMASK && BUMPMAP )" );
-		AssertMsg( !( m_nSEAMLESS && m_nRELIEF_MAPPING ), "Invalid combo combination ( SEAMLESS && RELIEF_MAPPING )" );
 		AssertMsg( !( m_nSEAMLESS && m_nDETAILTEXTURE ), "Invalid combo combination ( SEAMLESS && DETAILTEXTURE )" );
 		AssertMsg( !( m_nSEAMLESS && m_nMASKEDBLENDING ), "Invalid combo combination ( SEAMLESS && MASKEDBLENDING )" );
 		AssertMsg( !( m_nBUMPMASK && ( m_nSEAMLESS || ( m_nDETAILTEXTURE || ( m_nSELFILLUM || ( m_nBASETEXTURENOENVMAP || m_nBASETEXTURE2 ) ) ) ) ), "Invalid combo combination ( BUMPMASK && ( SEAMLESS || ( DETAILTEXTURE || ( SELFILLUM || ( BASETEXTURENOENVMAP || BASETEXTURE2 ) ) ) ) )" );
@@ -404,11 +387,11 @@ public:
 		AssertMsg( !( !m_nBUMPMAP && ( m_nNORMAL_DECODE_MODE == 2 ) ), "Invalid combo combination ( !BUMPMAP && ( NORMAL_DECODE_MODE == 2 ) )" );
 		AssertMsg( !( !m_nBUMPMAP && ( m_nNORMALMASK_DECODE_MODE == 1 ) ), "Invalid combo combination ( !BUMPMAP && ( NORMALMASK_DECODE_MODE == 1 ) )" );
 		AssertMsg( !( !m_nBUMPMAP && ( m_nNORMALMASK_DECODE_MODE == 2 ) ), "Invalid combo combination ( !BUMPMAP && ( NORMALMASK_DECODE_MODE == 2 ) )" );
-		return ( 288 * m_nMASKEDBLENDING ) + ( 576 * m_nBASETEXTURE2 ) + ( 1152 * m_nDETAILTEXTURE ) + ( 2304 * m_nBUMPMAP ) + ( 6912 * m_nBUMPMAP2 ) + ( 13824 * m_nCUBEMAP ) + ( 27648 * m_nENVMAPMASK ) + ( 55296 * m_nBASEALPHAENVMAPMASK ) + ( 110592 * m_nSELFILLUM ) + ( 221184 * m_nNORMALMAPALPHAENVMAPMASK ) + ( 442368 * m_nDIFFUSEBUMPMAP ) + ( 884736 * m_nBASETEXTURENOENVMAP ) + ( 1769472 * m_nBASETEXTURE2NOENVMAP ) + ( 3538944 * m_nWARPLIGHTING ) + ( 7077888 * m_nFANCY_BLENDING ) + ( 14155776 * m_nRELIEF_MAPPING ) + ( 14155776 * m_nSEAMLESS ) + ( 28311552 * m_nOUTLINE ) + ( 56623104 * m_nSOFTEDGES ) + ( 113246208 * m_nBUMPMASK ) + ( 226492416 * m_nNORMAL_DECODE_MODE ) + ( 226492416 * m_nNORMALMASK_DECODE_MODE ) + ( 226492416 * m_nDETAIL_BLEND_MODE ) + 0;
+		return ( 288 * m_nMASKEDBLENDING ) + ( 576 * m_nBASETEXTURE2 ) + ( 1152 * m_nDETAILTEXTURE ) + ( 2304 * m_nBUMPMAP ) + ( 6912 * m_nBUMPMAP2 ) + ( 13824 * m_nCUBEMAP ) + ( 27648 * m_nENVMAPMASK ) + ( 55296 * m_nBASEALPHAENVMAPMASK ) + ( 110592 * m_nSELFILLUM ) + ( 221184 * m_nNORMALMAPALPHAENVMAPMASK ) + ( 442368 * m_nDIFFUSEBUMPMAP ) + ( 884736 * m_nBASETEXTURENOENVMAP ) + ( 1769472 * m_nBASETEXTURE2NOENVMAP ) + ( 3538944 * m_nWARPLIGHTING ) + ( 7077888 * m_nFANCY_BLENDING ) + ( 14155776 * m_nSEAMLESS ) + ( 28311552 * m_nOUTLINE ) + ( 56623104 * m_nSOFTEDGES ) + ( 113246208 * m_nBUMPMASK ) + ( 226492416 * m_nNORMAL_DECODE_MODE ) + ( 226492416 * m_nNORMALMASK_DECODE_MODE ) + ( 226492416 * m_nDETAIL_BLEND_MODE ) + 0;
 	}
 };
 
-#define shaderStaticTest_lightmappedgeneric_ps30 psh_forgot_to_set_static_MASKEDBLENDING + psh_forgot_to_set_static_BASETEXTURE2 + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_BUMPMAP + psh_forgot_to_set_static_BUMPMAP2 + psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_ENVMAPMASK + psh_forgot_to_set_static_BASEALPHAENVMAPMASK + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_NORMALMAPALPHAENVMAPMASK + psh_forgot_to_set_static_DIFFUSEBUMPMAP + psh_forgot_to_set_static_BASETEXTURENOENVMAP + psh_forgot_to_set_static_BASETEXTURE2NOENVMAP + psh_forgot_to_set_static_WARPLIGHTING + psh_forgot_to_set_static_FANCY_BLENDING + psh_forgot_to_set_static_RELIEF_MAPPING + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_OUTLINE + psh_forgot_to_set_static_SOFTEDGES + psh_forgot_to_set_static_BUMPMASK + psh_forgot_to_set_static_NORMAL_DECODE_MODE + psh_forgot_to_set_static_NORMALMASK_DECODE_MODE + psh_forgot_to_set_static_DETAIL_BLEND_MODE
+#define shaderStaticTest_lightmappedgeneric_ps30 psh_forgot_to_set_static_MASKEDBLENDING + psh_forgot_to_set_static_BASETEXTURE2 + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_BUMPMAP + psh_forgot_to_set_static_BUMPMAP2 + psh_forgot_to_set_static_CUBEMAP + psh_forgot_to_set_static_ENVMAPMASK + psh_forgot_to_set_static_BASEALPHAENVMAPMASK + psh_forgot_to_set_static_SELFILLUM + psh_forgot_to_set_static_NORMALMAPALPHAENVMAPMASK + psh_forgot_to_set_static_DIFFUSEBUMPMAP + psh_forgot_to_set_static_BASETEXTURENOENVMAP + psh_forgot_to_set_static_BASETEXTURE2NOENVMAP + psh_forgot_to_set_static_WARPLIGHTING + psh_forgot_to_set_static_FANCY_BLENDING + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_OUTLINE + psh_forgot_to_set_static_SOFTEDGES + psh_forgot_to_set_static_BUMPMASK + psh_forgot_to_set_static_NORMAL_DECODE_MODE + psh_forgot_to_set_static_NORMALMASK_DECODE_MODE + psh_forgot_to_set_static_DETAIL_BLEND_MODE
 
 
 class lightmappedgeneric_ps30_Dynamic_Index

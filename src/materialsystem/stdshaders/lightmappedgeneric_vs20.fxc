@@ -4,25 +4,20 @@
 //  STATIC: "DIFFUSEBUMPMAP"			"0..1"
 //  STATIC: "VERTEXCOLOR"				"0..1"
 //  STATIC: "VERTEXALPHATEXBLENDFACTOR"	"0..1"
-//  STATIC: "RELIEF_MAPPING"            "0..0"
 //  STATIC: "SEAMLESS"                  "0..1"
 //  STATIC: "BUMPMASK"                  "0..1"
 //	STATIC: "FLASHLIGHT"				"0..1"	[XBOX]
 
 //  DYNAMIC: "FASTPATH"					"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //  DYNAMIC: "LIGHTING_PREVIEW"			"0..1"	[PC]
 //  DYNAMIC: "LIGHTING_PREVIEW"			"0..0"	[XBOX]
 
 // This should not be a combo since I'm a moron with the tangent space and the flashlight.
 //  SKIP: !$BUMPMAP && $DIFFUSEBUMPMAP
-//  SKIP: $SEAMLESS && $RELIEF_MAPPING
-//  SKIP: $BUMPMASK && $RELIEF_MAPPING
 //  SKIP: $BUMPMASK && $SEAMLESS
 
 #include "common_vs_fxc.h"
 
-static const int g_FogType						= DOWATERFOG;
 static const bool g_UseSeparateEnvmapMask		= ENVMAP_MASK;
 static const bool g_bTangentSpace				= TANGENTSPACE;
 static const bool g_bBumpmap					= BUMPMAP;
@@ -57,23 +52,14 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-    float4 projPos					: POSITION;	
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	float  fog						: FOG;
-#endif
+    float4 projPos					: POSITION;
 
 #if SEAMLESS
 	float3 SeamlessTexCoord         : TEXCOORD0;            // x y z 
-	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;   // envmap mask
 #else
 	float2 baseTexCoord				: TEXCOORD0;
-	// detail textures and bumpmaps are mutually exclusive so that we have enough texcoords.
-#if RELIEF_MAPPING
-	float3 TangentSpaceViewRay		: TEXCOORD1;
-#else
-	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;
 #endif
-#endif
+	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;   // envmap mask
 	float4 lightmapTexCoord1And2	: TEXCOORD2;
 	float4 lightmapTexCoord3		: TEXCOORD3;			// and basetexcoord*mask_scale
 	float4 worldPos_projPosZ		: TEXCOORD4;
@@ -149,7 +135,6 @@ VS_OUTPUT main( const VS_INPUT v )
 			o.baseTexCoord.x = dot( v.vBaseTexCoord, cBaseTexCoordTransform[0] ) + cBaseTexCoordTransform[0].w;
 			o.baseTexCoord.y = dot( v.vBaseTexCoord, cBaseTexCoordTransform[1] ) + cBaseTexCoordTransform[1].w;
 		}
-#if ( RELIEF_MAPPING == 0 )
 		{
             // calculate detailorbumptexcoord
 			if ( FASTPATH )
@@ -160,7 +145,6 @@ VS_OUTPUT main( const VS_INPUT v )
 				o.detailOrBumpAndEnvmapMaskTexCoord.y = dot( v.vBaseTexCoord, cDetailOrBumpTexCoordTransform[1] ) + cDetailOrBumpTexCoordTransform[1].w;
 			}
 		}
-#endif
 	}
 #endif
 	if ( FASTPATH )
@@ -192,7 +176,6 @@ VS_OUTPUT main( const VS_INPUT v )
 		o.lightmapTexCoord1And2.xy = v.vLightmapTexCoord;
 	}
 
-#if ( RELIEF_MAPPING == 0)
 	if( g_UseSeparateEnvmapMask || g_BumpMask )
 	{
 		// reversed component order
@@ -203,12 +186,6 @@ VS_OUTPUT main( const VS_INPUT v )
 		o.detailOrBumpAndEnvmapMaskTexCoord.z = dot( v.vBaseTexCoord, cEnvmapMaskTexCoordTransform[1] ) + cEnvmapMaskTexCoordTransform[1].w;
 #	endif
 	}
-#endif
-
-	o.vertexBlendX_fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 ) && !defined( SHADER_MODEL_VS_3_0 )
-	o.fog = o.vertexBlendX_fogFactorW;
-#endif
 
 	if (!g_bVertexColor)
 	{

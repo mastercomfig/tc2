@@ -95,11 +95,7 @@ BEGIN_VS_SHADER_FLAGS( Shadow, "Help for Shadow", SHADER_NOT_EDITABLE )
 			vecJitter.y *= -1.0f;
 			pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3, vecJitter.Base() );
 
-			MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-			int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
-
 			DECLARE_DYNAMIC_VERTEX_SHADER( shadow_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
 			SET_DYNAMIC_VERTEX_SHADER( shadow_vs30 );
 
 			DECLARE_DYNAMIC_PIXEL_SHADER( shadow_ps30 );

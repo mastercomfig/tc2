@@ -230,14 +230,10 @@ BEGIN_VS_SHADER( ShatteredGlass,
 			pShaderAPI->BindStandardTexture( SHADER_SAMPLER6, TEXTURE_NORMALIZATION_CUBEMAP_SIGNED );
 
 			/*
-			"DOWATERFOG"				"0..1"
 			"ENVMAP_MASK"			"0..1"
 			*/
-			MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-			int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( shatteredglass_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
 			SET_DYNAMIC_VERTEX_SHADER( shatteredglass_vs30 );
 
 			DECLARE_DYNAMIC_PIXEL_SHADER( shatteredglass_ps30 );

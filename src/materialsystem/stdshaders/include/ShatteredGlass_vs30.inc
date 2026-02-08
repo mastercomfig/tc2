@@ -30,7 +30,7 @@ public:
 	int GetIndex() const
 	{
 		Assert( m_bENVMAP_MASK );
-		return ( 2 * m_nENVMAP_MASK ) + 0;
+		return ( 1 * m_nENVMAP_MASK ) + 0;
 	}
 };
 
@@ -39,34 +39,16 @@ public:
 
 class shatteredglass_vs30_Dynamic_Index
 {
-	unsigned int m_nDOWATERFOG : 2;
-#ifdef _DEBUG
-	bool m_bDOWATERFOG : 1;
-#endif	// _DEBUG
 public:
-	void SetDOWATERFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOWATERFOG = i;
-#ifdef _DEBUG
-		m_bDOWATERFOG = true;
-#endif	// _DEBUG
-	}
-
 	shatteredglass_vs30_Dynamic_Index(  )
 	{
-		m_nDOWATERFOG = 0;
-#ifdef _DEBUG
-		m_bDOWATERFOG = false;
-#endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bDOWATERFOG );
-		return ( 1 * m_nDOWATERFOG ) + 0;
+		return 0;
 	}
 };
 
-#define shaderDynamicTest_shatteredglass_vs30 vsh_forgot_to_set_dynamic_DOWATERFOG
+#define shaderDynamicTest_shatteredglass_vs30 1
 

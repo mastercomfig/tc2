@@ -1,8 +1,4 @@
-// DYNAMIC: "DOWATERFOG"	"0..1"
-
 #include "common_vs_fxc.h"
-
-static const int g_FogType	= DOWATERFOG;
 
 struct VS_INPUT
 {
@@ -25,12 +21,6 @@ struct VS_OUTPUT
 	float4 worldPos_projPosZ		: TEXCOORD7;		// Necessary for pixel fog
 
 	float4 directionalLightColor : COLOR0;
-
-	float4 fogFactorW	: COLOR1;
-
-#if !defined( _X360 )    
-	float  fog		: FOG;
-#endif
 };
 
 
@@ -45,11 +35,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 
 	o.worldPos_projPosZ = float4( worldPos.xyz, vProjPos.z );
-
-	o.fogFactorW = CalcFog( worldPos, vProjPos, g_FogType );
-#if !defined( _X360 )
-	o.fog = o.fogFactorW;
-#endif
 
 	//------------------------------------------------------------------------------
 	// Setup the tangent space

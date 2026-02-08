@@ -608,7 +608,6 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 		}
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-		int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
 		int numBones = pShaderAPI->GetCurrentNumBones();
 
 		// don't have an easy way to get this through to GLM, so just print it old school
@@ -630,7 +629,6 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 		}
 
 		DECLARE_DYNAMIC_VERTEX_SHADER( skin_vs30 );
-		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, fogIndex );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( LIGHTING_PREVIEW, pShaderAPI->GetIntRenderingParameter(INT_RENDERPARM_ENABLE_FIXED_LIGHTING)!=0);
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );

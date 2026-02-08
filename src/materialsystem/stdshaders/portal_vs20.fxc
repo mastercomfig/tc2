@@ -37,10 +37,6 @@ struct VS_OUTPUT
 #		endif
 #	endif
 
-#	if !defined( _X360  )
-		float vFog						: FOG;
-#	endif
-
 	float4 worldPos_projPosZ		: TEXCOORD7;		// Necessary for pixel fog
 };
 
@@ -66,10 +62,7 @@ VS_OUTPUT main( const VS_INPUT v )
 #else	
 	vTextureProjectedPos = o.vProjPos;
 #endif
-	
-#if !defined( _X360 )
-	o.vFog = CalcFog( worldPos, o.vProjPos.xyz, FOGTYPE_RANGE );
-#endif
+
 	o.worldPos_projPosZ = float4( worldPos.xyz, o.vProjPos.z );
 	
 	//Screen coordinates mapped back to texture coordinates for the portal texture

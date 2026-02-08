@@ -155,7 +155,7 @@ public:
 		AssertMsg( !( m_nSEPARATE_DETAIL_UVS && m_nSEAMLESS_DETAIL ), "Invalid combo combination ( SEPARATE_DETAIL_UVS && SEAMLESS_DETAIL )" );
 		AssertMsg( !( m_nDONT_GAMMA_CONVERT_VERTEX_COLOR && !m_nVERTEXCOLOR ), "Invalid combo combination ( DONT_GAMMA_CONVERT_VERTEX_COLOR && !VERTEXCOLOR )" );
 		AssertMsg( !( m_nTREESWAY && ( m_nSEAMLESS_DETAIL || m_nSEAMLESS_BASE ) ), "Invalid combo combination ( TREESWAY && ( SEAMLESS_DETAIL || SEAMLESS_BASE ) )" );
-		return ( 256 * m_nVERTEXCOLOR ) + ( 512 * m_nCUBEMAP ) + ( 1024 * m_nHALFLAMBERT ) + ( 2048 * m_nFLASHLIGHT ) + ( 4096 * m_nSEAMLESS_BASE ) + ( 8192 * m_nSEAMLESS_DETAIL ) + ( 16384 * m_nSEPARATE_DETAIL_UVS ) + ( 32768 * m_nDECAL ) + ( 65536 * m_nDONT_GAMMA_CONVERT_VERTEX_COLOR ) + ( 131072 * m_nTREESWAY ) + 0;
+		return ( 128 * m_nVERTEXCOLOR ) + ( 256 * m_nCUBEMAP ) + ( 512 * m_nHALFLAMBERT ) + ( 1024 * m_nFLASHLIGHT ) + ( 2048 * m_nSEAMLESS_BASE ) + ( 4096 * m_nSEAMLESS_DETAIL ) + ( 8192 * m_nSEPARATE_DETAIL_UVS ) + ( 16384 * m_nDECAL ) + ( 32768 * m_nDONT_GAMMA_CONVERT_VERTEX_COLOR ) + ( 65536 * m_nTREESWAY ) + 0;
 	}
 };
 
@@ -168,7 +168,6 @@ class vertexlit_and_unlit_generic_vs30_Dynamic_Index
 	unsigned int m_nDYNAMIC_LIGHT : 2;
 	unsigned int m_nSTATIC_LIGHT_VERTEX : 2;
 	unsigned int m_nSTATIC_LIGHT_LIGHTMAP : 2;
-	unsigned int m_nDOWATERFOG : 2;
 	unsigned int m_nSKINNING : 2;
 	unsigned int m_nLIGHTING_PREVIEW : 2;
 	unsigned int m_nMORPHING : 2;
@@ -177,7 +176,6 @@ class vertexlit_and_unlit_generic_vs30_Dynamic_Index
 	bool m_bDYNAMIC_LIGHT : 1;
 	bool m_bSTATIC_LIGHT_VERTEX : 1;
 	bool m_bSTATIC_LIGHT_LIGHTMAP : 1;
-	bool m_bDOWATERFOG : 1;
 	bool m_bSKINNING : 1;
 	bool m_bLIGHTING_PREVIEW : 1;
 	bool m_bMORPHING : 1;
@@ -219,15 +217,6 @@ public:
 #endif	// _DEBUG
 	}
 
-	void SetDOWATERFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOWATERFOG = i;
-#ifdef _DEBUG
-		m_bDOWATERFOG = true;
-#endif	// _DEBUG
-	}
-
 	void SetSKINNING( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
@@ -261,7 +250,6 @@ public:
 		m_nDYNAMIC_LIGHT = 0;
 		m_nSTATIC_LIGHT_VERTEX = 0;
 		m_nSTATIC_LIGHT_LIGHTMAP = 0;
-		m_nDOWATERFOG = 0;
 		m_nSKINNING = 0;
 		m_nLIGHTING_PREVIEW = 0;
 		m_nMORPHING = 0;
@@ -270,7 +258,6 @@ public:
 		m_bDYNAMIC_LIGHT = false;
 		m_bSTATIC_LIGHT_VERTEX = false;
 		m_bSTATIC_LIGHT_LIGHTMAP = false;
-		m_bDOWATERFOG = false;
 		m_bSKINNING = false;
 		m_bLIGHTING_PREVIEW = false;
 		m_bMORPHING = false;
@@ -279,10 +266,10 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bCOMPRESSED_VERTS && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT_VERTEX && m_bSTATIC_LIGHT_LIGHTMAP && m_bDOWATERFOG && m_bSKINNING && m_bLIGHTING_PREVIEW && m_bMORPHING );
-		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDYNAMIC_LIGHT ) + ( 4 * m_nSTATIC_LIGHT_VERTEX ) + ( 8 * m_nSTATIC_LIGHT_LIGHTMAP ) + ( 16 * m_nDOWATERFOG ) + ( 32 * m_nSKINNING ) + ( 64 * m_nLIGHTING_PREVIEW ) + ( 128 * m_nMORPHING ) + 0;
+		Assert( m_bCOMPRESSED_VERTS && m_bDYNAMIC_LIGHT && m_bSTATIC_LIGHT_VERTEX && m_bSTATIC_LIGHT_LIGHTMAP && m_bSKINNING && m_bLIGHTING_PREVIEW && m_bMORPHING );
+		return ( 1 * m_nCOMPRESSED_VERTS ) + ( 2 * m_nDYNAMIC_LIGHT ) + ( 4 * m_nSTATIC_LIGHT_VERTEX ) + ( 8 * m_nSTATIC_LIGHT_LIGHTMAP ) + ( 16 * m_nSKINNING ) + ( 32 * m_nLIGHTING_PREVIEW ) + ( 64 * m_nMORPHING ) + 0;
 	}
 };
 
-#define shaderDynamicTest_vertexlit_and_unlit_generic_vs30 vsh_forgot_to_set_dynamic_COMPRESSED_VERTS + vsh_forgot_to_set_dynamic_DYNAMIC_LIGHT + vsh_forgot_to_set_dynamic_STATIC_LIGHT_VERTEX + vsh_forgot_to_set_dynamic_STATIC_LIGHT_LIGHTMAP + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_SKINNING + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW + vsh_forgot_to_set_dynamic_MORPHING
+#define shaderDynamicTest_vertexlit_and_unlit_generic_vs30 vsh_forgot_to_set_dynamic_COMPRESSED_VERTS + vsh_forgot_to_set_dynamic_DYNAMIC_LIGHT + vsh_forgot_to_set_dynamic_STATIC_LIGHT_VERTEX + vsh_forgot_to_set_dynamic_STATIC_LIGHT_LIGHTMAP + vsh_forgot_to_set_dynamic_SKINNING + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW + vsh_forgot_to_set_dynamic_MORPHING
 

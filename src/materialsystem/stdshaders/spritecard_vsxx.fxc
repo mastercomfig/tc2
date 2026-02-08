@@ -222,6 +222,14 @@ VS_OUTPUT main( CONST_PC VS_INPUT v
 		rad = 0;											// cull so we emit 0-sized sprite
 #endif
 
+	// fade tint.a based upon fog amount
+	tint.a *= CalcRadialFog_FixedFunction( worldPos, cEyePos, cRadialFogMaxDensity, cFogEndOverFogRange, cOOFogRange );
+
+	if ( tint.a < 0.001 )
+	{
+		rad = 0;
+	}
+
 	rad=min(rad, MAXIMUM_SIZE_FACTOR * l);
 
 #if ORIENTATION == 0

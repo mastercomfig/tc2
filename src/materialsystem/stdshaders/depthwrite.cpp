@@ -97,18 +97,12 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 			SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, nTreeSwayMode );
 			SET_STATIC_VERTEX_SHADER( depthwrite_vs30 );
 
-			if ( bAlphaClip || g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() || nColorDepth )
-			{
-				if( bAlphaClip )
-				{
-					pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
-					pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, true );
-				}
+			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
+			pShaderShadow->EnableSRGBRead( SHADER_SAMPLER0, true );
 
-				DECLARE_STATIC_PIXEL_SHADER( depthwrite_ps30 );
-				SET_STATIC_PIXEL_SHADER_COMBO( COLOR_DEPTH, nColorDepth );
-				SET_STATIC_PIXEL_SHADER( depthwrite_ps30 );
-			}
+			DECLARE_STATIC_PIXEL_SHADER( depthwrite_ps30 );
+			SET_STATIC_PIXEL_SHADER_COMBO( COLOR_DEPTH, nColorDepth );
+			SET_STATIC_PIXEL_SHADER( depthwrite_ps30 );
 		}
 		DYNAMIC_STATE
 		{
@@ -118,7 +112,7 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 				SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
 			}
 
-			DECLARE_DYNAMIC_VERTEX_SHADER( depthwrite_vs30);
+			DECLARE_DYNAMIC_VERTEX_SHADER( depthwrite_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );

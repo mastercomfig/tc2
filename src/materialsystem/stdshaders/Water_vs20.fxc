@@ -22,9 +22,6 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 vProjPos_POSITION		: POSITION;
-#if !defined( _X360 )
-	float  vFog						: FOG;
-#endif
 	float2 vBumpTexCoord			: TEXCOORD0;
 	float3 vTangentEyeVect			: TEXCOORD1;
 	float4 vReflectXY_vRefractYX	: TEXCOORD2;
@@ -38,7 +35,6 @@ struct VS_OUTPUT
 	HALF4 lightmapTexCoord1And2		: TEXCOORD6;
 	HALF4 lightmapTexCoord3			: TEXCOORD7;
 #endif
-	float4 fogFactorW				: COLOR1;
 };
 
 VS_OUTPUT main( const VS_INPUT v )
@@ -72,12 +68,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	o.screenCoord = vProjPos.x;
 
-	// Compute fog based on the position
 	float3 vWorldPos = mul( v.vPos, cModel[0] );
-	o.fogFactorW = CalcFog( vWorldPos, vProjPos, FOGTYPE_RANGE );
-#if !defined( _X360 )
-	o.vFog = o.fogFactorW;
-#endif
 	o.vWorldPos_projPosW.xyz = vWorldPos;
 
 	// Eye vector

@@ -115,7 +115,7 @@ public:
 				// TODO: sessions
 				AUTO_LOCK(m_clientsMutex)
 				m_connectedClients.clear();
-				Msg("Game state connection closed.\n");
+				Msg("Game state connection closed. %s\n", reason.c_str());
 			}
 		})
 		.onmessage([&](crow::websocket::connection& conn, const std::string& in, bool is_binary) {

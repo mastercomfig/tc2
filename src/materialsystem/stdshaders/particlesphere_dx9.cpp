@@ -128,7 +128,6 @@ BEGIN_VS_SHADER_FLAGS( ParticleSphere_DX9, "Help for ParticleSphere", SHADER_NOT
 
 			// Compute the vertex shader index.
 			DECLARE_DYNAMIC_VERTEX_SHADER( particlesphere_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( FOGTYPE, s_pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 			SET_DYNAMIC_VERTEX_SHADER( particlesphere_vs30 );
 
 			DECLARE_DYNAMIC_PIXEL_SHADER( particlesphere_ps30 );

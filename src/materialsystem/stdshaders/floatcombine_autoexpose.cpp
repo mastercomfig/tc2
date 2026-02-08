@@ -70,6 +70,7 @@ BEGIN_VS_SHADER( floatcombine_autoexpose, "Help for floatcombine_autoexpose" )
 
 			// Pre-cache shaders
 			DECLARE_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
+			SET_STATIC_VERTEX_SHADER_COMBO( VERTEXCOLOR, false );
 			SET_STATIC_VERTEX_SHADER( screenspaceeffect_vs30 );
 
 			DECLARE_STATIC_PIXEL_SHADER( floatcombine_autoexpose_ps30 );

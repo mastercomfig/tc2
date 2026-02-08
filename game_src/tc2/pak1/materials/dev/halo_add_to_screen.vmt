@@ -7,6 +7,7 @@
 	"$ignorez" 1
 	"$linearread_basetexture" 1
 	"$linearwrite" 1
+	"$C0_X" "1"
 
 	"$texture1" "dev/glow_red"
 	"$texture2" "dev/glow_white"

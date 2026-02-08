@@ -1,7 +1,5 @@
 // ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
 // !$BUMPMAP && $DIFFUSEBUMPMAP
-// $SEAMLESS && $RELIEF_MAPPING
-// $BUMPMASK && $RELIEF_MAPPING
 // $BUMPMASK && $SEAMLESS
 // defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 
@@ -15,7 +13,6 @@ class lightmappedgeneric_vs30_Static_Index
 	unsigned int m_nDIFFUSEBUMPMAP : 2;
 	unsigned int m_nVERTEXCOLOR : 2;
 	unsigned int m_nVERTEXALPHATEXBLENDFACTOR : 2;
-	unsigned int m_nRELIEF_MAPPING : 1;
 	unsigned int m_nSEAMLESS : 2;
 	unsigned int m_nBUMPMASK : 2;
 #ifdef _DEBUG
@@ -25,7 +22,6 @@ class lightmappedgeneric_vs30_Static_Index
 	bool m_bDIFFUSEBUMPMAP : 1;
 	bool m_bVERTEXCOLOR : 1;
 	bool m_bVERTEXALPHATEXBLENDFACTOR : 1;
-	bool m_bRELIEF_MAPPING : 1;
 	bool m_bSEAMLESS : 1;
 	bool m_bBUMPMASK : 1;
 #endif	// _DEBUG
@@ -84,15 +80,6 @@ public:
 #endif	// _DEBUG
 	}
 
-	void SetRELIEF_MAPPING( int i )
-	{
-		Assert( i >= 0 && i <= 0 );
-		m_nRELIEF_MAPPING = i;
-#ifdef _DEBUG
-		m_bRELIEF_MAPPING = true;
-#endif	// _DEBUG
-	}
-
 	void SetSEAMLESS( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
@@ -119,7 +106,6 @@ public:
 		m_nDIFFUSEBUMPMAP = 0;
 		m_nVERTEXCOLOR = 0;
 		m_nVERTEXALPHATEXBLENDFACTOR = 0;
-		m_nRELIEF_MAPPING = 0;
 		m_nSEAMLESS = 0;
 		m_nBUMPMASK = 0;
 #ifdef _DEBUG
@@ -129,7 +115,6 @@ public:
 		m_bDIFFUSEBUMPMAP = false;
 		m_bVERTEXCOLOR = false;
 		m_bVERTEXALPHATEXBLENDFACTOR = false;
-		m_bRELIEF_MAPPING = false;
 		m_bSEAMLESS = false;
 		m_bBUMPMASK = false;
 #endif	// _DEBUG
@@ -137,26 +122,22 @@ public:
 
 	int GetIndex() const
 	{
-		Assert( m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK );
+		Assert( m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bSEAMLESS && m_bBUMPMASK );
 		AssertMsg( !( !m_nBUMPMAP && m_nDIFFUSEBUMPMAP ), "Invalid combo combination ( !BUMPMAP && DIFFUSEBUMPMAP )" );
-		AssertMsg( !( m_nSEAMLESS && m_nRELIEF_MAPPING ), "Invalid combo combination ( SEAMLESS && RELIEF_MAPPING )" );
-		AssertMsg( !( m_nBUMPMASK && m_nRELIEF_MAPPING ), "Invalid combo combination ( BUMPMASK && RELIEF_MAPPING )" );
 		AssertMsg( !( m_nBUMPMASK && m_nSEAMLESS ), "Invalid combo combination ( BUMPMASK && SEAMLESS )" );
-		return ( 8 * m_nENVMAP_MASK ) + ( 16 * m_nTANGENTSPACE ) + ( 32 * m_nBUMPMAP ) + ( 64 * m_nDIFFUSEBUMPMAP ) + ( 128 * m_nVERTEXCOLOR ) + ( 256 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 512 * m_nRELIEF_MAPPING ) + ( 512 * m_nSEAMLESS ) + ( 1024 * m_nBUMPMASK ) + 0;
+		return ( 4 * m_nENVMAP_MASK ) + ( 8 * m_nTANGENTSPACE ) + ( 16 * m_nBUMPMAP ) + ( 32 * m_nDIFFUSEBUMPMAP ) + ( 64 * m_nVERTEXCOLOR ) + ( 128 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 256 * m_nSEAMLESS ) + ( 512 * m_nBUMPMASK ) + 0;
 	}
 };
 
-#define shaderStaticTest_lightmappedgeneric_vs30 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_RELIEF_MAPPING + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK
+#define shaderStaticTest_lightmappedgeneric_vs30 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK
 
 
 class lightmappedgeneric_vs30_Dynamic_Index
 {
 	unsigned int m_nFASTPATH : 2;
-	unsigned int m_nDOWATERFOG : 2;
 	unsigned int m_nLIGHTING_PREVIEW : 2;
 #ifdef _DEBUG
 	bool m_bFASTPATH : 1;
-	bool m_bDOWATERFOG : 1;
 	bool m_bLIGHTING_PREVIEW : 1;
 #endif	// _DEBUG
 public:
@@ -166,15 +147,6 @@ public:
 		m_nFASTPATH = i;
 #ifdef _DEBUG
 		m_bFASTPATH = true;
-#endif	// _DEBUG
-	}
-
-	void SetDOWATERFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOWATERFOG = i;
-#ifdef _DEBUG
-		m_bDOWATERFOG = true;
 #endif	// _DEBUG
 	}
 
@@ -190,22 +162,20 @@ public:
 	lightmappedgeneric_vs30_Dynamic_Index(  )
 	{
 		m_nFASTPATH = 0;
-		m_nDOWATERFOG = 0;
 		m_nLIGHTING_PREVIEW = 0;
 #ifdef _DEBUG
 		m_bFASTPATH = false;
-		m_bDOWATERFOG = false;
 		m_bLIGHTING_PREVIEW = false;
 #endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW );
+		Assert( m_bFASTPATH && m_bLIGHTING_PREVIEW );
 		AssertMsg( !( 1 && ( 1 && ( m_nLIGHTING_PREVIEW && m_nFASTPATH ) ) ), "Invalid combo combination ( 1 && ( 1 && ( LIGHTING_PREVIEW && FASTPATH ) ) )" );
-		return ( 1 * m_nFASTPATH ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nLIGHTING_PREVIEW ) + 0;
+		return ( 1 * m_nFASTPATH ) + ( 2 * m_nLIGHTING_PREVIEW ) + 0;
 	}
 };
 
-#define shaderDynamicTest_lightmappedgeneric_vs30 vsh_forgot_to_set_dynamic_FASTPATH + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW
+#define shaderDynamicTest_lightmappedgeneric_vs30 vsh_forgot_to_set_dynamic_FASTPATH + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW
 

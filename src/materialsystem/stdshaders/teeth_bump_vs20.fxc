@@ -3,14 +3,12 @@
 //	STATIC: "INTRO"						"0..1"
 
 //	DYNAMIC: "COMPRESSED_VERTS"			"0..1"
-//	DYNAMIC: "DOWATERFOG"				"0..1"
 //	DYNAMIC: "SKINNING"					"0..1"
 //	DYNAMIC: "STATIC_LIGHT"				"0..1"
 //  DYNAMIC: "MORPHING"					"0..1" [vs30]
 
 #include "vortwarp_vs20_helper.h"
 
-static const int g_FogType			= DOWATERFOG;
 static const bool g_bSkinning		= SKINNING ? true : false;
 
 const float4 cTeethLighting			:  register( SHADER_SPECIFIC_CONST_0 );
@@ -50,9 +48,6 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
     float4 projPos							: POSITION;
-#if !defined( _X360 )    	
-	float  fog								: FOG;
-#endif
 	float2 baseTexCoord						: TEXCOORD0;
 	float4 worldVertToEyeVector_Darkening	: TEXCOORD1;
 	float3x3 tangentSpaceTranspose			: TEXCOORD2;
@@ -101,10 +96,6 @@ VS_OUTPUT main( const VS_INPUT v )
 	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
 
 	o.worldPos_projPosZ = float4( worldPos, vProjPos.z );
-#if !defined( _X360 )
-	// Set fixed-function fog factor
-	o.fog = CalcFog( worldPos, vProjPos, g_FogType );
-#endif
 	// Needed for specular
 	o.worldVertToEyeVector_Darkening.xyz = cEyePos - worldPos;
 

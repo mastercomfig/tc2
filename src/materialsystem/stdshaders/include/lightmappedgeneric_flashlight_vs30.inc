@@ -69,7 +69,7 @@ public:
 	int GetIndex() const
 	{
 		Assert( m_bNORMALMAP && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAIL );
-		return ( 2 * m_nNORMALMAP ) + ( 4 * m_nWORLDVERTEXTRANSITION ) + ( 8 * m_nSEAMLESS ) + ( 16 * m_nDETAIL ) + 0;
+		return ( 1 * m_nNORMALMAP ) + ( 2 * m_nWORLDVERTEXTRANSITION ) + ( 4 * m_nSEAMLESS ) + ( 8 * m_nDETAIL ) + 0;
 	}
 };
 
@@ -78,34 +78,16 @@ public:
 
 class lightmappedgeneric_flashlight_vs30_Dynamic_Index
 {
-	unsigned int m_nDOWATERFOG : 2;
-#ifdef _DEBUG
-	bool m_bDOWATERFOG : 1;
-#endif	// _DEBUG
 public:
-	void SetDOWATERFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOWATERFOG = i;
-#ifdef _DEBUG
-		m_bDOWATERFOG = true;
-#endif	// _DEBUG
-	}
-
 	lightmappedgeneric_flashlight_vs30_Dynamic_Index(  )
 	{
-		m_nDOWATERFOG = 0;
-#ifdef _DEBUG
-		m_bDOWATERFOG = false;
-#endif	// _DEBUG
 	}
 
 	int GetIndex() const
 	{
-		Assert( m_bDOWATERFOG );
-		return ( 1 * m_nDOWATERFOG ) + 0;
+		return 0;
 	}
 };
 
-#define shaderDynamicTest_lightmappedgeneric_flashlight_vs30 vsh_forgot_to_set_dynamic_DOWATERFOG
+#define shaderDynamicTest_lightmappedgeneric_flashlight_vs30 1
 

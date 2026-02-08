@@ -91,11 +91,7 @@ BEGIN_VS_SHADER( Bik, "Help for Bik" )
 			// We need the view matrix
 			LoadViewMatrixIntoVertexShaderConstant( VERTEX_SHADER_VIEWMODEL );
 
-			MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-			int fogIndex = ( fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ? 1 : 0;
-
 			DECLARE_DYNAMIC_VERTEX_SHADER( bik_vs30 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogIndex );
 			SET_DYNAMIC_VERTEX_SHADER( bik_vs30 );
 
 			pShaderAPI->SetPixelShaderFogParams( PSREG_FOG_PARAMS );		
