@@ -181,8 +181,7 @@ void CLobbyContainerFrame_Comp::WriteControls()
 //-----------------------------------------------------------------------------
 bool CheckCompetitiveConvars()
 {
-	static ConVarRef mat_dxlevel( "mat_dxlevel");
-	return mat_dxlevel.GetInt() >= 90;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -202,11 +201,6 @@ bool CLobbyContainerFrame_Comp::VerifyPartyAuthorization() const
 		if ( !GTFGCClientSystem()->BHasCompetitiveAccess() )
 		{
 			ShowEconRequirementDialog( "#TF_Competitive_RequiresPass_Title", "#TF_Competitive_RequiresPass", CTFItemSchema::k_rchLadderPassItemDefName );
-			return false;
-		}
-		else if ( !CheckCompetitiveConvars() )
-		{
-			ShowMessageBox( "#TF_Competitive_Convars_CantProceed_Title", "#TF_Competitive_Convars_CantProceed", "#GameUI_OK" );
 			return false;
 		}
 	}

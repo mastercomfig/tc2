@@ -397,7 +397,6 @@ void CEconItemDescription::GenerateDescriptionLines( const CLocalizationProvider
 		Generate_DropPeriodDesc( pLocalizationProvider, pEconItem ); 
 
 		Generate_MarketInformation( pLocalizationProvider, pEconItem );
-		Generate_DirectX8Warning( pLocalizationProvider, pEconItem );
 	}
 
 	// Certain information (tradeability, etc.) used to only get displayed if we were the owning player, or
@@ -3426,20 +3425,6 @@ void CEconItemDescription::Generate_VisibleAttributes( const CLocalizationProvid
 // --------------------------------------------------------------------------
 void CEconItemDescription::Generate_DirectX8Warning( const CLocalizationProvider *pLocalizationProvider, const IEconItemInterface *pEconItem )
 {
-#ifdef CLIENT_DLL
-	static ConVarRef mat_dxlevel( "mat_dxlevel" );
-	const CEconItemDefinition *pEconItemDefinition = pEconItem->GetItemDefinition();
-	// If less than 90, we're in DX8 mode. 
-	// Display warning if you are looking at a painthit item or case
-	if ( mat_dxlevel.GetInt() < 90 && pEconItemDefinition && ( pEconItemDefinition->GetItemCollectionDefinition() || pEconItemDefinition->GetCollectionReference() ) )
-	{
-		AddEmptyDescLine();
-		AddDescLine( pLocalizationProvider->Find( "#Attrib_DirectX8Warning" ),
-			ATTRIB_COL_NEGATIVE,
-			kDescLineFlag_Misc );
-	}
-
-#endif
 }
 
 

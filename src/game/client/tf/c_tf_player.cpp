@@ -3461,11 +3461,6 @@ public:
 
 	virtual bool Init( IMaterial *pMaterial, KeyValues* pKeyValues )
 	{
-		// We don't support DX8
-		ConVarRef mat_dxlevel( "mat_dxlevel" );
-		if ( mat_dxlevel.GetInt() < 90 )
-			return false;
-
 		Assert( pMaterial );
 		m_pMaterial = pMaterial;
 
