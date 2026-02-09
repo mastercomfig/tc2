@@ -10,6 +10,8 @@
 #include "c_tf_player.h"
 #include "tf_weapon_medigun.h"
 #include "tf_demo_support.h"
+
+#include "c_tf_team.h"
 #include "tf_gamerules.h"
 #include "tf_hud_chat.h"
 #include "vguicenterprint.h"
@@ -30,6 +32,7 @@ ConVar ds_notify( "ds_notify", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_A
 ConVar ds_screens( "ds_screens", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - take screenshot of the scoreboard for non-competitive matches or the match summary stats for competitive matches. For competitive matches, it will not capture the screenshot if you disconnect from the server before the medal awards have completed.", true, 0, true, 1 );
 ConVar ds_autodelete( "ds_autodelete", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - automatically delete .dem files with no associated bookmark or kill streak events.", true, 0, true, 1 ); 
 ConVar ds_rounds_only( "ds_rounds_only", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - only record during the rounds of a match, no pre or post-game.", true, 0, true, 1 );
+ConVar ds_automark( "ds_automark", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Auto bookmark competitive matches." );
 
 CON_COMMAND_F( ds_mark, "Demo support - bookmark (with optional single-word description) the current tick count for the demo being recorded.", FCVAR_CLIENTDLL | FCVAR_DONTRECORD )
 {
@@ -81,6 +84,7 @@ CTFDemoSupport::CTFDemoSupport() : CAutoGameSystemPerFrame( "CTFDemoSupport" )
 	m_DemoSpecificEventList.Clear();
 	m_DemoSpecificEventList.SetStatusCode( k_EHTTPStatusCode200OK );
 	m_pRoot = NULL;
+	m_pDetailsNode = NULL;
 	m_pChildArray = NULL;
 	m_flScreenshotTime = -1.f;
 	m_bAlreadyAutoRecordedOnce = false;
@@ -539,12 +543,27 @@ bool CTFDemoSupport::StartRecording( void )
 	m_DemoSpecificEventList.SetStatusCode( k_EHTTPStatusCode200OK );
 	m_pRoot = m_DemoSpecificEventList.CreateRootValue( "summary" );
 	m_DemoSpecificEventList.SetJSONAnonymousRootNode( true );
+	if ( TFGameRules()->IsCompetitiveGame() )
+	{
+		CBasePlayer* pLocalPlayer = CBasePlayer::GetLocalPlayer();
+		if ( pLocalPlayer )
+		{
+			m_pDetailsNode = m_pRoot->CreateChildObject( "details" );
+			m_pDetailsNode->SetChildStringValue( "map_name", "" );
+			char pTeamName[MAX_TEAM_NAME_LENGTH];
+			g_pVGuiLocalize->ConvertUnicodeToANSI( GetGlobalTFTeam( pLocalPlayer->GetTeamNumber() )->Get_Localized_Name(), pTeamName, sizeof( pTeamName ) );
+			m_pDetailsNode->SetChildStringValue( "team", pTeamName );
+			char pEnemyTeamName[MAX_TEAM_NAME_LENGTH];
+			g_pVGuiLocalize->ConvertUnicodeToANSI( GetGlobalTFTeam( pLocalPlayer->GetTeamNumber() == TF_TEAM_BLUE ? TF_TEAM_RED : TF_TEAM_BLUE )->Get_Localized_Name(), pEnemyTeamName, sizeof( pEnemyTeamName ) );
+			m_pDetailsNode->SetChildStringValue( "enemy_team", pEnemyTeamName );
+		}
+	}
 	m_pChildArray = m_pRoot->CreateChildArray( "events", "event" );
 
 	m_bRecording = true;
 	m_bAlreadyAutoRecordedOnce = true;
 	m_nStartingTickCount = gpGlobals->tickcount;
-	m_bHasAtLeastOneEvent = false;
+	m_bHasAtLeastOneEvent = TFGameRules()->IsCompetitiveGame() && ds_automark.GetBool();
 
 	if ( ds_sound.GetBool() )
 	{

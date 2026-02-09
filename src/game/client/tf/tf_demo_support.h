@@ -62,6 +62,7 @@ private:
 	FileHandle_t m_hGlobalEventList;
 	GCSDK::CWebAPIResponse m_DemoSpecificEventList;
 	GCSDK::CWebAPIValues *m_pRoot;
+	GCSDK::CWebAPIValues *m_pDetailsNode;
 	GCSDK::CWebAPIValues *m_pChildArray;
 	bool m_bAlreadyAutoRecordedOnce;
 	float m_flNextRecordStartCheckTime;
