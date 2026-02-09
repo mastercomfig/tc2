@@ -26,8 +26,12 @@ public:
 	void UnregisterMethod(std::string methodName);
 	void QueueEvent(const std::string& strEvent, const std::string& strParams);
 
+	bool IsReady() { return m_bReady; }
+	void MarkReady() { m_bReady = true; }
+
 private:
 	bool m_bInit = false;
+	bool m_bReady = false;
 	class CHTTPServerThread* m_pServerThread = NULL;
 };
 

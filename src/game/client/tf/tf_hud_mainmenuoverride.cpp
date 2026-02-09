@@ -265,7 +265,8 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	m_MainMenuWebUiZIndex = -102;
 
-	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true );
+	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true, false );
+	m_bMainMenuWebUiInited = false;
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
@@ -1417,9 +1418,17 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			// TODO(mcoms): main menu music not working
 			//PlayMainMenuMusic();
 		}
-		if ( m_pMainMenuWebUi && !m_pMainMenuWebUi->IsVisible() )
+		if ( m_pMainMenuWebUi )
 		{
-			m_pMainMenuWebUi->SetVisible(true);
+			if ( !m_bMainMenuWebUiInited && GetGameStateManager()->IsReady() )
+			{
+				m_pMainMenuWebUi->LoadInteractivePanel();
+				m_bMainMenuWebUiInited = true;
+			}
+			else if ( !m_pMainMenuWebUi->IsVisible() )
+			{
+				m_pMainMenuWebUi->SetVisible(true);
+			}
 		}
 	}
 

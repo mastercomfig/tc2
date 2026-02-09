@@ -190,6 +190,7 @@ public:
 		Msg("Running game state HTTP system.\n");
 		app.wait_for_server_start();
 		Msg("Started game state HTTP system.\n");
+		s_GameStateManager.MarkReady();
 		while (1)
 		{
 			m_hThreadEvent.Wait();
