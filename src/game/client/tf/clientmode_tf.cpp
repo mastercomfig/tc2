@@ -573,10 +573,11 @@ void ClientModeTFNormal::Init()
 		mat_lodin_time.SetValue(0.4f);
 	}
 
-	static ConVarRef r_radiosity( "r_radiosity" );
-	if ( r_radiosity.IsValid() )
+	ConVar* r_radiosity = g_pCVar->FindVar( "r_radiosity" );
+	if ( r_radiosity )
 	{
-		r_radiosity.SetValue( 2 );
+		r_radiosity->SetDefault( "2" );
+		r_radiosity->SetValue( 2 );
 	}
 
 	bool bChangedMatSettings = false;
