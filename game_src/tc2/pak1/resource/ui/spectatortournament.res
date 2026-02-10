@@ -456,4 +456,20 @@
 		"visible"		"1"
 		"enabled"		"1"
 	}		
+    "DrawingPanel"
+	{
+		"ControlName"			"CDrawingPanel"
+		"fieldName"				"DrawingPanel"
+		"xpos"			"0"
+		"ypos"			"0"
+		"wide"			"f0"
+		"tall"			"f0"
+		"zpos"					"-1"
+		"visible"				"0"
+		"enabled"				"1"
+		"keyboardinputenabled"	"0"
+
+		"linecolor"			"GreenSolid"
+		"team_colors"		"1"
+	}
 }

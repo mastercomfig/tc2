@@ -108,6 +108,8 @@ CTFSpectatorGUI::CTFSpectatorGUI(IViewPort *pViewPort) : CSpectatorGUI(pViewPort
 	m_pStudentHealth = new CTFSpectatorGUIHealth( this, "StudentGUIHealth" );
 	m_pAvatar = NULL;
 
+	m_pDrawingPanel = new CDrawingPanel( this, "DrawingPanel" );
+
 	m_flNextItemPanelUpdate = 0;
 	m_flNextPlayerPanelUpdate = 0;
 	m_iPrevItemShown = 0;
@@ -268,6 +270,12 @@ void CTFSpectatorGUI::ApplySchemeSettings( vgui::IScheme *pScheme )
 		}
 	}
 
+	if ( m_pDrawingPanel )
+	{
+		m_pDrawingPanel->ClearAllLines();
+		m_pDrawingPanel->SetType( DRAWING_PANEL_TYPE_OBSERVER );
+	}
+
 	// Stay the same visibility as before the scheme reload.
 	SetVisible( bVisible );
 }
@@ -349,6 +357,14 @@ void CTFSpectatorGUI::Update()
 	{
 		RecalculatePlayerPanels();
 		m_flNextPlayerPanelUpdate = gpGlobals->curtime + 0.1f;
+	}
+
+	static ConVarRef cl_spec_hud_draw_show( "cl_spec_hud_draw_show" );
+	if ( m_pDrawingPanel && cl_spec_hud_draw_show.GetBool() != m_pDrawingPanel->IsVisible() && InTournamentGUI() )
+	{
+		m_pDrawingPanel->SetVisible( cl_spec_hud_draw_show.GetBool() );
+		m_pDrawingPanel->SetKeyBoardInputEnabled( false );
+		m_pDrawingPanel->SetMouseInputEnabled( false );
 	}
 }
 

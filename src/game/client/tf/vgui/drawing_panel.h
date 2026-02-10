@@ -31,7 +31,7 @@ public:
 		bLink = false;
 	}
 
-	Vector2D worldpos;		// blip in world space
+	Vector worldpos;		// blip in world space
 	Vector2D blipcentre;	// blip in map texture space
 	Vector2D linkpos;			// link blip in world space
 	Vector2D linkblipcentre;	// link blip in map texture space
@@ -50,7 +50,7 @@ public:
 
 	virtual void ApplySettings( KeyValues *inResourceData ) OVERRIDE;
 
-	void SendMapLine( int x, int y, bool bInitial );
+	void SendMapLine( float x, float y, float z, bool bInitial );
 	virtual void OnMouseReleased( vgui::MouseCode code );
 	virtual void OnMousePressed( vgui::MouseCode code );
 	virtual void OnCursorExited();
@@ -60,6 +60,7 @@ public:
 	virtual void SetVisible( bool bState ) OVERRIDE;
 	void ClearLines( int iIndex );
 	void ClearAllLines();
+	void ForceFade();
 	const CUtlVector<MapLine>& GetLines( int iIndex ) const { return m_vecDrawnLines[iIndex]; }
 	void SetType( int iPanelType ){ m_iPanelType = iPanelType; }
 
@@ -79,6 +80,7 @@ private:
 
 	int m_iPanelType;	
 	bool m_bTeamColors;
+	bool m_bFading;
 };
 
 #endif // DRAWING_PANEL_H

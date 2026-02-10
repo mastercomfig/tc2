@@ -15,6 +15,7 @@
 #include "tf_hud_playerstatus.h"
 #include "item_model_panel.h"
 #include "tf_gamerules.h"
+#include "drawing_panel.h"
 #include <vgui_controls/EditablePanel.h>
 
 extern ConVar cl_use_tournament_specgui;
@@ -128,6 +129,8 @@ protected:
 	bool					m_bCoaching;
 	CAvatarImagePanel		*m_pAvatar;
 	CTFSpectatorGUIHealth	*m_pStudentHealth;
+
+	CDrawingPanel* m_pDrawingPanel;
 
 	CPanelAnimationVarAliasType( int, m_iTeam1PlayerBaseOffsetX, "team1_player_base_offset_x", "0", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iTeam1PlayerBaseX, "team1_player_base_x", "0", "proportional_int" );

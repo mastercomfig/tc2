@@ -10,6 +10,8 @@
 #include <vgui/IScheme.h>
 #include <vgui/IVGui.h>
 #include "voice_status.h"
+#include "c_tf_player.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
@@ -26,6 +28,12 @@ Color g_DrawPanel_TeamColors[TF_TEAM_COUNT] =
 
 DECLARE_BUILD_FACTORY( CDrawingPanel );
 
+ConVar cl_spec_hud_draw( "cl_spec_hud_draw", "0" );
+ConVar cl_spec_hud_draw_show( "cl_spec_hud_draw_show", "1" );
+ConVar cl_spec_hud_draw_fade( "cl_spec_hud_draw_fade", "0" );
+ConVar cl_spec_hud_draw_dist( "cl_spec_hud_draw_dist", "1024" );
+ConVar cl_spec_hud_draw_color( "cl_spec_hud_draw_color", "1", 0, "", true, 0, true, 3 );
+
 CDrawingPanel::CDrawingPanel( Panel *parent, const char*name ) : Panel( parent, name )
 {
 	m_bDrawingLines = false;
@@ -34,6 +42,7 @@ CDrawingPanel::CDrawingPanel( Panel *parent, const char*name ) : Panel( parent, 
 	m_iMouseY = 0;
 	m_iPanelType = DRAWING_PANEL_TYPE_NONE;
 	m_bTeamColors = false;
+	m_bFading = false;
 
 	m_nWhiteTexture = vgui::surface()->CreateNewTextureID();
 	vgui::surface()->DrawSetTextureFile( m_nWhiteTexture, "vgui/white", true, false );
@@ -43,7 +52,10 @@ CDrawingPanel::CDrawingPanel( Panel *parent, const char*name ) : Panel( parent, 
 
 void CDrawingPanel::SetVisible( bool bState )
 {
-	ClearAllLines();
+	if ( m_iPanelType != DRAWING_PANEL_TYPE_OBSERVER )
+	{
+		ClearAllLines();
+	}
 
 	BaseClass::SetVisible( bState );
 }
@@ -83,14 +95,31 @@ void CDrawingPanel::Paint()
 		{
 			if ( !m_vecDrawnLines[iIndex][i].bSetBlipCentre )
 			{
-				Vector vecBlipPos;
-				vecBlipPos.x = m_vecDrawnLines[iIndex][i].worldpos.x;
-				vecBlipPos.y = m_vecDrawnLines[iIndex][i].worldpos.y;
-				vecBlipPos.z = 0;
+				Vector2D vecBlipPos;
+				// when we're an observer, worldpos is actually in world space. who would've thunk.
+				if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+				{
+					int iBlipX;
+					int iBlipY;
+					if ( !GetVectorInHudSpace( m_vecDrawnLines[iIndex][i].worldpos, iBlipX, iBlipY ) )
+					{
+						// skip this line since it's not on screen rn
+						continue;
+					}
+					vecBlipPos.x = iBlipX;
+					vecBlipPos.y = iBlipY;
+					// in this case, we can't set bSetBlipCentre because it will be different frame to frame
+				}
+				else
+				{
+					vecBlipPos.x = m_vecDrawnLines[iIndex][i].worldpos.x;
+					vecBlipPos.y = m_vecDrawnLines[iIndex][i].worldpos.y;
+					// we don't need to "compute" the pos anymore
+					m_vecDrawnLines[iIndex][i].bSetBlipCentre = true;
+				}
 				//Msg("drawing line with blippos %f, %f\n", vecBlipPos.x, vecBlipPos.y);
-				m_vecDrawnLines[iIndex][i].blipcentre = m_vecDrawnLines[iIndex][i].worldpos;
-				//Msg("  which is blipcentre=%f, %f\n", m_MapLines[i].blipcentre.x, m_MapLines[i].blipcentre.y);
-				m_vecDrawnLines[iIndex][i].bSetBlipCentre = true;
+				m_vecDrawnLines[iIndex][i].blipcentre = vecBlipPos;
+				//Msg( "  which is blipcentre=%f, %f\n", m_vecDrawnLines[iIndex][i].blipcentre.x, m_vecDrawnLines[iIndex][i].blipcentre.y );
 			}
 
 			float x = m_vecDrawnLines[iIndex][i].blipcentre.x;
@@ -100,23 +129,26 @@ void CDrawingPanel::Paint()
 			{
 				if ( i > 1 )
 				{
-					m_vecDrawnLines[iIndex][i].linkpos = m_vecDrawnLines[iIndex][i-1].worldpos;
+					m_vecDrawnLines[iIndex][i].linkpos = m_vecDrawnLines[iIndex][i - 1].blipcentre;
 
 					if ( !m_vecDrawnLines[iIndex][i].bSetLinkBlipCentre )
 					{
-						Vector vecBlipPos2;
+						Vector2D vecBlipPos2;
 						vecBlipPos2.x = m_vecDrawnLines[iIndex][i].linkpos.x;
 						vecBlipPos2.y = m_vecDrawnLines[iIndex][i].linkpos.y;
-						vecBlipPos2.z = 0;
-						m_vecDrawnLines[iIndex][i].linkblipcentre = m_vecDrawnLines[iIndex][i].linkpos;
-						m_vecDrawnLines[iIndex][i].bSetLinkBlipCentre = true;
+						m_vecDrawnLines[iIndex][i].linkblipcentre = vecBlipPos2;
+						// observer uses world pos, so it's different frame to frame
+						if ( m_iPanelType != DRAWING_PANEL_TYPE_OBSERVER )
+						{
+							m_vecDrawnLines[iIndex][i].bSetLinkBlipCentre = true;
+						}
 					}
 
 					float x2 = m_vecDrawnLines[iIndex][i].linkblipcentre.x;
 					float y2 = m_vecDrawnLines[iIndex][i].linkblipcentre.y;
 
  					int alpha = 255;
-					if ( m_iPanelType == DRAWING_PANEL_TYPE_MATCH_SUMMARY )
+					if ( m_iPanelType == DRAWING_PANEL_TYPE_MATCH_SUMMARY || m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
 					{
 						float t = gpGlobals->curtime - m_vecDrawnLines[iIndex][i].created_time;
 					
@@ -140,12 +172,20 @@ void CDrawingPanel::Paint()
 					vgui::Vertex_t start, end;
 
 					Color drawColor = m_colorLine;
-					if ( m_bTeamColors )
+					const bool bUseTeamColors = m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER ? cl_spec_hud_draw_color.GetInt() > 1 : m_bTeamColors;
+					if ( bUseTeamColors )
 					{
-						C_BasePlayer *pPlayer =	UTIL_PlayerByIndex( iIndex );
-						if ( pPlayer )
+						if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
 						{
-							drawColor = g_DrawPanel_TeamColors[ pPlayer->GetTeamNumber() ];
+							drawColor = g_DrawPanel_TeamColors[cl_spec_hud_draw_color.GetInt()];
+						}
+						else
+						{
+							C_BasePlayer* pPlayer = UTIL_PlayerByIndex( iIndex );
+							if ( pPlayer )
+							{
+								drawColor = g_DrawPanel_TeamColors[pPlayer->GetTeamNumber()];
+							}
 						}
 					}
 
@@ -181,15 +221,21 @@ void CDrawingPanel::Paint()
 
 void CDrawingPanel::OnMousePressed( vgui::MouseCode code )
 {
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+		return;
+
 	if ( code != MOUSE_LEFT )
 		return;
 
-	SendMapLine( m_iMouseX, m_iMouseY, true );
+	SendMapLine( m_iMouseX, m_iMouseY, 0.0f, true );
 	m_bDrawingLines = true;
 }
 
 void CDrawingPanel::OnMouseReleased( vgui::MouseCode code )
 {
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+		return;
+	
 	if ( code != MOUSE_LEFT )
 		return;
 
@@ -198,30 +244,17 @@ void CDrawingPanel::OnMouseReleased( vgui::MouseCode code )
 
 void CDrawingPanel::OnCursorExited()
 {
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+		return;
 	//Msg("CDrawingPanel::OnCursorExited\n");
 	m_bDrawingLines = false;
 }
 
-void CDrawingPanel::OnThink()
-{
-	if ( m_iPanelType == DRAWING_PANEL_TYPE_MATCH_SUMMARY )
-	{
-		// clean up any segments that have faded out
-		for ( int iIndex = 0; iIndex < ARRAYSIZE( m_vecDrawnLines ); iIndex++ )
-		{
-			for ( int i = m_vecDrawnLines[iIndex].Count() - 1; i >= 0; i-- )
-			{
-				if ( gpGlobals->curtime - m_vecDrawnLines[iIndex][i].created_time > DRAWN_LINE_SOLID_TIME + DRAWN_LINE_FADE_TIME )
-				{
-					m_vecDrawnLines[iIndex].Remove( i );
-				}
-			}
-		}
-	}
-}
-
 void CDrawingPanel::OnCursorMoved( int x, int y )
 {
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+		return;
+
 	//Msg("CDrawingPanel::OnCursorMoved %d,%d\n", x, y);
 	m_iMouseX = x;
 	m_iMouseY = y;
@@ -230,12 +263,84 @@ void CDrawingPanel::OnCursorMoved( int x, int y )
 
 	if ( m_bDrawingLines && gpGlobals->curtime >= m_fLastMapLine + flLineInterval )
 	{
-		SendMapLine( x, y, false );
+		SendMapLine( x, y, 0.0f, false );
 	}
-
 }
 
-void CDrawingPanel::SendMapLine( int x, int y, bool bInitial )
+void CDrawingPanel::OnThink()
+{
+	const int iLocalIndex = GetLocalPlayerIndex();
+	const bool bLocalIndexValid = IsIndexIntoPlayerArrayValid( iLocalIndex );
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+	{
+		if ( cl_spec_hud_draw_fade.GetBool() && !m_bFading && bLocalIndexValid )
+		{
+			m_bFading = true;
+
+			cl_spec_hud_draw.SetValue( 0 );
+			
+			// make sure every line starts fading now
+			FOR_EACH_VEC_BACK( m_vecDrawnLines[iLocalIndex], i )
+			{
+				if ( gpGlobals->curtime - m_vecDrawnLines[iLocalIndex][i].created_time < DRAWN_LINE_SOLID_TIME )
+				{
+					m_vecDrawnLines[iLocalIndex][i].created_time = gpGlobals->curtime - DRAWN_LINE_SOLID_TIME;
+				}
+			}
+		}
+	}
+	
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_MATCH_SUMMARY || m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+	{
+		// clean up any segments that have faded out
+		
+		for ( int iIndex = 0; iIndex < ARRAYSIZE( m_vecDrawnLines ); iIndex++ )
+		{
+			FOR_EACH_VEC_BACK( m_vecDrawnLines[iIndex], i )
+			{
+				if ( gpGlobals->curtime - m_vecDrawnLines[iIndex][i].created_time > DRAWN_LINE_SOLID_TIME + DRAWN_LINE_FADE_TIME )
+				{
+					m_vecDrawnLines[iIndex].Remove( i );
+				}
+			}
+		}
+	}
+
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+	{
+		// we've stopped fading
+		if ( m_bFading && bLocalIndexValid && m_vecDrawnLines[iLocalIndex].IsEmpty() )
+		{
+			cl_spec_hud_draw_fade.SetValue( 0 );
+			m_bFading = false;
+		}
+		const float flLineInterval = 1.f / 60.f;
+		if ( cl_spec_hud_draw.GetBool() && cl_spec_hud_draw_show.GetBool() && !m_bFading )
+		{
+			if ( gpGlobals->curtime >= m_fLastMapLine + flLineInterval )
+			{
+				C_TFPlayer* pLocalTFPlayer = C_TFPlayer::GetLocalTFPlayer();
+				if ( pLocalTFPlayer )
+				{
+					Vector vecEye = pLocalTFPlayer->EyePosition();
+					Vector vecForward;
+					pLocalTFPlayer->EyeVectors( &vecForward );
+
+					trace_t tr;
+					UTIL_TraceLine( vecEye, vecEye + ( vecForward * cl_spec_hud_draw_dist.GetFloat() ), MASK_PLAYERSOLID_BRUSHONLY, pLocalTFPlayer, COLLISION_GROUP_NONE, &tr );
+					SendMapLine( tr.endpos.x, tr.endpos.y, tr.endpos.z, !m_bDrawingLines );
+					m_bDrawingLines = true;
+				}
+			}
+		}
+		else if ( m_bDrawingLines )
+		{
+			m_bDrawingLines = false;
+		}
+	}
+}
+
+void CDrawingPanel::SendMapLine( float x, float y, float z, bool bInitial )
 {
 	if ( engine->IsPlayingDemo() )
 		return;
@@ -245,10 +350,10 @@ void CDrawingPanel::SendMapLine( int x, int y, bool bInitial )
 	if (!IsIndexIntoPlayerArrayValid(iIndex))
 		return;
 	
-	int nMaxLines = 750; // 12.5 seconds of drawing at 60fps
+	int nMaxLines = 900; // 15 seconds of drawing at 60fps
 	if ( m_iPanelType == DRAWING_PANEL_TYPE_MATCH_SUMMARY )
 	{
-		nMaxLines = 120; // 2 seconds of drawing at 60fps
+		nMaxLines = 150; // 2.5 seconds of drawing at 60fps
 	}
 
 	// Stop adding lines after this much
@@ -263,6 +368,7 @@ void CDrawingPanel::SendMapLine( int x, int y, bool bInitial )
 	MapLine line;
 	line.worldpos.x = x;
 	line.worldpos.y = y;
+	line.worldpos.z = z;
 	line.created_time = gpGlobals->curtime;
 	if ( linetype == 1 )		// links to a previous
 	{
@@ -277,8 +383,8 @@ void CDrawingPanel::SendMapLine( int x, int y, bool bInitial )
 		KeyValues *kv = new KeyValues( "cl_drawline" );
 		kv->SetInt( "panel", m_iPanelType );
 		kv->SetInt( "line", linetype );
-		kv->SetFloat( "x", (float)x / (float)GetWide() );
-		kv->SetFloat( "y", (float)y / (float)GetTall() );
+		kv->SetFloat( "x", x / (float)GetWide() );
+		kv->SetFloat( "y", y / (float)GetTall() );
 		engine->ServerCmdKeyValues( kv );
 	}
 }
