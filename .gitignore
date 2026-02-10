@@ -567,7 +567,7 @@ server.cfg
 mapcycle.txt
 mapcyclecomp.txt
 videoconfig_linux.cfg
-server_official.cfg
+server_official*.cfg
 trainingprogress.txt
 OfflinePracticeConfig.vdf
 version.txt
