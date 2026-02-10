@@ -86,6 +86,7 @@ CHudTournament::CHudTournament( const char *pElementName ) : CHudElement( pEleme
 	m_bCompetitiveMode = false;
 	m_bReadyTextBlinking = false;
 	m_bCountDownVisible = false;
+	m_iLocalTeam = 0;
 
 	m_pPlayerPanelKVs = NULL;
 	m_bReapplyPlayerPanelKVs = false;
@@ -129,6 +130,7 @@ void CHudTournament::Init( void )
 	CHudElement::Init();
 	m_flNextUpdate = gpGlobals->curtime;
 	m_bCountDownVisible = false;
+	m_iLocalTeam = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -402,7 +404,18 @@ void CHudTournament::PreparePanel( void )
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudTournament_HideTimer", false);
 			}
-		}	
+		}
+
+		C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != m_iLocalTeam )
+		{
+			
+			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
+			if ( m_pCountdownBG )
+			{
+				m_pCountdownBG->SetImage( m_iLocalTeam ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
+			}
+		}
 	}
 	
 #ifdef WIN32
@@ -667,6 +680,7 @@ void CHudTournament::LevelInit( void )
 {
 	m_bShouldBeVisible = false;
 	m_bCountDownVisible = false;
+	m_iLocalTeam = 0;
 	SetVisible( false );
 	Init();
 }
@@ -702,6 +716,8 @@ void CHudTournament::ApplySchemeSettings( IScheme *pScheme )
 	BaseClass::ApplySchemeSettings( pScheme );
 
 	m_bReapplyPlayerPanelKVs = true;
+	m_bCountDownVisible = false;
+	m_iLocalTeam = 0;
 
 	KeyValues *pConditions = NULL;
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )

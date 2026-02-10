@@ -66,7 +66,8 @@ private:
 	bool			m_bReadyStatusMode;
 	bool			m_bCompetitiveMode;
 	bool			m_bReadyTextBlinking;
-	bool			m_bCountDownVisible;
+	bool            m_bCountDownVisible;
+	int				m_iLocalTeam;
 
 	CUtlVector<CTFPlayerPanel*>	m_PlayerPanels;
 	KeyValues				*m_pPlayerPanelKVs;
