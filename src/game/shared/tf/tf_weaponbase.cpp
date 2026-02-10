@@ -505,7 +505,7 @@ void CTFWeaponBase::RestockWeaponAfterShot()
 	else
 	{
 		// we don't use clips, so just give our ammo directly.
-		iAmmoToGive = GetDefaultClip1();
+		iAmmoToGive = Ceil2Int( GetTFPlayerOwner()->GetMaxAmmo( m_iPrimaryAmmoType ) * 0.5f );
 	}
 	AwardAmmo( iClipToGive, iAmmoToGive );
 	
@@ -516,8 +516,8 @@ void CTFWeaponBase::RestockWeaponAfterShot()
 	}
 	else
 	{
-		SetSecondaryAmmoCount( GetDefaultClip2() );
 		m_iClip2 = WEAPON_NOCLIP;
+		iAmmoToGive = Ceil2Int( GetTFPlayerOwner()->GetMaxAmmo( m_iSecondaryAmmoType ) * 0.5f );
 	}
 }
 
