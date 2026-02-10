@@ -26,7 +26,7 @@ ConVar ds_dir( "ds_dir", "demos", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARC
 ConVar ds_prefix( "ds_prefix", "", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - will prefix files with this string. 24 characters max." );
 ConVar ds_min_streak( "ds_min_streak", "4", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - minimum kill streak count before being recorded. 0 to disable.", true, 0, false, 0 );
 ConVar ds_kill_delay( "ds_kill_delay", "15", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - maximum time between kills for tracking kill streaks.", true, 5, false, 0 );
-ConVar ds_log( "ds_log", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - log kill streak and bookmark events to an associated .json file.", true, 0, true, 1 );
+ConVar ds_log( "ds_log", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - log kill streak and bookmark events to associated files.", true, 0, true, 1 );
 ConVar ds_sound( "ds_sound", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - play start/stop sound for demo recording.", true, 0, true, 1 ); 
 ConVar ds_notify( "ds_notify", "0", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - text output when recording start/stop/bookmark events : 0 - console, 1 - console and chat, 2 - console and HUD.", true, 0, true, 2 ); 
 ConVar ds_screens( "ds_screens", "1", FCVAR_CLIENTDLL | FCVAR_DONTRECORD | FCVAR_ARCHIVE, "Demo support - take screenshot of the scoreboard for non-competitive matches or the match summary stats for competitive matches. For competitive matches, it will not capture the screenshot if you disconnect from the server before the medal awards have completed.", true, 0, true, 1 );
@@ -512,7 +512,7 @@ bool CTFDemoSupport::StartRecording( void )
 		// check folder
 		if ( !IsValidPath( ds_dir.GetString() ) )
 		{
-			Msg( "DemoSupport: invalid folder.\n" );
+			Msg( "(Demo Support) invalid folder.\n" );
 			return false;
 		}
 
@@ -556,9 +556,9 @@ bool CTFDemoSupport::StartRecording( void )
 			char pGameMode[512];
 			g_pVGuiLocalize->ConvertUnicodeToANSI( g_pVGuiLocalize->Find( GetMapType( mapname ) ), pGameMode, sizeof( pGameMode ) );
 			m_pDetailsNode->SetChildStringValue( "gamemode", pGameMode );
-			char pTeamName[MAX_TEAM_NAME_LENGTH * 3];
 			if ( TFGameRules()->IsCompetitiveGame() )
 			{
+				char pTeamName[MAX_TEAM_NAME_LENGTH * 3];
 				g_pVGuiLocalize->ConvertUnicodeToANSI( GetGlobalTFTeam( pLocalPlayer->GetTeamNumber() )->Get_Localized_Name(), pTeamName, sizeof( pTeamName ) );
 				m_pDetailsNode->SetChildStringValue( "team", pTeamName );
 				char pEnemyTeamName[MAX_TEAM_NAME_LENGTH * 3];
@@ -644,7 +644,9 @@ void CTFDemoSupport::StopRecording( bool bFromEngine /* = false */ )
 	{
 		if ( ds_log.GetBool() )
 		{
-			m_pDetailsNode->SetChildInt32Value( "ticks", engine->GetDemoRecordingTick() );
+			// TODO(mcoms): why not use engine->GetDemoRecordingTick()?
+			int nTickCount = gpGlobals->tickcount - m_nStartingTickCount;
+			m_pDetailsNode->SetChildInt32Value( "ticks", nTickCount );
 
 			// write out the associated bookmark and kill-streak data file
 			char szTempFilename[MAX_PATH] = {0};
