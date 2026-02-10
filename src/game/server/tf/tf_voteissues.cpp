@@ -1874,11 +1874,7 @@ bool CRandomCritsIssue::IsEnabled( void )
 			return sv_vote_issue_randomcrits_allowed_mvm.GetBool();
 
 		// Manages random crits already
-		if ( TFGameRules()->IsInTournamentMode() )
-			return false;
-
-		// Manages random crits already
-		if ( TFGameRules()->IsInHighlanderMode() || TFGameRules()->IsInSixesMode() )
+		if ( TFGameRules()->IsCompetitiveGame() )
 			return false;
 	}
 

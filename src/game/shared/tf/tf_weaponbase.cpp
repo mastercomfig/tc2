@@ -6007,10 +6007,13 @@ bool CTFWeaponBase::AreRandomCritsEnabled( void )
 			return false;
 
 		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
-		if ( pMatchDesc )
-			return pMatchDesc->BUsesRandomCrits();
+		if ( pMatchDesc && !pMatchDesc->BUsesRandomCrits() )
+			return false;
 
 		if ( TFGameRules()->IsEmulatingMatch() == 2 )
+			return false;
+
+		if ( TFGameRules()->IsCompetitiveGame() )
 			return false;
 	}
 
