@@ -29,6 +29,7 @@ public:
 		blipcentre.Init( 0, 0 );
 		linkblipcentre.Init( 0, 0 );
 		bLink = false;
+		iColorIndex = -1;
 	}
 
 	Vector worldpos;		// blip in world space
@@ -39,6 +40,7 @@ public:
 	bool bSetBlipCentre;	// have we calculated the blip in map texture space yet?
 	bool bSetLinkBlipCentre;	// have we calculated the link blip in map texture space yet?
 	float created_time;
+	int iColorIndex;
 };
 
 

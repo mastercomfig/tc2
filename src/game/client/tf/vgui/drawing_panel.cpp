@@ -154,7 +154,6 @@ void CDrawingPanel::Paint()
 					
 						if ( t < DRAWN_LINE_SOLID_TIME )
 						{
-
 						}
 						else if ( t < DRAWN_LINE_SOLID_TIME + DRAWN_LINE_FADE_TIME )
 						{
@@ -172,21 +171,23 @@ void CDrawingPanel::Paint()
 					vgui::Vertex_t start, end;
 
 					Color drawColor = m_colorLine;
-					const bool bUseTeamColors = m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER ? cl_spec_hud_draw_color.GetInt() > 1 : m_bTeamColors;
-					if ( bUseTeamColors )
+					int iColorDrawIndex = -1;
+					if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
 					{
-						if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+						iColorDrawIndex = m_vecDrawnLines[iIndex][i].iColorIndex == 0 ? -1 : m_vecDrawnLines[iIndex][i].iColorIndex;
+					}
+					else if ( m_bTeamColors )
+					{
+						iColorDrawIndex = 0;
+						C_BasePlayer* pPlayer = UTIL_PlayerByIndex( iIndex );
+						if ( pPlayer )
 						{
-							drawColor = g_DrawPanel_TeamColors[cl_spec_hud_draw_color.GetInt()];
+							iColorDrawIndex = pPlayer->GetTeamNumber();
 						}
-						else
-						{
-							C_BasePlayer* pPlayer = UTIL_PlayerByIndex( iIndex );
-							if ( pPlayer )
-							{
-								drawColor = g_DrawPanel_TeamColors[pPlayer->GetTeamNumber()];
-							}
-						}
+					}
+					if ( iColorDrawIndex >= 0 )
+					{
+						drawColor = g_DrawPanel_TeamColors[iColorDrawIndex];
 					}
 
 					// draw main line
@@ -373,6 +374,11 @@ void CDrawingPanel::SendMapLine( float x, float y, float z, bool bInitial )
 	if ( linetype == 1 )		// links to a previous
 	{
 		line.bLink = true;
+	}
+
+	if ( m_iPanelType == DRAWING_PANEL_TYPE_OBSERVER )
+	{
+		line.iColorIndex = cl_spec_hud_draw_color.GetInt();
 	}
 
 	m_vecDrawnLines[iIndex].AddToTail( line );
