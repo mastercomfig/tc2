@@ -711,6 +711,7 @@ bool IsCreepWaveMode( void ) const;
 	bool InMatchStartFreeze();
 #ifdef GAME_DLL
 	void SyncMatchSettings();
+	void ResetManagedMatch();
 	// ! Check return
 	bool StartManagedMatch();
 	void SetCompetitiveMode( bool bValue );

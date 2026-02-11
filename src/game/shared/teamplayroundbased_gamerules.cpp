@@ -25,6 +25,7 @@
 	#include "team_control_point_master.h"
 	#include "team_train_watcher.h"
 	#include "serverbenchmark_base.h"
+	#include "hltvdirector.h"
 
 #if defined( REPLAY_ENABLED )	
 	#include "replay/ireplaysystem.h"
@@ -2052,6 +2053,18 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 						flPostMatchPeriod = 30.0f;
 					}
 				}
+
+				// if we're running HLTV, then make sure we don't end the match before it's caught up.
+				if ( HLTVDirector() && HLTVDirector()->GetHLTVServer() )
+				{
+					static ConVarRef tv_delaymapchange_protect( "tv_delaymapchange_protect" );
+					static ConVarRef tv_delay( "tv_delay" );
+					if ( tv_delaymapchange_protect.GetBool() && tv_delay.GetFloat() > flPostMatchPeriod )
+					{
+						flPostMatchPeriod = tv_delay.GetFloat();
+					}
+				}
+
 				m_flStateTransitionTime = gpGlobals->curtime + flPostMatchPeriod;
 
 				if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )

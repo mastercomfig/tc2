@@ -2495,6 +2495,10 @@ ETFMatchGroup CTFGameRules::GetCurrentMatchGroupWithEmulation() const
 
 bool CTFGameRules::IsManagedMatchEnded() const
 {
+	if ( IsEmulatingMatch() )
+	{
+		return m_bMatchEnded;
+	}
 #ifdef GAME_DLL
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 	return !pMatch || pMatch->BMatchTerminated();
@@ -2514,13 +2518,25 @@ void CTFGameRules::SyncMatchSettings()
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 
 	ETFMatchGroup eMatchGroup = pMatch ? pMatch->m_eMatchGroup : k_eTFMatchGroup_Invalid;
-	if (IsEmulatingMatch())
+	if ( IsEmulatingMatch() )
 	{
 		eMatchGroup = GetCurrentMatchGroupWithEmulation();
 	}
 
 	m_nMatchGroupType.Set( eMatchGroup );
-	m_bMatchEnded.Set( IsManagedMatchEnded() );
+	// TODO(mcoms): typically when we call SyncMatchSettings, it's because we're starting a match.
+	m_bMatchEnded.Set( IsEmulatingMatch() ? false : IsManagedMatchEnded() );
+}
+
+//-----------------------------------------------------------------------------
+void CTFGameRules::ResetManagedMatch()
+{
+	// Cleanup
+	m_eRematchState = NEXT_MAP_VOTE_STATE_NONE;
+
+	/// Sync these before level change, so there's no race condition where clients may connect during/before the
+	/// changelevel and see that the match is ended or wrong.
+	SyncMatchSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -2533,12 +2549,7 @@ bool CTFGameRules::StartManagedMatch()
 		return false;
 	}
 
-	// Cleanup
-	m_eRematchState = NEXT_MAP_VOTE_STATE_NONE;
-
-	/// Sync these before level change, so there's no race condition where clients may connect during/before the
-	/// changelevel and see that the match is ended or wrong.
-	SyncMatchSettings();
+	ResetManagedMatch();
 
 	// Change the the correct map from the match.  If no match specified, perform a fresh load of the current map
 	const char *pszMap = pMatch->GetMatchMap();
@@ -2617,6 +2628,23 @@ void CTFGameRules::StopCompetitiveMatch( CMsgGC_Match_Result_Status nCode )
 			GTFGCClientSystem()->EndManagedMatch();
 			Assert( IsManagedMatchEnded() );
 			m_bMatchEnded.Set( true );
+
+			// reset the match shortly
+			if ( nCode != CMsgGC_Match_Result_Status_MATCH_SUCCEEDED )
+			{
+				for ( int i = 1; i <= MAX_PLAYERS; i++ )
+				{
+					CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
+					if ( !pPlayer )
+						continue;
+
+					pPlayer->AddFlag( FL_FROZEN );
+				}
+				
+				g_fGameOver = true;
+				State_Enter( GR_STATE_GAME_OVER );
+				m_flStateTransitionTime = gpGlobals->curtime + 5.0f;
+			}
 		}
 	}
 
@@ -2708,6 +2736,9 @@ void CTFGameRules::EndCompetitiveMatch( void )
 //-----------------------------------------------------------------------------
 void CTFGameRules::ManageCompetitiveMode( void )
 {
+	if ( IsEmulatingMatch() )
+		return;
+	
 	if ( !IsCompetitiveMode() )
 		return;
 
@@ -8938,7 +8969,16 @@ void CTFGameRules::Think()
 				}
 			}
 
-			if ( gpGlobals->curtime > m_flStateTransitionTime || !BHavePlayers() )
+			bool bCanQuickReset = !BHavePlayers();
+			if (bCanQuickReset)
+			{
+				if ( HLTVDirector() && HLTVDirector()->GetHLTVServer() )
+				{
+					// if we're running the HLTV director, then we wait the full time.
+					bCanQuickReset = false;
+				}
+			}
+			if ( gpGlobals->curtime > m_flStateTransitionTime || bCanQuickReset )
 			{
 				nLastTimeSent = -1;
 				if ( pMatchDesc )
@@ -8949,8 +8989,9 @@ void CTFGameRules::Think()
 				}
 				else if ( IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
+					ResetManagedMatch();
 					MatchSummaryEnd();
-					
+
 					if ( nTimePassed >= tf_mm_next_map_vote_time.GetInt() )
 					{
 						static ConVarRef nextlevel("nextlevel");
@@ -8973,6 +9014,11 @@ void CTFGameRules::Think()
 				else
 				{
 					// Readymode (Tournament) path
+					if ( IsEmulatingMatch() )
+					{
+						ResetManagedMatch();
+						MatchSummaryEnd();
+					}
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
 						m_bAllowBetweenRounds = true;
@@ -9117,7 +9163,7 @@ void CTFGameRules::Think()
 
 				if (bEndMatch)
 				{
-					StopCompetitiveMatch(CMsgGC_Match_Result_Status_MATCH_FAILED_ABANDON);
+					StopCompetitiveMatch( CMsgGC_Match_Result_Status_MATCH_FAILED_ABANDON );
 				}
 				else
 				{
