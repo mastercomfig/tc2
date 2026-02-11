@@ -2603,8 +2603,9 @@ void CTFPlayer::PreThink()
 }
 
 ConVar mp_idledealmethod( "mp_idledealmethod", "1", FCVAR_GAMEDLL, "Deals with Idle Players. 1 = Sends them into Spectator mode then kicks them if they're still idle, 2 = Kicks them out of the game" );
-ConVar mp_idleunready( "mp_idleunready", "1", FCVAR_GAMEDLL, "If a player is idle while the game is not ready yet, should we just unready them?" );
+ConVar mp_idleunready( "mp_idleunready", "30", FCVAR_GAMEDLL, "If a player is idle while the game is not ready yet, should we just unready them?" );
 ConVar mp_idlemaxtime( "mp_idlemaxtime", "3", FCVAR_GAMEDLL, "Maximum time a player is allowed to be idle (in minutes)" );
+ConVar mp_idledealduringplay( "mp_idledealduringplay", "1", FCVAR_GAMEDLL, "Should idle timer be active during gameplay? (useful for when we just want to unready players but not disconnect them in official matches/tournaments)" );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -2628,7 +2629,10 @@ void CTFPlayer::CheckForIdle( void )
 		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 			return;
 
-		if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
+		if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS && !mp_idleunready.GetBool() )
+			return;
+
+		if ( TFGameRules()->State_Get() != GR_STATE_BETWEEN_RNDS && !mp_idledealduringplay.GetBool() )
 			return;
 
 		//Don't mess with the host on a listen server (probably one of us debugging something)
@@ -2683,6 +2687,10 @@ void CTFPlayer::CheckForIdle( void )
 			if ( TFGameRules()->InStalemate() )
 			{
 				flIdleTime = mp_stalemate_timelimit.GetInt() * 0.5f;
+			}
+			else if ( mp_idleunready.GetBool() && TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS )
+			{
+				flIdleTime = mp_idleunready.GetFloat();
 			}
 
 			m_bIsAFK = ( gpGlobals->curtime - m_flLastAction ) > flIdleTime
