@@ -680,6 +680,10 @@ bool CStrandedSpawnPanel::ShouldDraw( void )
 	if ( !pTFPlayer )
 		return false;
 
+	// earlier check for spawn touch count. this helps for cases where we're spawning not in a respawn room.
+	if ( pTFPlayer->m_Shared.GetRespawnTouchCount() < 1 )
+		return false;
+
 	if ( pTFPlayer->m_Shared.IsInStrandedSpawn() < STRANDED_SPAWN_SWITCHABLE )
 		return false;
 
