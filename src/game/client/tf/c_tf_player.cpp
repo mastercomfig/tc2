@@ -6014,8 +6014,6 @@ void C_TFPlayer::ClientThink()
 	}
 #endif
 
-	UpdateStrandedSpawn();
-
 	UpdateIDTarget();
 
 	UpdateLookAt();
@@ -6378,44 +6376,6 @@ void C_TFPlayer::UpdateLookAt( void )
 	m_flCurrentHeadPitch = AngleNormalize( m_flCurrentHeadPitch );
 	SetPoseParameter( m_headPitchPoseParam, m_flCurrentHeadPitch );
 	*/
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void C_TFPlayer::UpdateStrandedSpawn( void )
-{
-	if ( !IsLocalPlayer() || !IsAlive() )
-	{
-		return;
-	}
-
-	// TODO(mcoms): almost got this working...
-	if ( TFGameRules()->IsCompetitiveGame() && m_Shared.IsInStrandedSpawn() == STRANDED_SPAWN_SWITCHABLE && false )
-	{
-		CHudNotificationPanel *pNotifyPanel = GET_HUDELEMENT( CHudNotificationPanel );
-		if ( pNotifyPanel )
-		{
-			wchar_t szNotification[1024]=L"";
-			wchar_t wKeyBind[80] = L"";
-			const wchar_t *wpszFormat = g_pVGuiLocalize->Find( "#Hint_switch_stranded_spawn" );
-			if ( wpszFormat )
-			{
-				const char *key = engine->Key_LookupBinding( "+inspect" );
-				if ( !key || FStrEq( key, "(null)" ) )
-				{
-					key = "< not bound >";
-				}
-
-				wchar_t wszSecsLeft[16];
-				_snwprintf( wszSecsLeft, ARRAYSIZE(wszSecsLeft), L"%.2f", m_flStrandedSpawnAnchorTime - gpGlobals->curtime );
-
-				g_pVGuiLocalize->ConvertANSIToUnicode( key, wKeyBind, sizeof( wKeyBind ) );
-				g_pVGuiLocalize->ConstructString_safe( szNotification, wpszFormat, 2, wKeyBind, wszSecsLeft );
-				pNotifyPanel->SetupNotifyCustom( szNotification, "", GetTeamNumber() );
-			}
-		}
-	}
 }
 
 

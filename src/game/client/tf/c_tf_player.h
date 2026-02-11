@@ -287,8 +287,6 @@ public:
 	void			InitializePoseParams( void );
 	void			UpdateLookAt( void );
 
-	void			UpdateStrandedSpawn( void );
-
 	bool			IsEnemyPlayer( void );
 	void			ShowNemesisIcon( bool bShow );
 	void			ShowDuelingIcon( bool bShow );
