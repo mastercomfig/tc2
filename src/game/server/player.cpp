@@ -3114,7 +3114,7 @@ int CBasePlayer::DetermineSimulationTicks( void )
 
 // 2 ticks ahead or behind current clock means we need to fix clock on client
 static ConVar sv_clockcorrection_msecs( "sv_clockcorrection_msecs", "35", 0, "The server tries to keep each player's m_nTickBase withing this many msecs of the server absolute tickcount" );
-static ConVar sv_playerperfhistorycount( "sv_playerperfhistorycount", "20", 0, "Number of samples to maintain in player perf history", true, 1.0f, true, 128.0 );
+static ConVar sv_playerperfhistorycount( "sv_playerperfhistorycount", "0", 0, "Number of samples to maintain in player perf history", true, 0, true, 128.0 );
 
 //-----------------------------------------------------------------------------
 // Purpose: Based upon amount of time in simulation time, adjust m_nTickBase so that
@@ -6741,6 +6741,16 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 	else if ( stricmp( cmd, "playerperf" ) == 0 )
 	{
 		int nRecip = entindex();
+
+		// block this command unless we're on a listen server as the host or cheats are enabled
+		if ( !sv_cheats->GetBool() )
+		{
+			if ( engine->IsDedicatedServer() )
+				return false;
+			if ( nRecip > 0 )
+				return false;
+		}
+
 		if ( args.ArgC() >= 2 )
 		{
 			nRecip = clamp( Q_atoi( args.Arg( 1 ) ), 1, gpGlobals->maxClients );
