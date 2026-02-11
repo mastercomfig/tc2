@@ -1562,11 +1562,17 @@ void CHLClient::IN_SetSampleTime( float frametime )
 //-----------------------------------------------------------------------------
 void CHLClient::CreateMove ( int sequence_number, float input_sample_frametime, bool active )
 {
-
 	Assert( C_BaseEntity::IsAbsRecomputationsEnabled() );
 	Assert( C_BaseEntity::IsAbsQueriesValid() );
 
 	C_BaseAnimating::AutoAllowBoneAccess boneaccess( true, false ); 
+
+#ifdef TF_CLIENT_DLL
+	if ( active && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		active = false;
+	}
+#endif
 
 	MDLCACHE_CRITICAL_SECTION();
 	input->CreateMove( sequence_number, input_sample_frametime, active );

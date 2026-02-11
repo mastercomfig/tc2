@@ -13,6 +13,9 @@
 #include "Path/NextBotPathFollow.h"
 //#include "NextBotPlayerBody.h"
 #include "NextBotBehavior.h"
+#ifdef TF_DLL
+#include "tf_gamerules.h"
+#endif
 
 #include "in_buttons.h"
 
@@ -582,7 +585,15 @@ inline void NextBotPlayer< PlayerType >::PhysicsSimulate( void )
 		return;
 	}
 
-	if ( engine->IsPaused() )
+	bool bPaused = engine->IsPaused();
+#ifdef TF_DLL
+	if ( !bPaused && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		bPaused = true;
+	}
+#endif
+
+	if ( bPaused )
 	{
 		// We're paused - don't add new commands
 		PlayerType::PhysicsSimulate();

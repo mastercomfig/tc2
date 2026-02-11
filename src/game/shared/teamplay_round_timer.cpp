@@ -389,7 +389,7 @@ float CTeamRoundTimer::GetTimeRemaining( void )
 	}
 	else
 	{
-		if ( m_bTimerPaused )
+		if ( m_bTimerPaused || ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsGamePaused() ) )
 		{
 			flSecondsRemaining = m_flTimeRemaining;
 		}
@@ -473,7 +473,7 @@ void CTeamRoundTimer::CalculateOutputMessages( void )
 //-----------------------------------------------------------------------------
 void CTeamRoundTimer::ClientThink()
 {
-	if ( IsDisabled() || m_bTimerPaused || IsInCommentaryMode() )
+	if ( IsDisabled() || m_bTimerPaused || IsInCommentaryMode() || ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsGamePaused() ) )
 		return;
 
 	if ( IsStopWatchTimer() == true && IsWatchingTimeStamps() == true )

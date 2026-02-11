@@ -12500,7 +12500,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 
 	Assert( pRules );
 
-	if ( engine->IsPaused() )
+	if ( engine->IsPaused() || pRules->IsGamePaused() )
 		return false;
 
 	if ( IsViewingCYOAPDA() )

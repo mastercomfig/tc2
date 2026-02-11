@@ -25,6 +25,10 @@
 #include "c_basehlplayer.h"
 #endif
 
+#ifdef TF_CLIENT_DLL
+#include "tf_gamerules.h"
+#endif
+
 #include "tier0/vprof.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -1714,6 +1718,12 @@ void CPrediction::Update( int startframe, bool validframe,
 	VPROF_BUDGET( "CPrediction::Update", VPROF_BUDGETGROUP_PREDICTION );
 
 	m_bEnginePaused = engine->IsPaused();
+#ifdef TF_CLIENT_DLL
+	if ( !m_bEnginePaused && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		m_bEnginePaused = true;
+	}
+#endif
 
 	bool received_new_world_update = true;
 

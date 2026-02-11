@@ -106,6 +106,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	RecvPropBool( RECVINFO( m_bCheatsEnabledDuringLevel ) ),
 	RecvPropTime( RECVINFO( m_flCountdownTime ) ),
 	RecvPropTime( RECVINFO( m_flStateTransitionTime ) ),
+	RecvPropBool( RECVINFO( m_bGamePaused ) ),
+	RecvPropBool( RECVINFO( m_bPauseEnabled ) ),
 #else
 	SendPropInt( SENDINFO( m_iRoundState ), 5 ),
 	SendPropBool( SENDINFO( m_bInWaitingForPlayers ) ),
@@ -128,6 +130,8 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	SendPropBool( SENDINFO( m_bCheatsEnabledDuringLevel ) ),
 	SendPropTime( SENDINFO( m_flCountdownTime ) ),
 	SendPropTime( SENDINFO( m_flStateTransitionTime ) ),
+	SendPropBool( SENDINFO( m_bGamePaused ) ),
+	SendPropBool( SENDINFO( m_bPauseEnabled ) ),
 #endif
 END_NETWORK_TABLE()
 
@@ -207,6 +211,8 @@ ConVar mp_capdeteriorate_time( "mp_capdeteriorate_time", "90.0", FCVAR_REPLICATE
 ConVar mp_tournament( "mp_tournament", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );
 ConVar mp_tournament_post_match_period( "mp_tournament_post_match_period", "90", FCVAR_REPLICATED, "The amount of time (in seconds) before the server resets post-match.", true, 5, true, 300 );
 
+ConVar mp_tournament_required_for_pause( "mp_tournament_required_for_pause", "1", FCVAR_REPLICATED );
+
 #if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
 ConVar mp_highlander( "mp_highlander", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow only 1 of each player class type." );
 ConVar mp_sixes("mp_sixes", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enforces standard Sixes competitive ruleset.");
@@ -240,6 +246,18 @@ ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY |
 ConVar mp_bonusroundtime( "mp_bonusroundtime", "15", FCVAR_REPLICATED, "Time after round win until round restarts", true, 5, true, 15 );
 ConVar mp_stalemate_meleeonly( "mp_stalemate_meleeonly", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Restrict everyone to melee weapons only while in Sudden Death." );
 ConVar mp_forceautoteam( "mp_forceautoteam", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Automatically assign players to teams when joining." );
+
+ConVar mp_pause_setting( "mp_pause_setting", "0", FCVAR_REPLICATED, "0 - Disable game pauses, 1 - limited pauses, 2 - unlimited pauses" );
+ConVar mp_pause_cooldown( "mp_pause_cooldown", "2", FCVAR_REPLICATED, "" );
+ConVar mp_pause_cooldown_time( "mp_pause_cooldown_time", "300", FCVAR_REPLICATED, "Number of seconds before a player is allowed to pause again " );
+ConVar mp_pause_count( "mp_pause_count", "2", FCVAR_REPLICATED, "Number of times a player is allowed to pause the game." );
+ConVar mp_pause_countdown( "mp_pause_countdown", "0", FCVAR_REPLICATED, "Countdown to pause the game." );
+ConVar mp_unpause_countdown( "mp_unpause_countdown", "3", FCVAR_REPLICATED, "Countdown to unpause the game." );
+ConVar mp_pause_force_unpause_time( "mp_pause_force_unpause_time", "300", FCVAR_REPLICATED, "Number of seconds after which the game will automatically unpause" );
+ConVar mp_pause_game_pause_silently( "mp_pause_game_pause_silently", "0", FCVAR_REPLICATED, "" );
+ConVar mp_pause_same_team_resume_time( "mp_pause_same_team_resume_time", "5", FCVAR_REPLICATED, "Number of seconds resuming is restricted to the same team, after that either team can pause" );
+ConVar mp_pause_same_team_resume_time_disconnected( "mp_pause_same_team_resume_time_disconnected", "30", FCVAR_REPLICATED, "Number of seconds resuming is restricted to the same team if someone disconnected, after that either team can pause" );
+ConVar mp_unpause_mass_disconnect_cooldown( "mp_unpause_mass_disconnect_cooldown", "86400", FCVAR_REPLICATED, "" );
 
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
 ConVar mp_developer( "mp_developer", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED | FCVAR_NOTIFY, "1: basic conveniences (instant respawn and class change, etc).  2: add combat conveniences (infinite ammo, buddha, etc)" );
@@ -461,6 +479,13 @@ CTeamplayRoundBasedRules::CTeamplayRoundBasedRules( void )
 	m_bCheatsEnabledDuringLevel.Set( false );
 	m_nRoundsPlayed.Set( 0 );
 	m_flCountdownTime.Set( -1.0f );
+	m_nTotalPausedTicks.Set( 0 );
+	m_nPauseStartTick.Set( -1 );
+	m_bGamePaused.Set( false );
+	m_bPauseEnabled.Set( true );
+	m_flPauseTime = 0.0f;
+	m_flPauseCurTime = -1.0f;
+	m_flUnpauseCurTime = -1.0f;
 
 	for ( int i = 0; i < MAX_PLAYERS; i++ )
 	{
@@ -713,6 +738,26 @@ void CTeamplayRoundBasedRules::SetForceMapReset( bool reset )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::Think( void )
 {
+	if ( !IsGamePaused() )
+	{
+		if ( m_flPauseCurTime > 0.0f && m_flPauseCurTime <= gpGlobals->curtime )
+		{
+			m_bGamePaused = true;
+		}
+	}
+
+	if ( IsGamePaused() )
+	{
+		m_flPauseTime += gpGlobals->frametime;
+
+		if ( m_flUnpauseCurTime > 0.0f && m_flUnpauseCurTime <= gpGlobals->curtime )
+		{
+			m_bGamePaused = false;
+		}
+		
+		return;
+	}
+
 	if ( g_fGameOver )   // someone else quit the game already
 	{
 		// check to see if we should change levels now
@@ -3518,7 +3563,160 @@ string_t CTeamplayRoundBasedRules::GetLastPlayedRound( void )
 	return ( m_iszPreviousRounds.Count() ? m_iszPreviousRounds[0] : NULL_STRING );
 }
 
+
+//=========================================================
+// ClientCommand
+// the user has typed a command which is unrecognized by everything else;
+// this check to see if the gamerules knows anything about the command
+//=========================================================
+bool CTeamplayRoundBasedRules::ClientCommand( CBaseEntity* pEdict, const CCommand& args )
+{
+	if ( BaseClass::ClientCommand( pEdict, args ) )
+		return true;
+
+	CBasePlayer* pPlayer = ToBasePlayer( pEdict );
+
+	const char* pcmd = args[0];
+
+	if ( FStrEq( pcmd, "pause_request" ) )
+	{
+		int iPauseType;
+		if ( args.ArgC() < 2 )
+		{
+			iPauseType = 2; // toggle pause
+		}
+		else
+		{
+			iPauseType = atoi( args[1] );
+		}
+		
+		bool bWantsPause;
+		if ( iPauseType == 2 )
+		{
+			bWantsPause = !m_bGamePaused;
+		}
+		else
+		{
+			bWantsPause = iPauseType == 0;
+		}
+
+		CSteamID steamID;
+		if ( !pPlayer->GetSteamID( &steamID ) )
+		{
+			return true;
+		}
+
+		if ( bWantsPause )
+		{
+			Pause( steamID );
+		}
+		else
+		{
+			Unpause( steamID );
+		}
+		
+		return true;
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTeamplayRoundBasedRules::Pause( CSteamID SteamID )
+{
+	if ( !CanPlayerPause( SteamID ) )
+	{
+		return;
+	}
+
+	m_flPauseCurTime = gpGlobals->curtime + mp_pause_countdown.GetFloat();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTeamplayRoundBasedRules::Unpause( CSteamID SteamID )
+{
+	if ( !CanPlayerUnpause( SteamID ) )
+	{
+		return;
+	}
+
+	m_flUnpauseCurTime = gpGlobals->curtime + mp_unpause_countdown.GetFloat();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTeamplayRoundBasedRules::CanPlayerPause( CSteamID SteamID )
+{
+	// cannot pause if we're already paused.
+	if ( IsGamePaused() )
+	{
+		return false;
+	}
+	
+	if ( !IsPausingEnabled() )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTeamplayRoundBasedRules::CanPlayerUnpause( CSteamID SteamID )
+{
+	// cannot unpause if we're not paused.
+	if ( !IsGamePaused() )
+	{
+		return false;
+	}
+
+	// somehow, we're paused but pauses are disabled. just let someone unpause.
+	if ( !IsPausingEnabled() )
+	{
+		return true;
+	}
+
+	return true;
+}
 #endif // GAME_DLL
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTeamplayRoundBasedRules::IsGamePaused()
+{
+	return m_bGamePaused;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTeamplayRoundBasedRules::IsPausingEnabled()
+{
+	if ( !m_bPauseEnabled )
+	{
+		return false;
+	}
+
+	if ( !mp_pause_setting.GetBool() )
+	{
+		return false;
+	}
+
+	if ( mp_tournament_required_for_pause.GetBool() && !IsInTournamentMode() )
+	{
+		return false;
+	}
+
+	return true;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

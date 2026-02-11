@@ -794,6 +794,7 @@ ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_
 
 ConVar tf_tournament_prematch_warmup("tf_tournament_prematch_warmup", "1", FCVAR_REPLICATED);
 
+ConVar tf_allow_pause_in_match( "tf_allow_pause_in_match", "1", FCVAR_REPLICATED );
 
 static float g_fEternaweenAutodisableTime = 0.0f;
 
@@ -8877,6 +8878,12 @@ void CTFGameRules::LevelShutdown()
 //-----------------------------------------------------------------------------
 void CTFGameRules::Think()
 {
+	if ( IsGamePaused() )
+	{
+		BaseClass::Think();
+		return;
+	}
+
 	if ( m_bMapCycleNeedsUpdate )
 	{
 		m_bMapCycleNeedsUpdate = false;

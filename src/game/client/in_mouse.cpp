@@ -27,6 +27,7 @@
 #include "cdll_util.h"
 #include "tier1/convar_serverbounded.h"
 #include "cam_thirdperson.h"
+#include "tf_gamerules.h"
 #include "inputsystem/iinputsystem.h"
 
 #if defined( _X360 )
@@ -398,6 +399,14 @@ void CInput::GetAccumulatedMouseDeltasAndResetAccumulators( float *mx, float *my
 			*my = (float)rawMouseY;
 		}
 	}
+
+#ifdef TF_CLIENT_DLL
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		*mx = 0;
+		*my = 0;
+	}
+#endif
 	
 	m_flAccumulatedMouseXMovement = 0;
 	m_flAccumulatedMouseYMovement = 0;
@@ -622,6 +631,13 @@ void CInput::AccumulateMouse( void )
 	{
 		return;
 	}
+
+#ifdef TF_CLIENT_DLL
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		return;
+	}
+#endif
 
 	int w, h;
 	engine->GetScreenSize( w, h );

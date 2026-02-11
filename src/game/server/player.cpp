@@ -476,9 +476,10 @@ edict_t *CBasePlayer::s_PlayerEdict = NULL;
 
 inline bool ShouldRunCommandsInContext( const CCommandContext *ctx )
 {
+	// TODO(mcoms): we're enabling it now
 	// TODO: This should be enabled at some point. If usercmds can run while paused, then
 	// they can create entities which will never die and it will fill up the entity list.
-#ifdef NO_USERCMDS_DURING_PAUSE
+#if defined( NO_USERCMDS_DURING_PAUSE ) || 1
 	return !ctx->paused || sv_noclipduringpause.GetInt();
 #else
 	return true;

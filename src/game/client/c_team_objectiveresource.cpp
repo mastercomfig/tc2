@@ -374,6 +374,12 @@ void C_BaseTeamObjectiveResource::ClientThink()
 {
 	BaseClass::ClientThink();
 
+	if ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsGamePaused() )
+	{
+		SetNextClientThink( gpGlobals->curtime + RESOURCE_THINK_TIME );
+		return;
+	}
+
 	for ( int i = 0; i < MAX_CONTROL_POINTS; i++ )
 	{
 		if ( m_flCapTimeLeft[i] )

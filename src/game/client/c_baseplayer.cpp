@@ -2776,6 +2776,14 @@ void C_BasePlayer::GetPredictionErrorSmoothingVector( Vector &vOffset )
 		return;
 	}
 
+#ifdef TF_CLIENT_DLL
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		vOffset.Init();
+		return;
+	}
+#endif
+
 	float errorAmount = ( gpGlobals->curtime - m_flPredictionErrorTime ) / cl_smoothtime.GetFloat();
 
 	if ( errorAmount >= 1.0f )

@@ -1229,6 +1229,13 @@ void CServerGameDLL::GameFrame( bool simulating )
 	UpdateQueryCache();
 	g_pServerBenchmark->UpdateBenchmark();
 
+#ifdef TF_DLL
+	if ( simulating && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		simulating = false;
+	}
+#endif
+
 	Physics_RunThinkFunctions( simulating );
 	
 	IGameSystem::FrameUpdatePostEntityThinkAllSystems();
@@ -3014,6 +3021,14 @@ static ConVar sv_max_usercmd_move_magnitude( "sv_max_usercmd_move_magnitude", "1
 float CServerGameClients::ProcessUsercmds( edict_t *player, bf_read *buf, int numcmds, int totalcmds,
 	int dropped_packets, bool ignore, bool paused )
 {
+#ifdef TF_DLL
+	if ( !paused && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		ignore = true;
+		paused = true;
+	}
+#endif
+
 	int				i;
 	CUserCmd		*from, *to;
 

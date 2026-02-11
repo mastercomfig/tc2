@@ -208,7 +208,15 @@ public:
 
 #ifdef GAME_DLL
 	virtual void BalanceTeams( bool bRequireSwitcheesToBeDead );
+	virtual bool ClientCommand( CBaseEntity* pEdict, const CCommand& args );
+	bool         CanPlayerPause( CSteamID SteamID );
+	bool         CanPlayerUnpause( CSteamID SteamID );
+	void         Pause( CSteamID SteamID );
+	void         Unpause( CSteamID SteamID );
 #endif // GAME_DLL
+
+	bool IsGamePaused();
+	bool IsPausingEnabled();
 
 	bool		SwitchedTeamsThisRound( void ) { return m_bSwitchedTeamsThisRound; }
 
@@ -615,6 +623,11 @@ protected:
 	CNetworkVar( int, 			m_nRoundsPlayed );
 	CNetworkVar( float,			m_flCountdownTime );
 	CNetworkVar( float,			m_flStateTransitionTime );	// Timer for round states
+	CNetworkVar( int,			m_nTotalPausedTicks );
+	CNetworkVar( int,			m_nPauseStartTick );
+	CNetworkVar( bool,			m_bGamePaused );
+	CNetworkVar( bool,			m_bPauseEnabled );
+
 public:
 	CNetworkArray( float,		m_TeamRespawnWaveTimes, MAX_TEAMS_ARRAY_SAFE );	// Time between each team's respawn wave
 
@@ -629,6 +642,18 @@ private:
 	int		m_nAutoBalanceQueuePlayerScore;
 
 	int		m_nLastEventFiredTime;
+	
+	typedef CUtlMap<CSteamID, int, int, CDefLess<CSteamID>>   TMapPauseRemaining;
+	typedef CUtlMap<CSteamID, float, int, CDefLess<CSteamID>> TMapPauseTime;
+
+	float              m_flPauseTime;
+	CSteamID           m_pausingPlayerId;
+	CSteamID           m_unpausingPlayerId;
+	float              m_flPauseCurTime;
+	float              m_flUnpauseCurTime;
+	TMapPauseRemaining m_nPausesRemaining;
+	TMapPauseTime      m_nLastPauseTime;
+
 protected:
 	bool	m_bAllowBetweenRounds;
 
