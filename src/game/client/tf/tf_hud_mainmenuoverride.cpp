@@ -1385,6 +1385,10 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 
 			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
 			{
+				if (!bShouldWebUiShow)
+				{
+					GetGameStateManager()->QueueEvent( "closedmenu", "" );
+				}
 				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
 			}
 		}
