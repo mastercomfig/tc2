@@ -203,7 +203,7 @@ CTFClientScoreBoardDialog::CTFClientScoreBoardDialog( IViewPort *pViewPort ) : C
 
 	m_bIsPVEMode = false;
 //	m_bDisplayLevel = false;
-	m_bMouseActivated = false;
+	m_bMouseActivated = true;
 
 	Q_memset( m_iImageClass, NULL, sizeof( m_iImageClass ) );
 	Q_memset( m_iImageClassAlt, NULL, sizeof( m_iImageClassAlt ) );
