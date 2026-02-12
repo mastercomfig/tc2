@@ -2080,6 +2080,20 @@ void ClientModeTFNormal::Update()
 		g_pClientMode->GetViewportAnimationController()->UpdateAnimations( gpGlobals->curtime );
 	}
 
+	// todo(mcoms): we should do this in a dev paused shader
+	static ConVarRef mat_color_projection( "mat_color_projection" );
+	const bool bGamePaused = TFGameRules() && TFGameRules()->IsGamePaused();
+	if ( bGamePaused && m_iLastColorProjection == -1 )
+	{
+		m_iLastColorProjection = mat_color_projection.GetInt();
+		mat_color_projection.SetValue( 4 );
+	}
+	if ( !bGamePaused && m_iLastColorProjection != -1 )
+	{
+		mat_color_projection.SetValue( m_iLastColorProjection );
+		m_iLastColorProjection = -1;
+	}
+
 	if ( !engine->IsConnected() )
 	{
 		if ( m_wasConnectedLastUpdate )

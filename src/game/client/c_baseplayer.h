@@ -158,6 +158,8 @@ public:
 	void ResetObserverMode();
 	bool IsBot( void ) const { return false; }
 
+	virtual bool IsGamePausedForMe();
+
 	// Eye position..
 	virtual Vector		 EyePosition();
 	Vector               EyePositionOld();

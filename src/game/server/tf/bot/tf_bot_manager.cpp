@@ -334,6 +334,9 @@ void CTFBotManager::MaintainBotQuota()
 	if ( TFGameRules()->IsInTraining() )
 		return;
 
+	if ( TFGameRules()->IsGamePaused() )
+		return;
+
 	// if it is not time to do anything...
 	if ( gpGlobals->curtime < m_flNextPeriodicThink )
 		return;

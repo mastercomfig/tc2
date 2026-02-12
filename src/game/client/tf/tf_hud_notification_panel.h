@@ -112,4 +112,26 @@ private:
 	int m_iTeam;
 };
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+class CGamePausePanel : public CHudElement, public EditablePanel
+{
+	DECLARE_CLASS_SIMPLE( CGamePausePanel, EditablePanel );
+
+public:
+	CGamePausePanel( const char* pElementName );
+
+	virtual void ApplySchemeSettings( IScheme* scheme );
+	virtual bool ShouldDraw( void );
+	virtual void OnTick( void );
+
+private:
+	Label*      m_pTitle;
+	Label*      m_pMessage;
+	Label*      m_pCountdown;
+	ImagePanel* m_pBackground;
+	int         m_iTeam;
+};
+
 #endif // TF_HUD_NOTIFICATION_PANEL_H

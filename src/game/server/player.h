@@ -371,6 +371,8 @@ public:
 
 	virtual bool			IsFakeClient( void ) const;
 
+	virtual bool			ShouldBePausedDuringPause();
+
 	// Get the client index (entindex-1).
 	int						GetClientIndex()	{ return ENTINDEX( edict() ) - 1; }
 
@@ -602,7 +604,7 @@ public:
 	// Run a user command. The default implementation calls ::PlayerRunCommand. In TF, this controls a vehicle if
 	// the player is in one.
 	virtual void			PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper);
-	void					RunNullCommand();
+	void					RunNullCommand( bool bNeedsHost = true );
 	CUserCmd *				GetCurrentCommand( void )	{ return m_pCurrentCommand; }
 	float					GetTimeSinceLastUserCommand( void ) { return ( !IsConnected() || IsFakeClient() || IsBot() ) ? 0.f : gpGlobals->curtime - m_flLastUserCommandTime; }
 

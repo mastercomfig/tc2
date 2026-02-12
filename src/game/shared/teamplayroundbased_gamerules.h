@@ -209,10 +209,10 @@ public:
 #ifdef GAME_DLL
 	virtual void BalanceTeams( bool bRequireSwitcheesToBeDead );
 	virtual bool ClientCommand( CBaseEntity* pEdict, const CCommand& args );
-	bool         CanPlayerPause( CSteamID SteamID );
-	bool         CanPlayerUnpause( CSteamID SteamID );
 	void         Pause( CSteamID SteamID );
 	void         Unpause( CSteamID SteamID );
+
+	virtual void PlayerThink(CBasePlayer* pPlayer) OVERRIDE;
 #endif // GAME_DLL
 
 	bool IsGamePaused();
@@ -523,6 +523,9 @@ protected:
 	void CreateTimeLimitTimer( void );
 
 	virtual float GetLastMajorEventTime( void ) OVERRIDE { return m_flLastTeamWin; }
+	
+	bool CanPlayerPause( CSteamID SteamID );
+	bool CanPlayerUnpause( CSteamID SteamID );
 
 protected:
 	CGameRulesRoundStateInfo	*m_pCurStateInfo;			// Per-state data 
@@ -599,6 +602,8 @@ public:
 
 	float GetPreroundCountdownTime( void ){ return m_flCountdownTime; }
 
+	float GetGameUnpauseTime( void ) { return m_flUnpauseCurTime; }
+
 protected:
 	CNetworkVar( gamerules_roundstate_t, m_iRoundState );
 	CNetworkVar( bool, m_bInOvertime ); // Are we currently in overtime?
@@ -627,6 +632,7 @@ protected:
 	CNetworkVar( int,			m_nPauseStartTick );
 	CNetworkVar( bool,			m_bGamePaused );
 	CNetworkVar( bool,			m_bPauseEnabled );
+	CNetworkVar( float,			m_flUnpauseCurTime );
 
 public:
 	CNetworkArray( float,		m_TeamRespawnWaveTimes, MAX_TEAMS_ARRAY_SAFE );	// Time between each team's respawn wave
@@ -650,9 +656,9 @@ private:
 	CSteamID           m_pausingPlayerId;
 	CSteamID           m_unpausingPlayerId;
 	float              m_flPauseCurTime;
-	float              m_flUnpauseCurTime;
 	TMapPauseRemaining m_nPausesRemaining;
 	TMapPauseTime      m_nLastPauseTime;
+	bool               m_bForcePause;
 
 protected:
 	bool	m_bAllowBetweenRounds;

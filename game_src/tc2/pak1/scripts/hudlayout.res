@@ -1184,6 +1184,17 @@
 		"wide"					"260"
 		"tall"					"100"
 	}
+
+    GamePausePanel
+	{
+		"fieldName"				"GamePausePanel"
+		"visible"				"1"
+		"enabled"				"1"
+		"xpos"					"c-130"
+		"ypos"					"c-98"
+		"wide"					"260"
+		"tall"					"196"
+	}
 	
 	NotificationPanel
 	{

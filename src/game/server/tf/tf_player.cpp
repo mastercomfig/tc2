@@ -3553,6 +3553,30 @@ void CTFPlayer::PlayerRunCommand( CUserCmd *ucmd, IMoveHelper *moveHelper )
 	}
 }
 
+bool CTFPlayer::ShouldBePausedDuringPause()
+{
+	static ConVarRef sv_noclipduringpause( "sv_noclipduringpause" );
+	if ( engine->IsPaused() )
+	{
+		// not much we can do for an engine pause.
+		if ( sv_noclipduringpause.GetBool() && GetMoveType() == MOVETYPE_NOCLIP )
+		{
+			return false;
+		}
+		return true;
+	}
+	// our game-level pause allows spectators to do stuff.
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		if ( sv_noclipduringpause.GetBool() && GetTeamNumber() < FIRST_GAME_TEAM )
+		{
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

@@ -100,12 +100,10 @@ bool CHudCrosshair::ShouldDraw( void )
 		return false;
 #endif // PORTAL
 
-#ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	if ( pPlayer->IsGamePausedForMe() )
 	{
 		return false;
 	}
-#endif
 
 	/* disabled to avoid assuming it's an HL2 player.
 	// suppress crosshair in zoom.

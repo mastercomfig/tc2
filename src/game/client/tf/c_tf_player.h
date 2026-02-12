@@ -154,6 +154,8 @@ public:
 
 	bool	IsABot( void );
 
+	virtual bool IsGamePausedForMe() OVERRIDE;
+
 	// Get the ID target entity index. The ID target is the player that is behind our crosshairs, used to
 	// display the player's name.
 	void UpdateIDTarget();

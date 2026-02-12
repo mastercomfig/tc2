@@ -82,6 +82,10 @@
 #include "weapon_physcannon.h"
 #endif
 
+#ifdef TF_DLL
+#include "tf_gamerules.h"
+#endif
+
 ConVar autoaim_max_dist( "autoaim_max_dist", "2160" ); // 2160 = 180 feet
 ConVar autoaim_max_deflect( "autoaim_max_deflect", "0.99" );
 
@@ -118,8 +122,7 @@ ConVar cl_forwardspeed( "cl_forwardspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT
 ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // CSTRIKE_DLL
 
-// This is declared in the engine, too
-ConVar	sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
+ConVar	sv_noclipduringpause( "sv_noclipduringpause", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
 extern ConVar sv_maxunlag;
 extern ConVar sv_turbophysics;
@@ -480,7 +483,7 @@ inline bool ShouldRunCommandsInContext( const CCommandContext *ctx )
 	// TODO: This should be enabled at some point. If usercmds can run while paused, then
 	// they can create entities which will never die and it will fill up the entity list.
 #if defined( NO_USERCMDS_DURING_PAUSE ) || 1
-	return !ctx->paused || sv_noclipduringpause.GetInt();
+	return !ctx->paused;
 #else
 	return true;
 #endif
@@ -3192,7 +3195,7 @@ void CBasePlayer::AdjustPlayerTimeBase( int simulation_ticks )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CBasePlayer::RunNullCommand( void )
+void CBasePlayer::RunNullCommand( bool bNeedsHost )
 {
 	CUserCmd cmd;	// NULL command
 
@@ -3214,7 +3217,10 @@ void CBasePlayer::RunNullCommand( void )
 	float flTimeBase = gpGlobals->curtime;
 	SetTimeBase( flTimeBase );
 
-	MoveHelperServer()->SetHost( this );
+	if ( bNeedsHost )
+	{
+		MoveHelperServer()->SetHost( this );
+	}
 	PlayerRunCommand( &cmd, MoveHelperServer() );
 
 	// save off the last good usercmd
@@ -3224,7 +3230,10 @@ void CBasePlayer::RunNullCommand( void )
 	gpGlobals->frametime = flOldFrametime;
 	gpGlobals->curtime = flOldCurtime;
 
-	MoveHelperServer()->SetHost( NULL );
+	if ( bNeedsHost )
+	{
+		MoveHelperServer()->SetHost( NULL );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3286,7 +3295,8 @@ void CBasePlayer::PhysicsSimulate( void )
 	{
 		// Get oldest ( newer are added to tail )
 		CCommandContext *ctx = GetCommandContext( context_number );
-		if ( !ShouldRunCommandsInContext( ctx ) )
+		// game must be paused for both command context and player
+		if ( !ShouldRunCommandsInContext( ctx ) && ShouldBePausedDuringPause() )
 			continue;
 
 		if ( !ctx->cmds.Count() )
@@ -3396,7 +3406,7 @@ void CBasePlayer::PhysicsSimulate( void )
 	{
 		// no usercommand from player after some threshold
 		// server should start RunNullCommand as if client sends an empty command so that Think and gamestate related things run properly
-		RunNullCommand();
+		RunNullCommand(false);
 	}
 
 	int nMaxTicks = sv_maxusrcmdprocessticks.GetInt();
@@ -3569,6 +3579,11 @@ void CBasePlayer::ProcessUsercmds( CUserCmd *cmds, int numcmds, int totalcmds,
 	CCommandContext *ctx = AllocCommandContext();
 	Assert( ctx );
 
+	if ( paused )
+	{
+		paused = ShouldBePausedDuringPause();
+	}
+
 	int i;
 	for ( i = totalcmds - 1; i >= 0; i-- )
 	{
@@ -3603,9 +3618,7 @@ void CBasePlayer::ProcessUsercmds( CUserCmd *cmds, int numcmds, int totalcmds,
 		bool clear_angles = true;
 
 		// If no clipping and cheats enabled and sv_noclipduringpause enabled, then don't zero out movement part of CUserCmd
-		if ( GetMoveType() == MOVETYPE_NOCLIP &&
-			sv_cheats->GetBool() && 
-			sv_noclipduringpause.GetBool() )
+		if ( !ShouldBePausedDuringPause() )
 		{
 			clear_angles = false;
 		}
@@ -3967,6 +3980,11 @@ void CBasePlayer::PreThink(void)
 {						
 	if ( g_fGameOver || m_iPlayerLocked )
 		return;         // intermission or finale
+
+#ifdef TF_DLL
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() && ShouldBePausedDuringPause() )
+		return;
+#endif
 
 	if ( Hints() )
 	{
@@ -4662,7 +4680,15 @@ void CBasePlayer::PostThink()
 
 	m_vecSmoothedVelocity = m_vecSmoothedVelocity * SMOOTHING_FACTOR + GetAbsVelocity() * ( 1 - SMOOTHING_FACTOR );
 
-	if ( !g_fGameOver && !m_iPlayerLocked )
+	bool bShouldThink = !g_fGameOver && !m_iPlayerLocked;
+#ifdef TF_DLL
+	if ( bShouldThink )
+	{
+		bShouldThink = !TFGameRules() || !TFGameRules()->IsGamePaused() || !ShouldBePausedDuringPause();
+	}
+#endif
+
+	if ( bShouldThink )
 	{
 		if ( IsAlive() )
 		{
@@ -8884,6 +8910,15 @@ bool CBasePlayer::IsBot() const
 bool CBasePlayer::IsFakeClient() const
 {
 	return (GetFlags() & FL_FAKECLIENT) != 0;
+}
+
+bool CBasePlayer::ShouldBePausedDuringPause()
+{
+	if ( sv_noclipduringpause.GetBool() && GetMoveType() == MOVETYPE_NOCLIP )
+	{
+		return false;
+	}
+	return true;
 }
 
 void CBasePlayer::EquipSuit( bool bPlayEffects )

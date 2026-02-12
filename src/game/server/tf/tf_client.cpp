@@ -253,6 +253,9 @@ void GameStartFrame( void )
 	if ( g_fGameOver )
 		return;
 
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+		return;
+
 	gpGlobals->teamplay = teamplay.GetInt() ? true : false;
 
 	Bot_RunAll();

@@ -25,6 +25,7 @@
 #include <ctype.h> // isalnum()
 #include <voice_status.h>
 #include "cam_thirdperson.h"
+#include "tf_gamerules.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -85,7 +86,7 @@ ConVar in_joystick( "joystick","0", FCVAR_ARCHIVE );
 ConVar thirdperson_platformer( "thirdperson_platformer", "0", 0, "Player will aim in the direction they are moving." );
 ConVar thirdperson_screenspace( "thirdperson_screenspace", "0", 0, "Movement will be relative to the camera, eg: left means screen-left" );
 
-ConVar sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
+ConVar sv_noclipduringpause( "sv_noclipduringpause", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "If enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
 extern ConVar cl_mouselook;
 
@@ -1008,12 +1009,26 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 
 	cmd->Reset();
 
+#ifdef TF_CLIENT_DLL
+	if ( active && TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		active = false;
+	}
+#endif
+
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	bool bActiveDuringPause = sv_noclipduringpause.GetBool();
+	if ( pPlayer )
+	{
+		bActiveDuringPause = !pPlayer->IsGamePausedForMe();
+	}
+
 
 	QAngle viewangles;
 	engine->GetViewAngles( viewangles );
 	QAngle originalViewangles = viewangles;
 
-	if ( active )
+	if ( active || bActiveDuringPause )
 	{
 		// Determine view angles
 		AdjustAngles ( frametime );
@@ -1160,9 +1175,17 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 
 	QAngle viewangles;
 	engine->GetViewAngles( viewangles );
-	QAngle originalViewangles = viewangles;
+	QAngle        originalViewangles = viewangles;
+	
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
 
-	if ( active || sv_noclipduringpause.GetInt() )
+	bool bActiveDuringPause = sv_noclipduringpause.GetBool();
+	if ( pPlayer )
+	{
+		bActiveDuringPause = !pPlayer->IsGamePausedForMe();
+	}
+
+	if ( active || bActiveDuringPause )
 	{
 		// Determine view angles
 		AdjustAngles ( input_sample_frametime );
@@ -1170,7 +1193,7 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 		// Determine sideways movement
 		ComputeSideMove( cmd );
 
-		// Determine vertical movement
+		// Determine vertical movement`
 		ComputeUpwardMove( cmd );
 
 		// Determine forward movement
@@ -1307,7 +1330,6 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 		}
 	}
 
-	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (pPlayer)
 	{
 		pPlayer->m_flInterpolationTime = 1.0f;

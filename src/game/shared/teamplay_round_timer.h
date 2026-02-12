@@ -166,6 +166,8 @@ private:
 	bool			m_bPauseDueToWin;
 	bool			m_bResetTimeOnRoundStart;
 	int				m_nTimeToUseAfterSetupFinished;
+
+	bool m_bPausedForGame;
 #endif 
 };
 

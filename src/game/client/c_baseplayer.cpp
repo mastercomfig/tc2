@@ -2102,6 +2102,10 @@ void C_BasePlayer::UpdateClientData( void )
 void C_BasePlayer::PreThink( void )
 {
 #if !defined( NO_ENTITY_PREDICTION )
+
+	if ( IsGamePausedForMe() )
+		return;
+	
 	ItemPreFrame();
 
 	UpdateClientData();
@@ -2129,7 +2133,10 @@ void C_BasePlayer::PostThink( void )
 #if !defined( NO_ENTITY_PREDICTION )
 	MDLCACHE_CRITICAL_SECTION();
 
-	if ( IsAlive())
+	if ( IsGamePausedForMe() )
+		return;
+
+	if ( IsAlive() )
 	{
 		// Need to do this on the client to avoid prediction errors
 		if ( GetFlags() & FL_DUCKING )
@@ -2670,6 +2677,20 @@ void C_BasePlayer::LeaveVehicle( void )
 #endif
 }
 
+bool C_BasePlayer::IsGamePausedForMe()
+{
+	if ( engine->IsPaused() )
+	{
+		static ConVarRef sv_noclipduringpause( "sv_noclipduringpause" );
+		if ( sv_noclipduringpause.GetBool() && GetMoveType() == MOVETYPE_NOCLIP )
+		{
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
 Vector C_BasePlayer::EyePositionOld()
 {
 	return m_vecPreviouslyPredictedOrigin + GetViewOffset();
@@ -2776,13 +2797,11 @@ void C_BasePlayer::GetPredictionErrorSmoothingVector( Vector &vOffset )
 		return;
 	}
 
-#ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	if ( IsGamePausedForMe() )
 	{
 		vOffset.Init();
 		return;
 	}
-#endif
 
 	float errorAmount = ( gpGlobals->curtime - m_flPredictionErrorTime ) / cl_smoothtime.GetFloat();
 

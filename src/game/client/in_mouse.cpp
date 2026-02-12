@@ -399,14 +399,6 @@ void CInput::GetAccumulatedMouseDeltasAndResetAccumulators( float *mx, float *my
 			*my = (float)rawMouseY;
 		}
 	}
-
-#ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
-	{
-		*mx = 0;
-		*my = 0;
-	}
-#endif
 	
 	m_flAccumulatedMouseXMovement = 0;
 	m_flAccumulatedMouseYMovement = 0;
@@ -631,13 +623,6 @@ void CInput::AccumulateMouse( void )
 	{
 		return;
 	}
-
-#ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
-	{
-		return;
-	}
-#endif
 
 	int w, h;
 	engine->GetScreenSize( w, h );

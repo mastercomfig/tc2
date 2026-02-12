@@ -735,3 +735,124 @@ void CStrandedSpawnPanel::OnTick(void)
 	}
 }
 
+DECLARE_HUDELEMENT( CGamePausePanel );
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CGamePausePanel::CGamePausePanel( const char* pElementName ) : CHudElement( pElementName ), BaseClass( NULL, "GamePausePanel" )
+{
+	Panel* pParent = g_pClientMode->GetViewport();
+	SetParent( pParent );
+
+	SetHiddenBits( HIDEHUD_MISCSTATUS );
+
+	vgui::ivgui()->AddTickSignal( GetVPanel() );
+
+	m_pTitle = new Label( this, "Paused_Title", "" );
+	m_pMessage = new Label( this, "Paused_Message", "" );
+	m_pCountdown = new Label( this, "Paused_Countdown", "" );
+	m_pBackground = new ImagePanel( this, "Paused_Background" );
+
+	m_iTeam = 0;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CGamePausePanel::ApplySchemeSettings( IScheme* pScheme )
+{
+	// load control settings...
+	LoadControlSettings( "resource/UI/gamepausepanel.res" );
+
+	BaseClass::ApplySchemeSettings( pScheme );
+
+	m_iTeam = 0;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CGamePausePanel::ShouldDraw( void )
+{
+	if ( IsTakingAFreezecamScreenshot() )
+		return false;
+
+	if ( engine->IsPaused() )
+		return false;
+
+	if ( !TFGameRules() )
+		return false;
+
+	if ( !TFGameRules()->IsGamePaused() )
+		return false;
+
+	C_TFPlayer* pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pTFPlayer )
+		return false;
+
+	return CHudElement::ShouldDraw();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CGamePausePanel::OnTick( void )
+{
+	if ( !ShouldDraw() )
+		return;
+
+	C_TFPlayer* pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
+	
+	const float flUnpauseTime = TFGameRules()->GetGameUnpauseTime();
+
+	wchar_t        szTitle[1024] = L"";
+	const wchar_t* wpszTitleFormat;
+	wchar_t        szMessage[1024] = L"";
+	const wchar_t* wpszMessageFormat;
+	if ( flUnpauseTime > 0 )
+	{
+		wpszTitleFormat = g_pVGuiLocalize->Find( "#TF_Notification_Unpaused_Title" );
+		wpszMessageFormat = g_pVGuiLocalize->Find( "#TF_Notification_Unpaused_Message" );
+	}
+	else
+	{
+		wpszTitleFormat = g_pVGuiLocalize->Find( "#TF_Notification_Paused_Title" );
+		wpszMessageFormat = g_pVGuiLocalize->Find( "#TF_Notification_Paused_Message" );
+	}
+	if ( wpszTitleFormat && wpszMessageFormat )
+	{
+		g_pVGuiLocalize->ConstructString_safe( szTitle, wpszTitleFormat, 0 );
+		g_pVGuiLocalize->ConstructString_safe( szMessage, wpszMessageFormat, 0 );
+
+		int iTeam = pTFPlayer->GetTeamNumber();
+		if ( m_iTeam != iTeam )
+		{
+			m_iTeam = iTeam;
+			if ( iTeam == TF_TEAM_BLUE )
+			{
+				m_pBackground->SetImage( "../hud/score_panel_blue_bg" );
+			}
+			else
+			{
+				m_pBackground->SetImage( "../hud/score_panel_red_bg" );
+			}
+		}
+
+		m_pTitle->SetText( szTitle );
+		m_pMessage->SetText( szMessage );
+		const bool bShouldDrawCountdown = flUnpauseTime > 0 ;
+		if ( bShouldDrawCountdown != m_pCountdown->IsVisible() )
+		{
+			m_pCountdown->SetVisible( bShouldDrawCountdown );
+		}
+		if ( bShouldDrawCountdown )
+		{
+			wchar_t wszSecsLeft[16];
+			_snwprintf( wszSecsLeft, ARRAYSIZE( wszSecsLeft ), L"%d", Max( Ceil2Int( TFGameRules()->GetGameUnpauseTime() - gpGlobals->curtime ), 0 ) );
+
+			m_pCountdown->SetText( wszSecsLeft );
+		}
+	}
+}
+

@@ -108,6 +108,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	RecvPropTime( RECVINFO( m_flStateTransitionTime ) ),
 	RecvPropBool( RECVINFO( m_bGamePaused ) ),
 	RecvPropBool( RECVINFO( m_bPauseEnabled ) ),
+	RecvPropTime( RECVINFO( m_flUnpauseCurTime ) ),
 #else
 	SendPropInt( SENDINFO( m_iRoundState ), 5 ),
 	SendPropBool( SENDINFO( m_bInWaitingForPlayers ) ),
@@ -132,6 +133,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	SendPropTime( SENDINFO( m_flStateTransitionTime ) ),
 	SendPropBool( SENDINFO( m_bGamePaused ) ),
 	SendPropBool( SENDINFO( m_bPauseEnabled ) ),
+	SendPropTime( SENDINFO( m_flUnpauseCurTime ) ),
 #endif
 END_NETWORK_TABLE()
 
@@ -249,14 +251,15 @@ ConVar mp_forceautoteam( "mp_forceautoteam", "0", FCVAR_REPLICATED | FCVAR_NOTIF
 
 ConVar mp_pause_setting( "mp_pause_setting", "0", FCVAR_REPLICATED, "0 - Disable game pauses, 1 - limited pauses, 2 - unlimited pauses" );
 ConVar mp_pause_cooldown( "mp_pause_cooldown", "2", FCVAR_REPLICATED, "" );
-ConVar mp_pause_cooldown_time( "mp_pause_cooldown_time", "300", FCVAR_REPLICATED, "Number of seconds before a player is allowed to pause again " );
+ConVar mp_pause_cooldown_time( "mp_pause_cooldown_time", "300", FCVAR_REPLICATED, "Number of seconds before a player is allowed to pause again" );
 ConVar mp_pause_count( "mp_pause_count", "2", FCVAR_REPLICATED, "Number of times a player is allowed to pause the game." );
-ConVar mp_pause_countdown( "mp_pause_countdown", "0", FCVAR_REPLICATED, "Countdown to pause the game." );
+//ConVar mp_pause_countdown( "mp_pause_countdown", "0", FCVAR_REPLICATED, "Countdown to pause the game." );
 ConVar mp_unpause_countdown( "mp_unpause_countdown", "3", FCVAR_REPLICATED, "Countdown to unpause the game." );
 ConVar mp_pause_force_unpause_time( "mp_pause_force_unpause_time", "300", FCVAR_REPLICATED, "Number of seconds after which the game will automatically unpause" );
 ConVar mp_pause_game_pause_silently( "mp_pause_game_pause_silently", "0", FCVAR_REPLICATED, "" );
 ConVar mp_pause_same_team_resume_time( "mp_pause_same_team_resume_time", "5", FCVAR_REPLICATED, "Number of seconds resuming is restricted to the same team, after that either team can pause" );
 ConVar mp_pause_same_team_resume_time_disconnected( "mp_pause_same_team_resume_time_disconnected", "30", FCVAR_REPLICATED, "Number of seconds resuming is restricted to the same team if someone disconnected, after that either team can pause" );
+// TODO(mcoms)
 ConVar mp_unpause_mass_disconnect_cooldown( "mp_unpause_mass_disconnect_cooldown", "86400", FCVAR_REPLICATED, "" );
 
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
@@ -483,9 +486,10 @@ CTeamplayRoundBasedRules::CTeamplayRoundBasedRules( void )
 	m_nPauseStartTick.Set( -1 );
 	m_bGamePaused.Set( false );
 	m_bPauseEnabled.Set( true );
+	m_flUnpauseCurTime.Set( -1.0f );
 	m_flPauseTime = 0.0f;
 	m_flPauseCurTime = -1.0f;
-	m_flUnpauseCurTime = -1.0f;
+	m_bForcePause = false;
 
 	for ( int i = 0; i < MAX_PLAYERS; i++ )
 	{
@@ -740,8 +744,12 @@ void CTeamplayRoundBasedRules::Think( void )
 {
 	if ( !IsGamePaused() )
 	{
-		if ( m_flPauseCurTime > 0.0f && m_flPauseCurTime <= gpGlobals->curtime )
+		if ( m_flPauseCurTime > 0.0f && m_flPauseCurTime <= gpGlobals->curtime && ( m_pausingPlayerId.IsValid() || m_bForcePause ) )
 		{
+			m_flUnpauseCurTime = -1.0f;
+			m_flPauseCurTime = -1.0f;
+			m_bForcePause = false;
+			m_unpausingPlayerId.Clear();
 			m_bGamePaused = true;
 		}
 	}
@@ -750,9 +758,12 @@ void CTeamplayRoundBasedRules::Think( void )
 	{
 		m_flPauseTime += gpGlobals->frametime;
 
-		if ( m_flUnpauseCurTime > 0.0f && m_flUnpauseCurTime <= gpGlobals->curtime )
+		if ( m_flPauseTime > mp_pause_force_unpause_time.GetFloat() || ( m_flUnpauseCurTime > 0.0f && m_flUnpauseCurTime <= gpGlobals->curtime && ( m_pausingPlayerId.IsValid() || m_bForcePause ) ) )
 		{
+			m_bForcePause = false;
+			m_pausingPlayerId.Clear();
 			m_bGamePaused = false;
+			m_flPauseTime = 0.0f;
 		}
 		
 		return;
@@ -3563,6 +3574,21 @@ string_t CTeamplayRoundBasedRules::GetLastPlayedRound( void )
 	return ( m_iszPreviousRounds.Count() ? m_iszPreviousRounds[0] : NULL_STRING );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTeamplayRoundBasedRules::PlayerThink(CBasePlayer* pPlayer)
+{
+	if ( IsGamePaused() && pPlayer->ShouldBePausedDuringPause() )
+	{
+		// clear attack/use commands from player
+		pPlayer->m_afButtonPressed = 0;
+		pPlayer->m_nButtons = 0;
+		pPlayer->m_afButtonReleased = 0;
+	}
+	BaseClass::PlayerThink( pPlayer );
+}
+
 
 //=========================================================
 // ClientCommand
@@ -3578,7 +3604,7 @@ bool CTeamplayRoundBasedRules::ClientCommand( CBaseEntity* pEdict, const CComman
 
 	const char* pcmd = args[0];
 
-	if ( FStrEq( pcmd, "pause_request" ) )
+	if ( FStrEq( pcmd, "pause_request_server" ) )
 	{
 		int iPauseType;
 		if ( args.ArgC() < 2 )
@@ -3631,7 +3657,8 @@ void CTeamplayRoundBasedRules::Pause( CSteamID SteamID )
 		return;
 	}
 
-	m_flPauseCurTime = gpGlobals->curtime + mp_pause_countdown.GetFloat();
+	m_pausingPlayerId = SteamID;
+	m_flPauseCurTime = gpGlobals->curtime;
 }
 
 //-----------------------------------------------------------------------------
@@ -3644,6 +3671,7 @@ void CTeamplayRoundBasedRules::Unpause( CSteamID SteamID )
 		return;
 	}
 
+	m_unpausingPlayerId = SteamID;
 	m_flUnpauseCurTime = gpGlobals->curtime + mp_unpause_countdown.GetFloat();
 }
 
@@ -3661,6 +3689,43 @@ bool CTeamplayRoundBasedRules::CanPlayerPause( CSteamID SteamID )
 	if ( !IsPausingEnabled() )
 	{
 		return false;
+	}
+
+	// limited pauses
+	if ( mp_pause_setting.GetInt() == 1 )
+	{
+		int iRemainingIndex = m_nPausesRemaining.Find( SteamID );
+		if ( iRemainingIndex == m_nPausesRemaining.InvalidIndex() )
+		{
+			iRemainingIndex = m_nPausesRemaining.Insert( SteamID, mp_pause_count.GetInt() );
+		}
+
+		int iNumPausesRemaining = m_nPausesRemaining[iRemainingIndex];
+		if ( iNumPausesRemaining <= 0 )
+		{
+			return false;
+		}
+
+		int iTimeIndex = m_nLastPauseTime.Find( SteamID );
+		if ( iTimeIndex == m_nLastPauseTime.InvalidIndex() )
+		{
+			// hasn't paused before
+			m_nLastPauseTime.Insert( SteamID, gpGlobals->tickcount );
+		}
+		else
+		{
+			// has paused before, check cooldown.
+			const int iTicksPast = gpGlobals->tickcount - m_nLastPauseTime[iTimeIndex];
+			if ( TICKS_TO_TIME( iTicksPast ) <= mp_pause_cooldown_time.GetFloat() )
+			{
+				return false;
+			}
+			// refresh pause time
+			m_nLastPauseTime[iTimeIndex] = gpGlobals->tickcount;
+		}
+
+		// decrement pause
+		m_nPausesRemaining[iRemainingIndex] = iNumPausesRemaining - 1;
 	}
 
 	return true;
@@ -3681,6 +3746,54 @@ bool CTeamplayRoundBasedRules::CanPlayerUnpause( CSteamID SteamID )
 	if ( !IsPausingEnabled() )
 	{
 		return true;
+	}
+
+	// unpause already pending
+	if ( m_flUnpauseCurTime > 0.0f )
+	{
+		return false;
+	}
+
+	// cannot unpause immediately. prevents accidental toggles and such.
+	if ( m_flPauseTime <= mp_pause_cooldown.GetFloat() )
+	{
+		return false;
+	}
+
+	bool bSameTeam = false;
+	int  iPausingTeam = 0;
+	// get at the players pausing and unpausing.
+	if ( SteamID.IsValid() && m_pausingPlayerId.IsValid() )
+	{
+		CBasePlayer* pPlayer = GetPlayerBySteamID( SteamID );
+		if ( pPlayer )
+		{
+			CBasePlayer* pPausingPlayer = GetPlayerBySteamID( m_pausingPlayerId );
+			if ( pPausingPlayer )
+			{
+				iPausingTeam = pPausingPlayer->GetTeamNumber();
+				bSameTeam = pPlayer->GetTeamNumber() == iPausingTeam;
+			}
+		}
+	}
+	if ( !bSameTeam )
+	{
+		if ( iPausingTeam >= FIRST_GAME_TEAM )
+		{
+			// cannot unpause if the other team is not full, until resume time elapses.
+			int iExpectedPlayers = GetTeamSize( iPausingTeam );
+			int iCurrentPlayers = GetGlobalTeam( iPausingTeam )->GetNumPlayers();
+			if ( iCurrentPlayers < iExpectedPlayers && m_flPauseTime <= mp_pause_same_team_resume_time_disconnected.GetFloat() )
+			{
+				return false;
+			}
+		}
+
+		// general resume time check.
+		if ( m_flPauseTime <= mp_pause_same_team_resume_time.GetFloat() )
+		{
+			return false;
+		}
 	}
 
 	return true;

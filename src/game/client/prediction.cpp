@@ -1718,12 +1718,11 @@ void CPrediction::Update( int startframe, bool validframe,
 	VPROF_BUDGET( "CPrediction::Update", VPROF_BUDGETGROUP_PREDICTION );
 
 	m_bEnginePaused = engine->IsPaused();
-#ifdef TF_CLIENT_DLL
-	if ( !m_bEnginePaused && TFGameRules() && TFGameRules()->IsGamePaused() )
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( pPlayer )
 	{
-		m_bEnginePaused = true;
+		m_bEnginePaused = pPlayer->IsGamePausedForMe();
 	}
-#endif
 
 	bool received_new_world_update = true;
 

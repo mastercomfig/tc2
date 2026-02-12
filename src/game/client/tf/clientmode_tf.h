@@ -157,6 +157,8 @@ private:
 	bool					m_bInfoPanelShown;
 	bool					m_bRestrictInfoPanel;
 
+	int m_iLastColorProjection = -1;
+
 	void					AskFavoriteOrBlacklist() const;
 	void					RemoveFilesInPath( const char *pszPath ) const;
 

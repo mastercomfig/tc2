@@ -173,6 +173,8 @@ public:
 	virtual void		CheatImpulseCommands( int iImpulse );
 	virtual void		PlayerRunCommand( CUserCmd *ucmd, IMoveHelper *moveHelper );
 
+	virtual bool		ShouldBePausedDuringPause() OVERRIDE;
+
 	virtual void		CommitSuicide( bool bExplode = false, bool bForce = false );
 
 	// Combats

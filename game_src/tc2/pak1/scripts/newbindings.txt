@@ -51,9 +51,10 @@
 	{
 		"ideal_key"				"mouse3"
 	}
-	"vr_toggle"
+	"pause_request"
 	{
 		"ideal_key"				"F9"
+		"override_if"			"vr_toggle"
 	}
 	"show_quest_log"
 	{

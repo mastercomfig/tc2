@@ -256,6 +256,7 @@ CTeamRoundTimer::CTeamRoundTimer( void )
 #ifndef CLIENT_DLL
 	m_bPauseDueToWin = false;
 	m_bResetTimeOnRoundStart = false;
+	m_bPausedForGame = false;
 	m_nTimeToUseAfterSetupFinished = 0;
 	m_flNextOvertimeNag = 0;
 	m_flLastTime = 0.f;
@@ -858,7 +859,7 @@ void CTeamRoundTimer::RoundTimerSetupThink( void )
 		m_OnSetupFinished.FireOutput( this, this );
 	}
 
-	if ( IsDisabled() || m_bTimerPaused )
+	if ( IsDisabled() || m_bTimerPaused || ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsGamePaused() ) )
 	{
 		SetContextThink( &CTeamRoundTimer::RoundTimerSetupThink, gpGlobals->curtime + 0.05, ROUND_TIMER_SETUP_THINK );
 		return;
@@ -958,10 +959,22 @@ void CTeamRoundTimer::RoundTimerThink( void )
 		InputDisable( data );
 	}
 
-	if ( IsDisabled() || m_bTimerPaused || IsInCommentaryMode() || gpGlobals->eLoadType == MapLoad_Background )
+	const bool bGamePaused = ( TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->IsGamePaused() );
+	if ( IsDisabled() || m_bTimerPaused || IsInCommentaryMode() || gpGlobals->eLoadType == MapLoad_Background || bGamePaused )
 	{
+		if ( bGamePaused )
+		{
+			m_bPausedForGame = true;
+			PauseTimer();
+		}
 		SetContextThink( &CTeamRoundTimer::RoundTimerThink, gpGlobals->curtime + 0.05, ROUND_TIMER_THINK );
 		return;
+	}
+
+	if ( m_bPausedForGame )
+	{
+		ResumeTimer();
+		m_bPausedForGame = false;
 	}
 
 	// Don't do anything when the game has been won or if we're loading a bugbait report

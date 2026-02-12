@@ -768,14 +768,8 @@ void CRumbleEffects::UpdateEffects( float curtime )
 	fLeftMotor *= cl_rumblescale.GetFloat();
 	fRightMotor *= cl_rumblescale.GetFloat();
 
-	bool bPaused = engine->IsPaused();
-#ifdef TF_CLIENT_DLL
-	if ( !bPaused && TFGameRules() && TFGameRules()->IsGamePaused() )
-	{
-		bPaused = true;
-	}
-#endif
-
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	const bool bPaused = engine->IsPaused() || ( pPlayer && pPlayer->IsGamePausedForMe() );
 	if ( bPaused )
 	{
 		// Send nothing when paused.

@@ -297,6 +297,30 @@ CLIENTEFFECT_MATERIAL( "models/effects/invulnfx_blue.vmt" )
 CLIENTEFFECT_MATERIAL( "models/effects/invulnfx_red.vmt" )
 CLIENTEFFECT_REGISTER_END()
 
+// -------------------------------------------------------------------------------- //
+
+CON_COMMAND_F( pause_request, "Request a pause from the game server.", FCVAR_DONTRECORD )
+{
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( !pPlayer )
+		return;
+
+	if ( !TFGameRules() )
+		return;
+
+	if ( !TFGameRules()->IsPausingEnabled() )
+		return;
+
+	engine->ClientCmd( "pause_request_server" );
+}
+
+CON_COMMAND_F( pause_notify, "Server is letting us know of a pause change.", FCVAR_SERVER_CAN_EXECUTE | FCVAR_DONTRECORD )
+{
+	// todo(mcoms)
+}
+
+// -------------------------------------------------------------------------------- //
+
 // *********************************************************************************************************
 // KillStreak Effect Data
 // *********************************************************************************************************
@@ -6894,6 +6918,33 @@ bool C_TFPlayer::IsABot( void )
 	if ( g_PR && g_PR->IsFakePlayer( entindex() ) )
 		return true;
 
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool C_TFPlayer::IsGamePausedForMe()
+{
+	static ConVarRef sv_noclipduringpause( "sv_noclipduringpause" );
+	if ( engine->IsPaused() )
+	{
+		// not much we can do for an engine pause.
+		if ( sv_noclipduringpause.GetBool() && GetMoveType() == MOVETYPE_NOCLIP )
+		{
+			return false;
+		}
+		return true;
+	}
+	// our game-level pause allows spectators to do stuff.
+	if ( TFGameRules() && TFGameRules()->IsGamePaused() )
+	{
+		if ( sv_noclipduringpause.GetBool() && GetTeamNumber() < FIRST_GAME_TEAM )
+		{
+			return false;
+		}
+		return true;
+	}
 	return false;
 }
 
