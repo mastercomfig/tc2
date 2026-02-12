@@ -1,4 +1,4 @@
-VERSION="1.0.38"
+VERSION="1.0.39"
 PAK_VERSION="0.45.0"
 DEV_DIR=../game
 CLEAN_DIR=../game_dist
