@@ -304,6 +304,7 @@ void CHudTournament::PreparePanel( void )
 
 				SetDialogVariable( "readylabel", g_pVGuiLocalize->Find( pszLabelText ) );
 				SetDialogVariable( "tournamentstatelabel", g_pVGuiLocalize->Find( "Tournament_WaitingForTeam" ) );
+				SetDialogVariable( "tournamenttimesection", "" );
 				SetPlayerPanelsVisible( true );
 				m_pModeImage->SetVisible( m_bCompetitiveMode );
 			}
@@ -311,6 +312,7 @@ void CHudTournament::PreparePanel( void )
 			{
 				SetDialogVariable( "readylabel", g_pVGuiLocalize->Find( "Tournament_Instructions" ) );
 				SetDialogVariable( "tournamentstatelabel", g_pVGuiLocalize->Find( "Tournament_WaitingForTeams" ) );
+				SetDialogVariable( "tournamenttimesection", "" );
 				SetPlayerPanelsVisible( false );
 				m_pModeImage->SetVisible( false );
 			}
@@ -337,6 +339,20 @@ void CHudTournament::PreparePanel( void )
 			{
 				g_pVGuiLocalize->ConstructString_safe( szCountdown, pFormatString, 1, wzVal );
 				SetDialogVariable( "tournamentstatelabel", szCountdown );
+			}
+
+			wchar_t* pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_PlanningTime" );
+			if ( TFGameRules()->IsHighSkillCompetitive() && nTime <= 5 )
+			{
+				if ( nTime <= 5 )
+				{
+					pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_RollOutTime" );
+				}
+			}
+
+			if ( pSectionString )
+			{
+				SetDialogVariable( "tournamenttimesection", pSectionString );
 			}
 
 			if ( bAutoReady )
