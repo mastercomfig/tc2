@@ -19103,7 +19103,13 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iClass )
 	for ( int iPlayer = 0; iPlayer < pTeam->GetNumPlayers(); iPlayer++ )
 	{
 		CTFPlayer *pTFPlayer = ToTFPlayer( pTeam->GetPlayer( iPlayer ) );
-		if ( pTFPlayer && pTFPlayer != pPlayer && pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass )
+		
+		if ( pTFPlayer && pTFPlayer != pPlayer && ( pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass
+#ifdef GAME_DLL
+			|| ( pTFPlayer->HasReservedPlayerClass() && pTFPlayer->GetDesiredPlayerClassIndex() == iClass )
+#endif
+			)
+		)
 		{
 			iTeamClassCount++;
 		}

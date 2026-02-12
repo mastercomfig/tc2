@@ -267,6 +267,7 @@ public:
 	const CTFPlayerClass *GetPlayerClass( void ) const				{ return &m_PlayerClass; }
 	int					GetDesiredPlayerClassIndex( void )			{ return m_Shared.m_iDesiredPlayerClass; }
 	void				SetDesiredPlayerClassIndex( int iClass )	{ m_Shared.m_iDesiredPlayerClass = iClass; }
+	bool                  HasReservedPlayerClass() { return m_bReservedPlayerClass; }
 
 	// Team.
 	void				ForceChangeTeam( int iTeamNum, bool bFullTeamSwitch = false );
@@ -1273,6 +1274,8 @@ private:
 	bool				m_bRememberActiveWeapon;
 	bool				m_bRespawnOnLoadoutChange;
 	int					m_iActiveWeaponTypePriorToDeath;
+
+	bool				m_bReservedPlayerClass;
 
 	CHandle< CTFWeaponBuilder > m_hWeaponBuilder;
 

@@ -1244,7 +1244,10 @@ void CTFClassMenu::Go()
 
 	// Check class limits
 	if ( TFGameRules() && !TFGameRules()->CanPlayerChooseClass( C_TFPlayer::GetLocalTFPlayer(), iClass ) )
+	{
+		BaseClass::OnCommand( CFmtStr( "requestclass %s", g_aRawPlayerClassNames[iClass] ).Access() );
 		return;
+	}
 
 #if defined( REPLAY_ENABLED )
 	// Display replay recording message if appropriate

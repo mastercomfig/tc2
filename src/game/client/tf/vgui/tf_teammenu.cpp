@@ -819,7 +819,7 @@ void CTFTeamMenu::OnTick()
 
 	bool bRedHasBots = iRedSizeRestriction == 0;
 	bool bBluHasBots = iBluSizeRestriction == 0;
-	// TODO: see how GetAutoTeam handles bot counts
+	// TODO(mcoms): see how GetAutoTeam handles bot counts
 	if ( bEitherTeamSizeRestricted && !pRules->IsMannVsMachineMode() && iCurrentTeam <= LAST_SHARED_TEAM )
 	{
 		for (int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++)

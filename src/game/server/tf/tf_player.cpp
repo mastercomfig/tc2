@@ -1275,6 +1275,8 @@ CTFPlayer::CTFPlayer()
 	m_bAlreadyUsedExtendFreezeThisDeath = false;
 
 	m_flNextHurtSpeakTime = 0.0f;
+
+	m_bReservedPlayerClass = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -7568,7 +7570,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 
 	if ( stricmp( pClassName, "random" ) != 0 && stricmp( pClassName, "auto" ) != 0 )
 	{
-		int i = 0;
+		int i;
 
 		for ( i = TF_CLASS_SCOUT ; i < TF_CLASS_COUNT_ALL ; i++ )
 		{
@@ -7588,7 +7590,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		}
 
 		// Check class limits
-		if ( !TFGameRules()->CanPlayerChooseClass(this, iClass) )
+		if ( !TFGameRules()->CanPlayerChooseClass(this, iClass) && !m_bReservedPlayerClass )
 		{
 			ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
 			return;
@@ -7651,7 +7653,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 #endif // _DEBUG || STAGING_ONLY
 
 	// joining the same class?
-	if ( iClass != TF_CLASS_RANDOM && iClass == GetDesiredPlayerClassIndex() )
+	if ( iClass != TF_CLASS_RANDOM && iClass == GetDesiredPlayerClassIndex() && !m_bReservedPlayerClass )
 	{
 		// If we're dead, and we have instant spawn, respawn us immediately. Catches the case
 		// where a player misses respawn wave because they're at the class menu, and then changes
@@ -8200,6 +8202,96 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			}
 		}
 		return true;
+	}
+	else if ( FStrEq( pcmd, "requestclass" ) )
+	{
+		// don't let them spam the server with changes
+		if ( GetNextChangeClassTime() > gpGlobals->curtime )
+			return true;
+
+		SetNextChangeClassTime( gpGlobals->curtime + 0.5 ); // limit to one change every 0.5 secs
+
+		// needs class argument
+		if ( args.ArgC() < 2 )
+		{
+			return true;
+		}
+
+		// needs to be on a team
+		if ( GetTeamNumber() != TF_TEAM_BLUE && GetTeamNumber() != TF_TEAM_RED )
+			return true;
+
+		// TODO(mcoms)
+
+		// get at the class index
+		const char* pClassName = args[1];
+		int iClass = TF_CLASS_UNDEFINED;
+		int i;
+		for ( i = TF_CLASS_SCOUT; i < TF_CLASS_COUNT_ALL; i++ )
+		{
+			if ( stricmp( pClassName, GetPlayerClassData( i )->m_szClassName ) == 0 )
+			{
+				iClass = i;
+				break;
+			}
+		}
+
+		// if it's not found, bail
+		if ( i >= TF_LAST_NORMAL_CLASS )
+		{
+			return true;
+		}
+
+		// if it's the same as current, nothing to request.
+		if ( GetPlayerClass() && GetPlayerClass()->GetClassIndex() == iClass )
+		{
+			return true;
+		}
+
+		// if there's no class limit, no point to requesting.
+		if ( TFGameRules()->GetClassLimit( iClass ) <= NO_CLASS_LIMIT )
+		{
+			return true;
+		}
+
+		// if not over limit, no point to requesting.
+		if ( TFGameRules()->CanPlayerChooseClass( this, iClass ) )
+		{
+			return true;
+		}
+
+		CTFTeam* pTeam = assert_cast<CTFTeam*>( GetTeam() );
+		if ( !pTeam )
+			return true;
+
+		CTFPlayer* pTakeClassFromPlayer = NULL;
+
+		// if there's a bot on this class, take it from them.
+		for ( int iPlayer = 0; iPlayer < pTeam->GetNumPlayers(); iPlayer++ )
+		{
+			CTFPlayer* pTFPlayer = ToTFPlayer( pTeam->GetPlayer( iPlayer ) );
+			if ( pTFPlayer && pTFPlayer != this && pTFPlayer->IsBot() && pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass )
+			{
+				pTakeClassFromPlayer = pTFPlayer;
+			}
+		}
+
+		if ( pTakeClassFromPlayer )
+		{
+			// try a swap.
+			if ( GetPlayerClass() && GetPlayerClass()->GetClassIndex() >= TF_FIRST_NORMAL_CLASS && GetPlayerClass()->GetClassIndex() < TF_LAST_NORMAL_CLASS )
+			{
+				pTakeClassFromPlayer->HandleCommand_JoinClass( g_aRawPlayerClassNames[GetPlayerClass()->GetClassIndex()] );
+				pTakeClassFromPlayer->SetDesiredPlayerClassIndex( GetPlayerClass()->GetClassIndex() );
+			}
+			else
+			{
+				pTakeClassFromPlayer->ResetPlayerClass();
+			}
+			m_bReservedPlayerClass = true;
+			HandleCommand_JoinClass( g_aRawPlayerClassNames[iClass] );
+			SetDesiredPlayerClassIndex( iClass );
+		}
 	}
 	else if ( FStrEq( pcmd, "resetclass" ) )
 	{
@@ -15784,6 +15876,8 @@ void CTFPlayer::ForceRespawn( void )
 			m_iClassChanges++;
 			CTF_GameStats.Event_PlayerChangedClass( this, iOldClass, iDesiredClass );
 		}
+
+		m_bReservedPlayerClass = false;
 	}
 	else
 	{
