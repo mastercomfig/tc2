@@ -58,7 +58,7 @@ CTFDemoTVSupport::CTFDemoTVSupport() : CAutoGameSystemPerFrame( "CTFDemoTVSuppor
 //-----------------------------------------------------------------------------
 bool CTFDemoTVSupport::Init()
 {
-	ListenForGameEvent( "ds_stop" );
+	ListenForGameEvent( "tv_demo_stop" );
 	ListenForGameEvent( "teamplay_game_over" );
 	ListenForGameEvent( "tf_game_over" );
 	return true;
@@ -175,7 +175,6 @@ void CTFDemoTVSupport::FireGameEvent( IGameEvent* event )
 
 	if ( tv_demo_rounds_only.GetBool() && ( FStrEq( pszEvent, "teamplay_game_over" ) || FStrEq( pszEvent, "tf_game_over" ) ) )
 	{
-		// Last branch so we can check tv_demo_rounds_only without messing up else logic.
 		StopRecording();
 	}
 }
@@ -252,7 +251,7 @@ bool CTFDemoTVSupport::StartRecording( void )
 	}
 
 	char szCommand[MAX_PATH + 11];
-	V_sprintf_safe( szCommand, "tv_record %s", m_szFolderAndFilename );
+	V_sprintf_safe( szCommand, "tv_record %s\n", m_szFolderAndFilename );
 	engine->ServerCommand( szCommand );
 
 	m_DemoSpecificEventList.Clear();
@@ -315,11 +314,11 @@ void CTFDemoTVSupport::StopRecording( bool bFromEngine /* = false */ )
 	// stop recording the demo
 	if ( !bFromEngine )
 	{
-		engine->ServerCommand( "tv_stoprecord" );
+		engine->ServerCommand( "tv_stoprecord\n" );
 	}
 
 	char szMessage[MAX_PATH] = { 0 };
-	V_sprintf_safe( szMessage, "(Demo Support) End recording %s\n", m_szFolderAndFilename );
+	V_sprintf_safe( szMessage, "(TV Demo Support) End recording %s\n", m_szFolderAndFilename );
 	Msg( szMessage );
 
 	if ( tv_demo_log.GetBool() )
