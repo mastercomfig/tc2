@@ -3798,6 +3798,7 @@ void CTFGCServerSystem::SendPlayerLeftMatch( CSteamID targetPlayer, TFMatchLeave
 // **************************************************************************************************
 void CTFGCServerSystem::SendCompetitiveMatchResult( GCSDK::CProtoBufMsg< CMsgGC_Match_Result > *pMatchResultMsg )
 {
+	// todo(mcoms): add logs here
 	// We should have matchinfo when completing a ladder match
 	if ( !m_pMatchInfo )
 	{
@@ -3805,12 +3806,14 @@ void CTFGCServerSystem::SendCompetitiveMatchResult( GCSDK::CProtoBufMsg< CMsgGC_
 		Assert( false );
 	}
 
-	if ( m_pMatchInfo->m_bSentResult )
+	if ( m_pMatchInfo && m_pMatchInfo->m_bSentResult )
 	{
 		Warning( "Sending competitive match results without an ended match\n" );
 		Assert( false );
 	}
 
+	// TODO(mcoms)
+#if 0
 	ReliableMsgMatchResult *pReliable = new ReliableMsgMatchResult;
 	auto &msg = pReliable->Msg().Body();
 	/// XXX(JohnS): With refactor this is now kinda silly. Callers should really just be giving us a CMsgGC_Match_Result
@@ -3819,6 +3822,9 @@ void CTFGCServerSystem::SendCompetitiveMatchResult( GCSDK::CProtoBufMsg< CMsgGC_
 	ReliableMsgQueue().Enqueue( pReliable );
 
 	m_pMatchInfo->m_bSentResult = true;
+#else
+	BSendMessageComtress( *pMatchResultMsg );
+#endif
 }
 
 // **************************************************************************************************

@@ -7652,6 +7652,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		// Bit field of classes played during the game
 		CSteamID steamID;
 		GetSteamID( &steamID );
+		UpdateClassesPlayed( GetPlayerClass()->GetClassIndex() );
 
 		CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 		if ( pMatch )
@@ -23288,6 +23289,16 @@ void CTFPlayer::IncrementKillCountSinceLastDeploy( const CTakeDamageInfo &info )
 	{
 		m_Shared.m_iKillCountSinceLastDeploy++;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::UpdateClassesPlayed(int nClass)
+{
+	Assert( nClass >= TF_FIRST_NORMAL_CLASS && nClass <= TF_LAST_NORMAL_CLASS );
+
+	unClassesPlayed = unClassesPlayed | ( 1 << nClass );
 }
 
 //-----------------------------------------------------------------------------

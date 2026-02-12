@@ -2767,14 +2767,22 @@ void CTFGameRules::ManageCompetitiveMode( void )
 //-----------------------------------------------------------------------------
 bool CTFGameRules::ReportMatchResultsToGC( CMsgGC_Match_Result_Status nCode )
 {
+	// TODO(mcoms): could do better emulation
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
-	if ( !pMatch )
+	if ( !pMatch && !IsEmulatingMatch() )
 		return false;
+
+	// we don't want a cheat match
+	if ( sv_cheats->GetBool() || m_bCheatsEnabledDuringLevel )
+	{
+		return false;
+	}
 
 	GCSDK::CProtoBufMsg< CMsgGC_Match_Result > *pMsg = new GCSDK::CProtoBufMsg< CMsgGC_Match_Result >( k_EMsgGC_Match_Result );
 
-	pMsg->Body().set_match_id( pMatch->m_nMatchID );
-	pMsg->Body().set_match_group( pMatch->m_eMatchGroup );
+	pMsg->Body().set_match_id( pMatch ? pMatch->m_nMatchID : 0 );
+	ETFMatchGroup eMatchGroup = pMatch ? pMatch->m_eMatchGroup : GetCurrentMatchGroupWithEmulation();
+	pMsg->Body().set_match_group( eMatchGroup );
 	pMsg->Body().set_status( nCode );
 	pMsg->Body().set_duration( CTF_GameStats.m_currentMap.m_Header.m_iTotalTime + ( gpGlobals->curtime - m_flRoundStartTime ) );
 
@@ -2788,7 +2796,7 @@ bool CTFGameRules::ReportMatchResultsToGC( CMsgGC_Match_Result_Status nCode )
 	pMsg->Body().set_map_index( ( pMap ) ? pMap->m_nDefIndex : 0 );
 	pMsg->Body().set_game_type( 1 );	// TODO: eMapGameType
 
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( pMatch->m_eMatchGroup );
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( eMatchGroup );
 	if( !pMatchDesc || !pMatchDesc->m_pProgressionDesc )
 		return false;
 
@@ -2891,21 +2899,67 @@ bool CTFGameRules::ReportMatchResultsToGC( CMsgGC_Match_Result_Status nCode )
 	const int nRedTeamObjectiveBonus = flRedScoreRatio * nTotalScore;
 
 	// Player info
-	for ( int idxPlayer = 0; idxPlayer < pMatch->GetNumTotalMatchPlayers(); idxPlayer++ )
+	const int iNumPlayers = pMatch ? pMatch->GetNumTotalMatchPlayers() : MAX_PLAYERS;
+	for ( int idxPlayer = 0; idxPlayer < iNumPlayers; idxPlayer++ )
 	{
-		CMatchInfo::PlayerMatchData_t *pMatchPlayer = pMatch->GetMatchDataForPlayer( idxPlayer );
-		if ( !pMatchPlayer->steamID.BIndividualAccount() )
+		CMatchInfo::PlayerMatchData_t *pMatchPlayer = NULL;
+		if ( pMatch )
+		{
+			pMatchPlayer = pMatch->GetMatchDataForPlayer( idxPlayer );
+			if ( !pMatchPlayer )
+			{
+				Assert(false);
+				continue;
+			}
+		}
+
+		CBasePlayer* pPlayer = NULL;
+		if ( !pMatch )
+		{
+			pPlayer = UTIL_PlayerByIndex( idxPlayer );
+			if ( !pPlayer || pPlayer->IsBot() )
+			{
+				continue;
+			}
+		}
+
+		CSteamID steamID;
+		if ( pMatchPlayer )
+		{
+			steamID = pMatchPlayer->steamID;
+		}
+		else
+		{
+			if ( !pPlayer->GetSteamID( &steamID ) )
+			{
+				Assert(false);
+				continue;
+			}
+		}
+		if ( !steamID.BIndividualAccount() )
 		{
 			Assert( false );
 			continue;
 		}
+		if ( pMatchPlayer )
+		{
+			pPlayer = UTIL_PlayerBySteamID( steamID );
+		}
 
-		CTFPlayer *pTFPlayer = ToTFPlayer( UTIL_PlayerBySteamID( pMatchPlayer->steamID ) );
+		CTFPlayer*     pTFPlayer = ToTFPlayer( pPlayer );
 		PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pTFPlayer );
 
 		CMsgGC_Match_Result_Player *pMsgPlayer = pMsg->Body().add_players();
-		int nTeam = GetGameTeamForGCTeam( pMatchPlayer->eGCTeam );
-		pMsgPlayer->set_steam_id( pMatchPlayer->steamID.ConvertToUint64() );
+		int nTeam;
+		if ( pMatchPlayer )
+		{
+			nTeam = GetGameTeamForGCTeam( pMatchPlayer->eGCTeam );
+		}
+		else
+		{
+			nTeam = pPlayer->GetTeamNumber();
+		}
+		pMsgPlayer->set_steam_id( steamID.ConvertToUint64() );
 		pMsgPlayer->set_team( nTeam );
 		if ( pTFResource && pTFPlayer )
 		{
@@ -2924,91 +2978,100 @@ bool CTFGameRules::ReportMatchResultsToGC( CMsgGC_Match_Result_Status nCode )
 		}
 		pMsgPlayer->set_ping( nPing );
 		uint32 unPlayerFlags = 0U;
-		if ( pMatchPlayer->bDropped )
+		if ( pMatchPlayer )
 		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_LEAVER;
-		}
-		if ( pMatchPlayer->bLateJoin )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_LATEJOIN;
-		}
-		if ( pMatchPlayer->BDropWasAbandon() )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_ABANDONER;
-		}
-		if ( pMatchPlayer->bPlayed )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_PLAYED;
-		}
-		if ( !pMatchPlayer->bEverConnected )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_CONNECTED;
-		}
-		if ( !pMatchPlayer->bEverActive )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_ACTIVE;
-		}
-		if ( !pMatchPlayer->bEverDisconnected )
-		{
-			unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_DISCONNECTED;
+			if ( pMatchPlayer->bDropped )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_LEAVER;
+			}
+			if ( pMatchPlayer->bLateJoin )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_LATEJOIN;
+			}
+			if ( pMatchPlayer->BDropWasAbandon() )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_ABANDONER;
+			}
+			if ( pMatchPlayer->bPlayed )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_PLAYED;
+			}
+			if ( !pMatchPlayer->bEverConnected )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_CONNECTED;
+			}
+			if ( !pMatchPlayer->bEverActive )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_ACTIVE;
+			}
+			if ( !pMatchPlayer->bEverDisconnected )
+			{
+				unPlayerFlags |= MATCH_FLAG_PLAYER_NEVER_DISCONNECTED;
+			}
 		}
 
 		pMsgPlayer->set_flags( unPlayerFlags );
 		// server-side skill system
-		pMsgPlayer->set_classes_played( pMatchPlayer->unClassesPlayed );
+		pMsgPlayer->set_classes_played( pMatchPlayer ? pMatchPlayer->unClassesPlayed : pTFPlayer->unClassesPlayed );
 		pMsgPlayer->set_kills( pStats ? pStats->statsAccumulated.m_iStat[TFSTAT_KILLS] : 0 );
 		pMsgPlayer->set_damage( pStats ? pStats->statsAccumulated.m_iStat[TFSTAT_DAMAGE] : 0 );
 		pMsgPlayer->set_healing( pStats ? pStats->statsAccumulated.m_iStat[TFSTAT_HEALING] : 0 );
 		pMsgPlayer->set_support( pStats ? CalcPlayerSupportScore( &pStats->statsAccumulated, pTFPlayer->entindex() ) : 0 );
-		pMsgPlayer->set_score_medal( pMatchPlayer->nScoreMedal );
-		pMsgPlayer->set_kills_medal( pMatchPlayer->nKillsMedal );
-		pMsgPlayer->set_damage_medal( pMatchPlayer->nDamageMedal );
-		pMsgPlayer->set_healing_medal( pMatchPlayer->nHealingMedal );
-		pMsgPlayer->set_support_medal( pMatchPlayer->nSupportMedal );
-		pMsgPlayer->set_rank( pMatchPlayer->nRank );
+		pMsgPlayer->set_score_medal( pMatchPlayer ? pMatchPlayer->nScoreMedal : 0 );
+		pMsgPlayer->set_kills_medal( pMatchPlayer ? pMatchPlayer->nKillsMedal : 0 );
+		pMsgPlayer->set_damage_medal( pMatchPlayer ? pMatchPlayer->nDamageMedal : 0 );
+		pMsgPlayer->set_healing_medal( pMatchPlayer ? pMatchPlayer->nHealingMedal : 0 );
+		pMsgPlayer->set_support_medal( pMatchPlayer ? pMatchPlayer->nSupportMedal : 0 );
+		pMsgPlayer->set_rank( pMatchPlayer ? pMatchPlayer->nRank : 0 );
 		pMsgPlayer->set_deaths( pStats ? pStats->statsAccumulated.m_iStat[TFSTAT_DEATHS] : 0 );
-		pMsgPlayer->set_original_party_id( pMatchPlayer->uOriginalPartyID );
+		pMsgPlayer->set_original_party_id( pMatchPlayer ? pMatchPlayer->uOriginalPartyID : 0 );
 		uint32 unLeaveTime = ( pMatchPlayer && ( pMatchPlayer->bDropped || pMatchPlayer->BDropWasAbandon() ) ) ? 
 							   pMatchPlayer->GetLastActiveEventTime() : 0u;
 		pMsgPlayer->set_leave_time( unLeaveTime );
-		pMsgPlayer->set_leave_reason( pMatchPlayer->GetDropReason() );
-		pMsgPlayer->set_connect_time( pMatchPlayer->rtJoinedMatch );
+		pMsgPlayer->set_leave_reason( pMatchPlayer ? pMatchPlayer->GetDropReason() : TFMatchLeaveReason_UNSPECIFIED );
+		pMsgPlayer->set_connect_time( pMatchPlayer ? pMatchPlayer->rtJoinedMatch : pTFPlayer->GetConnectionTime() );
 
-		// Somebody won! Match finish bonus
-		if ( nCode == CMsgGC_Match_Result_Status_MATCH_SUCCEEDED )
+		if ( !IsEmulatingMatch() )
 		{
-			// Give points based on team performance
-			int nPerformanceScore = RemapValClamped( pMsgPlayer->score(), 0, nTotalScore / 24, 0, nTeam == TF_TEAM_RED ? nRedTeamObjectiveBonus : nBlueTeamObjectiveBonus );
-			pMatch->GiveXPRewardToPlayerForAction( pMatchPlayer->steamID, CMsgTFXPSource::SOURCE_OBJECTIVE_BONUS, nPerformanceScore );
-		
-			// Everyone gets base completion points
-			int nCompletionScore = RemapValClamped( pMsgPlayer->score(), 0, nTotalScore / 24, 0, nTotalScore );
-			pMatch->GiveXPRewardToPlayerForAction( pMatchPlayer->steamID, CMsgTFXPSource::SOURCE_COMPLETED_MATCH, nCompletionScore );
-		}
+			// Somebody won! Match finish bonus
+			if ( nCode == CMsgGC_Match_Result_Status_MATCH_SUCCEEDED )
+			{
+				// Give points based on team performance
+				int nPerformanceScore = RemapValClamped( pMsgPlayer->score(), 0, nTotalScore / 24, 0, nTeam == TF_TEAM_RED ? nRedTeamObjectiveBonus : nBlueTeamObjectiveBonus );
+				pMatch->GiveXPRewardToPlayerForAction( pMatchPlayer->steamID, CMsgTFXPSource::SOURCE_OBJECTIVE_BONUS, nPerformanceScore );
 
-		// Copy any pending XP sources they had ready to send up
-		for( int i=0; i < pMatchPlayer->GetXPSources().sources_size(); ++i )
-		{
-			CMsgTFXPSource* pXPSource = pMsgPlayer->add_xp_breakdown();
-			pXPSource->CopyFrom( pMatchPlayer->GetXPSources().sources( i ) );
+				// Everyone gets base completion points
+				int nCompletionScore = RemapValClamped( pMsgPlayer->score(), 0, nTotalScore / 24, 0, nTotalScore );
+				pMatch->GiveXPRewardToPlayerForAction( pMatchPlayer->steamID, CMsgTFXPSource::SOURCE_COMPLETED_MATCH, nCompletionScore );
+			}
+
+			// Copy any pending XP sources they had ready to send up
+			for ( int i = 0; i < pMatchPlayer->GetXPSources().sources_size(); ++i )
+			{
+				CMsgTFXPSource* pXPSource = pMsgPlayer->add_xp_breakdown();
+				pXPSource->CopyFrom( pMatchPlayer->GetXPSources().sources( i ) );
+			}
 		}
 	}
 
 	pMsg->Body().set_win_reason( GetWinReason() );
 	uint32 unMatchFlags = 0u;
 
-	if ( pMatch->m_uLobbyFlags & LOBBY_FLAG_LOWPRIORITY )
+	if ( pMatch )
 	{
-		unMatchFlags |= MATCH_FLAG_LOWPRIORITY;
-	}
+		if ( pMatch->m_uLobbyFlags & LOBBY_FLAG_LOWPRIORITY )
+		{
+			unMatchFlags |= MATCH_FLAG_LOWPRIORITY;
+		}
 
-	if ( pMatch->m_uLobbyFlags & LOBBY_FLAG_REMATCH )
-	{
-		unMatchFlags |= MATCH_FLAG_REMATCH;
+		if ( pMatch->m_uLobbyFlags & LOBBY_FLAG_REMATCH )
+		{
+			unMatchFlags |= MATCH_FLAG_REMATCH;
+		}
 	}
 
 	pMsg->Body().set_flags( unMatchFlags );
-	pMsg->Body().set_bots( pMatch->m_nBotsAdded );
+	pMsg->Body().set_bots( pMatch ? pMatch->m_nBotsAdded : TheTFBots().GetNextBotCount() );
 
 	GTFGCClientSystem()->SendCompetitiveMatchResult( pMsg );
 
@@ -5914,6 +5977,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		{
 			CSteamID steamID;
 			pPlayer->GetSteamID( &steamID );
+			pPlayer->UpdateClassesPlayed( pPlayer->GetPlayerClass()->GetClassIndex() );
 
 			CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 			if ( pMatch )

@@ -48,6 +48,8 @@ public:
 	bool BSendMessage( uint32 unMsgType, const uint8 *pubData, uint32 cubData );
 	bool BSendMessage( const GCSDK::CGCMsgBase& msg );
 	bool BSendMessage( const GCSDK::CProtoBufMsgBase& msg );
+	bool BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg );
+	void OnComtressMsgResponseReceived( HTTPRequestCompleted_t* pInfo, bool bIOFailure );
 
 	// GC SOCache
 	GCSDK::CGCClientSharedObjectCache *GetSOCache( const CSteamID &steamID );
@@ -59,7 +61,9 @@ public:
 	// Steam
 	#ifndef CLIENT_DLL
 		void GameServerActivate();
-	#endif
+#endif
+	
+	CCallResult<CGCClientSystem, HTTPRequestCompleted_t> m_RequestCompleted;
 
 	char const * GetTxnCountryCode() const { return m_sTxnCountryCode.Get(); }
 

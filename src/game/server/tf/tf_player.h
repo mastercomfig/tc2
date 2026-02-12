@@ -1038,6 +1038,9 @@ public:
 
 	void				ForceItemRemovalOnRespawn( void ) { m_bForceItemRemovalOnRespawn = true; }
 
+	void				UpdateClassesPlayed( int nClass );
+	uint32				unClassesPlayed = 0;
+
 	// Item Testing
 public:
 	void				ItemTesting_Start( KeyValues *pKV );

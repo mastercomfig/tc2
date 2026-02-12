@@ -118,6 +118,83 @@ bool CGCClientSystem::BSendMessage( const GCSDK::CProtoBufMsgBase& msg )
 	return m_GCClient.BSendMessage( msg ); 
 }
 
+ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN );
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
+{
+	// todo(mcoms): client
+#ifdef GAME_DLL
+	// not supporting listen server for now
+	if ( !engine->IsDedicatedServer() )
+		return false;
+
+	// requiring an authenticated server for now
+	const char* szToken = sv_private_token.GetString();
+	if ( szToken && szToken[0] == '0' )
+		return false;
+
+	HTTPRequestHandle hRequest = SteamGameServerHTTP()->CreateHTTPRequest( k_EHTTPMethodPOST,"https://api.teamcomtress.com/webapi/ISDK/SendMessage/v0001" );
+	if ( hRequest == INVALID_HTTPREQUEST_HANDLE )
+	{
+		return false;
+	}
+
+	GCSDK::CWebAPIResponse jsonReq;
+	jsonReq.Clear();
+	jsonReq.SetStatusCode( k_EHTTPStatusCode200OK );
+	GCSDK::CWebAPIValues* pRoot = jsonReq.CreateRootValue( "body" );
+	jsonReq.SetJSONAnonymousRootNode( true );
+	pRoot->SetChildStringValue( "token", szToken );
+	pRoot->SetChildUInt32Value( "msg", msg.GetEMsg() );
+
+	auto        msgBody = msg.GetGenericBody();
+	int              nByteSize = msgBody->ByteSize();
+	CUtlBuffer       bufBinaryMsg;
+	CUtlMemory<char> bufBase64Msg;
+	bufBinaryMsg.EnsureCapacity( nByteSize );
+	bufBinaryMsg.SeekPut( CUtlBuffer::SEEK_HEAD, nByteSize );
+	if ( !msgBody->SerializeToArray( bufBinaryMsg.Base(), nByteSize ) )
+	{
+		jsonReq.Clear();
+		return false;
+	}
+	Base64EncodeIntoUTLMemory( ( const uint8* )bufBinaryMsg.Base(), nByteSize, bufBase64Msg );
+
+	pRoot->SetChildStringValue( "data", bufBase64Msg.Base() );
+
+	CUtlBuffer bufBody;
+	jsonReq.BEmitFormattedOutput( GCSDK::k_EWebAPIOutputFormat_JSON, bufBody, 0 );
+	 
+	SteamGameServerHTTP()->SetHTTPRequestRawPostBody( hRequest, "application/json", ( uint8* )bufBody.Base(), bufBody.TellMaxPut() );
+
+	SteamAPICall_t callResult;
+	if ( !SteamGameServerHTTP()->SendHTTPRequest( hRequest, &callResult ) )
+	{
+		jsonReq.Clear();
+		return false;
+	}
+
+	m_RequestCompleted.Set( callResult, this, &CGCClientSystem::OnComtressMsgResponseReceived );
+
+	return true;
+#endif
+}
+
+void CGCClientSystem::OnComtressMsgResponseReceived(HTTPRequestCompleted_t* pInfo, bool bIOFailure)
+{
+	if ( !pInfo )
+	{
+		return;
+	}
+	if ( pInfo->m_hRequest != INVALID_HTTPCOOKIE_HANDLE )
+	{
+		SteamGameServerHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose:

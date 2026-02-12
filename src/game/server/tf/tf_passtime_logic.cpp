@@ -2287,7 +2287,7 @@ void CTFPasstimeLogic::SecretRoom_Solve()
 	// achieves
 	for ( auto id : m_SecretRoom_playersThatTouchedRoom )
 	{
-		CTFPlayer *pPlayer = ToTFPlayer( GetPlayerBySteamID( id ) );
+		CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerBySteamID( id ) );
 		if ( pPlayer )
 		{
 			pPlayer->AwardAchievement( ACHIEVEMENT_TF_PASS_TIME_HAT );
