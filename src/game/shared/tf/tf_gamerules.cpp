@@ -1193,7 +1193,7 @@ void cc_competitive_mode( IConVar *pConVar, const char *pOldString, float flOldV
 // TODO(mcoms) UNDONE: mcoms: we're not going with this for now, just do a full clean run of preround.
 // this is now 5 to allow 2 seconds of uninterrupted medic healing, plus the previous standard of 3 seconds of preround time (after freeze).
 ConVar tf_competitive_preround_duration( "tf_competitive_preround_duration", "3", FCVAR_REPLICATED, "How long we stay in pre-round when in competitive games." );
-ConVar tf_competitive_preround_countdown_duration( "tf_competitive_preround_countdown_duration", "10.5", FCVAR_HIDDEN, "How long we stay in countdown when in competitive games." );
+ConVar tf_competitive_preround_countdown_duration( "tf_competitive_preround_countdown_duration", "10.1", FCVAR_HIDDEN, "How long we stay in countdown when in competitive games." );
 ConVar tf_competitive_abandon_method( "tf_competitive_abandon_method", "0", FCVAR_HIDDEN );
 ConVar tf_competitive_required_late_join_timeout( "tf_competitive_required_late_join_timeout", "120", FCVAR_DEVELOPMENTONLY,
                                                   "How long to wait for late joiners in matches requiring full player counts before canceling the match" );
@@ -2364,7 +2364,7 @@ bool CTFGameRules::InMatchStartFreeze( void )
 		// if preround push is enabled, we can move in the last bit.
 		if ( IsPreRoundPushEnabled() )
 		{
-			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > 3.0f )
+			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > IsHighSkillCompetitive() ? 5.0f : 3.0f )
 			{
 				return true;
 			}
@@ -9049,7 +9049,7 @@ void CTFGameRules::Think()
 					bCanQuickReset = false;
 				}
 			}
-			if ( gpGlobals->curtime > m_flStateTransitionTime || bCanQuickReset )
+			if ( m_flStateTransitionTime >= 0 && ( gpGlobals->curtime > m_flStateTransitionTime || bCanQuickReset ) )
 			{
 				nLastTimeSent = -1;
 				if ( pMatchDesc )
@@ -9060,6 +9060,7 @@ void CTFGameRules::Think()
 				}
 				else if ( IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
+					m_flStateTransitionTime = -1.0f;
 					ResetManagedMatch();
 					MatchSummaryEnd();
 

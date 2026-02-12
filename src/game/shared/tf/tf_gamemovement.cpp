@@ -81,7 +81,7 @@ extern ConVar cl_forwardspeed;
 extern ConVar cl_backspeed;
 extern ConVar cl_sidespeed;
 
-#define TF_MAX_SPEED   (400 * 1.3)	// 400 is Scout max speed, and we allow up to 3% movement bonus.
+#define TF_MAX_SPEED   (400 * 1.3)	// 400 is Scout max speed, and we allow up to 30% movement bonus.
 
 #define TF_WATERJUMP_FORWARD	30
 #define TF_WATERJUMP_UP			300

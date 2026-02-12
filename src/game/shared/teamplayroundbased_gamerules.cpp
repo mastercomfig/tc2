@@ -1668,19 +1668,21 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 #endif // TF_DLL
 	else
 	{
-		float flTransitionTime = 5 * mp_enableroundwaittime.GetFloat();
+		float flTransitionTime = 3 * mp_enableroundwaittime.GetFloat();
 #ifdef TF_DLL
 		if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 		{
-			flTransitionTime = tf_competitive_preround_duration.GetFloat();
+			// TODO(mcoms): maybe needs some work?
+			// tf_competitive_preround_duration
+			flTransitionTime = TFGameRules()->IsHighSkillCompetitive() ? 5.0f : 3.0f;
 			m_flCountdownTime = -1.f;
 			if ( !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
 			{
 				if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) )
 				{
 					// we do a countdown after the first round, so we need some extra pre-round time
-					flTransitionTime += tf_competitive_preround_countdown_duration.GetFloat();
-					m_flCountdownTime = gpGlobals->curtime + tf_competitive_preround_countdown_duration.GetFloat();
+					flTransitionTime += TOURNAMENT_NOCANCEL_TIME;
+					m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
 				}
 			}
 		}
@@ -3765,10 +3767,10 @@ bool CTeamplayRoundBasedRules::CanPlayerUnpause( CSteamID SteamID )
 	// get at the players pausing and unpausing.
 	if ( SteamID.IsValid() && m_pausingPlayerId.IsValid() )
 	{
-		CBasePlayer* pPlayer = GetPlayerBySteamID( SteamID );
+		CBasePlayer* pPlayer = UTIL_PlayerBySteamID( SteamID );
 		if ( pPlayer )
 		{
-			CBasePlayer* pPausingPlayer = GetPlayerBySteamID( m_pausingPlayerId );
+			CBasePlayer* pPausingPlayer = UTIL_PlayerBySteamID( m_pausingPlayerId );
 			if ( pPausingPlayer )
 			{
 				iPausingTeam = pPausingPlayer->GetTeamNumber();
