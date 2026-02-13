@@ -125,7 +125,6 @@ ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN );
 //-----------------------------------------------------------------------------
 bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
 {
-	// todo(mcoms): client
 #ifdef GAME_DLL
 	// not supporting listen server for now
 	if ( !engine->IsDedicatedServer() )
@@ -180,6 +179,9 @@ bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
 	m_RequestCompleted.Set( callResult, this, &CGCClientSystem::OnComtressMsgResponseReceived );
 
 	return true;
+#else
+	// todo(mcoms): client
+	return false;
 #endif
 }
 
