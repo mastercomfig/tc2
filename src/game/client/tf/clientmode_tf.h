@@ -157,6 +157,8 @@ private:
 	bool					m_bInfoPanelShown;
 	bool					m_bRestrictInfoPanel;
 
+	float					m_flLastSlaughterTime;
+
 	int m_iLastColorProjection = -1;
 
 	void					AskFavoriteOrBlacklist() const;

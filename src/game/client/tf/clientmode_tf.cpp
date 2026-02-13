@@ -392,6 +392,8 @@ ClientModeTFNormal::ClientModeTFNormal()
 	m_lastServerConnectTime = 0;
 	m_pTeamGoalTournament = NULL;
 
+	m_flLastSlaughterTime = -1.0f;
+
 #if defined( _X360 )
 	m_pScoreboard = NULL;
 #endif
@@ -653,6 +655,7 @@ void ClientModeTFNormal::LevelInit( const char *newmap )
 	BaseClass::LevelInit( newmap );
 
 	m_bInfoPanelShown = false;
+	m_flLastSlaughterTime = -1.0f;
 }
 
 IClientMode *GetClientModeNormal()
@@ -874,7 +877,7 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 				if ( ( nVictimTeam >= FIRST_GAME_TEAM ) && pLocalPlayer )
 				{
 					// See if there are any other players still alive
-					bool bSomeAlive = false;
+					int iAliveCount = 0;
 					for ( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
 					{
 						if ( !g_TF_PR->IsConnected( playerIndex ) )
@@ -889,24 +892,23 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 						if ( g_TF_PR->IsAlive( playerIndex ) )
 						{
 							// Found one
-							bSomeAlive = true;
-							break;
+							iAliveCount++;
 						}
 					}
 
-					if ( !bSomeAlive )
+					const char* pszSound = NULL;
+					if ( iAliveCount == 0 )
 					{
 						if ( TFGameRules()->IsMannVsMachineMode() )
 						{
 							if ( nVictimTeam == TF_TEAM_PVE_DEFENDERS )
 							{
 								// Inform the team that everyone is dead
-								pLocalPlayer->EmitSound( "Announcer.MVM_All_Dead" );
+								pszSound = "Announcer.MVM_All_Dead";
 							}
 						}
 						else
 						{
-							const char *pszSound = NULL;
 
 							if ( ( RandomInt( 1, 100 ) <= 20 ) || ( pLocalPlayer->GetTeamNumber() < FIRST_GAME_TEAM ) )
 							{
@@ -920,12 +922,20 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 							{
 								pszSound = "Announcer.TheirTeamWiped";
 							}
-
-							if ( pszSound )
-							{
-								pLocalPlayer->EmitSound( pszSound );
-							}
 						}
+					}
+					else if ( iAliveCount <= 2 && pLocalPlayer->GetTeamNumber() != nVictimTeam )
+					{
+						if ( TFGameRules()->IsCompetitiveGame() && ( m_flLastSlaughterTime < 0.0f || m_flLastSlaughterTime + 40.0f <= gpGlobals->curtime ) )
+						{
+							pszSound = "Announcer.Slaughter";
+							m_flLastSlaughterTime = gpGlobals->curtime;
+						}
+					}
+
+					if ( pszSound )
+					{
+						pLocalPlayer->EmitSound( pszSound );
 					}
 				}
 			}

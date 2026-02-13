@@ -450,3 +450,25 @@
 	"pitch"			"PITCH_NORM"
 	"wave"			"music/capture_stinger.mp3"
 }
+
+"Announcer.Slaughter"
+{
+	"channel"		"CHAN_VOICE2"
+	"volume"		"1"
+	"pitch"			"PITCH_NORM"
+
+	"soundlevel"	"SNDLVL_NONE"
+
+	"rndwave"
+	{
+		"wave"	"vo/killstreak/announcer_ks_11.mp3"
+		"wave"	"vo/killstreak/announcer_ks_12.mp3"
+		"wave"	"vo/killstreak/announcer_ks_13.mp3"
+		"wave"	"vo/killstreak/announcer_ks_14.mp3"
+		"wave"	"vo/killstreak/announcer_ks_17.mp3"
+		"wave"	"vo/killstreak/announcer_ks_19.mp3"
+		"wave"	"vo/killstreak/announcer_ks_22.mp3"
+		"wave"	"vo/killstreak/announcer_ks_25.mp3"
+		"wave"	"vo/killstreak/announcer_ks_26.mp3"
+	}
+}
