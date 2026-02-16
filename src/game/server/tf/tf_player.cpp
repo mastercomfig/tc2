@@ -1276,7 +1276,7 @@ CTFPlayer::CTFPlayer()
 
 	m_flNextHurtSpeakTime = 0.0f;
 
-	m_bReservedPlayerClass = false;
+	m_iReservedPlayerClass = TF_CLASS_UNDEFINED;
 }
 
 //-----------------------------------------------------------------------------
@@ -7614,7 +7614,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		}
 
 		// Check class limits
-		if ( !TFGameRules()->CanPlayerChooseClass(this, iClass) && !m_bReservedPlayerClass )
+		if ( !TFGameRules()->CanPlayerChooseClass( this, iClass ) && !HasReservedPlayerClass( iClass ) )
 		{
 			ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
 			return;
@@ -7678,7 +7678,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 #endif // _DEBUG || STAGING_ONLY
 
 	// joining the same class?
-	if ( iClass != TF_CLASS_RANDOM && iClass == GetDesiredPlayerClassIndex() && !m_bReservedPlayerClass )
+	if ( iClass != TF_CLASS_RANDOM && iClass == GetDesiredPlayerClassIndex() )
 	{
 		// If we're dead, and we have instant spawn, respawn us immediately. Catches the case
 		// where a player misses respawn wave because they're at the class menu, and then changes
@@ -8301,22 +8301,36 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 			}
 		}
 
-		if ( pTakeClassFromPlayer )
+		if ( pTakeClassFromPlayer && (!pTakeClassFromPlayer->IsAlive() || pTakeClassFromPlayer->IsBot()) )
 		{
-			// try a swap.
+			/// for now, we're making sure both are dead.
+			if ( IsAlive() )
+			{
+				CommitSuicide( false, true );
+			}
+
+			if ( pTakeClassFromPlayer->IsAlive() )
+			{
+				pTakeClassFromPlayer->CommitSuicide( false, true );
+			}
+
+			// try a swap, if we have selected a class
 			if ( GetPlayerClass() && GetPlayerClass()->GetClassIndex() >= TF_FIRST_NORMAL_CLASS && GetPlayerClass()->GetClassIndex() < TF_LAST_NORMAL_CLASS )
 			{
+				// they "reserve" the class we're swapping them to. this is to resolve dependency issues if we're also on a limited class.
+				pTakeClassFromPlayer->m_iReservedPlayerClass = GetPlayerClass()->GetClassIndex();
 				pTakeClassFromPlayer->HandleCommand_JoinClass( g_aRawPlayerClassNames[GetPlayerClass()->GetClassIndex()] );
-				pTakeClassFromPlayer->SetDesiredPlayerClassIndex( GetPlayerClass()->GetClassIndex() );
 			}
 			else
 			{
 				pTakeClassFromPlayer->ResetPlayerClass();
+				pTakeClassFromPlayer->ShowViewPortPanel( ( GetTeamNumber() == TF_TEAM_RED ) ? PANEL_CLASS_RED : PANEL_CLASS_BLUE );
 			}
-			m_bReservedPlayerClass = true;
+			m_iReservedPlayerClass = iClass;
 			HandleCommand_JoinClass( g_aRawPlayerClassNames[iClass] );
-			SetDesiredPlayerClassIndex( iClass );
 		}
+
+		return true;
 	}
 	else if ( FStrEq( pcmd, "resetclass" ) )
 	{
@@ -15873,7 +15887,7 @@ void CTFPlayer::ForceRespawn( void )
 
 	// Prevent bypassing class limits. Whoever wins on the draw can spawn as this class,
 	// and anyone who comes after will get swapped back to their old class.
-	if ( !TFGameRules()->CanPlayerChooseClass( this, iDesiredClass ) && GetPlayerClass()->GetClassIndex() != iDesiredClass )
+	if ( !TFGameRules()->CanPlayerChooseClass( this, iDesiredClass ) && GetPlayerClass()->GetClassIndex() != iDesiredClass /* && !HasReservedPlayerClass( iDesiredClass ) */ )
 	{
 		iDesiredClass = GetPlayerClass()->GetClassIndex();
 		ClientPrint( this, HUD_PRINTCENTER, "#TF_ClassLimitReached" );
@@ -15901,13 +15915,13 @@ void CTFPlayer::ForceRespawn( void )
 			m_iClassChanges++;
 			CTF_GameStats.Event_PlayerChangedClass( this, iOldClass, iDesiredClass );
 		}
-
-		m_bReservedPlayerClass = false;
 	}
 	else
 	{
 		m_bSwitchedClass = false;
 	}
+
+	m_iReservedPlayerClass = TF_CLASS_UNDEFINED;
 
 	m_Shared.RemoveAllCond();
 	m_Shared.ResetRageSystem();
