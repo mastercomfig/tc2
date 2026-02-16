@@ -57,6 +57,32 @@
 			}
 		}
 	}
+
+    "CountdownSectionLabel"
+	{	
+		"ControlName"		"CExLabel"
+		"fieldName"		"CountdownSectionLabel"
+		"font"			"HudFontSmallestBold"
+		"xpos"			"cs-0.5"
+		"ypos"			"c-50"
+		"wide"			"f0"
+		"tall"			"40"
+		"zpos"			"5"
+		"autoResize"	"0"
+		"pinCorner"		"0"
+		"visible"		"0"
+		"enabled"		"1"
+		"wrap"			"0"
+		"labelText"		"%tournamenttimesection%"
+		"textAlignment"		"center"
+		"proportionaltoparent"	"1"
+
+		if_competitive
+		{
+			"visible"		"1"
+			"fgcolor"		"TanLight"
+		}
+	}
 	
 	"CountdownLabel"
 	{	

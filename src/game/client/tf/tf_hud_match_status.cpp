@@ -641,6 +641,28 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 	// Update the timer
 	SetDialogVariable( "countdown", nTime );
 
+	wchar_t* pSectionString = NULL;
+	if ( TFGameRules->IsCompetitiveGame() && TFGameRules()->GetRoundsPlayed() > 0 )
+	{
+		if ( TFGameRules()->IsHighSkillCompetitive() && nTime <= 5 )
+		{
+			pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_RollOutTime" );
+		}
+		else
+		{
+			pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_PlanningTime" );
+		}
+	}
+
+	if ( pSectionString )
+	{
+		SetDialogVariable( "tournamenttimesection", pSectionString );
+	}
+	else
+	{
+		SetDialogVariable( "tournamenttimesection", "" );
+	}
+
 	switch ( nTime )
 	{
 	case 4:
