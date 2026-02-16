@@ -618,6 +618,11 @@ CTFBot* CTFBotManager::GetAvailableBotFromPool()
 //----------------------------------------------------------------------------------------------------------------
 void CTFBotManager::OnForceAddedBots( int iNumAdded )
 {
+	// if our bot quota is 0, and we're in fill mode, and there's already a player prior to us joining, we need to bump up our quota to meet the necessary count.
+	if ( tf_bot_quota.GetInt() == 0 && FStrEq( tf_bot_quota_mode.GetString(), "fill" ) && tf_bot_join_after_player.GetBool() )
+	{
+		iNumAdded++;
+	}
 	tf_bot_quota.SetValue( tf_bot_quota.GetInt() + iNumAdded );
 	m_flNextPeriodicThink = gpGlobals->curtime + 1.0f;
 }
