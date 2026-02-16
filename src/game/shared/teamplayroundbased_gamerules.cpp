@@ -1673,8 +1673,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 		if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 		{
 			// TODO(mcoms): maybe needs some work?
-			// tf_competitive_preround_duration
-			flTransitionTime = TFGameRules()->IsHighSkillCompetitive() ? 5.0f : 3.0f;
+			flTransitionTime = 3.0f;
 			m_flCountdownTime = -1.f;
 			if ( !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
 			{

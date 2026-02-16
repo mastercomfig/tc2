@@ -11024,7 +11024,7 @@ bool CTFPlayer::CanPlayerMove() const
 	else
 	{
 		// also do it for non-matches
-		if ( ( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) <= ( TFGameRules()->IsHighSkillCompetitive() ? 5.0f : 3.0f ) )
+		if ( ( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) <= 3.0f )
 		{
 			bFreezeOnRestart = false;
 		}
@@ -12510,7 +12510,7 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 		return false;
 
 	const float flCountdown = pRules->GetPreroundCountdownTime() - gpGlobals->curtime;
-	const float flCountdownAttackTime = TFGameRules()->IsPreRoundPushEnabled() ? ( TFGameRules()->IsHighSkillCompetitive() ? 5.0f : 3.0f ) : 0.0f;
+	const float flCountdownAttackTime = TFGameRules()->IsPreRoundPushEnabled() ? 3.0f : 0.0f;
 	if ( flCountdown > flCountdownAttackTime )
 	{
 		return false;

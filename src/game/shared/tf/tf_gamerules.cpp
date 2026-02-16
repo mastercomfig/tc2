@@ -2364,7 +2364,7 @@ bool CTFGameRules::InMatchStartFreeze( void )
 		// if preround push is enabled, we can move in the last bit.
 		if ( IsPreRoundPushEnabled() )
 		{
-			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > IsHighSkillCompetitive() ? 5.0f : 3.0f )
+			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > 3.0f )
 			{
 				return true;
 			}
@@ -19171,7 +19171,7 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iClass )
 		
 		if ( pTFPlayer && pTFPlayer != pPlayer && ( pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass
 #ifdef GAME_DLL
-			|| ( pTFPlayer->HasReservedPlayerClass() && pTFPlayer->GetDesiredPlayerClassIndex() == iClass )
+		    || pTFPlayer->HasReservedPlayerClass( iClass )
 #endif
 			)
 		)
