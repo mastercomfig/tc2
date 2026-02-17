@@ -642,7 +642,7 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 	SetDialogVariable( "countdown", nTime );
 
 	wchar_t* pSectionString = NULL;
-	if ( TFGameRules->IsCompetitiveGame() && TFGameRules()->GetRoundsPlayed() > 0 )
+	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->GetRoundsPlayed() > 0 )
 	{
 		if ( TFGameRules()->IsHighSkillCompetitive() && nTime <= 5 )
 		{
