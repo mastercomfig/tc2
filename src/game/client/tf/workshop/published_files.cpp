@@ -40,6 +40,7 @@ extern ConVar publish_file_last_dir;
 // milliseconds
 ConVar tf_steam_workshop_query_timeout( "tf_steam_workshop_query_timeout", "1", FCVAR_CLIENTDLL, "Time in seconds to allow communication with the Steam Workshop server." );
 ConVar tf_steam_workshop_page_skip( "tf_steam_workshop_page_skip", "10", FCVAR_ARCHIVE, "Number of pages to skip in the Steam Workshop dialog.", true, 1, true, 100 );
+ConVar itemtest_enabled( "itemtest_enabled", "0", FCVAR_CLIENTDLL, "If itemtesting should be automatically enabled in the itemtest map." );
 
 //-----------------------------------------------------------------------------
 // Purpose: Utility function
@@ -1602,7 +1603,7 @@ public:
 		if ( TFGameRules() && TFGameRules()->IsInItemTestingMode() )
 			return true;
 
-		return FStrEq( engine->GetLevelName(), "maps/itemtest.bsp" );
+		return itemtest_enabled.GetBool() && FStrEq( engine->GetLevelName(), "maps/itemtest.bsp" );
 	}
 
 	virtual void PerformLayout()

@@ -58,7 +58,7 @@ CTFDemoTVSupport::CTFDemoTVSupport() : CAutoGameSystemPerFrame( "CTFDemoTVSuppor
 //-----------------------------------------------------------------------------
 bool CTFDemoTVSupport::Init()
 {
-	ListenForGameEvent( "tv_demo_stop" );
+	//ListenForGameEvent( "tv_demo_stop" );
 	ListenForGameEvent( "teamplay_game_over" );
 	ListenForGameEvent( "tf_game_over" );
 	return true;

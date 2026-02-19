@@ -118,7 +118,9 @@ bool CGCClientSystem::BSendMessage( const GCSDK::CProtoBufMsgBase& msg )
 	return m_GCClient.BSendMessage( msg ); 
 }
 
+#ifdef GAME_DLL
 ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN );
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose:
