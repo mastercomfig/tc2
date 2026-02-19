@@ -122,7 +122,7 @@ ConVar cl_forwardspeed( "cl_forwardspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT
 ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // CSTRIKE_DLL
 
-ConVar	sv_noclipduringpause( "sv_noclipduringpause", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
+ConVar	sv_noclipduringpause( "sv_noclipduringpause", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "If enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
 extern ConVar sv_maxunlag;
 extern ConVar sv_turbophysics;
