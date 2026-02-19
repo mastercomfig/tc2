@@ -238,7 +238,8 @@ public:
 			}
 		});
 		Msg("Configured game state HTTP system.\n");
-		auto f = app.bindaddr("127.0.0.1").port(58270).run_async();
+		// TODO(mcoms): fix race from writing messages during websocket start
+		auto f = app.bindaddr("127.0.0.1").port(58270).concurrency(1).run_async();
 		Msg("Running game state HTTP system.\n");
 		app.wait_for_server_start();
 		Msg("Started game state HTTP system.\n");
