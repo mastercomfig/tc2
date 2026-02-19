@@ -12,6 +12,7 @@
 #define CROW_STATIC_ENDPOINT "/<path>"
 
 #include <crow.h>
+#include <unordered_set>
 
 #undef _WIN32_WINNT
 
@@ -27,6 +28,7 @@
 #include "tf_hud_mainmenuoverride.h"
 #include "tf_matchmaking_dashboard.h"
 #endif
+
 #include "game/client/iviewport.h"
 #include "materialsystem/materialsystem_config.h"
 #include "vgui/ISurface.h"
@@ -64,6 +66,7 @@ struct CWebRpcMessage
 	int64_t m_iRpcId;
 	std::string m_strMethod;
 	std::string m_strParams;
+	bool m_bPrivileged;
 
 	static bool LessFunc(CWebRpcMessage* const& lhs, CWebRpcMessage* const& rhs)
 	{
@@ -77,7 +80,17 @@ public:
 	CHTTPServerThread() :
 	m_IncomingReturns(0, 0, CWebRpcReturn::LessFunc),
 	m_IncomingEvents(0, 0, CWebRpcEvent::LessFunc),
-	m_OutgoingGameMsgs(0, 0, CWebRpcMessage::LessFunc)
+	m_OutgoingGameMsgs(0, 0, CWebRpcMessage::LessFunc),
+	m_UnprivilegedMethods{
+		"localize",
+		"getcvar",
+		"setcvar",
+		"cmd",
+		"getmodes",
+		"getmode",
+		"playsound",
+		"getingame"
+	}
 	{
 		SetName("GameStateHTTPThread");
 	}
@@ -101,21 +114,51 @@ public:
 			return "Hello world!";
 		});
 		CROW_WEBSOCKET_ROUTE(app, "/ws")
+		.onaccept([&]( const crow::request& req, void** userdata) {
+			{
+				AUTO_LOCK( m_clientsMutex )
+				int64_t clientId = m_iNextClientId++;
+				*userdata = new int64_t(clientId);
+				if ( m_iPrivilegedClientId == -1 )
+				{
+					m_iPrivilegedClientId = clientId;
+				}
+			}
+			return true;
+		})
 		.onopen([&](crow::websocket::connection& conn) {
 			{
 				AUTO_LOCK(m_clientsMutex)
-				if (!m_connectedClients.empty())
-					return;
 				m_connectedClients.push_back(&conn);
 				Msg("Game state connection created.\n");
 			}
 		})
-		.onclose([&](crow::websocket::connection& conn, const std::string& reason, uint16_t) {
+		.onclose([&](crow::websocket::connection& conn, const std::string& reason, uint16_t status_code) {
 			{
 				// TODO: sessions
-				AUTO_LOCK(m_clientsMutex)
-				m_connectedClients.clear();
-				Msg("Game state connection closed. %s\n", reason.c_str());
+				AUTO_LOCK( m_clientsMutex )
+				int64_t* userdata = static_cast<int64_t*>( conn.userdata() );
+				std::size_t size = m_connectedClients.size();
+				int64_t clientId = *userdata;
+				if ( m_iPrivilegedClientId == clientId )
+				{
+					m_iPrivilegedClientId = -1;
+				}
+				for ( std::size_t i = 0; i < size; i++ )
+				{
+					if ( *static_cast<int64_t*>( m_connectedClients[i]->userdata() ) == clientId )
+					{
+						m_connectedClients[i] = m_connectedClients[size - 1];
+						m_connectedClients.pop_back();
+						break;
+					}
+				}
+				delete userdata;
+				if ( status_code == 1002 )
+				{
+					DebuggerBreak();
+				}
+				Msg("Game state connection closed (%d): %s\n", status_code, reason.c_str());
 			}
 		})
 		.onmessage([&](crow::websocket::connection& conn, const std::string& in, bool is_binary) {
@@ -151,21 +194,26 @@ public:
 			const auto& command = data["m"].s();
 			std::string strCommand = command;
 
+			bool bIsPrivileged;
+
 			{
 				AUTO_LOCK( m_clientsMutex )
-				if (m_connectedClients.empty())
+				if ( m_connectedClients.empty() )
 				{
-					m_connectedClients.push_back(&conn);
+					// should never happen.
+					Assert( 0 );
+					m_connectedClients.push_back( &conn );
 				}
-				if (!V_strcmp(strCommand.c_str(), "disconnect"))
+				if ( !V_strcmp(strCommand.c_str(), "disconnect") )
 				{
 					// immediately send back a message for closing
-					crow::json::wvalue data;
-					data["i"] = id;
-					m_connectedClients[0]->send_text(data.dump());
-					m_connectedClients.clear();
+					crow::json::wvalue dcResp;
+					dcResp["i"] = id;
+					conn.send_text( dcResp.dump() );
+					m_iPrivilegedClientId = -1;
 					return;
 				}
+				bIsPrivileged = m_iPrivilegedClientId == *static_cast<int64_t*>( conn.userdata() );
 			}
 
 			std::string params;
@@ -182,6 +230,7 @@ public:
 				pMessage->m_iRpcId = id;
 				pMessage->m_strMethod = command;
 				pMessage->m_strParams = params;
+				pMessage->m_bPrivileged = bIsPrivileged;
 				m_OutgoingGameMsgs.Insert(pMessage);
 			}
 		});
@@ -209,8 +258,6 @@ public:
 				AUTO_LOCK(m_IncomingReturnsMutex)
 				AUTO_LOCK(m_IncomingEventsMutex)
 
-				crow::websocket::connection* conn = m_connectedClients.empty() ? NULL : m_connectedClients[0];
-
 				while (m_IncomingReturns.Count() > 0)
 				{
 					CWebRpcReturn* pReturn = m_IncomingReturns.ElementAtHead();
@@ -221,9 +268,12 @@ public:
 						data["r"] = pReturn->m_strValue;
 					}
 					//DevMsg("%s\n", data.dump().c_str());
-					if (conn)
+					for ( auto conn : m_connectedClients )
 					{
-						conn->send_text(data.dump());
+						if ( conn )
+						{
+							conn->send_text( data.dump() );
+						}
 					}
 					delete pReturn;
 					m_IncomingReturns.RemoveAtHead();
@@ -240,9 +290,12 @@ public:
 						{
 							data["d"] = pEvent->m_strParams;
 						}
-						if (conn)
+						for ( auto conn : m_connectedClients )
 						{
-							conn->send_text(data.dump());
+							if ( conn )
+							{
+								conn->send_text( data.dump() );
+							}
 						}
 					}
 					delete pEvent;
@@ -263,15 +316,30 @@ public:
 		while (m_OutgoingGameMsgs.Count() > 0)
 		{
 			CWebRpcMessage* pMessage = m_OutgoingGameMsgs.ElementAtHead();
-			std::unordered_map<std::string, std::function<std::string(const std::string&)>>::iterator funcIter;
-			if ((funcIter = m_Methods.find(pMessage->m_strMethod)) != m_Methods.end())
+			bool bExecutionAllowed = true;
+			if ( !pMessage->m_bPrivileged )
 			{
-				const auto& ret = funcIter->second(std::string{ pMessage->m_strParams });
-				QueueReturnNoLock(pMessage->m_iRpcId, ret);
+				if ( m_UnprivilegedMethods.find( pMessage->m_strMethod ) == m_UnprivilegedMethods.end() )
+				{
+					bExecutionAllowed = false;
+				}
+			}
+			if ( bExecutionAllowed )
+			{
+				std::unordered_map<std::string, std::function<std::string( const std::string& )>>::iterator funcIter;
+				if ( ( funcIter = m_Methods.find( pMessage->m_strMethod ) ) != m_Methods.end() )
+				{
+					const auto& ret = funcIter->second( std::string{ pMessage->m_strParams } );
+					QueueReturnNoLock( pMessage->m_iRpcId, ret );
+				}
+				else
+				{
+					QueueReturnNoLock( pMessage->m_iRpcId, "" );
+				}
 			}
 			else
 			{
-				QueueReturnNoLock(pMessage->m_iRpcId, "");
+				QueueReturnNoLock( pMessage->m_iRpcId, "" );
 			}
 			delete pMessage;
 			m_OutgoingGameMsgs.RemoveAtHead();
@@ -348,6 +416,11 @@ private:
 	CThreadMutex m_IncomingReturnsMutex;
 	CUtlPriorityQueue<CWebRpcEvent*> m_IncomingEvents;
 	CThreadMutex m_IncomingEventsMutex;
+
+	std::unordered_set<std::string> m_UnprivilegedMethods;
+
+	int64_t m_iNextClientId = 1;
+	int64_t m_iPrivilegedClientId = -1;
 
 	std::vector<crow::websocket::connection*> m_connectedClients;
 	CThreadMutex m_clientsMutex;
