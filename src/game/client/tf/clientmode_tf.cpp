@@ -926,7 +926,7 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 					}
 					else if ( iAliveCount <= 2 && pLocalPlayer->GetTeamNumber() != nVictimTeam )
 					{
-						if ( TFGameRules()->IsCompetitiveGame() && ( m_flLastSlaughterTime < 0.0f || m_flLastSlaughterTime + 40.0f <= gpGlobals->curtime ) )
+						if ( TFGameRules()->IsCompetitiveGame() && ( m_flLastSlaughterTime < 0.0f || m_flLastSlaughterTime + 120.0f <= gpGlobals->curtime ) )
 						{
 							pszSound = "Announcer.Slaughter";
 							m_flLastSlaughterTime = gpGlobals->curtime;
