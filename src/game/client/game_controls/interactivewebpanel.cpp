@@ -82,7 +82,8 @@ void CInteractiveWebPanel::PerformLayout()
 	BaseClass::PerformLayout();
 
 	m_pHTML->SetSize(GetWide(), GetTall());
-	int zoomLevel = vgui::scheme()->GetProportionalNormalizedValue(100);
+	// reverse the proportional scale
+	int zoomLevel = vgui::scheme()->GetProportionalNormalizedValue( 100 );
 	m_pHTML->SetZoomLevel((float)zoomLevel);
 }
 
