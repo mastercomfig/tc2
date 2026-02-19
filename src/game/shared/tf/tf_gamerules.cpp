@@ -7272,11 +7272,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle( pWeapon->GetWeaponID() ) && bitsDamage & DMG_BULLET;
-#if defined(MCOMS_BALANCE_PACK)
-		const bool bApplySpreadToRampup = bNoDamageSpread && !bHasDistanceMod && ( bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER );
-#else
-		const bool bApplySpreadToRampup = false;
-#endif
+		const bool bApplySpreadToRampup = IsBetaActive() ? ( bNoDamageSpread && !bHasDistanceMod && ( bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER ) ) : false;
 		if ( bHasDistanceMod || bApplySpreadToRampup )
 		{
 			Vector vAttackerPos = pAttacker->WorldSpaceCenter();
