@@ -90,6 +90,9 @@ public:
 		"getmode",
 		"playsound",
 		"getingame"
+	},
+	m_UnprivilegedEvents{
+		"closedmenu"
 	}
 	{
 		SetName("GameStateHTTPThread");
@@ -156,7 +159,7 @@ public:
 				delete userdata;
 				if ( status_code == 1002 )
 				{
-					DebuggerBreak();
+					DebuggerBreakIfDebugging();
 				}
 				Msg("Game state connection closed (%d): %s\n", status_code, reason.c_str());
 			}
@@ -290,9 +293,10 @@ public:
 						{
 							data["d"] = pEvent->m_strParams;
 						}
+						const bool bUnprivileged = m_UnprivilegedMethods.find( pEvent->m_strEvent ) != m_UnprivilegedMethods.end();
 						for ( auto conn : m_connectedClients )
 						{
-							if ( conn )
+							if ( conn && ( bUnprivileged || m_iPrivilegedClientId == *static_cast<int64_t*>( conn->userdata() ) ) )
 							{
 								conn->send_text( data.dump() );
 							}
@@ -418,6 +422,7 @@ private:
 	CThreadMutex m_IncomingEventsMutex;
 
 	std::unordered_set<std::string> m_UnprivilegedMethods;
+	std::unordered_set<std::string> m_UnprivilegedEvents;
 
 	int64_t m_iNextClientId = 1;
 	int64_t m_iPrivilegedClientId = -1;
