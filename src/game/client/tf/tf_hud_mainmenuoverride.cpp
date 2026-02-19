@@ -266,7 +266,6 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_MainMenuWebUiZIndex = -102;
 
 	m_pMainMenuWebUi = new CInteractiveWebPanel( this, "TFMainMenuWebUi", "ui/index.html", true, false );
-	m_bMainMenuWebUiInited = false;
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
@@ -1385,9 +1384,13 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 
 			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
 			{
-				if (!bShouldWebUiShow)
+				if ( !bShouldWebUiShow )
 				{
 					GetGameStateManager()->QueueEvent( "closedmenu", "" );
+				}
+				else if ( GetGameStateManager()->IsReady() )
+				{
+					m_pMainMenuWebUi->LoadInteractivePanel();
 				}
 				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
 			}
@@ -1424,14 +1427,13 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 		}
 		if ( m_pMainMenuWebUi )
 		{
-			if ( !m_bMainMenuWebUiInited && GetGameStateManager()->IsReady() )
+			if ( GetGameStateManager()->IsReady() )
 			{
 				m_pMainMenuWebUi->LoadInteractivePanel();
-				m_bMainMenuWebUiInited = true;
 			}
-			else if ( !m_pMainMenuWebUi->IsVisible() )
+			if ( !m_pMainMenuWebUi->IsVisible() )
 			{
-				m_pMainMenuWebUi->SetVisible(true);
+				m_pMainMenuWebUi->SetVisible( true );
 			}
 		}
 	}
@@ -2549,7 +2551,7 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 		if ( m_pMainMenuWebUi )
 		{
 			m_MainMenuWebUiZIndex = m_pMainMenuWebUi->GetZPos();
-			m_pMainMenuWebUi->SetZPos(400);
+			m_pMainMenuWebUi->SetZPos( 400 );
 		}
 		return;
 	}
@@ -2557,7 +2559,7 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	{
 		if ( m_pMainMenuWebUi )
 		{
-			m_pMainMenuWebUi->SetZPos(m_MainMenuWebUiZIndex);
+			m_pMainMenuWebUi->SetZPos( m_MainMenuWebUiZIndex );
 		}
 		return;
 	}
