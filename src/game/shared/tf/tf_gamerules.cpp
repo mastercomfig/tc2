@@ -7353,6 +7353,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 #if 0
 					// additional rampup based upon old random range val.
 					flRandomRangeVal = flMax - RemapValClamped(flCenter, flSpreadRampupRange, 1.0f, flRandomDamageSpread, 0.0f);
+#else
+					flRandomRangeVal = 0.5f;
 #endif
 				}
 				else if ( flCenter >= flSpreadFalloffRange )

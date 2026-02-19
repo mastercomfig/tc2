@@ -923,7 +923,7 @@ void CTriggerAreaCapture::EndCapture( int team )
 			if ( pPlayer && IsTouching( pPlayer ) )
 			{
 #ifdef TF_DLL
-				if ( tf_beta_capture_rally.GetInt() == 1 || ( TFGameRules() && TFGameRules()->IsBetaActive() ) )
+				if ( tf_beta_capture_rally.GetInt() == 1 )
 				{
 					CTFPlayer* pTFPlayer = ToTFPlayer( pPlayer );
 					pTFPlayer->m_Shared.AddCond( TF_COND_SPEED_BOOST, 8.0f );

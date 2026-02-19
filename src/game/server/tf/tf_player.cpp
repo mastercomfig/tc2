@@ -4063,7 +4063,7 @@ void CTFPlayer::Spawn()
 
 		// add team glows for a period of time after we respawn
 		int iSpawnGlowsDuration = tf_spawn_glows_duration.GetInt();
-		if ( TFGameRules()->IsBetaActive() || iSpawnGlowsDuration == -10 )
+		if ( iSpawnGlowsDuration == -10 )
 		{
 			m_Shared.AddCond( TF_COND_TEAM_GLOWS );
 		}
