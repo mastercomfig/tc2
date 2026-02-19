@@ -337,6 +337,36 @@ void CHudMainMenuOverride::OnTick()
 		LoadCharacterImageFile();
 	}
 
+	bool bBackgroundLevel = engine->IsLevelMainMenuBackground();
+	bool bInGame = engine->IsInGame() && !bBackgroundLevel;
+	bool bIsConnected = engine->IsConnected() && !bBackgroundLevel;
+#if defined( REPLAY_ENABLED )
+	bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
+#else
+	bool bInReplay = false;
+#endif
+
+	if ( bInGame || bInReplay || bIsConnected || bBackgroundLevel )
+	{
+		if ( m_pMainMenuWebUi )
+		{
+			const bool bShouldWebUiShow = enginevgui->IsGameUIVisible();
+
+			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
+			{
+				if ( !bShouldWebUiShow )
+				{
+					GetGameStateManager()->QueueEvent( "closedmenu", "" );
+				}
+				else if ( GetGameStateManager()->IsReady() )
+				{
+					m_pMainMenuWebUi->LoadInteractivePanel();
+				}
+				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
+			}
+		}
+	}
+
 	static bool s_bRanOnce = false;
 	if ( !s_bRanOnce )
 	{
@@ -1374,26 +1404,6 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 			m_bPlayingMusic = false;
 			m_flPlayMusicTime = -1.0f;
 			m_iPlayMusicFrame = 0;
-		}
-
-		if ( m_pMainMenuWebUi )
-		{
-			bool bShouldWebUiShow = true;
-			if ( GetClientModeTFNormal()->GameUI() )
-				bShouldWebUiShow = GetClientModeTFNormal()->GameUI()->IsMainMenuVisible();
-
-			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
-			{
-				if ( !bShouldWebUiShow )
-				{
-					GetGameStateManager()->QueueEvent( "closedmenu", "" );
-				}
-				else if ( GetGameStateManager()->IsReady() )
-				{
-					m_pMainMenuWebUi->LoadInteractivePanel();
-				}
-				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
-			}
 		}
 	}
 	else if ( !bInGame && !bInReplay && !bIsConnected && !bBackgroundLevel )
