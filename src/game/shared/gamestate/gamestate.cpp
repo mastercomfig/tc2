@@ -156,7 +156,7 @@ public:
 				m_SubscribedClientIds.erase( clientId );
 				for ( std::size_t i = 0; i < size; i++ )
 				{
-					if ( *static_cast<int64_t*>( m_connectedClients[i]->userdata() ) == clientId )
+					if ( GetClientId( *m_connectedClients[i] ) == clientId )
 					{
 						m_connectedClients[i] = m_connectedClients[size - 1];
 						m_connectedClients.pop_back();
@@ -329,9 +329,19 @@ public:
 							data["d"] = pEvent->m_strParams;
 						}
 						const bool bUnprivileged = m_UnprivilegedMethods.find( pEvent->m_strEvent ) != m_UnprivilegedMethods.end();
+						bool bNeedsSubscription = false;
+						if ( !V_stricmp( pEvent->m_strEvent.c_str(), "gsi" ) )
+						{
+							bNeedsSubscription = true;
+						}
 						for ( auto conn : m_connectedClients )
 						{
-							if ( conn && ( bUnprivileged || m_iPrivilegedClientId == *static_cast<int64_t*>( conn->userdata() ) ) )
+							if ( !conn )
+							{
+								continue;
+							}
+							int64_t clientId = GetClientId( *conn );
+							if ( ( bUnprivileged || m_iPrivilegedClientId == clientId ) && ( !bNeedsSubscription || m_SubscribedClientIds.find(clientId) != m_SubscribedClientIds.end() ) )
 							{
 								conn->send_text( data.dump() );
 							}
