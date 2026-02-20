@@ -786,7 +786,7 @@ ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_m
 
 ConVar tf_jumpdmgreduction_always_apply( "tf_jumpdmgreduction_always_apply", "0" );
 #endif // GAME_DLL
-ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "15", FCVAR_REPLICATED );
+ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "10", FCVAR_REPLICATED );
 
 ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
@@ -984,7 +984,6 @@ enum { kMVM_CurrencyPackMinSize = 1, };
 #endif // GAME_DLL
 
 extern ConVar mp_tournament;
-extern ConVar mp_tournament_post_match_period;
 
 extern ConVar tf_flag_return_on_touch;
 extern ConVar tf_flag_return_time_credit_factor;

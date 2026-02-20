@@ -1179,7 +1179,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 		if ( tv_delaymapchange.GetBool() )
 		{
-			if ( HLTVDirector()->IsActive() )	
+			if ( HLTVDirector() && HLTVDirector()->IsActive() )	
 				flWaitTime = MAX( flWaitTime, HLTVDirector()->GetDelay() );
 		}
 				

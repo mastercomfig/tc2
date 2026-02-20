@@ -211,7 +211,7 @@ ConVar mp_blockstyle( "mp_blockstyle", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENT
 ConVar mp_respawnwavetime( "mp_respawnwavetime", "10.0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Time between respawn waves." );
 ConVar mp_capdeteriorate_time( "mp_capdeteriorate_time", "90.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Time it takes for a full capture point to deteriorate." );
 ConVar mp_tournament( "mp_tournament", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );
-ConVar mp_tournament_post_match_period( "mp_tournament_post_match_period", "90", FCVAR_REPLICATED, "The amount of time (in seconds) before the server resets post-match.", true, 5, true, 300 );
+ConVar mp_tournament_post_match_period( "mp_tournament_post_match_period", "10", FCVAR_REPLICATED, "The amount of time (in seconds) before the server resets post-match.", true, 5, true, 300 );
 
 ConVar mp_tournament_required_for_pause( "mp_tournament_required_for_pause", "1", FCVAR_REPLICATED );
 
@@ -2093,23 +2093,27 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				{
 					if ( TFGameRules()->IsEmulatingMatch() == 1 )
 					{
-						flPostMatchPeriod = 30.0f;
+						flPostMatchPeriod = 10.0f;
 					}
 					else if ( TFGameRules()->IsEmulatingMatch() == 2 )
 					{
-						flPostMatchPeriod = 30.0f;
+						flPostMatchPeriod = 10.0f;
 					}
 				}
 
-				// if we're running HLTV, then make sure we don't end the match before it's caught up.
-				if ( HLTVDirector() && HLTVDirector()->GetHLTVServer() )
+				bool bWillLeaveMap = false;
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
+				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
-					static ConVarRef tv_delaymapchange_protect( "tv_delaymapchange_protect" );
-					static ConVarRef tv_delay( "tv_delay" );
-					if ( tv_delaymapchange_protect.GetBool() && tv_delay.GetFloat() > flPostMatchPeriod )
-					{
-						flPostMatchPeriod = tv_delay.GetFloat();
-					}
+					bWillLeaveMap = true;
+				}
+
+				// if we're running HLTV, then make sure we don't end the match before it's caught up.
+				static ConVarRef tv_delaymapchange( "tv_delaymapchange" );
+				if ( bWillLeaveMap && HLTVDirector() && HLTVDirector()->IsActive() && tv_delaymapchange.GetBool() )
+				{
+					flPostMatchPeriod = Max( flPostMatchPeriod, HLTVDirector()->GetDelay() );
 				}
 
 				m_flStateTransitionTime = gpGlobals->curtime + flPostMatchPeriod;
