@@ -1071,8 +1071,10 @@ void CTFHudPlayerStatus::ApplySchemeSettings( IScheme *pScheme )
 
 	int xOffset;
 	int yOffset;
+	bool bInvalidateLayout = false;
 	if ( ConstrainAspect( xOffset, yOffset ) )
 	{
+		bInvalidateLayout = true;
 		int x, y;
 		GetPos( x, y );
 		int xNew, yNew;
@@ -1083,7 +1085,7 @@ void CTFHudPlayerStatus::ApplySchemeSettings( IScheme *pScheme )
 	// HACK: Work around the scheme application order failing
 	// to reload the player class hud element's scheme in minmode.
 	static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
-	if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+	if ( bInvalidateLayout || cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 	{
 		m_pHudPlayerClass->InvalidateLayout( false, true );
 	}

@@ -392,6 +392,8 @@ ClientModeTFNormal::ClientModeTFNormal()
 	m_lastServerConnectTime = 0;
 	m_pTeamGoalTournament = NULL;
 
+	m_bInitializedHudAspect = false;
+
 	m_flLastSlaughterTime = -1.0f;
 
 #if defined( _X360 )
@@ -478,6 +480,8 @@ void ClientModeTFNormal::Init()
 
 	m_bInfoPanelShown = false;
 	m_bRestrictInfoPanel = false;
+
+	m_bInitializedHudAspect = false;
 
 	CreateInterfaceFn gameUIFactory = g_GameUI.GetFactory();
 	if ( gameUIFactory )
@@ -653,6 +657,13 @@ void ClientModeTFNormal::InitViewport()
 void ClientModeTFNormal::LevelInit( const char *newmap )
 {
 	BaseClass::LevelInit( newmap );
+
+	static ConVarRef cl_hud_aspect( "cl_hud_aspect" );
+	if ( !m_bInitializedHudAspect && cl_hud_aspect.GetInt() != 0 )
+	{
+		m_bInitializedHudAspect = true;
+		engine->ExecuteClientCmd( "hud_reloadscheme" );
+	}
 
 	m_bInfoPanelShown = false;
 	m_flLastSlaughterTime = -1.0f;

@@ -139,6 +139,8 @@ private:
 	int						m_lastServerPort;
 	uint32					m_lastServerConnectTime;
 
+	bool m_bInitializedHudAspect;
+
 	enum EConnectState {
 		k_eConnectState_Disconnected,
 		k_eConnectState_Connecting,
