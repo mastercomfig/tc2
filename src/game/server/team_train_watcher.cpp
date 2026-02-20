@@ -19,6 +19,7 @@
 #include "physconstraint.h"
 
 #ifdef TF_DLL
+#include "tf_gamerules.h"
 #include "tf_shareddefs.h"
 #endif
 
@@ -1159,8 +1160,12 @@ void CTeamTrainWatcher::WatcherThink( void )
 				}
 			}
 
-			// play any concepts that we might need to play		
+			// play any concepts that we might need to play
+#ifdef TF_DLL
+			if ( TFGameRules() && !TFGameRules()->PlayersAreOnMatchSummaryStage() && !TFGameRules()->ShowMatchSummary() )
+#else
 			if ( TeamplayRoundBasedRules() )
+#endif
 			{
 				if ( m_iTrainSpeedLevel == 0 && iOldTrainSpeedLevel != 0 )
 				{
