@@ -864,6 +864,8 @@ ConCommand cc_CreatePredictionError( "CreatePredictionError", cc_CreatePredictio
 
 // -------------------------------------------------------------------------------- //
 
+ConVar tf_tournament_ping_cooldown("tf_tournament_ping_cooldown", "1.0", 0, "Cooldown for tournament pings.");
+
 enum eCoachCommand
 {
 	kCoachCommand_Look = 1, // slot1
@@ -885,7 +887,7 @@ static void HandleCoachCommand( CTFPlayer *pPlayer, eCoachCommand command )
 	const bool bIsComp = pPlayer->GetTeamNumber() > LAST_SHARED_TEAM && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->ShowMatchSummary();
 	if ( bIsCoaching || bIsComp && tf_tournament_allow_pings.GetBool() )
 	{
-		const float kMaxRateCoachCommands = 1.0f;
+		const float kMaxRateCoachCommands = tf_tournament_ping_cooldown.GetFloat();
 		float flLastCoachCommandDelta = gpGlobals->curtime - pPlayer->m_flLastCoachCommand;
 		if ( flLastCoachCommandDelta < kMaxRateCoachCommands )
 		{
