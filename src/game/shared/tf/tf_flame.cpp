@@ -26,6 +26,8 @@ const float tf_flame_burn_index_per_collide = 33.333333f; // bonus for hitting a
 const float tf_flame_burn_index_per_collide_remap_x = 60.f; // min accuracy floor
 const float tf_flame_burn_index_per_collide_remap_y = 100.f; // 100% accuracy
 const float tf_flame_burn_index_damage_scale_min = 0.5f; // max damage penalty for min accuracy
+const float tf_flame_warmup_ticks = 90; // number of ticks needed to warmup fully
+const float tf_flame_warmup_inc = 1.0f / tf_flame_warmup_ticks; // increment per tick
 
 ConVar tf_flame_dmg_mode_dist( "tf_flame_dmg_mode_dist", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 
@@ -63,9 +65,9 @@ const float tf_flame_mindamagedist = 175.f;
 const float tf_flame_mindamagedist = 300.f;
 #endif
 const float tf_flame_min_damage_scale_time = 0.5f;
-const float tf_flame_min_damage_scale_time_cap = 0.5f;
+const float tf_flame_min_damage_scale_time_cap = ( tf_flame_mindamagedist / 2450.0f ) / 0.5f; // time it takes for us to reach tf_flame_mindamagedist, as a function of lifetime. longer life does more damage at the same distance.
+const float tf_flame_damage_scale_time_min = tf_flame_maxdamagedist / 2450.0f;                // time it takes to reach tf_flame_maxdamagedist
 #endif
-const float tf_flame_damage_scale_time_min = 0.09375f; // time it takes to reach tf_flame_maxdamagedist
 
 IMPLEMENT_NETWORKCLASS_ALIASED( TFFlameManager, DT_TFFlameManager );
 
@@ -360,12 +362,17 @@ void CTFFlameManager::PostEntityThink( void )
 	// remove all entities that are no longer touching the flame
 	FOR_EACH_MAP_FAST( m_mapEntitiesBurnt, i )
 	{
-		if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > m_flBurnFrequency )
+		CBaseEntity* pEntity = m_mapEntitiesBurnt.Key( i );
+		if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > 3.0f || !pEntity || !pEntity->IsAlive() )
 		{
 			m_mapEntitiesBurnt.RemoveAt( i );
 
 			// go thru the map again to see if we need to remove anything else
 			i = 0;
+		}
+		else if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > m_flBurnFrequency )
+		{
+			m_mapEntitiesBurnt[i].m_flHeatIndex = tf_flame_burn_index_per_collide_remap_y;
 		}
 	}
 
@@ -548,16 +555,21 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 #if !defined( TF2_OG )
 	if ( pTFTarget )
 	{
-		float flIndexMod = 1.f;
 		auto iEntIndex = m_mapEntitiesBurnt.Find( pTFTarget );
+		float flHeat;
+		float flWarmup;
 		if ( iEntIndex != m_mapEntitiesBurnt.InvalidIndex() )
 		{
-			flIndexMod = RemapValClamped( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex, 
-										  tf_flame_burn_index_per_collide_remap_x, tf_flame_burn_index_per_collide_remap_y, 
-										  tf_flame_burn_index_damage_scale_min, 1.f );
+			flHeat = m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex;
+			flWarmup = m_mapEntitiesBurnt[iEntIndex].m_flWarmup;
+		}
+		else
+		{
+			flHeat = tf_flame_burn_index_per_collide_remap_y;
+			flWarmup = 0.5f;
 		}
 
-		flDamageScale *= flIndexMod;
+		flDamageScale *= RemapValClamped( flHeat, tf_flame_burn_index_per_collide_remap_x, tf_flame_burn_index_per_collide_remap_y, tf_flame_burn_index_damage_scale_min, 1.f ) * flWarmup;
 	}
 #endif
 
@@ -712,6 +724,7 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 #endif
 
 		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex = Min( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex + flAmount, tf_flame_burn_index_per_collide_remap_y );
+		m_mapEntitiesBurnt[iEntIndex].m_flWarmup = Min( m_mapEntitiesBurnt[iEntIndex].m_flWarmup + tf_flame_warmup_inc, 1.0f );
 	}
 
 	// if we already burn this entity, check if we can burn it again
@@ -832,13 +845,8 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	}
 	else
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		// start at max, so we decay down if we don't maintain accuracy
-		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y } );
-#else
-		// start at half accuracy
-		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, 50.0f } );
-#endif
+		// start at one collide of warmup, full accuracy (burn)
+		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y, 0.5f } );
 	}
 }
 
