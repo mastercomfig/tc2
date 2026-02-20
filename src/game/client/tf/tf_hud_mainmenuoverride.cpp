@@ -350,7 +350,7 @@ void CHudMainMenuOverride::OnTick()
 	{
 		if ( m_pMainMenuWebUi )
 		{
-			const bool bShouldWebUiShow = enginevgui->IsGameUIVisible();
+			const bool bShouldWebUiShow = bInGame ? enginevgui->IsGameUIVisible() : !bIsConnected;
 
 			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
 			{
