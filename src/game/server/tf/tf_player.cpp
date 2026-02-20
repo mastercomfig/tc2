@@ -7058,7 +7058,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 		}
 
 		// Deny spectator access if it would unbalance the teams
-		if ( ( mp_spectators_restricted.GetBool() || tf_mm_trusted.GetBool() ) && TFGameRules() && !TFGameRules()->IsMannVsMachineMode() )
+		if ( ( mp_spectators_restricted.GetBool() || tf_mm_trusted.GetBool() ) && TFGameRules() && !TFGameRules()->IsMannVsMachineMode() && mp_teams_unbalance_limit.GetInt() > 0 )
 		{
 			if ( GetTeamNumber() == TF_TEAM_RED || GetTeamNumber() == TF_TEAM_BLUE )
 			{
