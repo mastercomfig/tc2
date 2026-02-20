@@ -904,11 +904,11 @@ void C_BaseObject::GetTargetIDString( OUT_Z_BYTECAP( iMaxLenInBytes ) wchar_t *s
 		const wchar_t *wszObjectName = g_pVGuiLocalize->Find( pszStatusName );
 
 		bool bHasMode = false;
-		const char *printFormatString = "#TF_playerid_object";
+		const char *printFormatString = bSpectator ? "#TF_specid_object" : "#TF_playerid_object";
 
 		if ( IsMiniBuilding() && !IsDisposableBuilding() )
 		{
-			printFormatString = "#TF_playerid_object_mini";
+			printFormatString = bSpectator ? "#TF_specid_object_mini" : "#TF_playerid_object_mini";
 		}
 
 		const wchar_t *wszModeName = L"";
@@ -917,7 +917,7 @@ void C_BaseObject::GetTargetIDString( OUT_Z_BYTECAP( iMaxLenInBytes ) wchar_t *s
 		{
 			const char *pszModeName = pObjectInfo->m_AltModes[GetObjectMode()].pszModeName;
 			wszModeName = g_pVGuiLocalize->Find( pszModeName );
-			printFormatString = "TF_playerid_object_mode";
+			printFormatString = bSpectator ? "#TF_specid_object_mode" : "TF_playerid_object_mode";
 			bHasMode = true;
 		}
 
