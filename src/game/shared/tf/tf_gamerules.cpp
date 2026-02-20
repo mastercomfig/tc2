@@ -15329,6 +15329,8 @@ void CTFGameRules::SetMiniRoundBitMask( int iMask )
 	m_iCurrentMiniRoundMask = iMask;
 }
 
+ConVar tf_tournament_firstblood("tf_tournament_firstblood", "1", 0, "If enabled, players can get first blood in competitive games.");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -15341,7 +15343,7 @@ bool CTFGameRules::IsFirstBloodAllowed( void )
 	if ( IsInArenaMode() && tf_arena_first_blood.GetBool() )
 		return true;
 
-	if ( IsCompetitiveGame() && ( State_Get() == GR_STATE_RND_RUNNING ) )
+	if ( IsCompetitiveGame() && ( State_Get() == GR_STATE_RND_RUNNING ) && tf_tournament_firstblood.GetBool() )
 	{
 		return true;
 	}
