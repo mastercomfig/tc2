@@ -3645,6 +3645,11 @@ bool CTFPlayer::IsReadyToSpawn( void )
 		return false;
 	}
 
+	if ( TFGameRules()->GetRespawnTimeMode() > 2 && !m_bAbortFreezeCam && GetObserverMode() <= OBS_MODE_FREEZECAM && GetObserverTarget() && GetObserverTarget() != this )
+	{
+		return false;
+	}
+
 	// Map-makers can force players to have custom respawn times
 	if ( GetRespawnTimeOverride() != -1.f && gpGlobals->curtime < GetDeathTime() + GetRespawnTimeOverride() )
 		return false;
@@ -7742,7 +7747,7 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 		bInRespawnRoom = false;
 	}
 	bool bDeadInstantSpawn = !IsAlive();
-	if ( bDeadInstantSpawn && m_flDeathTime )
+	if ( bDeadInstantSpawn && m_flDeathTime > 0.0f )
 	{
 		// In death mode, don't allow class changes to force respawns ahead of respawn waves
 		float flWaveTime = TFGameRules()->GetNextRespawnWave( GetTeamNumber(), this );
@@ -8683,7 +8688,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		if ( ShouldRunRateLimitedCommand( args ) && IsDead() && !m_bAlreadyUsedExtendFreezeThisDeath )
 		{
 			m_bAlreadyUsedExtendFreezeThisDeath = true;
-			m_flDeathTime += 2.0f;
+			m_flDeathTime += TF_DEATH_ANIMATION_TIME;
 		}
 		return true;
 	}
@@ -12749,7 +12754,7 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		}
 
 		// Siphon some health
-		m_iHealth += 50.0f;
+		m_iHealth += 75.0f;
 
 		// Maybe refill charges...
 		m_Shared.SetDemomanChargeMeter( 100.f );
@@ -15140,12 +15145,20 @@ void CTFPlayer::StateThinkDYING( void )
 		RemoveEffects( EF_NODRAW | EF_NOSHADOW );	// still draw player body
 	}
 
-	float flTimeInFreeze = TFGameRules()->GetRespawnTimeMode() == 2 ? ( 0.01f ) : ( spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
-	float flFreezeEnd = (m_flDeathTime + TF_DEATH_ANIMATION_TIME + flTimeInFreeze );
+	const int iRespawnTimeMode = TFGameRules()->GetRespawnTimeMode();
+	const float flTravelTime = iRespawnTimeMode >= 2 ? 0.01f : spec_freeze_traveltime.GetFloat();
+	const float flFreezeTime = iRespawnTimeMode == 2 ? 0.0f : spec_freeze_time.GetFloat();
+	const float flTimeInFreeze = flTravelTime + flFreezeTime;
+	const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.01f : TF_DEATH_ANIMATION_TIME;
+	float flFreezeEnd = ( m_flDeathTime + flDeathAnimTime + flTimeInFreeze );
 
-	if ( !m_bPlayedFreezeCamSound && TFGameRules()->GetRespawnTimeMode() == 2 )
+	if ( !m_bPlayedFreezeCamSound && iRespawnTimeMode == 2 )
 	{
 		m_bPlayedFreezeCamSound = true;
+		m_bAbortFreezeCam = true;
+	}
+	else if ( !m_bAbortFreezeCam && iRespawnTimeMode > 2 && IsBot() )
+	{
 		m_bAbortFreezeCam = true;
 	}
 
@@ -15153,7 +15166,7 @@ void CTFPlayer::StateThinkDYING( void )
 	{
 		// Start the sound so that it ends at the freezecam lock on time
 		float flFreezeSoundLength = 0.3f;
-		float flFreezeSoundTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( TFGameRules()->GetRespawnTimeMode() == 2 ? 0.01f : spec_freeze_traveltime.GetFloat() ) - flFreezeSoundLength;
+		float flFreezeSoundTime = ( m_flDeathTime + flDeathAnimTime ) + flTravelTime - flFreezeSoundLength;
 		if ( gpGlobals->curtime >= flFreezeSoundTime )
 		{
 			CSingleUserRecipientFilter filter( this );
@@ -15166,7 +15179,7 @@ void CTFPlayer::StateThinkDYING( void )
 		}
 	}
 
-	if ( gpGlobals->curtime >= (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) )	// allow x seconds death animation / death cam
+	if ( gpGlobals->curtime >= ( m_flDeathTime + flDeathAnimTime ) ) // allow x seconds death animation / death cam
 	{
 		if ( GetObserverTarget() && GetObserverTarget() != this )
 		{
@@ -15234,7 +15247,11 @@ void CTFPlayer::StateThinkDYING( void )
 
 		// Don't allow anyone to respawn until freeze time is over, even if they're not
 		// in freezecam. This prevents players skipping freezecam to spawn faster.
-		if ( gpGlobals->curtime < flFreezeEnd )
+		if ( iRespawnTimeMode > 2 && ( m_bAbortFreezeCam || !GetObserverTarget() || GetObserverTarget() == this ) )
+		{
+			flFreezeEnd = m_flDeathTime + 0.01f;
+		}
+		if ( gpGlobals->curtime < flFreezeEnd  )
 			return;
 
 		m_lifeState = LIFE_RESPAWNABLE;
@@ -15263,9 +15280,15 @@ void CTFPlayer::StateThinkDYING( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::AttemptToExitFreezeCam( void )
 {
-	float flFreezeTravelTime = (m_flDeathTime + TF_DEATH_ANIMATION_TIME ) + ( spec_freeze_traveltime.GetFloat() ) + 0.5f;
-	if ( gpGlobals->curtime < flFreezeTravelTime )
-		return;
+	const int iRespawnTimeMode = TFGameRules()->GetRespawnTimeMode();
+	if ( iRespawnTimeMode <= 2 )
+	{
+		const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.01f : TF_DEATH_ANIMATION_TIME;
+		const float flTravelTime = iRespawnTimeMode >= 2 ? 0.01f : spec_freeze_traveltime.GetFloat();
+		const float flFreezeExitTime = ( m_flDeathTime + flDeathAnimTime ) + ( iRespawnTimeMode >= 2 ? flTravelTime : flTravelTime + 0.5f );
+		if ( gpGlobals->curtime < flFreezeExitTime )
+			return;
+	}
 
 	m_bAbortFreezeCam = true;
 }

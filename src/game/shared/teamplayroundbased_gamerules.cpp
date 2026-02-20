@@ -244,7 +244,7 @@ ConVar mp_winlimit( "mp_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Max sc
 #endif // GAME_DLL
 	);
 
-ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY | FCVAR_REPLICATED );
+ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "0 - Enable respawn times, 1 - Instant respawn but keep freeze time, 2 - Instant respawn without freeze time, 3 - Instant respawn with cancelable freeze time" );
 ConVar mp_bonusroundtime( "mp_bonusroundtime", "15", FCVAR_REPLICATED, "Time after round win until round restarts", true, 5, true, 15 );
 ConVar mp_stalemate_meleeonly( "mp_stalemate_meleeonly", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Restrict everyone to melee weapons only while in Sudden Death." );
 ConVar mp_forceautoteam( "mp_forceautoteam", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Automatically assign players to teams when joining." );
@@ -660,17 +660,7 @@ float CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlay
 	//		and
 	// b) death anim length + freeze panel length
 
-	float flDeathAnimLength = 2.0f;
-
-	if ( GetRespawnTimeMode() == 2 )
-	{
-		flDeathAnimLength += 0.01f;
-	}
-	else
-	{
-		flDeathAnimLength += spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat();
-	}
-
+	const float flDeathAnimLength = GetRespawnTimeMode() >= 2 ? 0.02f : ( TF_DEATH_ANIMATION_TIME + spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
 	float fMinDelay = flDeathAnimLength;
 
 	if ( !ShouldRespawnQuickly( pPlayer ) )

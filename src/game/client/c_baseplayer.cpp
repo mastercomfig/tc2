@@ -1665,8 +1665,9 @@ void C_BasePlayer::CalcFreezeCamView( Vector& eyeOrigin, QAngle& eyeAngles, floa
 	// Zoom towards our target
 	float flCurTime = (gpGlobals->curtime - m_flFreezeFrameStartTime);
 
-	const bool bForceNoFreezeFrame = TeamplayRoundBasedRules() && TeamplayRoundBasedRules()->GetRespawnTimeMode() == 2;
-	const float flTravelTime = bForceNoFreezeFrame ? 0.01f : spec_freeze_traveltime.GetFloat();
+	const int iRespawnTimeMode = TeamplayRoundBasedRules() ? TeamplayRoundBasedRules()->GetRespawnTimeMode() : 0;
+	const float flTravelTime = iRespawnTimeMode >= 2 ? 0.01f : spec_freeze_traveltime.GetFloat();
+	const float flFreezeTime = iRespawnTimeMode == 2 ? 0.0f : spec_freeze_time.GetFloat();
 
 	float flBlendPerc = clamp( flCurTime / flTravelTime, 0.f, 1.f );
 	flBlendPerc = SimpleSpline( flBlendPerc );
@@ -1733,7 +1734,7 @@ void C_BasePlayer::CalcFreezeCamView( Vector& eyeOrigin, QAngle& eyeAngles, floa
 		}
 
 		m_bSentFreezeFrame = true;
-		view->FreezeFrame( bForceNoFreezeFrame ? 0.0f : spec_freeze_time.GetFloat() );
+		view->FreezeFrame( flFreezeTime );
 	}
 }
 

@@ -185,7 +185,12 @@ public:
 	virtual void	LevelInitPostEntity( void );
 	virtual float	GetRespawnTimeScalar( int iTeam );
 	virtual float	GetRespawnWaveMaxLength( int iTeam, bool bScaleWithNumPlayers = true );
-	virtual bool	ShouldRespawnQuickly( CBasePlayer *pPlayer ) { return false; }
+	virtual bool    ShouldRespawnQuickly( CBasePlayer* pPlayer )
+	{
+		if ( GetRespawnTimeMode() > 0 )
+			return true;
+		return false;
+	}
 	float	GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlayer );
 	virtual int GetRespawnTimeMode();
 

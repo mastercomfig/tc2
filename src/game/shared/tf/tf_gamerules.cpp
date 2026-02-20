@@ -4137,14 +4137,7 @@ int CTFGameRules::GetRespawnTimeMode()
 {
 	if ( IsInPreMatchTournamentWarmup() )
 	{
-		if ( IsHighSkillCompetitive() )
-		{
-			return 2;
-		}
-		else
-		{
-			return 1;
-		}
+		return 3;
 	}
 
 	return BaseClass::GetRespawnTimeMode();

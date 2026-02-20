@@ -1124,7 +1124,7 @@ int	CTFFreezePanel::HudElementKeyInput( int down, ButtonCode_t keynum, const cha
 
 				//Extend Freezecam by a couple more seconds.
 				engine->ClientCmd( "extendfreeze" );
-				view->FreezeFrame( 3.0f );
+				view->FreezeFrame( TF_DEATH_ANIMATION_TIME );
 
 				//Hide the reminder panel
 				m_flShowSnapshotReminderAt = 0;
