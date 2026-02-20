@@ -2312,7 +2312,7 @@ void CTFPlayer::StrandedSpawnThink(void)
 	if ( !TFGameRules()->IsCompetitiveGame() )
 	{
 		// always full stranded spawn in pubs
-		iResult = 2;
+		iResult = STRANDED_SPAWN_SWITCHABLE;
 	}
 
 	m_Shared.m_iStrandedSpawn = iResult;
@@ -2324,56 +2324,56 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	// if the player died, exit
 	if ( !IsAlive() )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// not spectator
 	if ( GetTeamNumber() <= LAST_SHARED_TEAM )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// not coaching
 	if ( IsCoaching() )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// we don't care during match summary
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 	if ( bMatchSummary )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// or during pre-match / countdown
 	if ( TFGameRules()->BInMatchStartCountdown() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() || TFGameRules()->State_Get() <= GR_STATE_PREROUND )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// left respawn room
 	if ( m_Shared.GetRespawnTouchCount() <= 0 )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// not damaged
 	if ( gpGlobals->curtime - m_flLastDamageTime <= 0.1f )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	CBaseEntity* pLastSpawnPoint = GetSpawnPoint();
 	if ( !pLastSpawnPoint )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 	// not in respawn room
 	if ( !PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
 	{
-		return 0;
+		return STRANDED_SPAWN_DETACHED;
 	}
 
 #if 0
@@ -2384,7 +2384,7 @@ int CTFPlayer::CheckStrandedSpawn(void)
 		Vector vLastSpawnPos = pLastSpawnPoint->GetAbsOrigin();
 		if ( ( GetAbsOrigin() - vLastSpawnPos ).Length2DSqr() > 300.0f * 300.0f || abs( GetAbsOrigin().z - vLastSpawnPos.z ) > 300.0f )
 		{
-			return 0;
+			return STRANDED_SPAWN_DETACHED;
 		}
 	}
 #endif
@@ -2392,7 +2392,7 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	// if time elapsed
 	if ( m_flRespawnTime == 0.0f || gpGlobals->curtime - m_flRespawnTime >= 7.0f )
 	{
-		return 1;
+		return STRANDED_SPAWN_ANCHORED;
 	}
 
 	// just allow players to respawn during first 7 seconds
@@ -8295,7 +8295,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		for ( int iPlayer = 0; iPlayer < pTeam->GetNumPlayers(); iPlayer++ )
 		{
 			CTFPlayer* pTFPlayer = ToTFPlayer( pTeam->GetPlayer( iPlayer ) );
-			if ( pTFPlayer && pTFPlayer != this && pTFPlayer->IsBot() && pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass )
+			if ( pTFPlayer && pTFPlayer != this && pTFPlayer->IsBot() && pTFPlayer->GetPlayerClass()->GetClassIndex() == iClass && pTFPlayer->m_iReservedPlayerClass == TF_CLASS_UNDEFINED )
 			{
 				pTakeClassFromPlayer = pTFPlayer;
 			}
@@ -8304,12 +8304,12 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		if ( pTakeClassFromPlayer && (!pTakeClassFromPlayer->IsAlive() || pTakeClassFromPlayer->IsBot()) )
 		{
 			/// for now, we're making sure both are dead.
-			if ( IsAlive() )
+			if ( IsAlive() /* && m_Shared.IsInStrandedSpawn() != STRANDED_SPAWN_SWITCHABLE */ )
 			{
 				CommitSuicide( false, true );
 			}
 
-			if ( pTakeClassFromPlayer->IsAlive() )
+			if ( pTakeClassFromPlayer->IsAlive() /* && m_Shared.IsInStrandedSpawn() != STRANDED_SPAWN_SWITCHABLE */ )
 			{
 				pTakeClassFromPlayer->CommitSuicide( false, true );
 			}
@@ -15887,9 +15887,11 @@ void CTFPlayer::ForceRespawn( void )
 
 	// Prevent bypassing class limits. Whoever wins on the draw can spawn as this class,
 	// and anyone who comes after will get swapped back to their old class.
-	if ( !TFGameRules()->CanPlayerChooseClass( this, iDesiredClass ) && GetPlayerClass()->GetClassIndex() != iDesiredClass /* && !HasReservedPlayerClass( iDesiredClass ) */ )
+	if ( !TFGameRules()->CanPlayerChooseClass( this, iDesiredClass ) && GetPlayerClass()->GetClassIndex() != iDesiredClass && !HasReservedPlayerClass( iDesiredClass ) )
 	{
 		iDesiredClass = GetPlayerClass()->GetClassIndex();
+		SetDesiredPlayerClassIndex( iDesiredClass );
+		m_iReservedPlayerClass = TF_CLASS_UNDEFINED;
 		ClientPrint( this, HUD_PRINTCENTER, "#TF_ClassLimitReached" );
 
 		if ( iDesiredClass == TF_CLASS_UNDEFINED )

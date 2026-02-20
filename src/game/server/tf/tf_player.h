@@ -1159,6 +1159,9 @@ protected:
 
 	virtual void		Internal_HandleMapEvent( inputdata_t &inputdata ) OVERRIDE;
 
+protected:
+	int m_iReservedPlayerClass;
+
 private:
 	float				m_flAccumulatedHealthRegen;	// Regeneration can be in small amounts, so we accumulate it and apply when it's > 1
 	float				m_flNextAmmoRegenAt;
@@ -1279,8 +1282,6 @@ private:
 	bool				m_bRememberActiveWeapon;
 	bool				m_bRespawnOnLoadoutChange;
 	int					m_iActiveWeaponTypePriorToDeath;
-
-	int					m_iReservedPlayerClass;
 
 	CHandle< CTFWeaponBuilder > m_hWeaponBuilder;
 

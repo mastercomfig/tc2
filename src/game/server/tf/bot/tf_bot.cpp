@@ -1220,6 +1220,11 @@ const char *CTFBot::GetNextSpawnClassname( void )
 		iNextClass = (ETFClass)GetClassIndexFromString( pszForceClass );
 	}
 
+	if ( m_iReservedPlayerClass != TF_CLASS_UNDEFINED )
+	{
+		iNextClass = ( ETFClass )m_iReservedPlayerClass;
+	}
+
 	if ( iNextClass == TF_CLASS_UNDEFINED && tf_bot_spawn_use_preset_roster.GetBool() && ( !TFGameRules() || !TFGameRules()->IsInTraining() ))
 	{
 		iNextClass = GetPresetClassToSpawn();
