@@ -418,6 +418,9 @@ void CPlayerDestructionDispenser::Spawn( void )
 	m_takedamage = DAMAGE_NO;
 	m_iUpgradeLevel = 1;
 
+	// TODO(mcoms)
+	//InitializeMapPlacedObject();
+
 	TFGameRules()->OnDispenserBuilt( this );
 }
 

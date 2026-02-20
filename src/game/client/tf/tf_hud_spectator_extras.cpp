@@ -253,7 +253,7 @@ void CTFHudSpectatorExtras::OnTick()
 		{
 			bool bDraw = false;
 			C_BaseObject *pObject = static_cast<C_BaseObject*>( IBaseObjectAutoList::AutoList()[nCount] );
-			if ( !pObject->IsDormant() && !pObject->IsMapPlaced() && !pObject->IsEffectActive( EF_NODRAW ) )
+			if ( !pObject->IsDormant() && !pObject->IsMapPlaced() && !pObject->IsEffectActive( EF_NODRAW ) && pObject->GetBuilder() )
 			{
 				if ( bShowEveryone || ( ( nLocalPlayerTeam >= FIRST_GAME_TEAM ) && ( nLocalPlayerTeam == pObject->GetTeamNumber() ) ) )
 				{
