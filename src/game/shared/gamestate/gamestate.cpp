@@ -92,10 +92,16 @@ public:
 		"getingame"
 	},
 	m_UnprivilegedEvents{
-		"closedmenu"
+		"ingame",
+		"gsi"
 	}
 	{
 		SetName("GameStateHTTPThread");
+	}
+
+	int64_t GetClientId( crow::websocket::connection& conn )
+	{
+		return *static_cast<int64_t*>( conn.userdata() );
 	}
 
 	// Return 0 for success
@@ -122,7 +128,7 @@ public:
 				AUTO_LOCK( m_clientsMutex )
 				int64_t clientId = m_iNextClientId++;
 				*userdata = new int64_t(clientId);
-				if ( m_iPrivilegedClientId == -1 )
+				if ( m_iPrivilegedClientId == 0 )
 				{
 					m_iPrivilegedClientId = clientId;
 				}
@@ -145,8 +151,9 @@ public:
 				int64_t clientId = *userdata;
 				if ( m_iPrivilegedClientId == clientId )
 				{
-					m_iPrivilegedClientId = -1;
+					m_iPrivilegedClientId = 0;
 				}
+				m_SubscribedClientIds.erase( clientId );
 				for ( std::size_t i = 0; i < size; i++ )
 				{
 					if ( *static_cast<int64_t*>( m_connectedClients[i]->userdata() ) == clientId )
@@ -207,16 +214,43 @@ public:
 					Assert( 0 );
 					m_connectedClients.push_back( &conn );
 				}
+				int64_t clientId = GetClientId( conn );
 				if ( !V_strcmp(strCommand.c_str(), "disconnect") )
 				{
 					// immediately send back a message for closing
-					crow::json::wvalue dcResp;
-					dcResp["i"] = id;
-					conn.send_text( dcResp.dump() );
-					m_iPrivilegedClientId = -1;
+					crow::json::wvalue resp;
+					resp["i"] = id;
+					conn.send_text( resp.dump() );
+					m_iPrivilegedClientId = 0;
 					return;
 				}
-				bIsPrivileged = m_iPrivilegedClientId == *static_cast<int64_t*>( conn.userdata() );
+				if ( !V_strcmp( strCommand.c_str(), "subscribe" ) )
+				{
+					// immediately send back a message for subscribing
+					crow::json::wvalue resp;
+					resp["i"] = id;
+					conn.send_text( resp.dump() );
+					if ( m_iPrivilegedClientId != clientId )
+					{
+						m_SubscribedClientIds.insert( clientId );
+					}
+					GetGameStateManager()->InitSubscriptions();
+					return;
+				}
+				if ( !V_strcmp( strCommand.c_str(), "unsubscribe" ) )
+				{
+					// immediately send back a message for unsubscribing
+					crow::json::wvalue resp;
+					resp["i"] = id;
+					conn.send_text( resp.dump() );
+					m_SubscribedClientIds.erase( clientId );
+					if ( m_SubscribedClientIds.size() < 1 )
+					{
+						GetGameStateManager()->StopSubscriptions();
+					}
+					return;
+				}
+				bIsPrivileged = m_iPrivilegedClientId == clientId;
 			}
 
 			std::string params;
@@ -425,8 +459,10 @@ private:
 	std::unordered_set<std::string> m_UnprivilegedMethods;
 	std::unordered_set<std::string> m_UnprivilegedEvents;
 
+	std::unordered_set<int64_t> m_SubscribedClientIds;
+
 	int64_t m_iNextClientId = 1;
-	int64_t m_iPrivilegedClientId = -1;
+	int64_t m_iPrivilegedClientId = 0;
 
 	std::vector<crow::websocket::connection*> m_connectedClients;
 	CThreadMutex m_clientsMutex;
@@ -636,8 +672,17 @@ void CGameStateManager::Shutdown()
 	m_pServerThread = NULL;
 }
 
+void CGameStateManager::FireGameEvent(IGameEvent* event)
+{
+	const char* pszEvent = event->GetName();
+	std::string data = pszEvent;
+	data += " ";
+	KeyValuesDumpAsString( event->GetDataKeys(), &data );
+	QueueEvent( "gsi", data );
+}
+
 void CGameStateManager::RegisterMethod(std::string methodName,
-	const std::function<std::string(const std::string& params)>& method)
+                                       const std::function<std::string(const std::string& params)>& method)
 {
 	if (!m_bInit)
 		return;
@@ -665,4 +710,60 @@ void CGameStateManager::QueueEvent(const std::string& strEvent, const std::strin
 	Assert(m_pServerThread);
 
 	m_pServerThread->QueueEvent(strEvent, strParams);
+}
+
+void CGameStateManager::InitSubscriptions()
+{
+	if ( m_bListeningToEvents )
+		return;
+
+	m_bListeningToEvents = true;
+
+	ListenForGameEvent( "game_newmap" );
+	ListenForGameEvent( "player_connect" );
+	ListenForGameEvent( "player_disconnect" );
+	ListenForGameEvent( "player_changeclass" );
+	ListenForGameEvent( "player_team" );
+	ListenForGameEvent( "player_info" );
+	ListenForGameEvent( "player_death" );
+	ListenForGameEvent( "player_spawn" );
+	ListenForGameEvent( "player_hurt" );
+	ListenForGameEvent( "round_start" );
+	ListenForGameEvent( "round_end" );
+	ListenForGameEvent( "server_spawn" );
+	ListenForGameEvent( "client_disconnect" );
+	ListenForGameEvent( "controlpoint_starttouch" );
+	ListenForGameEvent( "controlpoint_endtouch" );
+	ListenForGameEvent( "ctf_flag_captured" );
+	ListenForGameEvent( "teamplay_broadcast_audio" );
+	ListenForGameEvent( "teamplay_capture_blocked" );
+	ListenForGameEvent( "teamplay_flag_event" );
+	ListenForGameEvent( "teamplay_game_over" );
+	ListenForGameEvent( "teamplay_point_captured" );
+	ListenForGameEvent( "teamplay_round_stalemate" );
+	ListenForGameEvent( "teamplay_round_start" );
+	ListenForGameEvent( "teamplay_round_win" );
+	ListenForGameEvent( "teamplay_timer_time_added" );
+	ListenForGameEvent( "teamplay_update_timer" );
+	ListenForGameEvent( "teamplay_win_panel" );
+	ListenForGameEvent( "teamplay_setup_finished" );
+	ListenForGameEvent( "teamplay_alert" );
+	ListenForGameEvent( "teamplay_teambalanced_player" );
+	ListenForGameEvent( "teamplay_point_startcapture" );
+	ListenForGameEvent( "teamplay_round_active" );
+	ListenForGameEvent( "tf_game_over" );
+	ListenForGameEvent( "object_destroyed" );
+	ListenForGameEvent( "object_detonated" );
+	ListenForGameEvent( "tournament_stateupdate" );
+	ListenForGameEvent( "num_cappers_changed" );
+}
+
+void CGameStateManager::StopSubscriptions()
+{
+	if ( !m_bListeningToEvents )
+		return;
+
+	m_bListeningToEvents = false;
+
+	StopListeningForAllEvents();
 }

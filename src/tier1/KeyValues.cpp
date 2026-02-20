@@ -3281,3 +3281,9 @@ bool CKeyValuesDumpContextAsDevMsg::KvWriteText( char const *szText )
 	}
 	return true;
 }
+
+bool CKeyValuesDumpContextAsString::KvWriteText( char const* szText )
+{
+	m_strBuf->append(szText);
+	return true;
+}

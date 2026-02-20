@@ -22,6 +22,7 @@
 #endif
 #endif
 
+#include <string>
 #include "utlvector.h"
 #include "Color.h"
 
@@ -489,6 +490,24 @@ protected:
 inline bool KeyValuesDumpAsDevMsg( KeyValues *pKeyValues, int nIndentLevel = 0, int nDeveloperLevel = 1 )
 {
 	CKeyValuesDumpContextAsDevMsg ctx( nDeveloperLevel );
+	return pKeyValues->Dump( &ctx, nIndentLevel );
+}
+
+class CKeyValuesDumpContextAsString : public IKeyValuesDumpContextAsText
+{
+public:
+	CKeyValuesDumpContextAsString( std::string* str ) : m_strBuf{ str } {}
+
+public:
+	virtual bool KvWriteText( char const* szText );
+
+protected:
+	std::string* m_strBuf;
+};
+
+inline bool KeyValuesDumpAsString( KeyValues* pKeyValues, std::string* str, int nIndentLevel = 0 )
+{
+	CKeyValuesDumpContextAsString ctx( str );
 	return pKeyValues->Dump( &ctx, nIndentLevel );
 }
 
