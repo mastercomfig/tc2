@@ -316,6 +316,28 @@ CMultiplayRules::CMultiplayRules()
 		}
 	}
 
+	const int iMaxPacketRate = TIME_TO_TICKS( 1 );
+	static ConVarRef sv_mincmdrate( "sv_mincmdrate" );
+	if ( sv_mincmdrate.GetInt() > iMaxPacketRate )
+	{
+		sv_mincmdrate.SetValue( iMaxPacketRate );
+	}
+	static ConVarRef sv_maxcmdrate( "sv_maxcmdrate" );
+	if ( sv_maxcmdrate.GetInt() > iMaxPacketRate )
+	{
+		sv_maxcmdrate.SetValue( iMaxPacketRate );
+	}
+	static ConVarRef sv_minupdaterate( "sv_minupdaterate" );
+	if ( sv_minupdaterate.GetInt() > iMaxPacketRate )
+	{
+		sv_minupdaterate.SetValue( iMaxPacketRate );
+	}
+	static ConVarRef sv_maxupdaterate( "sv_maxupdaterate" );
+	if ( sv_maxupdaterate.GetInt() > iMaxPacketRate )
+	{
+		sv_maxupdaterate.SetValue( iMaxPacketRate );
+	}
+
 	nextlevel.SetValue( "" );
 	LoadMapCycleFile();
 
