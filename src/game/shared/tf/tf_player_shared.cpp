@@ -11024,10 +11024,7 @@ bool CTFPlayer::CanPlayerMove() const
 	else
 	{
 		// also do it for non-matches
-		if ( ( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) <= 3.0f )
-		{
-			bFreezeOnRestart = false;
-		}
+		bFreezeOnRestart = true;
 	}
 
 	return !bFreezeOnRestart;

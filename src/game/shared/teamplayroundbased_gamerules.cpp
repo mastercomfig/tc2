@@ -1694,6 +1694,8 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 				pPlayer->TeamFortress_SetSpeed();
 			}
 		}
+#else
+		m_flStateTransitionTime = gpGlobals->curtime + flTransitionTime;
 #endif // TF_DLL
 	}
 
