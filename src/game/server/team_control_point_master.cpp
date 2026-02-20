@@ -55,7 +55,8 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( team_control_point_master, CTeamControlPointMaster );
 
-ConVar mp_time_between_capscoring( "mp_time_between_capscoring", "30", FCVAR_GAMEDLL, "Delay between scoring of owned capture points.", true, 1, false, 0 );
+// TODO(mcoms): what is this?
+//ConVar mp_time_between_capscoring( "mp_time_between_capscoring", "30", FCVAR_GAMEDLL, "Delay between scoring of owned capture points.", true, 1, false, 0 );
 
 // sort function for the list of control_point_rounds (we're sorting them by priority...highest first)
 int ControlPointRoundSort( CTeamControlPointRound* const *p1, CTeamControlPointRound* const *p2 )

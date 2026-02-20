@@ -337,6 +337,11 @@ CMultiplayRules::CMultiplayRules()
 	{
 		sv_maxupdaterate.SetValue( iMaxPacketRate );
 	}
+	static ConVarRef tv_snapshotrate( "tv_snapshotrate" );
+	if ( tv_snapshotrate.GetInt() > iMaxPacketRate )
+	{
+		tv_snapshotrate.SetValue( iMaxPacketRate );
+	}
 
 	nextlevel.SetValue( "" );
 	LoadMapCycleFile();

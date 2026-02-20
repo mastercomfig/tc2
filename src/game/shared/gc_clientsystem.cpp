@@ -119,7 +119,7 @@ bool CGCClientSystem::BSendMessage( const GCSDK::CProtoBufMsgBase& msg )
 }
 
 #ifdef GAME_DLL
-ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN );
+ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_SERVER_CANNOT_QUERY );
 #endif
 
 //-----------------------------------------------------------------------------

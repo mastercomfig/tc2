@@ -3299,7 +3299,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 	}
 
 	// Team isn't ready if there was nobody on it.
-	return iPlayerReadyCount > 0;
+	return iPlayerReadyCount > mp_tournament_readymode_team_size.GetInt();
 }
 
 //-----------------------------------------------------------------------------
@@ -19243,9 +19243,9 @@ int CTFGameRules::GetBonusRoundTime( bool bGameOver /* = false*/ )
 	{
 		return 5;
 	}
-	if ( IsCompetitiveGame() && bGameOver )
+	if ( IsCompetitiveGame() )
 	{
-		return 5;
+		return bGameOver ? 5 : 10;
 	}
 
 	return BaseClass::GetBonusRoundTime( bGameOver );
