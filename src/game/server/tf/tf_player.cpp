@@ -20817,7 +20817,7 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 	criteriaSet.AppendCriteria( "RoundsPlayed", UTIL_VarArgs( "%d", TFGameRules()->GetRoundsPlayed() ) );
 
 	// Is this a 6v6 match?
-	bool bIsComp6v6 = ( TFGameRules() && TFGameRules()->GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Ladder_6v6 );
+	bool bIsComp6v6 = ( TFGameRules() && ( TFGameRules()->GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Ladder_6v6 || TFGameRules()->IsInSixesMode() ) );
 	criteriaSet.AppendCriteria( "IsComp6v6", bIsComp6v6 ? "1" : "0" );
 
 	bool bIsCompWinner = m_Shared.InCond( TF_COND_COMPETITIVE_WINNER );
@@ -23825,7 +23825,7 @@ void CTFPlayer::PlayReadySound( void )
 			{
 				pszFormat = "%s.ReadyMvM";
 			}
-			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
+			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() || TFGameRules()->IsCompetitiveGame() )
 			{
 				pszFormat = "%s.ReadyComp";
 			}
