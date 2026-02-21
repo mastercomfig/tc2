@@ -7261,7 +7261,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		float flCenter = 0.5f;
 		float flMin = flCenter - flRandomDamageSpread;
 		float flMax = flCenter + flRandomDamageSpread;
-		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
+		const bool bNoDamageSpread = tf_damage_disablespread.GetBool() || IsCompetitiveGame() || ( pTFAttacker && pTFAttacker->m_Shared.GetCarryingRuneType() == RUNE_PRECISION );
 		const bool bHasDistanceMod = bitsDamage & DMG_USEDISTANCEMOD;
 		const bool bIsSniperRifle = pWeapon && WeaponID_IsSniperRifle( pWeapon->GetWeaponID() ) && bitsDamage & DMG_BULLET;
 		const bool bApplySpreadToRampup = IsBetaActive() ? ( bNoDamageSpread && !bHasDistanceMod && ( bIsSniperRifle || pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_GRENADELAUNCHER ) ) : false;
