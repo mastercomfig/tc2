@@ -32,6 +32,8 @@
 
 extern ConVar cl_mute_all_comms;
 
+ConVar tf_hud_ping_sound("tf_hud_ping_sound", "1", FCVAR_ARCHIVE, "Play ping sound when player pings");
+
 DECLARE_HUDELEMENT_DEPTH( CTFAnnotationsPanel, 1 );
 
 static const float LIFE_TIME = 1.0f;
@@ -309,7 +311,7 @@ void CTFAnnotationsPanel::AddAnnotation( IGameEvent * event )
 
 		if ( pCallout->IsVisible() )
 		{
-			if ( pSound )
+			if ( pSound && tf_hud_ping_sound.GetBool() )
 			{
 				vgui::surface()->PlaySound( pSound );
 			}
