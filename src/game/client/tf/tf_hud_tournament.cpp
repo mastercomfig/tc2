@@ -273,14 +273,17 @@ void CHudTournament::PreparePanel( void )
 	if ( TFGameRules()->IsInPreMatch() )
 	{
 		bool bCountdownVisible = false;
+		bool bMatch = TFGameRules()->IsEmulatingMatch();
 		bool bAutoReady = TFGameRules()->IsEmulatingMatch() == 1;
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatchDesc )
 		{
+			bMatch = true;
 			bAutoReady = pMatchDesc->BUsesAutoReady();
 		}
 
-		if ( !bAutoReady && ( TFGameRules()->IsWaitingForTeams() || TFGameRules()->GetRoundRestartTime() < 0 ) )
+		// TODO(mcoms): is this the right fix? IsWaitingForTeams needs some work for non-matches...
+		if ( !bAutoReady && ( ( bMatch && TFGameRules()->IsWaitingForTeams() ) || TFGameRules()->GetRoundRestartTime() < 0 ) )
 		{
 			if ( m_bReadyStatusMode )
 			{
