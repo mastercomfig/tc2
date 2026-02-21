@@ -2289,6 +2289,11 @@ bool CTFGameRules::IsBetaActive( void ) const
 
 bool CTFGameRules::IsPreRoundPushEnabled( void )
 {
+	if ( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) )
+	{
+		return false;
+	}
+
 	if ( tf_preround_push_from_damage_enable.GetBool() )
 	{
 		return true;
@@ -5905,6 +5910,8 @@ void CTFGameRules::SpawnMatchBots( void )
 	}
 }
 
+ConVar mp_roundtime_override( "mp_roundtime_override", "0", FCVAR_NONE );
+
 //-----------------------------------------------------------------------------
 // Purpose: Called when a new round is off and running
 //-----------------------------------------------------------------------------
@@ -6004,7 +6011,16 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		}
 	}
 
-	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
+	CTeamRoundTimer* pRoundTimer = GetActiveRoundTimer();
+	const bool bSetup = pRoundTimer && pRoundTimer->GetSetupTimeLength() > 0;
+	if ( pRoundTimer && !bSetup && mp_roundtime_override.GetInt() > 0 )
+	{
+		variant_t sVariant;
+		sVariant.SetInt( mp_roundtime_override.GetInt() );
+		pRoundTimer->AcceptInput( "SetMaxTime", NULL, NULL, sVariant, 0 );
+	}
+
+	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && !bSetup )
 	{
 		// Announcer VO
 		if ( ( TFTeamMgr()->GetTeam( TF_TEAM_BLUE )->GetScore() == ( mp_winlimit.GetInt() - 1 ) ) &&
