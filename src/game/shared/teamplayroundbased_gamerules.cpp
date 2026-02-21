@@ -244,6 +244,9 @@ ConVar mp_winlimit( "mp_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Max sc
 #endif // GAME_DLL
 	);
 
+ConVar mp_timelimit_added_winlimit( "mp_timelimit_added_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Added to current highest team score to set a new winlimit when time runs out.", true, 0, false, 0 );
+
+
 ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "0 - Enable respawn times, 1 - Instant respawn but keep freeze time, 2 - Instant respawn without freeze time, 3 - Instant respawn with cancelable freeze time" );
 ConVar mp_bonusroundtime( "mp_bonusroundtime", "15", FCVAR_REPLICATED, "Time after round win until round restarts", true, 5, true, 15 );
 ConVar mp_stalemate_meleeonly( "mp_stalemate_meleeonly", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Restrict everyone to melee weapons only while in Sudden Death." );
@@ -1272,6 +1275,32 @@ bool CTeamplayRoundBasedRules::CheckTimeLimit( bool bAllowEnd /*= true*/ )
 
 		if ( GetTimeLeft() <= 0 || m_bChangelevelAfterStalemate || bSwitchDueToTime )
 		{
+			if ( mp_timelimit_added_winlimit.GetInt() > 0 )
+			{
+				int nHighestScore = 0;
+				for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+				{
+					CTeam *pTeam = GetGlobalTeam( i );
+					if ( pTeam && pTeam->GetScore() > nHighestScore )
+					{
+						nHighestScore = pTeam->GetScore();
+					}
+				}
+
+				int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
+				mp_winlimit.SetValue( nHighestScore + nAddedWinLimit );
+
+				mp_timelimit.SetValue( 0 ); // Disable the time limit so it doesn't trigger again
+
+				char strMessage[128];
+				Q_snprintf( strMessage, sizeof( strMessage ), "Time limit reached! First team to %d wins the match!", mp_winlimit.GetInt() );
+
+				UTIL_ClientPrintAll( HUD_PRINTCENTER, strMessage );
+				UTIL_ClientPrintAll( HUD_PRINTTALK, strMessage );
+
+				return false;
+			}
+
 			if ( bAllowEnd )
 			{
 				IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_game_over" );
@@ -1901,48 +1930,75 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	// See if we're coming up to the server timelimit, in which case force a stalemate immediately.
 	if ( mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && GetTimeLeft() <= 0 )
 	{
-		if ( m_bAllowStalemateAtTimelimit || ( mp_match_end_at_timelimit.GetBool() && !IsValveMap() ) )
+		if ( mp_timelimit_added_winlimit.GetInt() > 0 )
 		{
-			int iDrawScoreCheck = -1;
-			int iWinningTeam = 0;
-			bool bTeamsAreDrawn = true;
-			for ( int i = FIRST_GAME_TEAM; (i < GetNumberOfTeams()) && bTeamsAreDrawn; i++ )
+			int nHighestScore = 0;
+			for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
 			{
-				int iTeamScore = GetGlobalTeam(i)->GetScore();
-
-				if ( iTeamScore > iDrawScoreCheck )
+				CTeam *pTeam = GetGlobalTeam( i );
+				if ( pTeam && pTeam->GetScore() > nHighestScore )
 				{
-					iWinningTeam = i;
+					nHighestScore = pTeam->GetScore();
+				}
+			}
+
+			int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
+			mp_winlimit.SetValue( nHighestScore + nAddedWinLimit );
+
+			mp_timelimit.SetValue( 0 ); // Disable the time limit so it doesn't trigger again
+
+			char strMessage[128];
+			Q_snprintf( strMessage, sizeof( strMessage ), "Time limit reached! First team to %d wins the match!", mp_winlimit.GetInt() );
+
+			UTIL_ClientPrintAll( HUD_PRINTCENTER, strMessage );
+			UTIL_ClientPrintAll( HUD_PRINTTALK, strMessage );
+		}
+		else
+		{
+			const int iUserSetting = mp_match_end_at_timelimit.GetInt();
+			if ( ( m_bAllowStalemateAtTimelimit || iUserSetting == 1 ) && iUserSetting != -1 )
+			{
+				int iDrawScoreCheck = -1;
+				int iWinningTeam = 0;
+				bool bTeamsAreDrawn = true;
+				for ( int i = FIRST_GAME_TEAM; (i < GetNumberOfTeams()) && bTeamsAreDrawn; i++ )
+				{
+					int iTeamScore = GetGlobalTeam(i)->GetScore();
+
+					if ( iTeamScore > iDrawScoreCheck )
+					{
+						iWinningTeam = i;
+					}
+
+					if ( iTeamScore != iDrawScoreCheck )
+					{
+						if ( iDrawScoreCheck == -1 )
+						{
+							iDrawScoreCheck = iTeamScore;
+						}
+						else
+						{
+							bTeamsAreDrawn = false;
+						}
+					}
 				}
 
-				if ( iTeamScore != iDrawScoreCheck )
+				if ( bTeamsAreDrawn )
 				{
-					if ( iDrawScoreCheck == -1 )
+					if ( CanGoToStalemate() )
 					{
-						iDrawScoreCheck = iTeamScore;
+						m_bChangelevelAfterStalemate = true;
+						SetStalemate( STALEMATE_SERVER_TIMELIMIT, m_bForceMapReset );
 					}
 					else
 					{
-						bTeamsAreDrawn = false;
+						SetOvertime( true );
 					}
-				}
-			}
-
-			if ( bTeamsAreDrawn )
-			{
-				if ( CanGoToStalemate() )
-				{
-					m_bChangelevelAfterStalemate = true;
-					SetStalemate( STALEMATE_SERVER_TIMELIMIT, m_bForceMapReset );
 				}
 				else
 				{
-					SetOvertime( true );
+					SetWinningTeam( iWinningTeam, WINREASON_TIMELIMIT, true, false, true );
 				}
-			}
-			else
-			{
-				SetWinningTeam( iWinningTeam, WINREASON_TIMELIMIT, true, false, true );
 			}
 		}
 	}
@@ -2905,7 +2961,8 @@ void CTeamplayRoundBasedRules::CreateTimeLimitTimer( void )
 
 	// this is the same check we use in State_Think_RND_RUNNING()
 	// don't show the timelimit timer if we're not going to end the map when it runs out
-	bool bAllowStalemate = ( m_bAllowStalemateAtTimelimit || ( mp_match_end_at_timelimit.GetBool() && !IsValveMap() ) );
+	const int iUserSetting = mp_match_end_at_timelimit.GetInt();
+	bool bAllowStalemate = ( m_bAllowStalemateAtTimelimit || iUserSetting == 1 ) && iUserSetting != -1;
 	if ( !bAllowStalemate )
 		return;
 
