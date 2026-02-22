@@ -791,7 +791,7 @@ void CHudTournament::PerformLayout( void )
 		}
 	}
 
-	bool bShowTournamentConditions = TFGameRules() && !TFGameRules()->IsCompetitiveGame();
+	bool bShowTournamentConditions = TFGameRules() && TFGameRules()->IsCompetitiveGame();
 
 	// Hide some elements when in competitive mode
 	if ( m_pTournamentConditionLabel )
