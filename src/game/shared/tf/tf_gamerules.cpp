@@ -22462,7 +22462,7 @@ void CTFGameRules::BetweenRounds_Think( void )
 		const bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) );
 
 		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
-		if ( bStartFinalCountdown && !m_bAwaitingReadyRestart && !IsEmulatingMatch() && !pMatch )
+		if ( bStartFinalCountdown && m_bAwaitingReadyRestart && !IsEmulatingMatch() && !pMatch )
 		{
 			// if we aren't in a match, this flag isn't managed until now.
 			m_bAwaitingReadyRestart = false;
