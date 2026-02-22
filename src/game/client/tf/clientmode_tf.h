@@ -92,6 +92,8 @@ public:
 	bool IsSpyDisguiseVisible() const;
 	bool IsUpgradePanelVisible() const;
 	bool IsTauntSelectPanelVisible() const;
+	
+	void OnConnectStateChanged();
 
 	void UpdateSteamRichPresence() const;
 	// Given a client state, match group loc token and pretty map name, build a localized status line.
@@ -141,17 +143,22 @@ private:
 
 	bool m_bInitializedHudAspect;
 
-	enum EConnectState {
+	enum EConnectState
+	{
+		k_eConnectState_Uninitialized,
 		k_eConnectState_Disconnected,
 		k_eConnectState_Connecting,
 		k_eConnectState_Connected,
 	};
-	EConnectState			m_eConnectState           = k_eConnectState_Disconnected;
+	EConnectState			m_eConnectState				= k_eConnectState_Disconnected;
+	EConnectState			m_eLastConnectState			= k_eConnectState_Uninitialized;
 	// Valid only when m_eConnectState >= k_eConnectState_Connected
 	// This is the base name of a map, and doesn't include workshop decorations/path/etc.
 	char					m_szMapBaseName[MAX_MAP_NAME] = { 0 };
 
 	float					m_flNextAllowedHighFiveHintTime;
+
+	float					m_flCurMaxFPS = -1.0f;
 
 	// When game events should trigger updates, we want to let all other systems think first (e.g. partyclient) as their
 	// state is looked at by the update loop.  Setting this triggers an update on next think.

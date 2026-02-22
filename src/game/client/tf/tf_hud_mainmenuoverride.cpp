@@ -192,10 +192,6 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_flPlayMusicTime = -1.0f;
 	m_iPlayMusicFrame = 0;
 
-	m_bInGame = false;
-	m_bIsConnectedOnly = true; // start true so we go to false
-	m_flCurMaxFPS = -1.0f;
-
 	m_iCharacterImageIdx = -1;
 
 	m_pCharacterModelPanel = NULL;
@@ -350,19 +346,23 @@ void CHudMainMenuOverride::OnTick()
 	{
 		if ( m_pMainMenuWebUi )
 		{
-			const bool bShouldWebUiShow = bInGame ? enginevgui->IsGameUIVisible() : !bIsConnected;
+			const bool bShouldWebUiShow = ( bInGame && !bBackgroundLevel ) ? enginevgui->IsGameUIVisible() : ( !bIsConnected || bBackgroundLevel );
+
+			if ( GetGameStateManager()->IsReady() )
+			{
+				m_pMainMenuWebUi->LoadInteractivePanel();
+			}
 
 			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
 			{
-				if ( !bShouldWebUiShow )
+				if ( GetGameStateManager()->IsReady() )
 				{
-					GetGameStateManager()->QueueEvent( "closedmenu", "" );
+					if ( !bShouldWebUiShow )
+					{
+						GetGameStateManager()->QueueEvent( "closedmenu", "" );
+					}
+					m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
 				}
-				else if ( GetGameStateManager()->IsReady() )
-				{
-					m_pMainMenuWebUi->LoadInteractivePanel();
-				}
-				m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
 			}
 		}
 	}
@@ -377,8 +377,6 @@ void CHudMainMenuOverride::OnTick()
 			engine->ExecuteClientCmd( CFmtStr( "connect %s -%s\n", szConnectAdr, "ConnectStringOnCommandline" ) );
 		}
 	}
-
-
 }
 
 //-----------------------------------------------------------------------------
@@ -1446,47 +1444,6 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 				m_pMainMenuWebUi->SetVisible( true );
 			}
 		}
-	}
-
-	static ConVarRef fps_max("fps_max");
-	static ConVarRef ui_fps_max("ui_fps_max");
-	if ( m_bInGame != ( bInGame && bIsConnected ) )
-	{
-		m_bInGame = bInGame;
-		GetGameStateManager()->QueueEvent( "ingame", m_bInGame ? "1" : "0" );
-		
-		if ( m_bInGame )
-		{
-			// after loading, restore it.
-			fps_max.SetValue( m_flCurMaxFPS >= 0.0f ? m_flCurMaxFPS : 1000.0f );
-			m_flCurMaxFPS = -1.0f;
-		}
-	}
-
-	if ( m_bIsConnectedOnly != ( !bInGame && bIsConnected ) )
-	{
-		m_bIsConnectedOnly = ( !bInGame && bIsConnected );
-		if ( m_bIsConnectedOnly )
-		{
-			if ( m_flCurMaxFPS < 0.0f )
-			{
-				m_flCurMaxFPS = fps_max.GetFloat();
-			}
-			// while loading, keep it at our lowest
-			fps_max.SetValue( 30.0f );
-		}
-		// TODO(mcoms): ui_fps_max
-#if 0
-		else
-		{
-			if ( m_flCurMaxFPS < 0.0f )
-			{
-				m_flCurMaxFPS = fps_max.GetFloat();
-			}
-			// if not in game, set fps_max to UI mode.
-			fps_max.SetValue( ui_fps_max.GetFloat() );
-		}
-#endif
 	}
 
 	// Position the entries

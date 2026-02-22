@@ -212,6 +212,7 @@ public:
 				{
 					// should never happen.
 					Assert( 0 );
+					DevMsg( "connected clients empty!\n" );
 					m_connectedClients.push_back( &conn );
 				}
 				int64_t clientId = GetClientId( conn );
@@ -220,6 +221,7 @@ public:
 					// immediately send back a message for closing
 					crow::json::wvalue resp;
 					resp["i"] = id;
+					DevMsg( "ack: disconnect\n" );
 					conn.send_text( resp.dump() );
 					m_iPrivilegedClientId = 0;
 					return;
@@ -229,6 +231,7 @@ public:
 					// immediately send back a message for subscribing
 					crow::json::wvalue resp;
 					resp["i"] = id;
+					DevMsg( "ack: subscribe\n" );
 					conn.send_text( resp.dump() );
 					if ( m_iPrivilegedClientId != clientId )
 					{
@@ -242,6 +245,7 @@ public:
 					// immediately send back a message for unsubscribing
 					crow::json::wvalue resp;
 					resp["i"] = id;
+					DevMsg( "ack: unsubscribe\n" );
 					conn.send_text( resp.dump() );
 					m_SubscribedClientIds.erase( clientId );
 					if ( m_SubscribedClientIds.size() < 1 )
@@ -310,6 +314,7 @@ public:
 					{
 						if ( conn )
 						{
+							DevMsg( "ret(%d): %s\n", pReturn->m_iRpcId, pReturn->m_strValue );
 							conn->send_text( data.dump() );
 						}
 					}
@@ -343,6 +348,7 @@ public:
 							int64_t clientId = GetClientId( *conn );
 							if ( ( bUnprivileged || m_iPrivilegedClientId == clientId ) && ( !bNeedsSubscription || m_SubscribedClientIds.find(clientId) != m_SubscribedClientIds.end() ) )
 							{
+								DevMsg( "send: %s(%s)\n", pEvent->m_strEvent.c_str(), pEvent->m_strParams.c_str() );
 								conn->send_text( data.dump() );
 							}
 						}

@@ -78,6 +78,7 @@
 #include "client_virtualreality.h"
 
 #include "econ_gcmessages.h"
+#include "gamestate/gamestate.h"
 
 #if defined( _X360 )
 #include "tf_clientscoreboard.h"
@@ -395,6 +396,7 @@ ClientModeTFNormal::ClientModeTFNormal()
 	m_bInitializedHudAspect = false;
 
 	m_flLastSlaughterTime = -1.0f;
+	m_flCurMaxFPS = -1.0f;
 
 #if defined( _X360 )
 	m_pScoreboard = NULL;
@@ -1544,8 +1546,13 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 	{
 		m_eConnectState = k_eConnectState_Connecting;
 		m_bPendingRichPresenceUpdate = true;
+		// TODO(mcoms): test out always restricting info panel
+#if 0
 		const char *pchSource = event->GetString( "source" );
 		m_bRestrictInfoPanel = pchSource && ( FStrEq( "matchmaking", pchSource ) || !Q_strncmp( pchSource, "quickplay_", 10 ) );
+#else
+		m_bRestrictInfoPanel = true;
+#endif
 
 		m_bInfoPanelShown = false;
 	}
@@ -1977,6 +1984,12 @@ void ClientModeTFNormal::Update()
 		UpdateSteamRichPresence();
 	}
 
+	if ( m_eLastConnectState != m_eConnectState )
+	{
+		OnConnectStateChanged();
+		m_eLastConnectState = m_eConnectState;
+	}
+
 	TFModalStack()->Update();
 
 	NotificationQueue_Update();
@@ -2207,6 +2220,47 @@ bool ClientModeTFNormal::IsUpgradePanelVisible() const
 bool ClientModeTFNormal::IsTauntSelectPanelVisible() const
 {
 	return m_pMenuTauntSelection && m_pMenuTauntSelection->IsVisible();
+}
+
+//----------------------------------------------------------------------------
+void ClientModeTFNormal::OnConnectStateChanged()
+{
+	static ConVarRef fps_max( "fps_max" );
+	static ConVarRef ui_fps_max( "ui_fps_max" );
+
+	switch ( m_eConnectState )
+	{
+		case k_eConnectState_Connecting:
+		{
+			if ( m_flCurMaxFPS < 0.0f )
+			{
+				m_flCurMaxFPS = fps_max.GetFloat();
+			}
+			// while loading, keep it at our lowest
+			fps_max.SetValue( 30.0f );
+			break;
+		}
+		case k_eConnectState_Connected:
+		{
+			// after loading, restore it.
+			Assert( m_flCurMaxFPS >= 0.0f );
+			fps_max.SetValue( m_flCurMaxFPS >= 0.0f ? m_flCurMaxFPS : 1000.0f );
+			m_flCurMaxFPS = -1.0f;
+			break;
+		}
+		default:
+		{
+			if ( m_flCurMaxFPS < 0.0f )
+			{
+				m_flCurMaxFPS = fps_max.GetFloat();
+			}
+			// if not in game, set fps_max to UI mode.
+			fps_max.SetValue( ui_fps_max.GetFloat() );
+			break;
+		}
+	}
+
+	GetGameStateManager()->QueueEvent( "ingame", m_eConnectState == k_eConnectState_Connected ? "1" : "0" );
 }
 
 //----------------------------------------------------------------------------
