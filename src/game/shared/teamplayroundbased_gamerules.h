@@ -364,6 +364,7 @@ public:
 	virtual bool IsValveMap( void ){ return false; }
 
 	virtual		void RestartTournament( void );
+	virtual		void FullRestartTournament( void );
 
 	virtual		bool TournamentModeCanEndWithTimelimit( void ){ return true; }
 

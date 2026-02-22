@@ -146,7 +146,7 @@ bool CTFAutobalance::AreTeamsUnbalanced()
 			return false;
 		}
 	}
-	else if ( eState != GR_STATE_RND_RUNNING )
+	else if ( eState != GR_STATE_RND_RUNNING || TFGameRules()->IsInWaitingForPlayers() )
 	{
 		// don't bother switching teams if the round isn't running
 		return false;

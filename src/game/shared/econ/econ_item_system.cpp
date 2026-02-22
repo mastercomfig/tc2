@@ -138,7 +138,11 @@ void CEconItemSystem::Shutdown( void )
 extern ConVar mp_tournament;
 
 #ifdef GAME_DLL
-ConVar mp_tournament_whitelist( "mp_tournament_whitelist", "item_whitelist.txt", FCVAR_NONE, "Specifies the item whitelist file to use." );
+void CC_WhitelistChanged( IConVar* var, const char* pOld, float flOldValue )
+{
+	ItemSystem()->ReloadWhitelist();
+}
+ConVar mp_tournament_whitelist( "mp_tournament_whitelist", "item_whitelist.txt", FCVAR_NONE, "Specifies the item whitelist file to use.", CC_WhitelistChanged );
 #endif
 
 //-----------------------------------------------------------------------------

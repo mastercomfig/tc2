@@ -466,7 +466,7 @@ CTeamplayRoundBasedRules::CTeamplayRoundBasedRules( void )
 	}
 
 	m_flStopWatchTotalTime = -1.0f;
-	m_bAllowBetweenRounds = true;
+	SetAllowBetweenRounds( true );
 
 	m_iRoundState.Set( GR_STATE_INIT );
 	m_bInOvertime.Set( false );
@@ -863,12 +863,12 @@ void CTeamplayRoundBasedRules::CheckChatForReadySignal( CBasePlayer *pPlayer, co
 {
 	if ( IsInTournamentMode() == false )
 	{	
-		if( m_bAwaitingReadyRestart && FStrEq( chatmsg, mp_clan_ready_signal.GetString() ) )
+		if( IsWaitingForTeams() && FStrEq( chatmsg, mp_clan_ready_signal.GetString() ) )
 		{
 			int iTeam = pPlayer->GetTeamNumber();
 			if ( iTeam > LAST_SHARED_TEAM && iTeam < GetNumberOfTeams() )
 			{
-				m_bTeamReady.Set( iTeam, true );
+				SetTeamReadyState( true, iTeam );
 
 				IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_team_ready" );
 				if ( event )
@@ -1059,7 +1059,7 @@ void CTeamplayRoundBasedRules::CheckWaitingForPlayers( void )
 
 		// only exit the waitingforplayers if the time is up, and we are not in a round
 		// restart countdown already, and we are not waiting for a ready restart
-		if( gpGlobals->curtime > m_flWaitingForPlayersTimeEnds && m_flRestartRoundTime < 0 && !m_bAwaitingReadyRestart )
+		if( gpGlobals->curtime > m_flWaitingForPlayersTimeEnds && m_flRestartRoundTime < 0 && !IsWaitingForTeams() )
 		{
 			m_flRestartRoundTime.Set( gpGlobals->curtime );	// reset asap
 			m_flRestartRoundStartTime.Set( -1.0f );
@@ -1116,7 +1116,7 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 
 		for ( int i = LAST_SHARED_TEAM+1; i < GetNumberOfTeams(); i++ )
 		{
-			m_bTeamReady.Set( i, false );
+			SetTeamReadyState( false, i );
 		}
 
 		const char *pszReadyString = mp_clan_ready_signal.GetString();
@@ -1674,7 +1674,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 	else if ( TFGameRules() && TFGameRules()->UsePlayerReadyStatusMode() && m_bAllowBetweenRounds )
 	{
 		State_Transition( GR_STATE_BETWEEN_RNDS );
-		m_bAllowBetweenRounds = false;
+		SetAllowBetweenRounds( false );
 
 		if ( TFGameRules()->IsMannVsMachineMode() )
 		{
@@ -1841,7 +1841,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 				if ( g_pPopulationManager && TFObjectiveResource()->GetMannVsMachineIsBetweenWaves() )
 				{
 					g_pPopulationManager->StartCurrentWave();
-					m_bAllowBetweenRounds = true;
+					SetAllowBetweenRounds( true );
 					return;
 				}
 			}
@@ -1866,7 +1866,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 		State_Transition( GR_STATE_RESTART );
 	}
 
-	bool bProcessReadyRestart = m_bAwaitingReadyRestart;
+	bool bProcessReadyRestart = IsWaitingForTeams();
 
 #ifdef TF_DLL
 	bProcessReadyRestart &= TFGameRules() && !TFGameRules()->UsePlayerReadyStatusMode();
@@ -1878,7 +1878,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 		bool bTeamNotReady = false;
 		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
 		{
-			if ( !m_bTeamReady[i] )
+			if ( !IsTeamReady( i ) )
 			{
 				bTeamNotReady = true;
 				break;
@@ -1926,6 +1926,14 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 
 	// check round restart
 	CheckReadyRestart();
+
+#ifdef TF_DLL
+	// if we just entered player ready status mode but we're stuck in round running, then let's fix that.
+	if ( !TFGameRules()->IsMannVsMachineMode() && IsInTournamentMode() && TFGameRules()->UsePlayerReadyStatusMode() && m_bAllowBetweenRounds )
+	{
+		State_Transition( GR_STATE_PREROUND );
+	}
+#endif
 
 	// See if we're coming up to the server timelimit, in which case force a stalemate immediately.
 	if ( mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && GetTimeLeft() <= 0 )
@@ -2743,14 +2751,14 @@ void CC_CH_TournamentRestart( void )
 	}
 
 #ifdef TF_DLL
-	if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
+	if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() ) )
 		return;
 #endif // TF_DLL
 
 	CTeamplayRoundBasedRules *pRules = dynamic_cast<CTeamplayRoundBasedRules*>( GameRules() );
 	if ( pRules )
 	{
-		pRules->RestartTournament();
+		pRules->FullRestartTournament();
 	}
 }
 static ConCommand mp_tournament_restart("mp_tournament_restart", CC_CH_TournamentRestart, "Restart Tournament Mode on the current level."  );
@@ -2771,13 +2779,22 @@ void CTeamplayRoundBasedRules::RestartTournament( void )
 
 	for ( int i = 0; i < MAX_TEAMS; i++ )
 	{
-		m_bTeamReady.Set( i, false );
+		SetTeamReadyState( false, i );
 	}
 
 	for ( int i = 0; i < MAX_PLAYERS; i++ )
 	{
 		m_bPlayerReady.Set( i, false );
 	}
+}
+
+void CTeamplayRoundBasedRules::FullRestartTournament( void )
+{
+	if ( IsInTournamentMode() == false )
+		return;
+	
+	g_fGameOver = false;
+	RestartTournament();
 }
 
 #endif
@@ -2915,7 +2932,7 @@ void CTeamplayRoundBasedRules::ResetPlayerAndTeamReadyState( void )
 {
 	for ( int i = 0; i < MAX_TEAMS; i++ )
 	{
-		m_bTeamReady.Set( i, false );
+		SetTeamReadyState( false, i );
 	}
 
 	for ( int i = 0; i < MAX_PLAYERS; i++ )
@@ -3984,7 +4001,7 @@ bool CTeamplayRoundBasedRules::IsAllTalkActive()
 		return false;
 	}
 
-	if ( State_Get() == GR_STATE_STARTGAME || State_Get() == GR_STATE_PREROUND || State_Get() == GR_STATE_RND_RUNNING )
+	if ( State_Get() == GR_STATE_STARTGAME || State_Get() == GR_STATE_PREROUND || ( State_Get() == GR_STATE_RND_RUNNING && !TFGameRules()->IsInWaitingForPlayers() ) )
 	{
 		return false;
 	}

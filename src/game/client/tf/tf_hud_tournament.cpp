@@ -273,17 +273,14 @@ void CHudTournament::PreparePanel( void )
 	if ( TFGameRules()->IsInPreMatch() )
 	{
 		bool bCountdownVisible = false;
-		bool bMatch = TFGameRules()->IsEmulatingMatch();
 		bool bAutoReady = TFGameRules()->IsEmulatingMatch() == 1;
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 		if ( pMatchDesc )
 		{
-			bMatch = true;
 			bAutoReady = pMatchDesc->BUsesAutoReady();
 		}
 
-		// TODO(mcoms): is this the right fix? IsWaitingForTeams needs some work for non-matches...
-		if ( !bAutoReady && ( ( bMatch && TFGameRules()->IsWaitingForTeams() ) || TFGameRules()->GetRoundRestartTime() < 0 ) )
+		if ( !bAutoReady && ( TFGameRules()->IsWaitingForTeams() || TFGameRules()->GetRoundRestartTime() < 0 ) )
 		{
 			if ( m_bReadyStatusMode )
 			{
@@ -610,18 +607,19 @@ void CHudTournament::OnTick( void )
 				m_bShouldBeVisible = false;
 			}
 
+			bool bNeedsInvalidate = false;
 			if ( TFGameRules()->UsePlayerReadyStatusMode() )
 			{
 				if ( !m_bReadyStatusMode )
 				{
 					m_bReadyStatusMode = true;
-					InvalidateLayout( false, true );
+					bNeedsInvalidate = true;
 				}
 			}
 			else if ( m_bReadyStatusMode )
 			{
 				m_bReadyStatusMode = false;
-				InvalidateLayout( false, true );
+				bNeedsInvalidate = true;
 			}
 
 			if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
@@ -629,12 +627,17 @@ void CHudTournament::OnTick( void )
 				if ( !m_bCompetitiveMode )
 				{
 					m_bCompetitiveMode = true;
-					InvalidateLayout( false, true );
+					bNeedsInvalidate = true;
 				}
 			}
 			else if ( m_bCompetitiveMode )
 			{
 				m_bCompetitiveMode = false;
+				bNeedsInvalidate = true;
+			}
+
+			if ( bNeedsInvalidate )
+			{
 				InvalidateLayout( false, true );
 			}
 		}
@@ -1162,7 +1165,7 @@ bool CHudTournamentSetup::ToggleState( ButtonCode_t code )
 				Q_snprintf ( szTeamName, sizeof( szTeamName ), "tournament_teamname %s", szText );
 				engine->ClientCmd_Unrestricted( szTeamName );
 
-				m_flNextThink = gpGlobals->curtime + TOURNAMENT_PANEL_UPDATE_INTERVAL;
+				m_flNextThink = gpGlobals->curtime;
 			}
 
 			DisableInput();
@@ -1219,7 +1222,7 @@ void CHudTournamentSetup::OnTick( void )
 				{
 					SetVisible( true );
 				}
-				SetPos( 0, YRES( -100 ) ); // make sure the panel is WAY off the screen for MvM mode
+				SetPos( 0, YRES( -100 ) ); // make sure the panel is WAY off the screen for player ready status
 			}
 			else
 			{

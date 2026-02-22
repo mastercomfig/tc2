@@ -1845,6 +1845,7 @@ void CControlPointCountdown::OnTick( void )
 
 	if ( TeamplayRoundBasedRules() ) 
 	{
+		// TODO(mcoms): does this need IsInPlay?
 		if ( TeamplayRoundBasedRules()->IsInWaitingForPlayers() || TeamplayRoundBasedRules()->State_Get() != GR_STATE_RND_RUNNING )
 		{
 			return;

@@ -6223,7 +6223,7 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 	}
 
 	// TODO(mcoms): how to prevent out of bounds?
-	if ( TFGameRules() && TFGameRules()->IsInPreMatchTournamentWarmup() && GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( TFGameRules() && GetTeamNumber() >= FIRST_GAME_TEAM && TFGameRules()->IsInPreMatchTournamentWarmup() )
 	{
 		CTeamControlPointMaster* pMaster = (g_hControlPointMasters.Count()) ? g_hControlPointMasters[0] : NULL;
 		bool bPLR = tf_gamemode_payload.GetBool() && TFGameRules()->HasMultipleTrains();

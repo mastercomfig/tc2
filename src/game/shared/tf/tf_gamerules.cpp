@@ -854,7 +854,7 @@ ConVar mp_tournament_stopwatch( "mp_tournament_stopwatch", "1", FCVAR_REPLICATED
 #endif
 );
 ConVar mp_tournament_readymode( "mp_tournament_readymode", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable per-player ready status for tournament mode." );
-ConVar mp_tournament_readymode_min( "mp_tournament_readymode_min", "2", FCVAR_REPLICATED | FCVAR_NOTIFY, "Minimum number of players required on the server before players can toggle ready status." );
+ConVar mp_tournament_readymode_min( "mp_tournament_readymode_min", "2", FCVAR_REPLICATED | FCVAR_NOTIFY, "Minimum number of players required in teams before players can toggle ready status." );
 ConVar mp_tournament_readymode_team_size( "mp_tournament_readymode_team_size", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Minimum number of players required to be ready per-team before the game can begin." );
 #ifdef GAME_DLL
 ConVar mp_tournament_prevent_team_switch_on_readyup( "mp_tournament_prevent_team_switch_on_readyup", "1", FCVAR_NONE, "Prevent switching teams on ready-up for subsequent rounds in tournament mode." );
@@ -2731,8 +2731,11 @@ void CTFGameRules::EndCompetitiveMatch( void )
 	// Prepare for next match
 	g_fGameOver = false;
 	if ( !IsCommunityGameMode() )
-		m_bAllowBetweenRounds = true;
+		SetAllowBetweenRounds( true );
+	// trick restart into doing a full map cleanup.
+	SetInWaitingForPlayers( true );
 	State_Transition( GR_STATE_RESTART );
+	// restore our waiting for players state.
 	SetInWaitingForPlayers( true );
 }
 
@@ -3191,6 +3194,9 @@ bool CTFGameRules::PlayerReadyStatus_HaveMinPlayersToEnable( void )
 		if ( playerVector[i]->IsReplay() )
 			continue;
 
+		if ( playerVector[i]->GetTeamNumber() < FIRST_GAME_TEAM )
+			continue;
+
 		nNumPlayers++;
 	}
 
@@ -3198,23 +3204,24 @@ bool CTFGameRules::PlayerReadyStatus_HaveMinPlayersToEnable( void )
 	int nMinPlayers = 1;
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 
-	if ( pMatch && !pMatch->BMatchTerminated() && pMatchDesc->BRequiresCompleteMatches() )
+	if ( engine->IsDedicatedServer() || ( !engine->IsDedicatedServer() && nNumPlayers > 1 ) )
 	{
-		nMinPlayers = pMatch->GetCanonicalMatchSize();
-	}
-	else if ( IsMannVsMachineMode() &&
-	          ( engine->IsDedicatedServer() || ( !engine->IsDedicatedServer() && nNumPlayers > 1 ) ) )
-	{
-		nMinPlayers = tf_mvm_min_players_to_start.GetInt();
-	}
-	else if ( UsePlayerReadyStatusMode() && engine->IsDedicatedServer() )
-	{
-		nMinPlayers = mp_tournament_readymode_min.GetInt();
+		if ( pMatch && !pMatch->BMatchTerminated() && pMatchDesc->BRequiresCompleteMatches() )
+		{
+			nMinPlayers = pMatch->GetCanonicalMatchSize();
+		}
+		else if ( IsMannVsMachineMode() )
+		{
+			nMinPlayers = tf_mvm_min_players_to_start.GetInt();
+		}
+		else if ( UsePlayerReadyStatusMode() )
+		{
+			nMinPlayers = mp_tournament_readymode_min.GetInt();
+		}
 	}
 
 	// Should be renamed to m_bEnableReady, not sure why we encoded our criteria in the names of all associated functions and variables...
 	m_bHaveMinPlayersToEnableReady.Set( nNumPlayers >= nMinPlayers );
-
 #endif
 
 	return m_bHaveMinPlayersToEnableReady;
@@ -3312,30 +3319,45 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 //-----------------------------------------------------------------------------
 bool CTFGameRules::PlayerReadyStatus_ShouldStartCountdown( void )
 {
-	if ( IsMannVsMachineMode() )
+	if ( !UsePlayerReadyStatusMode() )
 	{
-		if ( !IsTeamReady( TF_TEAM_PVE_DEFENDERS ) && m_flRestartRoundTime - gpGlobals->curtime > TOURNAMENT_NOCANCEL_TIME )
-		{
-			bool bIsTeamReady = PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_PVE_DEFENDERS );
-			if ( bIsTeamReady )
-			{
-				SetTeamReadyState( true, TF_TEAM_PVE_DEFENDERS );
-				return true;
-			}
-		}
+		return false;
 	}
-	else if ( UsePlayerReadyStatusMode() &&
-	          PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_RED ) &&
-	          PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_BLUE ) )
-	{
-		return true;
-	}
-	else if ( IsTeamReady( TF_TEAM_RED ) && IsTeamReady( TF_TEAM_BLUE ) )
+
+	if ( IsTeamReady( TF_TEAM_RED ) && IsTeamReady( TF_TEAM_BLUE ) )
 	{
 		return true;
 	}
 
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFGameRules::PlayerReadyStatus_UpdateTeamStatus( void )
+{
+	if ( !UsePlayerReadyStatusMode() )
+	{
+		return;
+	}
+
+	// the reverse is handled elsewhere.
+	if ( !IsTeamReady( TF_TEAM_RED ) && PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_RED ) )
+	{
+		SetTeamReadyState( true, TF_TEAM_RED );
+	}
+
+	// don't need to do BLU for MvM.
+	if ( IsMannVsMachineMode() )
+	{
+		return;
+	}
+
+	if ( !IsTeamReady( TF_TEAM_BLUE ) && PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_BLUE ) )
+	{
+		SetTeamReadyState( true, TF_TEAM_BLUE );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3394,7 +3416,7 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 	if ( !bState )
 	{
 		// Slam team status to Not Ready for any player that sets Not Ready
-		m_bTeamReady.Set( pTFPlayer->GetTeamNumber(), false );
+		SetTeamReadyState( false, pTFPlayer->GetTeamNumber() );
 
 		// If everyone cancels ready state, stop the clock
 		bool bAnyoneReady = false;
@@ -3437,6 +3459,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 	}
 	else
 	{
+		// see if the team is ready.
+		PlayerReadyStatus_UpdateTeamStatus();
 		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
 		if ( IsMannVsMachineMode() || IsCompetitiveMode() || IsEmulatingMatch() )
 		{
@@ -3561,7 +3585,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 				}
 			}
 		}
-		else if ( !pMatch && !UsePlayerReadyStatusMode() )
+#if 0
+		else if ( !pMatch )
 		{
 			// Unofficial modes set team ready state here
 			int nRed = 0;
@@ -3607,9 +3632,10 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 			int nRedMin = ( mp_tournament_readymode_team_size.GetInt() > 0 ) ? mp_tournament_readymode_team_size.GetInt() : Max( nRedCount, 1 );
 			int nBlueMin = ( mp_tournament_readymode_team_size.GetInt() > 0 ) ? mp_tournament_readymode_team_size.GetInt() : Max( nBlueCount, 1 );
 
-			SetTeamReadyState( ( nRed == nRedMin ), TF_TEAM_RED );
-			SetTeamReadyState( ( nBlue == nBlueMin ), TF_TEAM_BLUE );
+			SetTeamReadyState( ( nRed >= nRedMin ), TF_TEAM_RED );
+			SetTeamReadyState( ( nBlue >= nBlueMin ), TF_TEAM_BLUE );
 		}
+#endif
 
 		m_bPlayerReadyBefore[nEntIndex] = true;
 	}
@@ -4147,15 +4173,68 @@ int CTFGameRules::GetRespawnTimeMode()
 	return BaseClass::GetRespawnTimeMode();
 }
 
+bool CTFGameRules::IsInPlay()
+{
+	if ( ShowMatchSummary() )
+	{
+		return false;
+	}
+
+	if ( State_Get() == GR_STATE_RND_RUNNING )
+	{
+		if ( IsInPreMatch() )
+		{
+			return false;
+		}
+		return true;
+	}
+
+	if ( State_Get() == GR_STATE_PREROUND )
+	{
+		// we're about to enter ready status mode.
+#ifdef GAME_DLL
+		if ( UsePlayerReadyStatusMode() && m_bAllowBetweenRounds )
+		{
+			return false;
+		}
+#endif
+		if ( IsInPreMatch() )
+		{
+			return false;
+		}
+		return true;
+	}
+
+	if ( State_Get() == GR_STATE_BETWEEN_RNDS )
+	{
+#ifdef GAME_DLL
+		const bool bInCountdown = PlayerReadyStatus_ShouldStartCountdown() || BInMatchStartCountdown();
+#else
+		const bool bInCountdown = BInMatchStartCountdown();
+#endif
+		if ( bInCountdown )
+		{
+			return true;
+		}
+		return false;
+	}
+
+	// pregame means we have no active players
+	// startgame is a transitionary state where we don't know if we'll be in play or not. this depends on various game state / waiting for players.
+	// init means the game hasn't even been initialized yet
+	// restart is a transitionary state like startgame
+	// gameover means play is over
+	if ( State_Get() == GR_STATE_PREGAME || State_Get() == GR_STATE_STARTGAME || State_Get() == GR_STATE_INIT || State_Get() == GR_STATE_RESTART )
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool CTFGameRules::IsInPreMatchTournamentWarmup()
 {
-	const bool bValidPreSpawnState = State_Get() == GR_STATE_PREGAME || IsInPreMatch();
-#ifdef GAME_DLL
-	const bool bInCountdown = PlayerReadyStatus_ShouldStartCountdown() || BInMatchStartCountdown();
-#else
-	const bool bInCountdown = BInMatchStartCountdown();
-#endif
-	if ( tf_tournament_prematch_warmup.GetBool() && bValidPreSpawnState && !bInCountdown && !ShowMatchSummary() && IsCompetitiveGame() )
+	if ( tf_tournament_prematch_warmup.GetBool() && !IsInPlay() && IsCompetitiveGame() )
 	{
 		return true;
 	}
@@ -4398,8 +4477,11 @@ void CTFGameRules::KickPlayersNewMatchIDRequestFailed()
 	// Prepare for next match
 	g_fGameOver = false;
 	if ( !IsCommunityGameMode() )
-		m_bAllowBetweenRounds = true;
+		SetAllowBetweenRounds( true );
+	// trick restart into doing a full map cleanup.
+	SetInWaitingForPlayers( true );
 	State_Transition( GR_STATE_RESTART );
+	// restore our waiting for players state.
 	SetInWaitingForPlayers( true );
 }
 
@@ -5003,12 +5085,6 @@ void CTFGameRules::Activate()
 		pMatchDesc->InitGameRulesSettings();
 	}
 
-	if (IsEmulatingMatch())
-	{
-		if (!TFGameRules()->IsCommunityGameMode())
-			TFGameRules()->SetAllowBetweenRounds(true);
-	}
-
 	CLogicMannPower *pLogicMannPower = dynamic_cast< CLogicMannPower* > ( gEntList.FindEntityByClassname( NULL, "tf_logic_mannpower" ) );
 	tf_powerup_mode.SetValue( pLogicMannPower ? 1 : 0 );
 
@@ -5019,12 +5095,18 @@ void CTFGameRules::Activate()
 
 	if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && IsCustomGameMode() )
 	{
-		m_bAwaitingReadyRestart.Set( false );
+		m_bAwaitingReadyRestart = false;
 		tf_gamemode_community.SetValue( 1 );
 		tf_gamemode_misc.SetValue( 1 );
 		mp_tournament.SetValue( false );
 		mp_tournament_readymode.SetValue( false );
 		SetAllowBetweenRounds( false );
+	}
+
+	if ( IsEmulatingMatch() )
+	{
+		if ( !IsCommunityGameMode() )
+			SetAllowBetweenRounds( true );
 	}
 }
 
@@ -5558,6 +5640,9 @@ static ConCommand mp_reload_whitelist("mp_reload_whitelist", CC_CH_ReloadWhiteLi
 //-----------------------------------------------------------------------------
 void CTFGameRules::RestartTournament( void )
 {
+	if ( IsInTournamentMode() == false )
+		return;
+
 	BaseClass::RestartTournament();
 
 	if ( GetStopWatchTimer() )
@@ -5580,6 +5665,38 @@ void CTFGameRules::RestartTournament( void )
 	ItemSystem()->ReloadWhitelist();
 
 	ResetPlayerAndTeamReadyState();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFGameRules::FullRestartTournament( void )
+{
+	if ( IsInTournamentMode() == false )
+		return;
+
+	CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
+	if ( pMatch || IsEmulatingMatch() )
+	{
+		ResetManagedMatch();
+		MatchSummaryEnd();
+	}
+	
+	// this also calls RestartTournament
+	BaseClass::FullRestartTournament();
+
+	if ( UsePlayerReadyStatusMode() )
+	{
+		PlayerReadyStatus_ResetState();
+	}
+	
+	if ( !IsCommunityGameMode() )
+		SetAllowBetweenRounds( true );
+
+	// we set waiting for player in the base class, now restart will do a map cleanup.
+	State_Transition( GR_STATE_RESTART );
+	// trick restart into doing a full map cleanup.
+	SetInWaitingForPlayers( true );
 }
 
 //-----------------------------------------------------------------------------
@@ -9084,7 +9201,7 @@ void CTFGameRules::Think()
 					}
 					
 					if ( !IsCommunityGameMode() )
-						m_bAllowBetweenRounds = true;
+						SetAllowBetweenRounds( true );
 
 					if ( !g_bRandomMap )
 						return;
@@ -9099,8 +9216,11 @@ void CTFGameRules::Think()
 					}
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
-						m_bAllowBetweenRounds = true;
+						SetAllowBetweenRounds( true );
+					// trick restart into doing a full map cleanup.
+					SetInWaitingForPlayers( true );
 					State_Transition( GR_STATE_RESTART );
+					// restore our waiting for players state.
 					SetInWaitingForPlayers( true );
 					return;
 				}
@@ -14457,7 +14577,7 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 				else
 				{
 					// If we're currently in a countdown we should cancel it
-					if ( ( m_flRestartRoundTime > 0 ) || ( mp_restartgame.GetInt() > 0 ) )
+					if ( ( m_flRestartRoundTime > 0 && m_flRestartRoundTime - gpGlobals->curtime > TOURNAMENT_NOCANCEL_TIME ) || ( mp_restartgame.GetInt() > 0 ) )
 					{
 						PlayerReadyStatus_ResetState();
 					}
@@ -15351,7 +15471,7 @@ bool CTFGameRules::IsFirstBloodAllowed( void )
 	if ( IsInArenaMode() && tf_arena_first_blood.GetBool() )
 		return true;
 
-	if ( IsCompetitiveGame() && ( State_Get() == GR_STATE_RND_RUNNING ) && tf_tournament_firstblood.GetBool() )
+	if ( IsCompetitiveGame() && IsInPlay() && tf_tournament_firstblood.GetBool() )
 	{
 		return true;
 	}
@@ -22335,8 +22455,18 @@ void CTFGameRules::BetweenRounds_Think( void )
 {
 	if ( UsePlayerReadyStatusMode() )
 	{
+		// recalculate ready status in our think
+		PlayerReadyStatus_UpdateTeamStatus();
+
 		// Everyone is ready, or the drop-dead timer naturally ticked down to countdown
-		bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) );
+		const bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) );
+
+		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
+		if ( bStartFinalCountdown && !m_bAwaitingReadyRestart && !IsEmulatingMatch() && !pMatch )
+		{
+			// if we aren't in a match, this flag isn't managed until now.
+			m_bAwaitingReadyRestart = false;
+		}
 
 		// It's the FINAL COUNTDOOOWWWNNnnnnnnnnn
 		float flDropDeadTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;

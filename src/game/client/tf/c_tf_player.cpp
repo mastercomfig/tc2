@@ -11691,7 +11691,7 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 				pLocalPlayer &&
 				pLocalPlayer == this &&
 				TFGameRules() &&
-				TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
+				TFGameRules()->IsInPlay() )
 			{
 				CBaseHudChat *pHudChat = (CBaseHudChat*)GET_HUDELEMENT( CHudChat );
 				if ( pHudChat )

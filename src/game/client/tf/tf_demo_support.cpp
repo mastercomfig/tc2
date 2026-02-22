@@ -176,7 +176,7 @@ void CTFDemoSupport::Update( float frametime )
 
 				const float flRestartTime = TFGameRules()->GetRoundRestartTime();
 				const bool bInCountdown = flRestartTime > 0.0f && flRestartTime - gpGlobals->curtime <= 7.5f;
-				if ( !bInCountdown && TFGameRules()->State_Get() != GR_STATE_PREROUND && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
+				if ( !bInCountdown && !TFGameRules()->IsInPlay() )
 					return;
 			}
 

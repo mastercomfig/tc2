@@ -579,7 +579,7 @@ void CTFClientScoreBoardDialog::OnCommand( const char *command )
 					// Prevent large UI popup during a match
 					if ( pTarget->GetTeamNumber() >= FIRST_GAME_TEAM )
 					{
-						if ( TFGameRules() && TFGameRules()->UsePlayerReadyStatusMode() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING )
+						if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !TFGameRules()->IsInWaitingForPlayers() )
 							return;
 					}
 
@@ -741,7 +741,7 @@ void CTFClientScoreBoardDialog::OnScoreBoardMouseRightRelease( void )
 	m_pRightClickMenu->SetFont( scheme()->GetIScheme( GetScheme() )->GetFont( pszContextMenuFont, true ) );
 
 	bool bFakeClient = ( g_TF_PR->IsFakePlayer( playerIndex ) );
-	bool bTournamentGame = ( g_TF_PR->GetTeam( playerIndex ) >= FIRST_GAME_TEAM && TFGameRules() && TFGameRules()->UsePlayerReadyStatusMode() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING );
+	bool bTournamentGame = ( g_TF_PR->GetTeam( playerIndex ) >= FIRST_GAME_TEAM && TFGameRules() && TFGameRules()->IsCompetitiveGame() && TFGameRules()->State_Get() == GR_STATE_RND_RUNNING && !TFGameRules()->IsInWaitingForPlayers() );
 
 	MenuBuilder contextMenuBuilder( m_pRightClickMenu, this );
 

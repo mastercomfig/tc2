@@ -354,6 +354,7 @@ public:
 	virtual float	GetRespawnWaveMaxLength( int iTeam, bool bScaleWithNumPlayers = true );
 	virtual int     GetRespawnTimeMode() override;
 
+	bool			IsInPlay();
 	bool			IsInPreMatchTournamentWarmup();
 
 	// Damage Queries.
@@ -733,6 +734,7 @@ bool IsCreepWaveMode( void ) const;
 #ifdef GAME_DLL
 	bool PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam );
 	bool PlayerReadyStatus_ShouldStartCountdown( void );
+	void PlayerReadyStatus_UpdateTeamStatus( void );
 	void PlayerReadyStatus_ResetState( void );
 	void PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bool bState );
 #endif // GAME_DLL
@@ -1013,6 +1015,7 @@ bool IsCreepWaveMode( void ) const;
 	void	StopWatchModeThink( void );
 
 	virtual		void RestartTournament( void );
+	virtual		void FullRestartTournament( void );
 
 	bool	TFVoiceManager( CBasePlayer *pListener, CBasePlayer *pTalker );
 
