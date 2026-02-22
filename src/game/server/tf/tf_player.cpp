@@ -15153,7 +15153,7 @@ void CTFPlayer::StateThinkDYING( void )
 	const float flTravelTime = iRespawnTimeMode >= 2 ? 0.01f : spec_freeze_traveltime.GetFloat();
 	const float flFreezeTime = iRespawnTimeMode == 2 ? 0.0f : spec_freeze_time.GetFloat();
 	const float flTimeInFreeze = flTravelTime + flFreezeTime;
-	const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.01f : TF_DEATH_ANIMATION_TIME;
+	const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.5f : TF_DEATH_ANIMATION_TIME;
 	float flFreezeEnd = ( m_flDeathTime + flDeathAnimTime + flTimeInFreeze );
 
 	if ( !m_bPlayedFreezeCamSound && iRespawnTimeMode == 2 )
@@ -15287,7 +15287,7 @@ void CTFPlayer::AttemptToExitFreezeCam( void )
 	const int iRespawnTimeMode = TFGameRules()->GetRespawnTimeMode();
 	if ( iRespawnTimeMode <= 2 )
 	{
-		const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.01f : TF_DEATH_ANIMATION_TIME;
+		const float flDeathAnimTime = iRespawnTimeMode >= 2 ? 0.5f : TF_DEATH_ANIMATION_TIME;
 		const float flTravelTime = iRespawnTimeMode >= 2 ? 0.01f : spec_freeze_traveltime.GetFloat();
 		const float flFreezeExitTime = ( m_flDeathTime + flDeathAnimTime ) + ( iRespawnTimeMode >= 2 ? flTravelTime : flTravelTime + 0.5f );
 		if ( gpGlobals->curtime < flFreezeExitTime )
@@ -17988,7 +17988,8 @@ void CTFPlayer::ValidateCurrentObserverTarget( void )
 			}
 
 			// Once we're past the pause after death, find a new target
-			if ( (player->GetDeathTime() + DEATH_ANIMATION_TIME ) < gpGlobals->curtime )
+			const float flDeathAnimTime = TFGameRules()->GetRespawnTimeMode() >= 2 ? 0.5f : TF_DEATH_ANIMATION_TIME;
+			if ( ( player->GetDeathTime() + flDeathAnimTime ) < gpGlobals->curtime )
 			{
 				FindInitialObserverTarget();
 			}

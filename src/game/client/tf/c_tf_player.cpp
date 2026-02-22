@@ -7473,7 +7473,7 @@ void C_TFPlayer::CalcDeathCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	C_BaseAnimating *pKillerAnimating = killer ? killer->GetBaseAnimating() : NULL;
 
 	// Swing to face our killer within half the death anim time
-	const float flSwingTime = TFGameRules()->GetRespawnTimeMode() >= 2 ? 0.005f : TF_DEATH_ANIMATION_TIME * 0.5f;
+	const float flSwingTime = TFGameRules()->GetRespawnTimeMode() >= 2 ? 0.25f : TF_DEATH_ANIMATION_TIME * 0.5f;
 	float interpolation = ( gpGlobals->curtime - m_flDeathTime ) / flSwingTime;
 	interpolation = clamp( interpolation, 0.0f, 1.0f );
 	interpolation = SimpleSpline( interpolation );

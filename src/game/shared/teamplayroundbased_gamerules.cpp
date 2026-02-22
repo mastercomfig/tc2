@@ -663,7 +663,7 @@ float CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlay
 	//		and
 	// b) death anim length + freeze panel length
 
-	const float flDeathAnimLength = GetRespawnTimeMode() >= 2 ? 0.02f : ( TF_DEATH_ANIMATION_TIME + spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
+	const float flDeathAnimLength = GetRespawnTimeMode() >= 2 ? 0.51f : ( TF_DEATH_ANIMATION_TIME + spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
 	float fMinDelay = flDeathAnimLength;
 
 	if ( !ShouldRespawnQuickly( pPlayer ) )
