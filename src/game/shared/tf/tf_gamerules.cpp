@@ -23281,6 +23281,13 @@ void CTFGameRules::MatchSummaryEnd( void )
 		// note: this resets view offset.
 		// TODO(mcoms): we might need to do better, gamemovement state machine?
 		pPlayer->RefreshCollisionBounds();
+		
+		CTFPlayer* pTFPlayer = ToTFPlayer( pPlayer );
+		if ( !pTFPlayer )
+			continue;
+
+		pTFPlayer->m_Shared.RemoveCond( TF_COND_COMPETITIVE_WINNER );
+		pTFPlayer->m_Shared.RemoveCond( TF_COND_COMPETITIVE_LOSER );
 	}
 
 	// reset bot convars here
