@@ -27,6 +27,7 @@ public:
 	Vector m_vecOrigin;
 	Vector m_vecNormal;
 	int m_nEntIndex;
+	int m_nBloodCount;
 };
 
 // Singleton to fire TEMuzzleFlash objects
@@ -42,6 +43,7 @@ CTETFBlood::CTETFBlood( const char *name ) :
 	m_vecOrigin.Init();
 	m_vecNormal.Init();
 	m_nEntIndex = 0;
+	m_nBloodCount = 1;
 }
 
 IMPLEMENT_SERVERCLASS_ST( CTETFBlood, DT_TETFBlood )
@@ -50,14 +52,16 @@ IMPLEMENT_SERVERCLASS_ST( CTETFBlood, DT_TETFBlood )
 	SendPropFloat( SENDINFO_NOCHECK( m_vecOrigin[2] ), -1, SPROP_COORD_MP_INTEGRAL ),
 	SendPropVector( SENDINFO_NOCHECK( m_vecNormal ), 6, 0, -1.0f, 1.0f ),
 	SendPropInt( SENDINFO_NAME( m_nEntIndex, entindex ), MAX_EDICT_BITS, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO_NOCHECK( m_nBloodCount ), 5, SPROP_UNSIGNED ),
 END_SEND_TABLE()
 
 void TE_TFBlood( IRecipientFilter& filter, float delay,
-				const Vector &origin, const Vector &normal, int nEntIndex )
+				const Vector &origin, const Vector &normal, int nEntIndex, int nBloodCount )
 {
 	g_TETFBlood.m_vecOrigin		= origin;
 	g_TETFBlood.m_vecNormal		= normal;
 	g_TETFBlood.m_nEntIndex		= nEntIndex;
+	g_TETFBlood.m_nBloodCount   = nBloodCount;
 
 	// Send it over the wire
 	g_TETFBlood.Create( filter, delay );

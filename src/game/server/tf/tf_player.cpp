@@ -11973,7 +11973,8 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		else
 		{
 			CPVSFilter filter( vDamagePos );
-			TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex() );
+			int nBloodCount = RoundFloatToNearestInt(RemapValClamped(realDamage, 10.0f, 120.0f, 1, 5));
+			TE_TFBlood( filter, 0.0, vDamagePos, -vecDir, entindex(), nBloodCount );
 		}
 	}
 

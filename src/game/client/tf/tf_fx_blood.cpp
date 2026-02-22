@@ -23,10 +23,68 @@
 #include "c_basetempentity.h"
 #include "tier0/vprof.h"
 
+void TFBloodSpraySpawnBloodSpray( Vector vecOrigin, Vector vecNormal, QAngle vecAngles, C_TFPlayer* pPlayer )
+{
+	// Now throw out a spray away from the view
+	// Get the distance to the view
+	Vector vecLoc = vecOrigin;
+	vecLoc.x += random->RandomFloat( -1, 1 );
+	vecLoc.y += random->RandomFloat( -1, 1 );
+	vecLoc.z += random->RandomFloat( 0, 1 );
+	float flDistance = ( vecLoc - MainViewOrigin() ).Length();
+	float flLODDistance = 0.25 * ( flDistance / 512 );
+
+	Vector right, up;
+	if ( vecNormal != Vector( 0, 0, 1 ) )
+	{
+		right = vecNormal.Cross( Vector( 0, 0, 1 ) );
+		up = right.Cross( vecNormal );
+	}
+	else
+	{
+		right = Vector( 0, 0, 1 );
+		up = right.Cross( vecNormal );
+	}
+
+	// If the normal's too close to being along the view, push it out
+	Vector vecForward, vecRight;
+	AngleVectors( MainViewAngles(), &vecForward, &vecRight, NULL );
+	float flDot = DotProduct( vecNormal, vecForward );
+	if ( fabs( flDot ) > 0.5 )
+	{
+		float flPush = random->RandomFloat( 0.5, 1.5 ) + flLODDistance;
+		float flRightDot = DotProduct( vecNormal, vecRight );
+
+		// If we're up close, randomly move it around. If we're at a distance, always push it to the side
+		// Up close, this can move it back towards the view, but the random chance still looks better
+		if ( ( flDistance >= 512 && flRightDot > 0 ) || ( flDistance < 512 && RandomFloat( 0, 1 ) > 0.5 ) )
+		{
+			// Turn it to the right
+			vecNormal += ( vecRight * flPush );
+		}
+		else
+		{
+			// Turn it to the left
+			vecNormal -= ( vecRight * flPush );
+		}
+	}
+
+	VectorAngles( vecNormal, vecAngles );
+
+	if ( flDistance < 400 )
+	{
+		DispatchParticleEffect( UTIL_IsLowViolence() ? "lowV_blood_spray_red_01" : "blood_spray_red_01", vecLoc, vecAngles, pPlayer );
+	}
+	else
+	{
+		DispatchParticleEffect( UTIL_IsLowViolence() ? "lowV_blood_spray_red_01_far" : "blood_spray_red_01_far", vecLoc, vecAngles, pPlayer );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Intercepts the blood spray message.
 //-----------------------------------------------------------------------------
-void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, ClientEntityHandle_t hEntity )
+void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, ClientEntityHandle_t hEntity, int nBloodCount )
 {
 	QAngle	vecAngles;
 	VectorAngles( -vecNormal, vecAngles );
@@ -48,7 +106,7 @@ void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, ClientEntityHandl
 	}
 #endif
 	 
-	if ( !bUnderwater && TFGameRules() && TFGameRules()->IsBirthday() && RandomFloat(0,1) < 0.2 )
+	if ( !bUnderwater && TFGameRules() && TFGameRules()->IsBirthday() && RandomFloat(0,1) < 0.2f )
 	{
 		DispatchParticleEffect( "bday_blood", vecOrigin, vecAngles, pPlayer );
 	}
@@ -60,66 +118,25 @@ void TFBloodSprayCallback( Vector vecOrigin, Vector vecNormal, ClientEntityHandl
 	{
 		DispatchParticleEffect( bUnderwater ? "lowV_water_blood_impact_red_01" : "lowV_blood_impact_red_01", vecOrigin, vecAngles, pPlayer );
 	}
-	else 
+	else
 	{
-		DispatchParticleEffect( bUnderwater ? "water_blood_impact_red_01" : "blood_impact_red_01", vecOrigin, vecAngles, pPlayer );
+		while ( nBloodCount --> 0 )
+		{
+			// TODO(mcoms): amplify randomness with blood count
+			Vector vecLoc = vecOrigin;
+			vecLoc.x += random->RandomFloat( -1, 1 );
+			vecLoc.y += random->RandomFloat( -1, 1 );
+			vecLoc.z += random->RandomFloat( 0, 1 );
+			DispatchParticleEffect( bUnderwater ? "water_blood_impact_red_01" : "blood_impact_red_01", vecLoc, vecAngles, pPlayer );
+		}
 	}
 
 	// if underwater, don't add additional spray
 	if ( bUnderwater )
 		return;
 
-	// Now throw out a spray away from the view
-	// Get the distance to the view
-	float flDistance = (vecOrigin - MainViewOrigin()).Length();
-	float flLODDistance = 0.25 * (flDistance / 512);
-
-	Vector right, up;
-	if (vecNormal != Vector(0, 0, 1) )
-	{
-		right = vecNormal.Cross( Vector(0, 0, 1) );
-		up = right.Cross( vecNormal );
-	}
-	else
-	{
-		right = Vector(0, 0, 1);
-		up = right.Cross( vecNormal );
-	}
-
-	// If the normal's too close to being along the view, push it out
-	Vector vecForward, vecRight;
-	AngleVectors( MainViewAngles(), &vecForward, &vecRight, NULL );
-	float flDot = DotProduct( vecNormal, vecForward );
-	if ( fabs(flDot) > 0.5 )
-	{
-		float flPush = random->RandomFloat(0.5, 1.5) + flLODDistance;
-		float flRightDot = DotProduct( vecNormal, vecRight );
-
-		// If we're up close, randomly move it around. If we're at a distance, always push it to the side
-		// Up close, this can move it back towards the view, but the random chance still looks better
-		if ( ( flDistance >= 512 && flRightDot > 0 ) || ( flDistance < 512 && RandomFloat(0,1) > 0.5 ) )
-		{
-			// Turn it to the right
-			vecNormal += (vecRight * flPush);
-		}
-		else
-		{
-			// Turn it to the left
-			vecNormal -= (vecRight * flPush);
-		}
-	}
-
-	VectorAngles( vecNormal, vecAngles );
-
-	if ( flDistance < 400 )
-	{
-
-		DispatchParticleEffect( UTIL_IsLowViolence() ? "lowV_blood_spray_red_01" : "blood_spray_red_01", vecOrigin, vecAngles, pPlayer );
-	}
-	else
-	{
-		DispatchParticleEffect( UTIL_IsLowViolence() ? "lowV_blood_spray_red_01_far" : "blood_spray_red_01_far", vecOrigin, vecAngles, pPlayer );
-	}
+	// TODO(mcoms): add count here too
+		TFBloodSpraySpawnBloodSpray( vecOrigin, vecNormal, vecAngles, pPlayer );
 }
 
 //-----------------------------------------------------------------------------
@@ -138,8 +155,9 @@ public:
 
 public:
 	Vector		m_vecOrigin;
-	Vector		m_vecNormal;
+	Vector      m_vecNormal;
 	ClientEntityHandle_t m_hEntity;
+	int         m_nBloodCount;
 };
 
 //-----------------------------------------------------------------------------
@@ -150,6 +168,7 @@ C_TETFBlood::C_TETFBlood( void )
 	m_vecOrigin.Init();
 	m_vecNormal.Init();
 	m_hEntity = INVALID_EHANDLE;
+	m_nBloodCount = 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -159,7 +178,7 @@ void C_TETFBlood::PostDataUpdate( DataUpdateType_t updateType )
 {
 	VPROF( "C_TETFBlood::PostDataUpdate" );
 
-	TFBloodSprayCallback( m_vecOrigin, m_vecNormal, m_hEntity );
+	TFBloodSprayCallback( m_vecOrigin, m_vecNormal, m_hEntity, m_nBloodCount );
 }
 
 static void RecvProxy_BloodEntIndex( const CRecvProxyData *pData, void *pStruct, void *pOut )
@@ -174,6 +193,7 @@ IMPLEMENT_CLIENTCLASS_EVENT_DT(C_TETFBlood, DT_TETFBlood, CTETFBlood)
 	RecvPropFloat( RECVINFO( m_vecOrigin[2] ) ),
 	RecvPropVector( RECVINFO(m_vecNormal)),
 	RecvPropInt( "entindex", 0, SIZEOF_IGNORE, 0, RecvProxy_BloodEntIndex ),
+	RecvPropInt( RECVINFO( m_nBloodCount ) ),
 END_RECV_TABLE()
 
 
