@@ -753,6 +753,7 @@ public:
 		// Setup search filters
 		CUtlVector<MatchMakingKeyValuePair_t> vecServerFilters;
 		AddFilter( vecServerFilters, "gamedir", COM_GetModDirectory() );
+		AddFilter( vecServerFilters, "version_match", engine->GetProductVersionString() );
 		if ( GetUniverse() == k_EUniversePublic )
 		{
 			AddFilter( vecServerFilters, "secure", "1" );
