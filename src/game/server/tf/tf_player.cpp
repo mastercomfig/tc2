@@ -12754,7 +12754,11 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		}
 
 		// Siphon some health
-		m_iHealth += 75.0f;
+		int iHealthToAdd = 75;
+		int iBaseMaxHealth = GetMaxHealth() * 1.5f;
+		int iNewHealth = Min( GetHealth() + iHealthToAdd, iBaseMaxHealth );
+		int iDeltaHealth = Max( iNewHealth - GetHealth(), 0 );
+		m_iHealth += iDeltaHealth;
 
 		// Maybe refill charges...
 		m_Shared.SetDemomanChargeMeter( 100.f );
