@@ -23278,6 +23278,9 @@ void CTFGameRules::MatchSummaryEnd( void )
 		pPlayer->RemoveFlag( FL_FROZEN );
 		pPlayer->SetViewEntity( NULL );
 		pPlayer->SetFOV( pPlayer, 0 );
+		// note: this resets view offset.
+		// TODO(mcoms): we might need to do better, gamemovement state machine?
+		pPlayer->RefreshCollisionBounds();
 	}
 
 	// reset bot convars here

@@ -5065,6 +5065,7 @@ void CBasePlayer::InitialSpawn( void )
 {
 	m_iConnected = PlayerConnected;
 	gamestats->Event_PlayerConnected( this );
+	SetViewEntity( NULL );
 }
 
 //-----------------------------------------------------------------------------
