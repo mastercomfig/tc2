@@ -984,8 +984,8 @@
 
 		if_readymode
 		{
-			"xpos"			"300"
-			"ypos"			"130"
+			"xpos"			"cs-0.5"
+			"ypos"			"150"
 		}
 	}
 
