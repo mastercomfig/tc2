@@ -1928,10 +1928,22 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	CheckReadyRestart();
 
 #ifdef TF_DLL
-	// if we just entered player ready status mode but we're stuck in round running, then let's fix that.
-	if ( !TFGameRules()->IsMannVsMachineMode() && IsInTournamentMode() && TFGameRules()->UsePlayerReadyStatusMode() && m_bAllowBetweenRounds )
+	if ( !TFGameRules()->IsMannVsMachineMode() && IsInTournamentMode() && !TFGameRules()->IsCommunityGameMode() )
 	{
-		State_Transition( GR_STATE_PREROUND );
+		if ( TFGameRules()->UsePlayerReadyStatusMode() )
+		{
+			// if we just entered player ready status mode but we're stuck in round running, then let's fix that.
+			if ( m_bAllowBetweenRounds )
+			{
+				m_bAwaitingReadyRestart = true;
+				State_Transition( GR_STATE_PREROUND );
+			}
+		}
+		// if we entered tournament mode but we're stuck without waiting for teams, then let's fix that.
+		else if ( IsInWaitingForPlayers() && GetRoundRestartTime() <= 0 && mp_restartround.GetInt() <= 0 && mp_restartgame.GetInt() <= 0 && !mp_restartgame_immediate.GetBool() && !m_bAwaitingReadyRestart )
+		{
+			m_bAwaitingReadyRestart = true;
+		}
 	}
 #endif
 
