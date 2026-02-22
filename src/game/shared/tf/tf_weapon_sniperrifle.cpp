@@ -1896,7 +1896,26 @@ void CTFSniperRifleClassic::HandleZooms( void )
 		}
 	}
 
-	if ( ( pPlayer->m_nButtons & IN_ATTACK2 ) && ( m_flNextSecondaryAttack <= gpGlobals->curtime ) )
+	bool bShouldZoom = false;
+	if ( m_flNextSecondaryAttack <= gpGlobals->curtime )
+	{
+		if ( pPlayer->m_nButtons & IN_ATTACK2 )
+		{
+			bShouldZoom = true;
+			if ( pPlayer->GetZoomMode() == 2 && pPlayer->GetFOV() < 75 )
+			{
+				// if we're zoomed, don't toggle out when we're in hold mode.
+				bShouldZoom = false;
+			}
+		}
+		else if ( pPlayer->GetZoomMode() == 2 && pPlayer->GetFOV() < 75 )
+		{
+			// when we let go, do the zoom out.
+			bShouldZoom = true;
+		}
+	}
+
+	if ( bShouldZoom )
 	{
 		Zoom();
 	}
