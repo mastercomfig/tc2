@@ -3647,7 +3647,11 @@ bool CTFPlayer::IsReadyToSpawn( void )
 
 	if ( TFGameRules()->GetRespawnTimeMode() > 2 && !m_bAbortFreezeCam && GetObserverMode() <= OBS_MODE_FREEZECAM && GetObserverTarget() && GetObserverTarget() != this )
 	{
-		return false;
+		// only if we're not past the max freeze, block the spawn
+		if ( gpGlobals->curtime < GetDeathTime() + 0.51f + spec_freeze_time.GetFloat() )
+		{
+			return false;
+		}
 	}
 
 	// Map-makers can force players to have custom respawn times
