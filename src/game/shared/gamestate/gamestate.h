@@ -30,6 +30,8 @@ public:
 
 	bool IsReady() { return m_bReady; }
 	void MarkReady() { m_bReady = true; }
+	bool IsUIReady() { return m_bUIReady; }
+	void MarkUIReady() { m_bUIReady = true; }
 	
 	void InitSubscriptions();
 	void StopSubscriptions();
@@ -37,6 +39,7 @@ public:
 private:
 	bool m_bInit = false;
 	bool m_bReady = false;
+	bool m_bUIReady = false;
 	bool m_bListeningToEvents = false;
 	class CHTTPServerThread* m_pServerThread = NULL;
 };

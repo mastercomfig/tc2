@@ -128,7 +128,7 @@ public:
 				AUTO_LOCK( m_clientsMutex )
 				int64_t clientId = m_iNextClientId++;
 				*userdata = new int64_t(clientId);
-				if ( m_iPrivilegedClientId == 0 )
+				if ( m_iPrivilegedClientId == 0 && GetGameStateManager()->IsUIReady() )
 				{
 					m_iPrivilegedClientId = clientId;
 				}
