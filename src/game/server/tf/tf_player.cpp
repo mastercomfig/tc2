@@ -2349,7 +2349,7 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	}
 
 	// or during pre-match / countdown
-	if ( !TFGameRules()->IsInPlay() || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
+	if ( !TFGameRules()->IsInPlay() || TFGameRules()->State_Get() == GR_STATE_PREROUND || gpGlobals->curtime < TFGameRules()->GetPreroundCountdownTime() )
 	{
 		return STRANDED_SPAWN_DETACHED;
 	}

@@ -399,7 +399,7 @@ void CHudTournament::PreparePanel( void )
 
 			if ( m_bCountDownVisible )
 			{
-				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, m_bCompetitiveMode ? "HudTournament_ShowTimerCompetitive" : "HudTournament_ShowTimerDefault", false);
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, m_bCompetitiveMode || ( m_bReadyStatusMode && TFGameRules() && !TFGameRules()->IsMannVsMachineMode() ) ? "HudTournament_ShowTimerCompetitive" : "HudTournament_ShowTimerDefault", false );
 			}
 			else
 			{
@@ -791,7 +791,7 @@ void CHudTournament::PerformLayout( void )
 		}
 	}
 
-	bool bShowTournamentConditions = !m_bCompetitiveMode && TFGameRules() && !TFGameRules()->IsMannVsMachineMode();
+	bool bShowTournamentConditions = TFGameRules() && !TFGameRules()->IsCompetitiveGame();
 
 	// Hide some elements when in competitive mode
 	if ( m_pTournamentConditionLabel )

@@ -25,6 +25,7 @@
 #include "tf_match_description.h"
 #include "tf_hud_tournament.h"
 #include "tf_classmenu.h"
+#include "tf_hud_teamgoal_tournament.h"
 #include "tf_rating_data.h"
 
 extern ConVar mp_winlimit;
@@ -45,11 +46,17 @@ bool ShouldUseMatchHUD()
 #ifdef TF2_OG
 	return false;
 #else
-	if (TFGameRules() && TFGameRules()->IsMannVsMachineMode())
+	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 		return false;
 
+	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->IsInPlay() )
+	{
+		return false;
+	}
+
 	// TODO(mcoms): enforce this better
-	if ( TFGameRules() && ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2 ) )
+	C_TFPlayer* pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( TFGameRules() && ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2 ) && pTFPlayer && pTFPlayer->GetTeamNumber() >= FIRST_GAME_TEAM )
 		return true;
 
 	return tf_use_match_hud.GetBool();
@@ -483,6 +490,18 @@ void CTFHudMatchStatus::OnThink()
 		if ( pKothHUD )
 		{
 			pKothHUD->InvalidateLayout( false, true );
+		}
+
+		CHudTeamGoalTournament *pGoalHUD = GET_HUDELEMENT( CHudTeamGoalTournament );
+		if ( pGoalHUD )
+		{
+			pGoalHUD->InvalidateLayout( false, true );
+		}
+
+		CHudStopWatch *pStopWatchHUD = GET_HUDELEMENT( CHudStopWatch );
+		if ( pStopWatchHUD )
+		{
+			pStopWatchHUD->InvalidateLayout( false, true );
 		}
 	}
 

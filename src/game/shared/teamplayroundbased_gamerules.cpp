@@ -1928,7 +1928,7 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	CheckReadyRestart();
 
 #ifdef TF_DLL
-	if ( !TFGameRules()->IsMannVsMachineMode() && IsInTournamentMode() && !TFGameRules()->IsCommunityGameMode() )
+	if ( !TFGameRules()->IsMannVsMachineMode() && IsInPreMatch() && !TFGameRules()->IsCommunityGameMode() )
 	{
 		if ( TFGameRules()->UsePlayerReadyStatusMode() )
 		{
@@ -1940,7 +1940,7 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 			}
 		}
 		// if we entered tournament mode but we're stuck without waiting for teams, then let's fix that.
-		else if ( IsInWaitingForPlayers() && GetRoundRestartTime() <= 0 && mp_restartround.GetInt() <= 0 && mp_restartgame.GetInt() <= 0 && !mp_restartgame_immediate.GetBool() && !m_bAwaitingReadyRestart )
+		else if ( GetRoundRestartTime() <= 0 && mp_restartround.GetInt() <= 0 && mp_restartgame.GetInt() <= 0 && !mp_restartgame_immediate.GetBool() && !m_bAwaitingReadyRestart )
 		{
 			m_bAwaitingReadyRestart = true;
 		}
@@ -2774,6 +2774,27 @@ void CC_CH_TournamentRestart( void )
 	}
 }
 static ConCommand mp_tournament_restart("mp_tournament_restart", CC_CH_TournamentRestart, "Restart Tournament Mode on the current level."  );
+
+void CC_CH_TournamentRefresh( void )
+{
+	if ( mp_tournament_allow_non_admin_restart.GetBool() == false )
+	{
+		if ( !UTIL_IsCommandIssuedByServerAdmin() )
+			return;
+	}
+
+#ifdef TF_DLL
+	if ( TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() ) )
+		return;
+#endif // TF_DLL
+
+	CTeamplayRoundBasedRules* pRules = dynamic_cast<CTeamplayRoundBasedRules*>( GameRules() );
+	if ( pRules )
+	{
+		pRules->RestartTournament();
+	}
+}
+static ConCommand mp_tournament_legacy_refresh( "mp_tournament_stop_and_refresh", CC_CH_TournamentRefresh, "Refresh Tournament Mode on the current level, keeping the round largely intact. Provided for legacy mp_tournament_restart behavior." );
 
 void CTeamplayRoundBasedRules::RestartTournament( void )
 {
