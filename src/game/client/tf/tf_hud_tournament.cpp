@@ -93,6 +93,7 @@ CHudTournament::CHudTournament( const char *pElementName ) : CHudElement( pEleme
 
 	m_pScoreboard = NULL;
 
+	// this is the match start timer and in non-match games, it is the round start timer/countdown.
 	m_pCountdownBG = new vgui::ScalableImagePanel( this, "CountdownBG" );
 	m_pCountdownLabel = new CExLabel( this, "CountdownLabel", L"" );
 	m_pCountdownLabelShadow = new CExLabel( this, "CountdownLabelShadow", L"" );
@@ -409,7 +410,6 @@ void CHudTournament::PreparePanel( void )
 		C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != m_iLocalTeam )
 		{
-			
 			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
 			if ( m_pCountdownBG )
 			{

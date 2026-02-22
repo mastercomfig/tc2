@@ -638,6 +638,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 
 void CTFHudMatchStatus::HandleCountdown( int nTime )
 {
+	// this is the drop dead final countdown for matches
 	// Update the timer
 	SetDialogVariable( "countdown", nTime );
 
