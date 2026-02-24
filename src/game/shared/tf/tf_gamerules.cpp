@@ -3461,7 +3461,7 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 	{
 		// see if the team is ready.
 		PlayerReadyStatus_UpdateTeamStatus();
-		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
+		//CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
 		if ( IsMannVsMachineMode() || IsCompetitiveMode() || IsEmulatingMatch() )
 		{
 			// Reduce timer as each player hits Ready, but only once per-player
@@ -4234,7 +4234,7 @@ bool CTFGameRules::IsInPlay()
 
 bool CTFGameRules::IsInPreMatchTournamentWarmup()
 {
-	if ( tf_tournament_prematch_warmup.GetBool() && !IsInPlay() && IsCompetitiveGame() )
+	if ( tf_tournament_prematch_warmup.GetBool() && !IsInPlay() && !ShowMatchSummary() && IsCompetitiveGame() )
 	{
 		return true;
 	}
@@ -22461,19 +22461,17 @@ void CTFGameRules::BetweenRounds_Think( void )
 		// Everyone is ready, or the drop-dead timer naturally ticked down to countdown
 		const bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) );
 
-		CMatchInfo* pMatch = GTFGCClientSystem()->GetMatch();
-		if ( bStartFinalCountdown && m_bAwaitingReadyRestart && !IsEmulatingMatch() && !pMatch )
+		if ( bStartFinalCountdown )
 		{
-			// if we aren't in a match, this flag isn't managed until now.
+			// if we're in the cooldown, we don't need to wait for the the teams anymore.
 			m_bAwaitingReadyRestart = false;
 		}
 
 		// It's the FINAL COUNTDOOOWWWNNnnnnnnnnn
 		float flDropDeadTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
-		if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime >= flDropDeadTime ) )
+		if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime > flDropDeadTime ) )
 		{
-			const float flDelay = 10.0f;
-			m_flRestartRoundTime.Set( gpGlobals->curtime + flDelay );
+			m_flRestartRoundTime.Set( flDropDeadTime );
 			ShouldResetScores( true, true );
 			ShouldResetRoundsPlayed( true );
 

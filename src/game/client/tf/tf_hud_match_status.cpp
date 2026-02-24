@@ -49,7 +49,7 @@ bool ShouldUseMatchHUD()
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 		return false;
 
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->IsInPlay() )
+	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->IsInPlay() && !TFGameRules()->ShowMatchSummary() && ( TFGameRules()->GetRoundRestartTime() <= 0.0f || TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime > 11.0f ) )
 	{
 		return false;
 	}
