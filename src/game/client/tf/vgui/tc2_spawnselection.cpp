@@ -353,15 +353,9 @@ void CTC2SpawnSelectionPanel::PositionNodeMarkers()
 		for ( int i = 0; i < nodes.Count(); ++i )
 		{
 			Vector2D mp = pOverview->WorldToMap( nodes[i].vecPosition );
-			
-			// mp is returned in map pixels. MapOverview standard size is 1024x1024
-			float nx = mp.x / 1024.0f;
-			float ny = mp.y / 1024.0f;
-				
-			int panelX = (int)( nx * mapW );
-			int panelY = (int)( ny * mapH );
+			Vector2D pt = pOverview->MapToPanel( mp );
 
-			m_NodePanels[i]->SetPos( panelX - 8, panelY - 8 );
+			m_NodePanels[i]->SetPos( pt.x - 8, pt.y - 8 );
 		}
 	}
 	else

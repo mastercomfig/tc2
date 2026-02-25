@@ -12910,12 +12910,6 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	StateTransition( TF_STATE_DYING );	// Transition into the dying state.
 
-	// TC2: If active, send spawn node list to client
-	if ( tf_tc2_mode.GetBool() && TFGameRules() )
-	{
-		TFGameRules()->SendSpawnNodesToClient( this );
-	}
-
 	if ( pPlayerAttacker )
 	{
 		if ( TFGameRules()->IsIT( this ) )
@@ -15274,6 +15268,12 @@ void CTFPlayer::StateThinkDYING( void )
 		StopAnimation();
 
 		IncrementInterpolationFrame();
+
+		// TC2: If active, send spawn node list to client
+		if ( tf_tc2_mode.GetBool() && TFGameRules() )
+		{
+			TFGameRules()->SendSpawnNodesToClient( this );
+		}
 
 		if ( bStrictMode && m_hObserverTarget && m_hObserverTarget->GetTeamNumber() >= FIRST_GAME_TEAM && m_hObserverTarget->GetTeamNumber() != GetTeamNumber() )
 		{
@@ -24630,7 +24630,9 @@ CON_COMMAND_F( tc2_select_spawn, "Select a spawn location by node index.", FCVAR
 				break;
 			}
 			// Use the validated node's exact position and angles
-			pPlayer->SetSpawnPosOverride( node.vecPosition, node.angAngles );
+			Vector vector = node.vecPosition;
+			vector.z += 13.0f;
+			pPlayer->SetSpawnPosOverride( vector, node.angAngles );
 			pPlayer->SetLastRedeployTime( gpGlobals->curtime );
 			bValidSpawn = true;
 			break;

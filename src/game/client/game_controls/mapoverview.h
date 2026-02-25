@@ -144,6 +144,7 @@ public:
 	virtual int GetMode( void );
 	virtual float GetFullZoom( void ){ return m_fFullZoom; }
 	virtual float GetMapScale( void ){ return m_fMapScale; }
+	virtual Vector2D MapToPanel( const Vector2D &mappos );
 
 	// Player settings:
 	virtual void ShowPlayerNames(bool state);
@@ -202,7 +203,6 @@ protected:
 	bool			IsInPanel(Vector2D &pos);
 	MapPlayer_t*	GetPlayerByUserID( int userID );
 	int				AddIconTexture(const char *filename);
-	Vector2D		MapToPanel( const Vector2D &mappos );
 	int				GetPixelOffset( float height );
 	void			UpdateFollowEntity();
 	virtual void	UpdatePlayers();

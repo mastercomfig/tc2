@@ -290,7 +290,11 @@ void CTeamControlPointMaster::Activate( void )
 								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
 								pPoint->KeyValue( szKey, szVal );
 							}
-							break;
+						}
+						else
+						{
+							pPoint->SetWarnOnCap( CP_WARN_NORMAL );
+							g_pObjectiveResource->SetWarnOnCap( pPoint->GetPointIndex(), CP_WARN_NORMAL );
 						}
 					}
 				}
@@ -313,7 +317,11 @@ void CTeamControlPointMaster::Activate( void )
 								Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
 								pPoint->KeyValue( szKey, szVal );
 							}
-							break;
+						}
+						else
+						{
+							pPoint->SetWarnOnCap( CP_WARN_NORMAL );
+							g_pObjectiveResource->SetWarnOnCap( pPoint->GetPointIndex(), CP_WARN_NORMAL );
 						}
 					}
 				}

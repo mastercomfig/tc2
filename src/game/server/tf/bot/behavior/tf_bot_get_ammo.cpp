@@ -36,6 +36,9 @@ public:
 
 	bool IsSelected( const CBaseEntity *constCandidate ) const
 	{
+		if ( !constCandidate )
+			return false;
+		
 		CBaseEntity *candidate = const_cast< CBaseEntity * >( constCandidate );
 
 		m_ammoArea = (CTFNavArea *)TheNavMesh->GetNearestNavArea( candidate->WorldSpaceCenter() );
