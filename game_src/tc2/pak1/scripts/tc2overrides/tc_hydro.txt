@@ -1,0 +1,30 @@
+"TC2Overrides"
+{
+	"func_brush|round_A2B_disablebrush"	"Disable"
+	"prop_dynamic|round_A2B_disableprop"	"Disable"
+	"func_brush|round_A2B2_disablebrush"	"Disable"
+	
+	"func_brush|round_A2C_disablebrush"		"Disable"
+	
+	"func_brush|round_A2D_disablebrush"		"Disable"
+	
+	"func_brush|round_A2BLUE_disablebrush"	"Disable"
+	"prop_dynamic|round_A2BLUE_disableprop"	"Disable"
+	
+	"func_brush|round_B2C_disablebrush"		"Disable"
+	"func_brush|round_B2AC_disablebrush"	"Disable"
+	
+	"func_brush|round_B2D_disablebrush"		"Disable"
+	
+	"func_brush|round_C2D_disablebrush"		"Disable"
+	
+	"func_brush|round_D2RED_disablebrush"	"Disable"
+	"func_brush|round_D2RED_enablerailings"	"Disable"
+	
+	"obs_A"		"Enable"
+	"obs_B"		"Enable"
+	"obs_C"		"Enable"
+	"obs_D"		"Enable"
+	"obs_RED"	"Enable"
+	"obs_BLUE"	"Enable"
+}

@@ -1,0 +1,11 @@
+// HLTV overview description file for tc_hydro.bsp
+
+"tc_hydro"
+{
+	"material"	"mapoverviews/tc_hydro"	// texture file
+	"pos_x"		"-5058"	// upper left world coordinate
+	"pos_y"		"3349"
+	"scale"		"10" 
+	"rotate"	"0"
+	"zoom"		"1"
+}
