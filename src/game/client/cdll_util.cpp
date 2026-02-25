@@ -41,11 +41,8 @@ ConVar localplayer_visionflags( "localplayer_visionflags", "0", FCVAR_DEVELOPMEN
 //-----------------------------------------------------------------------------
 // ConVars
 //-----------------------------------------------------------------------------
-#ifdef _DEBUG
-
 ConVar r_FadeProps( "r_FadeProps", "1" );
 
-#endif
 bool g_MakingDevShots = false;
 extern ConVar cl_leveloverview;
 
@@ -1106,70 +1103,63 @@ static unsigned char ComputeDistanceFade( C_BaseEntity *pEntity, float flMinDist
 //-----------------------------------------------------------------------------
 unsigned char UTIL_ComputeEntityFade( C_BaseEntity *pEntity, float flMinDist, float flMaxDist, float flFadeScale )
 {
-	unsigned char nAlpha = 255;
-
 	// If we're taking devshots, don't fade props at all
-	if ( g_MakingDevShots || cl_leveloverview.GetFloat() > 0 )
+	if ( g_MakingDevShots || cl_leveloverview.GetFloat() > 0 || r_FadeProps.GetBool() )
 		return 255;
 
-#ifdef _DEBUG
-	if ( r_FadeProps.GetBool() )
-#endif
+	unsigned char nAlpha = ComputeDistanceFade( pEntity, flMinDist, flMaxDist );
+
+	// only compute if needed
+	if ( flFadeScale > 0.0f )
 	{
-		nAlpha = ComputeDistanceFade( pEntity, flMinDist, flMaxDist );
+		float flScreenFadeMinSize, flScreenFadeMaxSize;
+		view->GetScreenFadeDistances( &flScreenFadeMinSize, &flScreenFadeMaxSize );
+		float flLevelFadeMinSize, flLevelFadeMaxSize;
+		modelinfo->GetLevelScreenFadeRange( &flLevelFadeMinSize, &flLevelFadeMaxSize );
 
 		// only compute if needed
-		if ( flFadeScale > 0.0f )
+		if ( flScreenFadeMinSize > 0.0f || flLevelFadeMinSize > 0.0f )
 		{
-			float flScreenFadeMinSize, flScreenFadeMaxSize;
-			view->GetScreenFadeDistances( &flScreenFadeMinSize, &flScreenFadeMaxSize );
-			float flLevelFadeMinSize, flLevelFadeMaxSize;
-			modelinfo->GetLevelScreenFadeRange( &flLevelFadeMinSize, &flLevelFadeMaxSize );
+			// NOTE: This computation for the center + radius is invalid!
+			// The center of the sphere is at the center of the OBB, which is not necessarily
+			// at the render origin. But it should be close enough.
+			Vector vecMins, vecMaxs;
+			pEntity->GetRenderBounds( vecMins, vecMaxs );
+			float flRadius = vecMins.DistTo( vecMaxs ) * 0.5f;
 
-			// only compute if needed
-			if ( flScreenFadeMinSize > 0.0f || flLevelFadeMinSize > 0.0f )
+			Vector vecAbsCenter;
+			if ( modelinfo->GetModelType( pEntity->GetModel() ) == mod_brush )
 			{
-				// NOTE: This computation for the center + radius is invalid!
-				// The center of the sphere is at the center of the OBB, which is not necessarily
-				// at the render origin. But it should be close enough.
-				Vector vecMins, vecMaxs;
-				pEntity->GetRenderBounds( vecMins, vecMaxs );
-				float flRadius = vecMins.DistTo( vecMaxs ) * 0.5f;
+				Vector vecRenderMins, vecRenderMaxs;
+				pEntity->GetRenderBoundsWorldspace( vecRenderMins, vecRenderMaxs );
+				VectorAdd( vecRenderMins, vecRenderMaxs, vecAbsCenter );
+				vecAbsCenter *= 0.5f;
+			}
+			else
+			{
+				vecAbsCenter = pEntity->GetRenderOrigin();
+			}
 
-				Vector vecAbsCenter;
-				if ( modelinfo->GetModelType( pEntity->GetModel() ) == mod_brush )
-				{
-					Vector vecRenderMins, vecRenderMaxs;
-					pEntity->GetRenderBoundsWorldspace( vecRenderMins, vecRenderMaxs );
-					VectorAdd( vecRenderMins, vecRenderMaxs, vecAbsCenter );
-					vecAbsCenter *= 0.5f;
-				}
-				else
-				{
-					vecAbsCenter = pEntity->GetRenderOrigin();
-				}
+			unsigned char nGlobalAlpha = IsXbox() ? 255 : modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
+			unsigned char nDistAlpha;
 
-				unsigned char nGlobalAlpha = IsXbox() ? 255 : modelinfo->ComputeLevelScreenFade( vecAbsCenter, flRadius, flFadeScale );
-				unsigned char nDistAlpha;
+			if ( !engine->IsLevelMainMenuBackground() )
+			{
+				nDistAlpha = modelinfo->ComputeViewScreenFade( vecAbsCenter, flRadius, flFadeScale );
+			}
+			else
+			{
+				nDistAlpha = 255;
+			}
 
-				if ( !engine->IsLevelMainMenuBackground() )
-				{
-					nDistAlpha = modelinfo->ComputeViewScreenFade( vecAbsCenter, flRadius, flFadeScale );
-				}
-				else
-				{
-					nDistAlpha = 255;
-				}
+			if ( nDistAlpha < nGlobalAlpha )
+			{
+				nGlobalAlpha = nDistAlpha;
+			}
 
-				if ( nDistAlpha < nGlobalAlpha )
-				{
-					nGlobalAlpha = nDistAlpha;
-				}
-
-				if ( nGlobalAlpha < nAlpha )
-				{
-					nAlpha = nGlobalAlpha;
-				}
+			if ( nGlobalAlpha < nAlpha )
+			{
+				nAlpha = nGlobalAlpha;
 			}
 		}
 	}
