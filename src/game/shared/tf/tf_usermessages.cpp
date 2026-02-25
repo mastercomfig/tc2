@@ -129,6 +129,8 @@ void RegisterUserMessages()
 
 	usermessages->Register( "BuiltObject", 3 ); // object type, object mode (entrance vs. exit), index
 
+	usermessages->Register( "TC2SpawnNodeList", -1 ); // TC2: Send spawn node list to client for spawn-anywhere UI
+
 	// NVNT register haptic user messages
 	RegisterHapticMessages();
 	RegisterScriptMessages();

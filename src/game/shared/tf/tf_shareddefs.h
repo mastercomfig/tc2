@@ -2728,6 +2728,34 @@ enum TemporaryRuneTypes_t
 
 const char *GetPowerupIconName( RuneTypes_t type, int iTeam );
 
+// Territorial Control 2 spawn-anywhere system
+enum ETCSpawnNodeType
+{
+	TCSPAWN_TEAMSPAWN = 0,
+	TCSPAWN_TELEPORTER,
+	TCSPAWN_CONTROLPOINT,
+};
+
+struct TCSpawnNode_t
+{
+	Vector           vecPosition;
+	QAngle           angAngles;
+	ETCSpawnNodeType eType;
+	int              iTeam;
+	bool             bAvailable;
+	EHANDLE          hEntity; // Reference to the entity (spawn point, teleporter, or CP)
+
+	TCSpawnNode_t()
+	{
+		vecPosition = vec3_origin;
+		angAngles = vec3_angle;
+		eType = TCSPAWN_TEAMSPAWN;
+		iTeam = TEAM_UNASSIGNED;
+		bAvailable = false;
+		hEntity = NULL;
+	}
+};
+
 #define TOURNAMENT_NOCANCEL_TIME 10.1f
 
 #define TF_WEAPON_PICKUP_RANGE 150

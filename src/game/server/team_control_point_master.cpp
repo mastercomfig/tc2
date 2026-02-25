@@ -12,6 +12,7 @@
 
 #if defined ( TF_DLL )
 #include "tf_gamerules.h"
+#include "filesystem.h"
 #endif
 
 BEGIN_DATADESC( CTeamControlPointMaster )
@@ -164,6 +165,162 @@ void CTeamControlPointMaster::Activate( void )
 	FindControlPointRounds();
 
 	SetBaseControlPoints();
+
+#if defined ( TF_DLL )
+	// Experimental territorial control 2 mode: clear mini-round structure so all points are active from start.
+	extern ConVar tf_tc2_mode;
+	if ( tf_tc2_mode.GetBool() )
+	{
+		char szOverrideFile[MAX_PATH];
+		Q_snprintf( szOverrideFile, sizeof(szOverrideFile), "scripts/tc2overrides/%s.txt", STRING( gpGlobals->mapname ) );
+
+		KeyValues *pKV = new KeyValues( "TC2Overrides" );
+		if ( pKV->LoadFromFile( filesystem, szOverrideFile, "GAME" ) )
+		{
+			for ( KeyValues *pSub = pKV->GetFirstSubKey(); pSub != NULL; pSub = pSub->GetNextKey() )
+			{
+				const char *pszKey = pSub->GetName();
+				const char *pszInput = pSub->GetString();
+
+				if ( pszKey && pszKey[0] && pszInput && pszInput[0] )
+				{
+					// Optional syntax: "classname|targetname" for collision filtering e.g. "trigger_multiple|round_A2B_disablebrush"
+					const char *pszTargetName = pszKey;
+					const char *pszClassName = NULL;
+					
+					char szParsedClass[128];
+					const char *pPipe = V_strchr( pszKey, '|' );
+					if ( pPipe )
+					{
+						int nClassLen = pPipe - pszKey;
+						Q_strncpy( szParsedClass, pszKey, MIN( sizeof(szParsedClass), nClassLen + 1 ) );
+						pszClassName = szParsedClass;
+						pszTargetName = pPipe + 1;
+					}
+
+					CBaseEntity *pEnt = gEntList.FindEntityByName( NULL, pszTargetName );
+					while ( pEnt )
+					{
+						bool bMatch = true;
+						if ( pszClassName && !FClassnameIs( pEnt, pszClassName ) )
+						{
+							bMatch = false;
+						}
+						
+						if ( bMatch )
+						{
+							pEnt->AcceptInput( pszInput, this, this, variant_t(), 0 );
+						}
+						
+						pEnt = gEntList.FindEntityByName( pEnt, pszTargetName );
+					}
+				}
+			}
+		}
+		pKV->deleteThis();
+
+		if ( m_ControlPointRounds.Count() > 0 )
+		{
+			m_ControlPointRounds.RemoveAll();
+			if ( g_pObjectiveResource )
+			{
+				g_pObjectiveResource->SetPlayingMiniRounds( false );
+				
+				int iRedBase = GetBaseControlPoint( TF_TEAM_RED );
+				int iBluBase = GetBaseControlPoint( TF_TEAM_BLUE );
+
+				CUtlVector<int> vecRedMiddle;
+				CUtlVector<int> vecBluMiddle;
+
+				// Mark all points as "in use" so HUD shows them. Compile middle points logic.
+				for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
+				{
+					CTeamControlPoint *pPoint = m_ControlPoints[i];
+					if ( pPoint )
+					{
+						int iIndex = pPoint->GetPointIndex();
+						g_pObjectiveResource->SetInMiniRound( iIndex, true );
+						
+						if ( iIndex != iRedBase && iIndex != iBluBase )
+						{
+							if ( pPoint->GetDefaultOwner() == TF_TEAM_RED )
+							{
+								vecRedMiddle.AddToTail( iIndex );
+							}
+							else if ( pPoint->GetDefaultOwner() == TF_TEAM_BLUE )
+							{
+								vecBluMiddle.AddToTail( iIndex );
+							}
+						}
+					}
+				}
+				
+				// Helper lambda to get name string from index
+				auto GetPointName = [&]( int index ) -> string_t
+				{
+					for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
+					{
+						if ( m_ControlPoints[i] && m_ControlPoints[i]->GetPointIndex() == index )
+						{
+							return AllocPooledString( m_ControlPoints[i]->GetEntityName().ToCStr() );
+						}
+					}
+					return NULL_STRING;
+				};
+
+				// We must set the previous points locally on the CTeamControlPoint entity, and ObjectiveResource (for HUD)
+				// Assign Red base prerequisites (Red middle points required for BLU to cap RED base)
+				if ( iRedBase != -1 )
+				{
+					for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
+					{
+						CTeamControlPoint *pPoint = m_ControlPoints[i];
+						if ( pPoint && pPoint->GetPointIndex() == iRedBase )
+						{
+							for ( int j = 0; j < vecRedMiddle.Count() && j < MAX_PREVIOUS_POINTS; ++j )
+							{
+								g_pObjectiveResource->SetPreviousPoint( iRedBase, TF_TEAM_BLUE, j, vecRedMiddle[j] ); 
+								
+								// We need to bypass encapsulation for the tc2 override logic because m_TeamData is private and has no setter 
+								// Since this is CTeamControlPointMaster, we can't directly assign to m_TeamData inside CTeamControlPoint.
+								// So instead, we parse the "team_previouspoint_2_0" keys and pass them through KeyValue.
+								char szKey[128];
+								char szVal[128];
+								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, j );
+								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
+								pPoint->KeyValue( szKey, szVal );
+							}
+							break;
+						}
+					}
+				}
+
+				// Assign Blu base prerequisites (Blu middle points required for RED to cap BLU base)
+				if ( iBluBase != -1 )
+				{
+					for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
+					{
+						CTeamControlPoint *pPoint = m_ControlPoints[i];
+						if ( pPoint && pPoint->GetPointIndex() == iBluBase )
+						{
+							for ( int j = 0; j < vecBluMiddle.Count() && j < MAX_PREVIOUS_POINTS; ++j )
+							{
+								g_pObjectiveResource->SetPreviousPoint( iBluBase, TF_TEAM_RED, j, vecBluMiddle[j] );
+								
+								char szKey[128];
+								char szVal[128];
+								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, j );
+								Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
+								pPoint->KeyValue( szKey, szVal );
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -641,7 +798,12 @@ void CTeamControlPointMaster::CheckWinConditions( void )
 	if ( m_bDisabled )
 		return;
 
+#if defined ( TF_DLL )
+	extern ConVar tf_tc2_mode;
+	if ( m_ControlPointRounds.Count() > 0 && !tf_tc2_mode.GetBool() )
+#else
 	if ( m_ControlPointRounds.Count() > 0 )
+#endif
 	{
 		if ( m_iCurrentRoundIndex != -1 )
 		{
@@ -851,6 +1013,15 @@ void CTeamControlPointMaster::InputRoundSpawn( inputdata_t &input )
 //-----------------------------------------------------------------------------
 void CTeamControlPointMaster::InputRoundActivate( inputdata_t &input )
 {
+	// In TC2 mode we bypass mini-round activation logic entirely.
+#if defined ( TF_DLL )
+	extern ConVar tf_tc2_mode;
+	if ( tf_tc2_mode.GetBool() )
+	{
+		TFGameRules()->SetupSpawnPointsForRound();
+		return;
+	}
+#endif
 	// if we're using mini-rounds and haven't picked one yet, find one to play
 	if ( PlayingMiniRounds() && GetCurrentRound() == NULL )
 	{

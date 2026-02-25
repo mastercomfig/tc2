@@ -863,6 +863,8 @@ $Project "Client (TF)"
 				$File	"tf\tf_streams.cpp"
 				$File	"tf\vgui\mute_player_dialog.cpp"
 				$File	"tf\vgui\mute_player_dialog.h"
+				$File	"tf\vgui\tc2_spawnselection.cpp"
+				$File	"tf\vgui\tc2_spawnselection.h"
 			}
 
 			$Folder	"halloween"

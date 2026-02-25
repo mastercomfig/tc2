@@ -976,6 +976,11 @@ public:
 	virtual void ClientAdjustStartSoundParams( EmitSound_t &params ) OVERRIDE;
 	virtual void ClientAdjustStartSoundParams( StartSoundParams_t& params ) OVERRIDE;
 
+	// TC2 spawn-anywhere system
+	void SetSpawnNodes( const CUtlVector<TCSpawnNode_t> &nodes );
+	const CUtlVector<TCSpawnNode_t>& GetSpawnNodes() const { return m_SpawnNodes; }
+	void ClearSpawnNodes() { m_SpawnNodes.RemoveAll(); }
+
 private:
 	void ClientAdjustVOPitch( int& pitch );
 
@@ -1005,6 +1010,9 @@ private:
 
 	CNetworkVar( short, m_nRestrictAchievements );
 	CNetworkVar( short, m_nRestrictQuests );
+
+	// TC2 spawn-anywhere: client-side spawn node list
+	CUtlVector<TCSpawnNode_t> m_SpawnNodes;
 };
 
 inline C_TFPlayer* ToTFPlayer( C_BaseEntity *pEntity )

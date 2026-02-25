@@ -616,6 +616,8 @@ gameinfo_client.txt
 !/src/thirdparty/sentry_native/lib/libsentry.so
 
 shaders
+screenshots
+vprof
 
 # END TC2 MOD
 

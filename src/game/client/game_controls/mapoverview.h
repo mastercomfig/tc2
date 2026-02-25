@@ -58,7 +58,7 @@ public:
 		MAP_MODE_RADAR		// In game radar, extra functionality
 	};
 
-	CMapOverview( const char *pElementName );
+	CMapOverview( const char* pElementName, vgui::Panel* pParent = NULL );
 	virtual ~CMapOverview();
 
 	virtual bool ShouldDraw( void );
@@ -160,6 +160,7 @@ public:
 	virtual void SetFollowEntity(int entindex); // 0 = off
 	virtual void SetCenter( const Vector2D &mappos); 
 	virtual void SetAngle( float angle);
+	virtual void SetRunAnimations( bool bRunAnimations ) { m_bRunAnimations = bRunAnimations; }
 	virtual Vector2D WorldToMap( const Vector &worldpos );
 
 	// Object settings
@@ -196,7 +197,7 @@ protected:
 	virtual void	ResetRound();
 	virtual void	InitTeamColorsAndIcons();
 	virtual void	UpdateSizeAndPosition();
-	virtual bool	RunHudAnimations(){ return true; }
+	virtual bool	RunHudAnimations(){ return m_bRunAnimations; }
 
 	bool			IsInPanel(Vector2D &pos);
 	MapPlayer_t*	GetPlayerByUserID( int userID );
@@ -241,6 +242,7 @@ protected:
 	int		m_ObjectCounterID;
 	vgui::HFont	m_hIconFont;
 
+	bool m_bRunAnimations;
 
 	bool m_bShowNames;
 	bool m_bShowTrails;

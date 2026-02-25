@@ -599,8 +599,9 @@ protected:
 					pszWinner = "Blue";
 				}
 
+				extern ConVar tf_tc2_mode;
 				CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-				if ( pMaster && pMaster->PlayingMiniRounds() )
+				if ( pMaster && pMaster->PlayingMiniRounds() && !tf_tc2_mode.GetBool() )
 				{
 					UTIL_LogPrintf( "World triggered \"Mini_Round_Win\" (winner \"%s\") (round \"%s\")\n", pszWinner, pMaster->GetCurrentRound()->GetEntityName().ToCStr() );
 					UTIL_LogPrintf( "World triggered \"Mini_Round_Length\" (seconds \"%0.2f\")\n", event->GetFloat( "round_time" ) );

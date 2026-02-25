@@ -127,12 +127,14 @@ CON_COMMAND( overview_mode, "Sets overview map mode off,small,large: <0|1|2>" )
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-
 using namespace vgui;
 
-CMapOverview::CMapOverview( const char *pElementName ) : BaseClass( NULL, pElementName ), CHudElement( pElementName )
+CMapOverview::CMapOverview( const char* pElementName, vgui::Panel* pParent ) : BaseClass( pParent, pElementName ), CHudElement( pElementName )
 {
-	SetParent( g_pClientMode->GetViewport()->GetVPanel() );
+	if ( !pParent )
+	{
+		SetParent( g_pClientMode->GetViewport()->GetVPanel() );
+	}
 
 	SetBounds( 0,0, 256, 256 );
 	SetBgColor( Color( 0,0,0,100 ) );
@@ -157,6 +159,8 @@ CMapOverview::CMapOverview( const char *pElementName ) : BaseClass( NULL, pEleme
 	m_ViewOrigin = Vector2D( 512, 512 );
 	m_fViewAngle = 0;
 	m_fTrailUpdateInterval = 1.0f;
+
+	m_bRunAnimations = true;
 
 	m_bShowNames = true;
 	m_bShowHealth = true;
@@ -884,6 +888,8 @@ void CMapOverview::SetMap(const char * levelname)
 	m_fMapScale		= m_MapKeyValues->GetFloat("scale", 1.0f);
 	m_bRotateMap	= m_MapKeyValues->GetInt("rotate")!=0;
 	m_fFullZoom		= m_MapKeyValues->GetFloat("zoom", 1.0f );
+
+	ResetRound();
 }
 
 void CMapOverview::ResetRound()
@@ -925,7 +931,6 @@ void CMapOverview::FireGameEvent( IGameEvent *event )
 	if ( Q_strcmp(type, "game_newmap") == 0 )
 	{
 		SetMap( event->GetString("mapname") );
-		ResetRound();
 	}
 
 	else if ( Q_strcmp(type, "round_start") == 0 )

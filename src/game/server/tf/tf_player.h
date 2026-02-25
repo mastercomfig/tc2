@@ -379,6 +379,13 @@ public:
 		}
 		return false;
 	}
+
+	void SetSpawnPosOverride(const Vector& vecSpawn, const QAngle& angSpawn)
+	{
+		m_vecSpawnPosOverride = vecSpawn;
+		m_angSpawnAngOverride = angSpawn;
+		m_bHasSpawnPosOverride = true;
+	}
 		
 	void SetAnimation( PLAYER_ANIM playerAnim );
 
@@ -657,6 +664,9 @@ public:
 
 	void SetInstantClassSpawn( bool bInstant ) { m_bInstantClassSpawn = bInstant; }
 	void SetStrandedSpawnSwitch( bool bSwitch ) { m_bStrandedSpawnSwitch = bSwitch; }
+	// TC2 spawn-anywhere / redeploy tracking
+	void		SetLastRedeployTime( float t ) { m_flLastRedeployTime = t; }
+	float		GetLastRedeployTime() const { return m_flLastRedeployTime; }
 
 	void StartStrandedSpawnCheck();
 
@@ -1278,6 +1288,7 @@ private:
 	bool				m_bSwitchedClass;
 	bool				m_bStrandedSpawnSwitch;
 	bool				m_bInstantClassSpawn; // this marks when we've instant spawned in the respawn room
+	float			m_flLastRedeployTime; // TC2: last successful redeploy selection time
 	bool				m_bRememberLastWeapon;
 	bool				m_bRememberActiveWeapon;
 	bool				m_bRespawnOnLoadoutChange;

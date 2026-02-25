@@ -118,6 +118,7 @@
 #include "soundstartparams.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "tf_playermodelpanel.h"
+#include "tf/vgui/tc2_spawnselection.h"
 
 
 #if defined( REPLAY_ENABLED )
@@ -12408,3 +12409,80 @@ static void cc_helpme_released( const CCommand &args )
 	engine->ServerCmdKeyValues( kv );
 }
 static ConCommand helpme_released( "-helpme", cc_helpme_released );
+
+
+//-----------------------------------------------------------------------------
+// TC2: Helper accessor for the spawn selection panel singleton
+//-----------------------------------------------------------------------------
+static CTC2SpawnSelectionPanel* g_pTC2SpawnSelectionPanel = NULL;
+
+CTC2SpawnSelectionPanel* GetTC2SpawnSelectionPanel()
+{
+	if ( !g_pTC2SpawnSelectionPanel )
+	{
+		vgui::Panel* pViewport = g_pClientMode ? g_pClientMode->GetViewport() : NULL;
+		if ( pViewport )
+		{
+			g_pTC2SpawnSelectionPanel = new CTC2SpawnSelectionPanel( pViewport );
+		}
+	}
+	return g_pTC2SpawnSelectionPanel;
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Receive spawn node list from server (TC2 spawn-anywhere)
+//-----------------------------------------------------------------------------
+void __MsgFunc_TC2SpawnNodeList( bf_read &msg )
+{
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pLocalPlayer )
+		return;
+
+	int nCount = msg.ReadShort();
+	
+	CUtlVector<TCSpawnNode_t> spawnNodes;
+	spawnNodes.EnsureCapacity( nCount );
+	
+	for ( int i = 0; i < nCount; ++i )
+	{
+		TCSpawnNode_t node;
+		node.eType = (ETCSpawnNodeType)msg.ReadByte();
+		node.vecPosition.x = msg.ReadBitCoord();
+		node.vecPosition.y = msg.ReadBitCoord();
+		node.vecPosition.z = msg.ReadBitCoord();
+		msg.ReadBitAngles( node.angAngles );
+		node.iTeam = msg.ReadByte();
+		node.bAvailable = ( msg.ReadByte() != 0 );
+		
+		int iEntIndex = msg.ReadLong();
+		if ( iEntIndex >= 0 )
+		{
+			node.hEntity = cl_entitylist->GetBaseEntity( iEntIndex );
+		}
+		
+		spawnNodes.AddToTail( node );
+	}
+	
+	// Store in player for UI access
+	pLocalPlayer->SetSpawnNodes( spawnNodes );
+	
+	// Open spawn selection UI
+	CTC2SpawnSelectionPanel *pPanel = GetTC2SpawnSelectionPanel();
+	if ( pPanel )
+	{
+		pPanel->ShowPanel( true );
+	}
+	
+	Msg( "TC2: Received %d spawn nodes from server\n", nCount );
+}
+USER_MESSAGE_REGISTER( TC2SpawnNodeList );
+
+//-----------------------------------------------------------------------------
+// Purpose: Store spawn nodes for UI rendering
+//-----------------------------------------------------------------------------
+void C_TFPlayer::SetSpawnNodes( const CUtlVector<TCSpawnNode_t> &nodes )
+{
+	m_SpawnNodes.RemoveAll();
+	m_SpawnNodes.CopyArray( nodes.Base(), nodes.Count() );
+}
