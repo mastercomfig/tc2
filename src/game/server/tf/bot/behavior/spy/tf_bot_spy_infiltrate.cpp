@@ -218,6 +218,17 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *me )
 		return false;
 	}
 
+	// TODO(mcoms): when we have too many spawn exits, we shouldn't consider them?
+	// this is causing a huge spike in an explosion of nav area IsPotentiallyVisible checks.
+	if ( enemySpawnExitVector->Count() > 30 )
+	{
+		if ( tf_bot_debug_spy.GetBool() )
+		{
+			DevMsg( "%3.2f: Too many enemy spawn room exit areas found\n", gpGlobals->curtime );
+		}
+		return false;
+	}
+
 	// find nearby place to hide hear enemy spawn exit(s)
 	CUtlVector< CNavArea * > nearbyAreaVector;
 	const float nearbyHideRange = 2500.0f;
