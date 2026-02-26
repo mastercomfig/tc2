@@ -501,8 +501,13 @@ CBaseEntity::~CBaseEntity( )
 		DestroyAllDataObjects();
 		g_bDisableEhandleAccess = true;
 
-		// Remove this entity from the ent list (NOTE:  This Makes EHANDLES go NULL)
-		gEntList.RemoveEntity( GetRefEHandle() );
+		// sometimes, entities like the player won't have a valid entity handle. see CBaseEntity::PostConstructor.
+		// if we call RemoveEntity, we'll actually just remove a random entity!
+		if ( GetRefEHandle().IsValid() )
+		{
+			// Remove this entity from the ent list (NOTE:  This Makes EHANDLES go NULL)
+			gEntList.RemoveEntity( GetRefEHandle() );
+		}
 	}
 }
 
