@@ -596,7 +596,7 @@ void CHudUpgradePanel::SetActive( bool bActive )
 			engine->ClientCmd_Unrestricted( "open_charinfo_direct" );
 		}
 
-		// let the server know that we've close the menu with the number of upgrades
+		// let the server know that we've closed the menu with the number of upgrades
 		// so the response rules can do their thing
 		KeyValues *kv = new KeyValues( "MvM_UpgradesDone" );
 		kv->SetInt( "num_upgrades", m_nUpgradeActivity );

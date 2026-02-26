@@ -6434,8 +6434,8 @@ void C_TFPlayer::AvoidPlayers( CUserCmd *pCmd )
 	if ( !pTeam )
 		return;
 	
-	CHudUpgradePanel *pHudVote = GET_HUDELEMENT( CHudUpgradePanel );
-	if ( pHudVote && pHudVote->IsActive() )
+	CHudUpgradePanel* pUpgradePanel = GET_HUDELEMENT( CHudUpgradePanel );
+	if ( pUpgradePanel && pUpgradePanel->IsActive() )
 	{
 		return;
 	}
