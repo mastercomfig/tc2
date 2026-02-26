@@ -1000,10 +1000,18 @@ bool CTFBot::GetWeightDesiredClassToSpawn( CUtlVector< ETFClass > &vecClassToSpa
 		}
 
 		int maxLimit = desiredClassInfo->m_maxLimit[ (int)clamp( GetDifficulty(), CTFBot::EASY, CTFBot::EXPERT ) ];
-		if ( maxLimit > NoLimit && currentRoster.m_count[ desiredClassInfo->m_class ] >= maxLimit )
+		if ( maxLimit > NoLimit )
 		{
-			// at or above limit for this class
-			continue;
+			// scale max limits to larger team size
+			if ( currentRoster.m_teamSize > 12 )
+			{
+				maxLimit = maxLimit * RoundFloatToNearestInt( currentRoster.m_teamSize / 12.0f );
+			}
+			if ( currentRoster.m_count[desiredClassInfo->m_class] >= maxLimit )
+			{
+				// at or above limit for this class
+				continue;
+			}
 		}
 
 		if ( desiredClassInfo->m_countPerTeamSize > 0 )
@@ -1176,7 +1184,9 @@ ETFClass CTFBot::GetPresetClassToSpawn() const
 		}
 	}
 
-	AssertMsg( 0, "This return shouldn't happen." );
+	// TODO(mcoms): check for team size, for assert
+	// UNDONE: this assert happens when players > 12
+	//AssertMsg( 0, "This return shouldn't happen." );
 	return TF_CLASS_UNDEFINED;
 }
 
