@@ -4105,6 +4105,18 @@ void CTFGameRules::LevelInitPostEntity( void )
 		pMatchDesc->InitGameRulesSettingsPostEntity();
 	}
 
+	if ( GetVoiceGameMgr() )
+	{
+		if ( tf_tc2_mode.GetBool() )
+		{
+			GetVoiceGameMgr()->SetProximityDistance( 256 );
+		}
+		else
+		{
+			GetVoiceGameMgr()->SetProximityDistance( -1 );
+		}
+	}
+
 #endif // GAME_DLL
 }
 
