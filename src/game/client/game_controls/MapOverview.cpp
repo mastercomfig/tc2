@@ -168,6 +168,7 @@ CMapOverview::CMapOverview( const char* pElementName, vgui::Panel* pParent ) : B
 
 	m_flChangeSpeed = 1000;
 	m_flIconSize = 64.0f;
+	m_bIgnoreSpectatorBounds = false;
 
 	m_ObjectCounterID = 1;
 
@@ -1083,7 +1084,7 @@ bool CMapOverview::ShouldDraw( void )
 
 void CMapOverview::UpdateSizeAndPosition()
 {
-	if ( g_pSpectatorGUI && g_pSpectatorGUI->IsVisible() )
+	if ( !m_bIgnoreSpectatorBounds && g_pSpectatorGUI && g_pSpectatorGUI->IsVisible() )
 	{
 		int iScreenWide, iScreenTall;
 		GetHudSize( iScreenWide, iScreenTall );

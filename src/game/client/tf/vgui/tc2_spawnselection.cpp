@@ -157,7 +157,7 @@ CTC2SpawnSelectionPanel::CTC2SpawnSelectionPanel( Panel *parent )
 	SetProportional( true );
 	
 	m_pMapPanel = new EditablePanel( this, "MapPanel" );
-	m_pTitleLabel = new Label( this, "TitleLabel", "Select your deployment:" );
+	m_pTitleLabel = new Label( this, "TitleLabel", "" );
 	m_pConfirmButton = new Button( this, "ConfirmButton", "Spawn", this, "confirm" );
 	m_pCancelButton = new Button( this, "CancelButton", "Cancel", this, "cancel" );
 
@@ -166,6 +166,7 @@ CTC2SpawnSelectionPanel::CTC2SpawnSelectionPanel( Panel *parent )
 	Q_FileBase( engine->GetLevelName(), mapname, sizeof( mapname ) );
 	m_pMapOverview->SetMap( mapname );
 	m_pMapOverview->SetMode( CMapOverview::MAP_MODE_FULL );
+	m_pMapOverview->SetIgnoreSpectatorBounds( true );
 	
 	m_pConfirmButton->SetEnabled( false );
 	

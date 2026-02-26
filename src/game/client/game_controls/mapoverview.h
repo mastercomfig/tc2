@@ -163,6 +163,7 @@ public:
 	virtual void SetAngle( float angle);
 	virtual void SetRunAnimations( bool bRunAnimations ) { m_bRunAnimations = bRunAnimations; }
 	virtual Vector2D WorldToMap( const Vector &worldpos );
+	void SetIgnoreSpectatorBounds( bool bIgnore ) { m_bIgnoreSpectatorBounds = bIgnore; }
 
 	// Object settings
 	virtual int		AddObject( const char *icon, int entity, float timeToLive ); // returns object ID, 0 = no entity, -1 = forever
@@ -269,7 +270,7 @@ protected:
 	float	m_fTrailUpdateInterval; // if -1 don't show trails
 	bool	m_bFollowAngle;	// if true, map rotates with view angle
 
-
+	bool	m_bIgnoreSpectatorBounds;
 };
 
 extern IMapOverviewPanel *g_pMapOverview;
