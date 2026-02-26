@@ -24596,13 +24596,14 @@ CON_COMMAND_F( tc2_select_spawn, "Select a spawn location by node index.", FCVAR
 	float flCooldown = tf_tc2_redeploy_cooldown.GetFloat();
 	if ( gpGlobals->curtime - pPlayer->GetLastRedeployTime() < flCooldown )
 	{
-		Warning( "tc2_select_spawn: Redeploy on cooldown for player %s\n", pPlayer->GetPlayerName() );
+		ClientPrint( pPlayer, HUD_PRINTCENTER, "#TC2_RedeployCooldown" );
+		//Warning( "tc2_select_spawn: Redeploy on cooldown for player %s\n", pPlayer->GetPlayerName() );
 		return;
 	}
 
 	if ( args.ArgC() < 4 )
 	{
-		Warning( "tc2_select_spawn: Requires 3 arguments (x y z)\n" );
+		//Warning( "tc2_select_spawn: Requires 3 arguments (x y z)\n" );
 		return;
 	}
 
@@ -24641,6 +24642,7 @@ CON_COMMAND_F( tc2_select_spawn, "Select a spawn location by node index.", FCVAR
 
 	if ( !bValidSpawn )
 	{
-		Warning( "tc2_select_spawn: Invalid spawn position for player %s\n", pPlayer->GetPlayerName() );
+		//Warning( "tc2_select_spawn: Invalid spawn position for player %s\n", pPlayer->GetPlayerName() );
+		ClientPrint( pPlayer, HUD_PRINTCENTER, "#TC2_SpawnLost" );
 	}
 }
