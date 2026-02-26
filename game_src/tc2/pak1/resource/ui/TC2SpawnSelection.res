@@ -60,8 +60,8 @@
 	{
 		"ControlName"		"Button"
 		"fieldName"			"ConfirmButton"
-		"xpos"				"270"
-		"ypos"				"360"
+		"xpos"				"190"
+		"ypos"				"400"
 		"wide"				"100"
 		"tall"				"30"
 		"visible"			"1"
@@ -76,8 +76,8 @@
 	{
 		"ControlName"		"Button"
 		"fieldName"			"CancelButton"
-		"xpos"				"380"
-		"ypos"				"360"
+		"xpos"				"300"
+		"ypos"				"400"
 		"wide"				"100"
 		"tall"				"30"
 		"visible"			"1"
