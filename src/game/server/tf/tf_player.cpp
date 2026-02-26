@@ -9050,6 +9050,25 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 		}
 		return true;
 	}
+	else if ( FStrEq( "open_upgrades", pcmd ) )
+	{
+		if ( TFGameRules()->GameModeUsesUpgrades() )
+		{
+			if ( TFGameRules()->IsMannVsMachineMode() )
+			{
+				if ( !sv_cheats || !sv_cheats->GetBool() )
+					return true;
+			}
+
+			if ( !tf_tc2_mode.GetBool() )
+			{
+				return true;
+			}
+
+			m_Shared.SetInUpgradeZone(true);
+			return true;
+		}
+	}
 
 	return BaseClass::ClientCommand( args );
 }
@@ -12910,6 +12929,12 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	StateTransition( TF_STATE_DYING );	// Transition into the dying state.
 
+	if ( tf_tc2_mode.GetBool() && TFGameRules()->GameModeUsesUpgrades() )
+	{
+		// lose all upgrades on death
+		GrantOrRemoveAllUpgrades( true, false );
+	}
+
 	if ( pPlayerAttacker )
 	{
 		if ( TFGameRules()->IsIT( this ) )
@@ -15269,6 +15294,7 @@ void CTFPlayer::StateThinkDYING( void )
 
 		IncrementInterpolationFrame();
 
+		// TODO(mcoms): do this a bit sooner
 		// TC2: If active, send spawn node list to client
 		if ( tf_tc2_mode.GetBool() && TFGameRules() )
 		{

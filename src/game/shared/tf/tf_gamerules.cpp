@@ -2238,6 +2238,10 @@ bool CTFGameRules::GameModeUsesUpgrades( void )
 	if ( IsMannVsMachineMode() || IsBountyMode() )
 		return true;
 
+	static ConVarRef tf_tc2_mode( "tf_tc2_mode" );
+	if ( tf_tc2_mode.GetBool() )
+		return true;
+
 	return false;
 }
 
@@ -4116,7 +4120,6 @@ void CTFGameRules::LevelInitPostEntity( void )
 			GetVoiceGameMgr()->SetProximityDistance( -1 );
 		}
 	}
-
 #endif // GAME_DLL
 }
 
@@ -5079,6 +5082,15 @@ void CTFGameRules::Activate()
 	if ( GameModeUsesUpgrades() && g_pPopulationManager == NULL )
 	{
 		(CPopulationManager *)CreateEntityByName( "info_populator" );
+	}
+
+	if ( tf_tc2_mode.GetBool() && GameModeUsesUpgrades() && !g_hUpgradeEntity )
+	{
+		CUpgrades* pUpgrades = ( CUpgrades* )CreateEntityByName( "func_upgradestation" );
+		if ( pUpgrades )
+		{
+			pUpgrades->Spawn();
+		}
 	}
 
 	if ( tf_gamemode_tc.GetBool() || tf_gamemode_sd.GetBool() || tf_gamemode_pd.GetBool() || m_bPlayingMedieval )
@@ -15566,7 +15578,6 @@ void CTFGameRules::SetupSpawnPointsForRound( void )
 		return;
 
 #if defined ( TF_DLL )
-	extern ConVar tf_tc2_mode;
 	if ( tf_tc2_mode.GetBool() )
 	{
 		for ( int i=0; i<ITFTeamSpawnAutoList::AutoList().Count(); ++i )
@@ -17020,6 +17031,11 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 			{
 				pTFPlayer->SpeakConceptIfAllowed( MP_CONCEPT_MVM_UPGRADE_COMPLETE );
 			}
+
+			if ( tf_tc2_mode.GetBool() && GameModeUsesUpgrades() )
+			{
+				pTFPlayer->m_Shared.SetInUpgradeZone( false );
+			}
 		}
 		else if ( FStrEq( pszCommand, "MVM_Revive_Response" ) )
 		{
@@ -17067,6 +17083,11 @@ void CTFGameRules::ClientCommandKeyValues( edict_t *pEntity, KeyValues *pKeyValu
 					pTFPlayer->ForceRespawn();
 					pTFPlayer->SetInstantClassSpawn(false);
 				}
+			}
+
+			if ( tf_tc2_mode.GetBool() && GameModeUsesUpgrades() )
+			{
+				pTFPlayer->m_Shared.SetInUpgradeZone( false );
 			}
 		}
 		else if ( FStrEq( pszCommand, "use_action_slot_item_server" ) )

@@ -49,16 +49,23 @@ void CUpgrades::Spawn( void )
 	// Don't do anything if we don't have raid mode.
 	g_hUpgradeEntity = this;
 
-	AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
+	static ConVarRef tf_tc2_mode( "tf_tc2_mode" );
+	if ( !tf_tc2_mode.GetBool() )
+	{
+		AddSpawnFlags( SF_TRIGGER_ALLOW_CLIENTS );
 
-	InitTrigger();
+		InitTrigger();
 
-	SetTouch( &CUpgrades::UpgradeTouch );
+		SetTouch( &CUpgrades::UpgradeTouch );
+	}
 
 	ListenForGameEvent( "round_start" );
 	ListenForGameEvent( "teamplay_round_start" );
-
-	m_bIsEnabled = true;
+	
+	if ( !tf_tc2_mode.GetBool() )
+	{
+		m_bIsEnabled = true;
+	}
 }
 
 //-----------------------------------------------------------------------------
