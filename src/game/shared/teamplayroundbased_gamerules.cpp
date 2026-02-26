@@ -3110,6 +3110,12 @@ void CTeamplayRoundBasedRules::RoundRespawn( void )
 
 	RespawnPlayers( true );
 
+	// and then again, we free up edicts because player spawn can clean up edicts in some cases (upgrade mode)
+	if ( m_bForceMapReset || m_bPrevRoundWasWaitingForPlayers )
+	{
+		engine->AllowImmediateEdictReuse();
+	}
+
 	// reset per-round scores for each player
 	for ( int i = 1; i <= MAX_PLAYERS; i++ )
 	{

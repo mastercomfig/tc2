@@ -251,7 +251,7 @@ void RememberInitialEntityPositions( int nEntities, HierarchicalSpawn_t *pSpawnL
 }
 
 
-void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bActivateEntities )
+void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bActivateEntities, bool& bRemovedAnyEntities )
 {
 	int nEntity;
 	for (nEntity = 0; nEntity < nEntities; nEntity++)
@@ -288,6 +288,7 @@ void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bAct
 				gEntList.CleanupDeleteList();
 				// Remove the entity from the spawn list
 				pSpawnList[nEntity].m_hEntity = NULL;
+				bRemovedAnyEntities = true;
 			}
 		}
 	}
@@ -305,9 +306,39 @@ void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bAct
 				MDLCACHE_CRITICAL_SECTION();
 				pEntity->Activate();
 			}
+
+			// sometimes (like point_spotlight), activation can kill an entity.
+			if ( pEntity == NULL || pEntity->IsMarkedForDeletion() )
+			{
+				gEntList.CleanupDeleteList();
+				bRemovedAnyEntities = true;
+			}
 		}
 		mdlcache->SetAsyncLoad( MDLCACHE_ANIMBLOCK, bAsyncAnims );
 	}
+}
+
+void SpawnHierarchicalList( int nEntities, HierarchicalSpawn_t* pSpawnList, bool bActivateEntities, bool& bRemovedAnyEntities )
+{
+	// Compute the hierarchical depth of all entities hierarchically attached
+	ComputeSpawnHierarchyDepth( nEntities, pSpawnList );
+
+	// Sort the entities (other than the world) by hierarchy depth, in order to spawn them in
+	// that order. This insures that each entity's parent spawns before it does so that
+	// it can properly set up anything that relies on hierarchy.
+	SortSpawnListByHierarchy( nEntities, pSpawnList );
+
+	// save off entity positions if in edit mode
+	if ( engine->IsInEditMode() )
+	{
+		RememberInitialEntityPositions( nEntities, pSpawnList );
+	}
+	// Set up entity movement hierarchy in reverse hierarchy depth order. This allows each entity
+	// to use its parent's world spawn origin to calculate its local origin.
+	SetupParentsForSpawnList( nEntities, pSpawnList );
+
+	// Spawn all the entities in hierarchy depth order so that parents spawn before their children.
+	SpawnAllEntities( nEntities, pSpawnList, bActivateEntities, bRemovedAnyEntities );
 }
 
 //-----------------------------------------------------------------------------
@@ -331,6 +362,8 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 	{
 		pMapData = serverenginetools->GetEntityData( pMapData );
 	}
+
+	bool bRemovedAnyEntities = false;
 
 	//  Loop through all entities in the map data, creating each.
 	for ( ; true; pMapData = MapEntity_SkipToNextEntity(pMapData, szTokenBuffer) )
@@ -372,6 +405,7 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 			// Remove the template entity so that it does not show up in FindEntityXXX searches.
 			UTIL_Remove(pEntity);
 			gEntList.CleanupDeleteList();
+			bRemovedAnyEntities = true;
 			continue;
 		}
 
@@ -402,6 +436,7 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 			if ( pNode->Spawn( pCurMapData ) < 0 )
 			{
 				gEntList.CleanupDeleteList();
+				bRemovedAnyEntities = true;
 			}
 			continue;
 		}
@@ -417,6 +452,7 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 			if (DispatchSpawn(pEntity) < 0)
 			{
 				gEntList.CleanupDeleteList();
+				bRemovedAnyEntities = true;
 			}
 			continue;
 		}
@@ -453,6 +489,7 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 		{
 			UTIL_Remove(pPointTemplate);
 			gEntList.CleanupDeleteList();
+			bRemovedAnyEntities = true;
 			continue;
 		}
 
@@ -476,6 +513,7 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 						// Remove the template entity so that it does not show up in FindEntityXXX searches.
 						UTIL_Remove(pEntity);
 						gEntList.CleanupDeleteList();
+						bRemovedAnyEntities = true;
 
 						// Remove the entity from the spawn list
 						pSpawnList[iEntNum].m_hEntity = NULL;
@@ -488,35 +526,28 @@ void MapEntity_ParseAllEntities(const char *pMapData, IMapEntityFilter *pFilter,
 		pPointTemplate->FinishBuildingTemplates();
 	}
 
-	SpawnHierarchicalList( nEntities, pSpawnList, bActivateEntities );
+	SpawnHierarchicalList( nEntities, pSpawnList, bActivateEntities, bRemovedAnyEntities );
 
 	delete [] pSpawnMapData;
 	delete [] pSpawnList;
+
+	// above, we talk about overflowing edicts on maps, but we don't actually immediately free the edicts for when we're in a high pressure scenario.
+	// this fixes that.
+	if ( bRemovedAnyEntities )
+	{
+		engine->AllowImmediateEdictReuse();
+	}
 }
 
 void SpawnHierarchicalList( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bActivateEntities )
 {
-	// Compute the hierarchical depth of all entities hierarchically attached
-	ComputeSpawnHierarchyDepth( nEntities, pSpawnList );
-
-	// Sort the entities (other than the world) by hierarchy depth, in order to spawn them in
-	// that order. This insures that each entity's parent spawns before it does so that
-	// it can properly set up anything that relies on hierarchy.
-	SortSpawnListByHierarchy( nEntities, pSpawnList );
-
-	// save off entity positions if in edit mode
-	if ( engine->IsInEditMode() )
+	bool bRemovedAnyEntities;
+	SpawnHierarchicalList( nEntities, pSpawnList, bActivateEntities, bRemovedAnyEntities );
+	if ( bRemovedAnyEntities )
 	{
-		RememberInitialEntityPositions( nEntities, pSpawnList );
+		engine->AllowImmediateEdictReuse();
 	}
-	// Set up entity movement hierarchy in reverse hierarchy depth order. This allows each entity
-	// to use its parent's world spawn origin to calculate its local origin.
-	SetupParentsForSpawnList( nEntities, pSpawnList );
-
-	// Spawn all the entities in hierarchy depth order so that parents spawn before their children.
-	SpawnAllEntities( nEntities, pSpawnList, bActivateEntities );
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
