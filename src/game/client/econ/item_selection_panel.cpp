@@ -900,7 +900,7 @@ CEquippableItemsForSlotGenerator::CEquippableItemsForSlotGenerator( int iClass, 
 		}
 
 #if TF2_OG
-		if ( !IsWearableSlot(iSearchSlot) )
+		if ( !IsWearableSlot( iSearchSlot ) )
 		{
 			eDisplayType = kSlotDisplay_Disabled_EquipRegionConflict;
 		}

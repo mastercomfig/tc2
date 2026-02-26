@@ -331,7 +331,7 @@ bool CTFInventoryManager::EquipItemInLoadout( int iClass, int iSlot, itemid_t iI
 		return false;
 	}
 
-	if (!CheckExtraEquipRules(iClass, iSlot, pItem))
+	if ( !CheckExtraEquipRules(iClass, iSlot, pItem) )
 	{
 		return false;
 	}
@@ -1035,9 +1035,9 @@ void CTFPlayerInventory::LoadLocalLoadout()
 				CEconItemView* pItem = GetInventoryItemByItemID(uItemId);
 
 				bool bPassed = iPreset != m_ActivePreset[iClass];
-				if (pItem)
+				if ( pItem )
 				{
-					if (CheckExtraEquipRules(iClass, iSlot, pItem))
+					if ( CheckExtraEquipRules(iClass, iSlot, pItem) )
 					{
 						m_PresetItems[iPreset][iClass][iSlot] = uItemId;
 
@@ -1052,7 +1052,7 @@ void CTFPlayerInventory::LoadLocalLoadout()
 					}
 				}
 
-				if (!bPassed)
+				if ( !bPassed )
 				{
 					EquipLocal(INVALID_ITEM_ID, iClass, iSlot);
 					m_LoadoutItems[iClass][iSlot] = LOADOUT_SLOT_USE_BASE_ITEM;
@@ -1111,7 +1111,7 @@ void CTFPlayerInventory::SaveLocalLoadout( bool bReset, bool bDefaultToGC )
 
 				itemid_t uItemId = m_PresetItems[iPreset][iClass][iSlot];
 				//itemid_t uItemId = m_LoadoutItems[iClass][iSlot];
-				if (bReset) {
+				if ( bReset ) {
 #if TF2_OG
 					if (bDefaultToGC)
 					{
