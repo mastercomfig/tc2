@@ -128,7 +128,7 @@ CRawInputConvarOnetimeReset g_RawInputConvarOnetimeReset( "CRawInputConvarOnetim
 static ConVar m_limitedcapture_workaround( "m_limitedcapture_workaround", "0", FCVAR_NONE,
                                            "Workaround limitations on mouse capture in some environments" );
 
-#if DEBUG
+#if _DEBUG
 ConVar cl_mouselook( "cl_mouselook", "1", FCVAR_ARCHIVE, "Set to 1 to use mouse for look, 0 for keyboard look." );
 #else
 ConVar cl_mouselook( "cl_mouselook", "1", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Set to 1 to use mouse for look, 0 for keyboard look. Cannot be set while connected to a server." );
