@@ -153,7 +153,18 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 				{
 					if ( !bHasPlayer )
 					{
-						iRespawnWait = Floor2Int( TFGameRules()->GetNextRespawnWave( m_iTeam, NULL ) - gpGlobals->curtime );
+						static ConVarRef tf_tc2_mode( "tf_tc2_mode" );
+						float flRespawnWaveTime = TFGameRules()->GetNextRespawnWave( m_iTeam, pLocalPlayer );
+						// this isn't quite accurate since respawn time is per player, not per wave, but it gives an idea of how fast players are going to be spawning in.
+						if ( tf_tc2_mode.GetBool() )
+						{
+							// TODO(mcoms): better check for this
+							// add base player time to wave time (minus one since respawn wave is every second)
+							flRespawnWaveTime += 5.0f;
+							// add the actual wave time
+							flRespawnWaveTime += TFGameRules()->GetRespawnWaveMaxLength( m_iTeam, false );
+						}
+						iRespawnWait = RoundFloatToNearestInt( flRespawnWaveTime - gpGlobals->curtime );
 					}
 					else
 					{

@@ -663,7 +663,8 @@ float CTeamplayRoundBasedRules::GetMinTimeWhenPlayerMaySpawn( CBasePlayer *pPlay
 	//		and
 	// b) death anim length + freeze panel length
 
-	const float flDeathAnimLength = GetRespawnTimeMode() >= 2 ? 0.51f : ( TF_DEATH_ANIMATION_TIME + spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
+	const int iRespawnTimeMode = GetRespawnTimeMode();
+	const float flDeathAnimLength = iRespawnTimeMode >= 2 ? 0.51f : ( TF_DEATH_ANIMATION_TIME + spec_freeze_traveltime.GetFloat() + spec_freeze_time.GetFloat() );
 	float fMinDelay = flDeathAnimLength;
 
 	if ( !ShouldRespawnQuickly( pPlayer ) )
@@ -3962,6 +3963,14 @@ float CTeamplayRoundBasedRules::GetRespawnWaveMaxLength( int iTeam, bool bScaleW
 	//Let's just turn off respawn times while players are messing around waiting for the tournament to start
 	if ( IsInTournamentMode() == true && IsInPreMatch() == true )
 		return 0.0f;
+
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
+	static ConVarRef tf_tc2_mode( "tf_tc2_mode" );
+	if ( tf_tc2_mode.GetBool() && bScaleWithNumPlayers )
+	{
+		return 1.0f;
+	}
+#endif
 
 	float flTime = ( ( m_TeamRespawnWaveTimes[iTeam] >= 0 ) ? m_TeamRespawnWaveTimes[iTeam] : mp_respawnwavetime.GetFloat() );
 
