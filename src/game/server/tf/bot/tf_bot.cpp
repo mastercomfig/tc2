@@ -1173,7 +1173,7 @@ ETFClass CTFBot::GetPresetClassToSpawn() const
 	{
 		ETFClass iClass = desiredRoster[i];
 
-		if ( currentRoster.m_count[ iClass ] > classCount[ iClass ] )
+		if ( currentRoster.m_count[ iClass ] > classCount[ iClass ] || !TFGameRules()->CanBotChooseClass( const_cast< CTFBot * >( this ), iClass ) )
 		{
 			// if we have enough of this class, skip it
 			classCount[ iClass ]++;
@@ -1228,6 +1228,10 @@ const char *CTFBot::GetNextSpawnClassname( void )
 	if ( !FStrEq( pszForceClass, "" ) )
 	{
 		iNextClass = (ETFClass)GetClassIndexFromString( pszForceClass );
+	}
+	if ( !TFGameRules()->CanPlayerChooseClass( const_cast< CTFBot * >( this ), iNextClass ) )
+	{
+		iNextClass = TF_CLASS_UNDEFINED;
 	}
 
 	if ( m_iReservedPlayerClass != TF_CLASS_UNDEFINED )
