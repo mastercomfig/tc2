@@ -1928,7 +1928,9 @@ void CBaseCombatWeapon::WeaponSound( WeaponSound_t sound_type, float soundtime /
 	const char *shootsound = GetShootSound( sound_type );
 	if ( !shootsound || !shootsound[0] )
 	{
+#if _DEBUG
 		DevMsg( "No shoot sound %d for weapon %s\n", sound_type, GetClassname() );
+#endif
 		return;
 	}
 	
