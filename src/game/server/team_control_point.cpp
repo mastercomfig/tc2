@@ -18,6 +18,7 @@
 #ifdef TF_DLL
 #include "tf_shareddefs.h"
 #include "tf_gamerules.h"
+#include "entity_tfstart.h"
 #endif
 
 #define CONTROL_POINT_UNLOCK_THINK			"UnlockThink"
@@ -703,6 +704,50 @@ void CTeamControlPoint::InternalSetOwner( int iCapTeam, bool bMakeSound, int iNu
 
 		pEnt = gEntList.FindEntityByClassname( pEnt, GetControlPointMasterName() );
 	}
+
+#if defined ( TF_DLL )
+	extern ConVar tf_tc2_mode;
+	if ( tf_tc2_mode.GetBool() )
+	{
+		// Update team spawns tied to this control point
+		for ( int i=0; i<ITFTeamSpawnAutoList::AutoList().Count(); ++i )
+		{
+			CTFTeamSpawn *pTFSpawn = static_cast< CTFTeamSpawn* >( ITFTeamSpawnAutoList::AutoList()[i] );
+			CHandle<CTeamControlPoint> hControlPoint = pTFSpawn->GetControlPoint();
+
+			if ( hControlPoint == this )
+			{
+				pTFSpawn->ChangeTeam( m_iTeam );
+			}
+		}
+
+		variant_t emptyVariant;
+
+		// update respawnroom for new owner so same team checks pass
+		CBaseEntity *pRoom = NULL;
+		while ( ( pRoom = gEntList.FindEntityByClassname( pRoom, "func_respawnroom" ) ) != NULL )
+		{
+			pRoom->AcceptInput( "RoundActivate", this, this, emptyVariant, 0 );
+		}
+
+		// update respawnroomvisualizer for new owner so we see no entry on correct team
+		CBaseEntity *pVis = NULL;
+		while ( ( pVis = gEntList.FindEntityByClassname( pVis, "func_respawnroomvisualizer" ) ) != NULL )
+		{
+			pVis->AcceptInput( "RoundActivate", this, this, emptyVariant, 0 );
+		}
+
+		// Update tf team filter for new capture point owner, so spawn doors respond to allies
+		CBaseEntity *pFilter = NULL;
+		while ( ( pFilter = gEntList.FindEntityByClassname( pFilter, "filter_activator_tfteam" ) ) != NULL )
+		{
+			pFilter->AcceptInput( "RoundActivate", this, this, emptyVariant, 0 );
+		}
+
+		// update OnRoundStartOwnedByTeam, for resupply skins
+		AcceptInput( "RoundActivate", this, this, emptyVariant, 0 );
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
