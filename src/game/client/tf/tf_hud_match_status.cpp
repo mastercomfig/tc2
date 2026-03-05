@@ -485,6 +485,11 @@ void CTFHudMatchStatus::OnThink()
 	{
 		InvalidateLayout( false, true );
 
+		if ( m_pTimePanel )
+		{
+			m_pTimePanel->InvalidateLayout( false, true );
+		}
+
 		// The KOTH timers are their own hud element 
 		CTFHudKothTimeStatus *pKothHUD = GET_HUDELEMENT( CTFHudKothTimeStatus );
 		if ( pKothHUD )
