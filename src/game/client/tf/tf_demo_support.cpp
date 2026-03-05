@@ -176,7 +176,7 @@ void CTFDemoSupport::Update( float frametime )
 
 				const float flRestartTime = TFGameRules()->GetRoundRestartTime();
 				const bool bInCountdown = flRestartTime > 0.0f && flRestartTime - gpGlobals->curtime <= 7.5f;
-				if ( !bInCountdown && !TFGameRules()->IsInPlay() )
+				if ( ( !bInCountdown && !TFGameRules()->IsInPlay() ) || TFGameRules()->State_Get() == GR_STATE_GAME_OVER )
 					return;
 			}
 
@@ -212,6 +212,13 @@ void CTFDemoSupport::Update( float frametime )
 		{
 			engine->TakeScreenshot( m_szFilename, m_szFolder );
 			Notify( "(Demo Support) Screenshot saved\n" );
+		}
+
+		if ( ds_rounds_only.GetBool() )
+		{
+			StopRecording( false );
+			// wait a bit before trying to record again.
+			m_flNextRecordStartCheckTime = gpGlobals->curtime + 5.f;
 		}
 	}
 }
@@ -437,11 +444,6 @@ void CTFDemoSupport::FireGameEvent( IGameEvent * event )
 			float flDelay = event->GetFloat( "delay" );
 			m_flScreenshotTime = gpGlobals->curtime + flDelay;
 		}
-	}
-	else if ( ds_rounds_only.GetBool() && ( FStrEq( pszEvent, "teamplay_game_over" ) || FStrEq( pszEvent, "tf_game_over" ) ) )
-	{
-		// Last branch so we can check ds_rounds_only without messing up else logic.
-		StopRecording();
 	}
 }
 
