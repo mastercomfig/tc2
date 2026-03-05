@@ -70,6 +70,7 @@ struct NavConnect
 	{
 		id = 0;
 		length = -1;
+		deltaZ = FLT_MAX;
 	}
 
 	union
@@ -79,6 +80,7 @@ struct NavConnect
 	};
 
 	mutable float length;
+	mutable float deltaZ;
 
 	bool operator==( const NavConnect &other ) const
 	{
@@ -368,6 +370,7 @@ public:
 
 	const NavConnectVector *GetAdjacentAreas( NavDirType dir ) const	{ return &m_connect[dir]; }
 	bool IsConnected( const CNavArea *area, NavDirType dir ) const;	// return true if given area is connected in given direction
+	int  GetConnected( const CNavArea* area, NavDirType dir ) const; // return it if given area is connected in given direction
 	bool IsConnected( const CNavLadder *ladder, CNavLadder::LadderDirectionType dir ) const;	// return true if given ladder is connected in given direction
 	float ComputeGroundHeightChange( const CNavArea *area );			// compute change in actual ground height from this area to given area
 

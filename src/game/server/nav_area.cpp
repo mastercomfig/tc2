@@ -1327,6 +1327,21 @@ bool CNavArea::IsConnected( const CNavArea *area, NavDirType dir ) const
 	return false;
 }
 
+int CNavArea::GetConnected( const CNavArea *area, NavDirType dir ) const
+{
+	if ( area != this && dir != NUM_DIRECTIONS )
+	{
+		// check specific direction
+		FOR_EACH_VEC( m_connect[ dir ], it )
+		{
+			if (area == m_connect[ dir ][ it ].area)
+				return it;
+		}
+	}
+
+	return m_connect[0].InvalidIndex();
+}
+
 //--------------------------------------------------------------------------------------------------------------
 /**
  * Compute change in actual ground height from this area to given area
@@ -2605,16 +2620,24 @@ float CNavArea::ComputeAdjacentConnectionHeightChange( const CNavArea *destinati
 {
 	VPROF_BUDGET( "CNavArea::ComputeAdjacentConnectionHeightChange", "NextBot" );
 
+	if ( destinationArea == this )
+		return 0.0f;
+
 	// find which side it is connected on
 	int dir;
+	int it;
 	for( dir=0; dir<NUM_DIRECTIONS; ++dir )
 	{
-		if ( IsConnected( destinationArea, (NavDirType)dir ) )
+		it = GetConnected( destinationArea, ( NavDirType )dir );
+		if ( it != m_connect[0].InvalidIndex() )
 			break;
 	}
 
 	if ( dir == NUM_DIRECTIONS )
 		return FLT_MAX;
+
+	if ( m_connect[dir][it].deltaZ != FLT_MAX )
+		return m_connect[dir][it].deltaZ;
 
 	Vector myEdge;
 	float halfWidth;
@@ -2623,7 +2646,11 @@ float CNavArea::ComputeAdjacentConnectionHeightChange( const CNavArea *destinati
 	Vector otherEdge;
 	destinationArea->ComputePortal( this, OppositeDirection( (NavDirType)dir ), &otherEdge, &halfWidth );
 
-	return otherEdge.z - myEdge.z;
+	// cache it
+	const float deltaZ = otherEdge.z - myEdge.z;
+    m_connect[dir][it].deltaZ = deltaZ;
+
+	return deltaZ;
 }
 
 
