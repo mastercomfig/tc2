@@ -269,7 +269,7 @@ bool CBaseViewport::IsAnyPanelVisibleExceptScores()
 	{
 		IViewPortPanel *p = m_Panels[i];
 
-		if ( p->IsVisible() && Q_strcmp("MainMenuOverride", p->GetName()) && Q_strcmp("scores", p->GetName()) )
+		if ( p->IsVisible() && Q_strcmp( "MainMenuOverride", p->GetName() ) && Q_strcmp( PANEL_SCOREBOARD, p->GetName() ) )
 		{
 			return true;
 		}

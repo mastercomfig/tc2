@@ -273,7 +273,7 @@ static void __MsgFunc_VGUIMenu( bf_read &msg )
 	}
 
 	// is the server telling us to show the scoreboard (at the end of a map)?
-	if ( Q_stricmp( panelname, "scores" ) == 0 )
+	if ( Q_stricmp( panelname, PANEL_SCOREBOARD ) == 0 )
 	{
 		if ( hud_takesshots.GetBool() == true )
 		{
