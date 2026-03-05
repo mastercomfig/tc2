@@ -851,6 +851,7 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayer, DT_TFPlayer )
 	SendPropBool( SENDINFO( m_bRegenerating ) ),
 	SendPropInt( SENDINFO( m_nRestrictAchievements ), 2, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_nRestrictQuests ), 2, SPROP_UNSIGNED ),
+	SendPropEHandle( SENDINFO( m_hOffHandWeapon ) ),
 END_SEND_TABLE()
 
 // -------------------------------------------------------------------------------- //

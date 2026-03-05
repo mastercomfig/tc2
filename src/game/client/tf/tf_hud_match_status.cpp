@@ -372,9 +372,9 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 		pConditions = new KeyValues( "conditions" );
 		AddSubKeyNamed( pConditions, "if_match" );
 
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GTFGCClientSystem()->GetLiveMatchGroup() );
+		// TODO(mcoms): why does GTFGCClientSystem()->GetLiveMatchGroup() sometimes fail?
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules() ? TFGameRules()->GetCurrentMatchGroup() : GTFGCClientSystem()->GetLiveMatchGroup() );
 		bool bHasLargeTeam = false;
-
 		if ( pMatchDesc )
 		{
 			if ( pMatchDesc->GetMatchSize() > 12 )
