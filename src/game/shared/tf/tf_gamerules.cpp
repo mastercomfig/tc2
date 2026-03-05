@@ -2367,13 +2367,13 @@ bool CTFGameRules::IsMatchTypeCompetitive( void ) const
 	return false;
 }
 
-bool CTFGameRules::InMatchStartFreeze( void )
+bool CTFGameRules::InMatchStartFreeze( bool bAllMovement )
 {
 	// No one can move when in a final countdown transition.
 	if ( BInMatchStartCountdown() )
 	{
 		// if preround push is enabled, we can move in the last bit.
-		if ( IsPreRoundPushEnabled() )
+		if ( bAllMovement && IsPreRoundPushEnabled() )
 		{
 			if ( ( m_flRestartRoundTime - gpGlobals->curtime ) > 3.0f )
 			{
@@ -4209,9 +4209,9 @@ bool CTFGameRules::IsInPlay()
 
 	if ( State_Get() == GR_STATE_PREROUND )
 	{
-		// we're about to enter ready status mode.
+		// we're about to enter ready status.
 #ifdef GAME_DLL
-		if ( UsePlayerReadyStatusMode() && m_bAllowBetweenRounds )
+		if ( m_bAllowBetweenRounds )
 		{
 			return false;
 		}
@@ -9106,7 +9106,7 @@ void CTFGameRules::Think()
 
 	if ( g_fGameOver )
 	{
-		if ( ( IsCompetitiveMode() || IsEmulatingMatch() ) && !IsMannVsMachineMode() )
+		if ( ( IsCompetitiveMode() || IsEmulatingMatch() || UsePlayerReadyStatusMode() ) && !IsMannVsMachineMode() )
 		{
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
 
@@ -9191,9 +9191,17 @@ void CTFGameRules::Think()
 			}
 
 			bool bCanQuickReset = !BHavePlayers();
-			if (bCanQuickReset)
+			if ( bCanQuickReset )
 			{
-				if ( HLTVDirector() && HLTVDirector()->GetHLTVServer() )
+				bool bWillLeaveMap = false;
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
+				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
+				{
+					bWillLeaveMap = true;
+				}
+				static ConVarRef tv_delaymapchange( "tv_delaymapchange" );
+				if ( bWillLeaveMap && HLTVDirector() && HLTVDirector()->IsActive() && tv_delaymapchange.GetBool() )
 				{
 					// if we're running the HLTV director, then we wait the full time.
 					bCanQuickReset = false;
@@ -22717,6 +22725,13 @@ void CTFGameRules::BetweenRounds_Think( void )
 		{
 			CheckReadyRestart();
 		}
+	}
+	else if ( IsWaitingForTeams() )
+	{
+		// reset our between rounds state, this is not only used for player ready status mode, but to detect the beginning of a match.
+		SetAllowBetweenRounds( true );
+		// now go to pre-round so we can start team ready mode. skip over between rounds exit.
+		State_Enter( GR_STATE_PREROUND );
 	}
 	
 	CheckRespawnWaves();

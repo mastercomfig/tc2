@@ -1179,6 +1179,9 @@ void CTeamplayRoundBasedRules::CheckRestartRound( void )
 
 		SetInStopWatch( false );
 
+		// cannot enter between rounds anymore.
+		SetAllowBetweenRounds( false );
+
 		if ( bRestartGameNow )
 		{
 			iRestartDelay = 0;
@@ -1890,6 +1893,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 		{
 			mp_restartgame.SetValue( 5 );
 			m_bAwaitingReadyRestart = false;
+			SetAllowBetweenRounds( false );
 
 			ShouldResetScores( true, true );
 			ShouldResetRoundsPlayed( true );
@@ -2167,10 +2171,12 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 
 				g_fGameOver = true;
 				State_Enter( GR_STATE_GAME_OVER );
-				float flPostMatchPeriod = GetPostMatchPeriod();
+				
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+
+				float flPostMatchPeriod = ( pMatchDesc || TFGameRules()->IsEmulatingMatch() ) ? GetPostMatchPeriod() : 10.0f;
 
 				bool bWillLeaveMap = false;
-				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
 				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
@@ -2195,7 +2201,18 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 #endif // TF_DLL
 			else
 			{
+#ifdef TF_DLL
+				g_fGameOver = false;
+				// we're ready for ready mode if we switch to it again.
+				SetAllowBetweenRounds( true );
+				// trick restart into doing a full map cleanup.
+				SetInWaitingForPlayers( true );
+				State_Transition( GR_STATE_RESTART );
+				// restore our waiting for players state.
+				SetInWaitingForPlayers( true );
+#else
 				State_Transition( GR_STATE_RND_RUNNING );
+#endif
 			}
 		}
 	}

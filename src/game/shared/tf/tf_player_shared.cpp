@@ -10972,14 +10972,13 @@ bool CTFPlayer::CanPlayerMove() const
 		return true;
 
 	// No one can move when in a final countdown transition.
-	// NOTE: this is intentionally not InMatchStartFreeze, because we want to freeze normal movement still.
-	if ( TFGameRules() && TFGameRules()->BInMatchStartCountdown() )
+	if ( TFGameRules() && TFGameRules()->InMatchStartFreeze( false ) )
 		return false;
 
 	if ( IsViewingCYOAPDA() )
 		return false;
 
-	bool bInRoundRestart = TFGameRules() && TFGameRules()->InRoundRestart();
+	bool bInRoundRestart = TFGameRules() && TFGameRules()->InRoundRestart() && !TFGameRules()->IsInPreMatch();
 	if ( !bInRoundRestart )
 		return true;
 

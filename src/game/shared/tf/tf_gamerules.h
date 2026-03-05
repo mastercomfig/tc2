@@ -710,7 +710,7 @@ bool IsCreepWaveMode( void ) const;
 	int IsEmulatingMatch(void) const;
 	// Are we showing the match-start-countdown doors right now
 	bool BInMatchStartCountdown() const;
-	bool InMatchStartFreeze();
+	bool InMatchStartFreeze( bool bAllMovement = true );
 #ifdef GAME_DLL
 	void SyncMatchSettings();
 	void ResetManagedMatch();
