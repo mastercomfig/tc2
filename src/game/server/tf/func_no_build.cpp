@@ -108,6 +108,9 @@ void CFuncNoBuild::Activate( void )
 	{
 		SetActive( true );
 	}
+
+	// TODO(mcoms)
+	UTIL_Remove( this );
 }
 
 
