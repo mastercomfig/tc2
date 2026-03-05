@@ -30,6 +30,10 @@
 	
 	"prop_dynamic|round_A2D_enablecover"	"Disable"
 	"prop_dynamic|round_A2D_enablecover"	"DisableCollision"
+
+	"team_round_timer|timer_central"		"Kill"
+	"team_round_timer|timer_dred"			"Kill"
+	"team_round_timer|timer_ablue"			"Kill"
 	
 	"obs_A"		"Enable"
 	"obs_B"		"Enable"
