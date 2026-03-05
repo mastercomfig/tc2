@@ -14190,7 +14190,7 @@ CTFPlayer *CTFGameRules::GetRecentDamager( CTFPlayer *pVictim, int iDamager, flo
 	return NULL;
 }
 
-CObjectSentrygun *CTFGameRules::GetSentryGunInflictor(CBaseEntity *pInflictor)
+CObjectSentrygun *CTFGameRules::GetSentryGunInflictor( CBaseEntity *pInflictor )
 {
 	// safety
 	if ( !pInflictor )
