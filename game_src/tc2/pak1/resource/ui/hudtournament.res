@@ -756,19 +756,21 @@
 
 		if_competitive
 		{
-			"xpos"			"c-45"
-			"ypos"			"18"
-			"tall"			"35"
+			"xpos"			"cs-0.5"
+			"ypos"			"12"
+			"tall"			"20"
 			"visible"		"1"
 			"font"			"TFFontMedium"
+			"textAlignment"	"center"
 		}
 
 		if_readymode
 		{
-			"xpos"			"285"
-			"ypos"			"26"
+			"xpos"			"195"
+			"ypos"			"10"
 			"visible"		"1"
 			"font"			"TFFontMedium"
+			"textAlignment"	"center"
 		}
 	}
 
