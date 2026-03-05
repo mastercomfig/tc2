@@ -4035,6 +4035,7 @@ void CTFPlayer::Spawn()
 	}
 #endif
 
+	// TODO: don't create this for everyone
 	// Create our off hand viewmodel if necessary
 	CreateViewModel( 1 );
 	// Make sure it has no model set, in case it had one before
