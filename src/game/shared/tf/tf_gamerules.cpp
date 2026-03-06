@@ -9426,6 +9426,13 @@ void CTFGameRules::Think()
 			{
 				if ( ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) && ( GetRoundsPlayed() == 0 ) )
 				{
+					if ( mp_tournament_prevent_team_switch_on_readyup.GetBool() )
+					{
+						TFGameRules()->SetSwitchTeams( false );
+					}
+					StartCompetitiveMatch();
+					ShouldResetScores( true, true );
+					ShouldResetRoundsPlayed( true );
 					SpawnMatchBots();
 				}
 
@@ -22711,8 +22718,6 @@ void CTFGameRules::BetweenRounds_Think( void )
 		if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime > flDropDeadTime ) )
 		{
 			m_flRestartRoundTime.Set( flDropDeadTime );
-			ShouldResetScores( true, true );
-			ShouldResetRoundsPlayed( true );
 
 			if ( IsCompetitiveMode() || IsEmulatingMatch() )
 			{

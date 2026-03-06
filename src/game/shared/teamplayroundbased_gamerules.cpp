@@ -1637,7 +1637,18 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 
 	m_flStartBalancingTeamsAt = gpGlobals->curtime + 60.0f;
 
-	RoundRespawn();
+	bool bDoRoundRespawn = true;
+#ifdef TF_DLL
+	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && GetRoundsPlayed() == 0 )
+	{
+		// we already did a round respawn in this case.
+		bDoRoundRespawn = false;
+	}
+#endif
+	if ( bDoRoundRespawn )
+	{
+		RoundRespawn();
+	}
 
 	IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_round_start" );
 	if ( event )
@@ -1698,6 +1709,12 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 			// TODO(mcoms): maybe needs some work?
 			flTransitionTime = 3.0f;
 			m_flCountdownTime = -1.f;
+			// reset spawn points
+			extern EHANDLE g_pLastSpawnPoints[TF_TEAM_COUNT];
+			for ( int i = 0; i < TF_TEAM_COUNT; i++ )
+			{
+				g_pLastSpawnPoints[i].Term();
+			}
 			if ( !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
 			{
 				if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) )
@@ -1849,13 +1866,9 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 					return;
 				}
 			}
-			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
+			else if ( !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() && mp_tournament.GetBool() )
 			{
-				TFGameRules()->StartCompetitiveMatch();
-				return;
-			}
-			else if ( mp_tournament.GetBool() )
-			{
+				// for matches, we handle this during m_flCompModeRespawnPlayersAtMatchStart
 				if ( mp_tournament_prevent_team_switch_on_readyup.GetBool() )
 				{
 					TFGameRules()->SetSwitchTeams( false );
