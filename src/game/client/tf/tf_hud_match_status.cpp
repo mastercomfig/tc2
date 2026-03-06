@@ -662,20 +662,20 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 
 void CTFHudMatchStatus::HandleCountdown( int nTime )
 {
-	// this is the drop dead final countdown for matches
+	// this is the round start countdown for matches
 	// Update the timer
 	SetDialogVariable( "countdown", nTime );
 
 	wchar_t* pSectionString = NULL;
 	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->GetRoundsPlayed() > 0 )
 	{
-		if ( TFGameRules()->IsHighSkillCompetitive() && nTime <= 5 )
+		if ( TFGameRules()->IsHighSkillCompetitive() && nTime <= 3 )
 		{
-			pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_RollOutTime" );
+			pSectionString = g_pVGuiLocalize->Find( "#TF_Tournament_RollOutTime" );
 		}
 		else
 		{
-			pSectionString = g_pVGuiLocalize->Find( "TF_Tournament_PlanningTime" );
+			pSectionString = g_pVGuiLocalize->Find( "#TF_Tournament_PlanningTime" );
 		}
 	}
 

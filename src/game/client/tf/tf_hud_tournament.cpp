@@ -399,7 +399,7 @@ void CHudTournament::PreparePanel( void )
 
 			if ( m_bCountDownVisible )
 			{
-				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, m_bCompetitiveMode || ( m_bReadyStatusMode && TFGameRules() && !TFGameRules()->IsMannVsMachineMode() ) ? "HudTournament_ShowTimerCompetitive" : "HudTournament_ShowTimerDefault", false );
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, TFGameRules() && TFGameRules()->IsMannVsMachineMode() ? "HudTournament_ShowTimerDefault" : "HudTournament_ShowTimerCompetitive", false );
 			}
 			else
 			{
@@ -589,25 +589,31 @@ void CHudTournament::OnTick( void )
 	{
 		if ( TFGameRules()->IsInTournamentMode() )
 		{
+			bool bNeedsInvalidate = false;
 			if ( TFGameRules()->IsInWaitingForPlayers() && TFGameRules()->State_Get() != GR_STATE_GAME_OVER )
 			{
-				m_bShouldBeVisible = true;
+				bool bShouldBeVisible = true;
 				PreparePanel();
 
 				if ( !TFGameRules()->IsInArenaMode() )
 				{
 					if ( !pLocalPlayer->IsAlive() )
 					{
-						m_bShouldBeVisible = false;
+						bShouldBeVisible = false;
 					}
 				}
+				if ( m_bShouldBeVisible != bShouldBeVisible )
+				{
+					m_bShouldBeVisible = bShouldBeVisible;
+					bNeedsInvalidate = true;
+				}
 			}
-			else
+			else if ( m_bShouldBeVisible )
 			{
 				m_bShouldBeVisible = false;
+				bNeedsInvalidate = true;
 			}
 
-			bool bNeedsInvalidate = false;
 			if ( TFGameRules()->UsePlayerReadyStatusMode() )
 			{
 				if ( !m_bReadyStatusMode )

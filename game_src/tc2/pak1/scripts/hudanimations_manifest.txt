@@ -2,6 +2,6 @@ hudanimations_manifest
 {
 
 	"file"		"scripts/hudanimations.txt"
-	"file"		"scripts/hudanimations_tf.txt"
 	"file"		"scripts/hudanimations_mod.txt"
+	"file"		"scripts/hudanimations_tf.txt"
 }

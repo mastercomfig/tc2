@@ -73,4 +73,34 @@ event HudMatchStatus_ShowMatchStartDoors_Fast
 	SetVisible CountdownBG 1 11
 }
 
-//
+event HudTournament_MoveTimerDown
+{
+	Animate CountdownLabel ypos 150 Linear 0 0
+	Animate CountdownLabelShadow ypos 150 Linear 0 0
+
+	SetVisible CountdownBG 0 0
+	SetVisible CountdownLabel 1 0
+	SetVisible CountdownLabelShadow 1 0
+
+	Animate CountdownLabel ypos c-3 Gain 0.75 0 0.4
+	Animate CountdownLabelShadow ypos c0 Gain 0.75 0 0.4
+
+	SetVisible	TournamentConditionLabel 0 0
+
+	SetVisible CountdownLabel 0 3
+	SetVisible CountdownLabelShadow 0 3
+}
+
+event HudMatchStatus_ShowCountdown
+{
+	SetVisible CountdownSectionLabel 1 0
+	SetVisible CountdownLabel 1 0
+	SetVisible CountdownLabelShadow 1 0
+	Animate CountdownLabel ypos 150 Linear 0 0
+	Animate CountdownLabelShadow ypos 150 Linear 0 0
+	Animate CountdownLabel ypos c-3 Gain 0.75 0 0.4
+	Animate CountdownLabelShadow ypos c-0 Gain 0.75 0 0.4
+	SetVisible CountdownSectionLabel 0 9.9
+	SetVisible CountdownLabel 0 9.9
+	SetVisible CountdownLabelShadow 0 9.9
+}
