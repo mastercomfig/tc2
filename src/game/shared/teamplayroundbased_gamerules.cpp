@@ -1639,7 +1639,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 
 	bool bDoRoundRespawn = true;
 #ifdef TF_DLL
-	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && GetRoundsPlayed() == 0 )
+	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && GetRoundsPlayed() == 0 && !m_bAllowBetweenRounds )
 	{
 		// we already did a round respawn in this case.
 		bDoRoundRespawn = false;
@@ -2841,15 +2841,7 @@ void CTeamplayRoundBasedRules::RestartTournament( void )
 	// so reset this bool each time we restart the tournament
 	m_bChangelevelAfterStalemate = false;
 
-	for ( int i = 0; i < MAX_TEAMS; i++ )
-	{
-		SetTeamReadyState( false, i );
-	}
-
-	for ( int i = 0; i < MAX_PLAYERS; i++ )
-	{
-		m_bPlayerReady.Set( i, false );
-	}
+	ResetPlayerAndTeamReadyState();
 }
 
 void CTeamplayRoundBasedRules::FullRestartTournament( void )
@@ -3070,7 +3062,7 @@ void CTeamplayRoundBasedRules::RoundRespawn( void )
 {
 	m_flRoundStartTime = gpGlobals->curtime;
 
-	if ( m_bForceMapReset || m_bPrevRoundWasWaitingForPlayers )
+	if ( m_bForceMapReset || PrevRoundWasWaitingForPlayers() )
 	{
 		CleanUpMap();
 
@@ -3141,7 +3133,7 @@ void CTeamplayRoundBasedRules::RoundRespawn( void )
 	RespawnPlayers( true );
 
 	// and then again, we free up edicts because player spawn can clean up edicts in some cases (upgrade mode)
-	if ( m_bForceMapReset || m_bPrevRoundWasWaitingForPlayers )
+	if ( m_bForceMapReset || PrevRoundWasWaitingForPlayers() )
 	{
 		engine->AllowImmediateEdictReuse();
 	}

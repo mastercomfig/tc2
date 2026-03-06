@@ -5720,6 +5720,8 @@ void CTFGameRules::FullRestartTournament( void )
 	if ( !IsCommunityGameMode() )
 		SetAllowBetweenRounds( true );
 
+	ShouldResetScores( true, true );
+	ShouldResetRoundsPlayed( true );
 	// we set waiting for player in the base class, now restart will do a map cleanup.
 	State_Transition( GR_STATE_RESTART );
 	// trick restart into doing a full map cleanup.
@@ -9252,6 +9254,8 @@ void CTFGameRules::Think()
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
 						SetAllowBetweenRounds( true );
+					ShouldResetScores( true, true );
+					ShouldResetRoundsPlayed( true );
 					// trick restart into doing a full map cleanup.
 					SetInWaitingForPlayers( true );
 					State_Transition( GR_STATE_RESTART );
@@ -9426,13 +9430,9 @@ void CTFGameRules::Think()
 			{
 				if ( ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) && ( GetRoundsPlayed() == 0 ) )
 				{
-					if ( mp_tournament_prevent_team_switch_on_readyup.GetBool() )
-					{
-						TFGameRules()->SetSwitchTeams( false );
-					}
-					StartCompetitiveMatch();
 					ShouldResetScores( true, true );
 					ShouldResetRoundsPlayed( true );
+					StartCompetitiveMatch();
 					SpawnMatchBots();
 				}
 
