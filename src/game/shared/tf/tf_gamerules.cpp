@@ -9430,9 +9430,12 @@ void CTFGameRules::Think()
 			{
 				if ( ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) && ( GetRoundsPlayed() == 0 ) )
 				{
-					ShouldResetScores( true, true );
-					ShouldResetRoundsPlayed( true );
-					StartCompetitiveMatch();
+					if ( IsPreRoundPushEnabled() )
+					{
+						ShouldResetScores( true, true );
+						ShouldResetRoundsPlayed( true );
+						StartCompetitiveMatch();
+					}
 					SpawnMatchBots();
 				}
 

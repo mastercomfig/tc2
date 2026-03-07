@@ -1641,8 +1641,13 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 #ifdef TF_DLL
 	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && GetRoundsPlayed() == 0 && !m_bAllowBetweenRounds )
 	{
-		// we already did a round respawn in this case.
-		bDoRoundRespawn = false;
+		CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+		bool bPlayedMiniRound = pMaster && pMaster->PlayingMiniRounds();
+		if ( !bPlayedMiniRound && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
+		{
+			// we already did a round respawn in this case.
+			bDoRoundRespawn = false;
+		}
 	}
 #endif
 	if ( bDoRoundRespawn )
@@ -1866,9 +1871,17 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 					return;
 				}
 			}
-			else if ( !TFGameRules()->IsCompetitiveMode() && !TFGameRules()->IsEmulatingMatch() && mp_tournament.GetBool() )
+			else if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
 			{
-				// for matches, we handle this during m_flCompModeRespawnPlayersAtMatchStart
+				// otherwise, we handled this during m_flCompModeRespawnPlayersAtMatchStart
+				if ( !TFGameRules()->IsPreRoundPushEnabled() )
+				{
+					TFGameRules()->StartCompetitiveMatch();
+				}
+				return;
+			}
+			else if ( mp_tournament.GetBool() )
+			{
 				if ( mp_tournament_prevent_team_switch_on_readyup.GetBool() )
 				{
 					TFGameRules()->SetSwitchTeams( false );
