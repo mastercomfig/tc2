@@ -504,7 +504,6 @@ void CBaseViewport::RemoveAllPanels( void)
 	for ( int i=0; i < m_Panels.Count(); i++ )
 	{
 		vgui::VPANEL vPanel = m_Panels[i]->GetVPanel();
-		Panel* panel = ipanel()->GetPanel( vPanel, GetControlsModuleName() );
 		// if we have any hud elements under our control, make sure we recover them before deleting
 		int iChildIdx = ipanel()->GetChildCount( vPanel );
 		while ( iChildIdx-- > 0 )
