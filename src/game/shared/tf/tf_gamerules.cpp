@@ -4629,9 +4629,27 @@ void CTFGameRules::SetBirthdayPlayer( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 void CTFGameRules::RemoveAllProjectiles()
 {
-	for ( int i=0; i<IBaseProjectileAutoList::AutoList().Count(); ++i )
+	FOR_EACH_VEC( IBaseProjectileAutoList::AutoList(), i )
 	{
-		UTIL_Remove( static_cast< CBaseProjectile* >( IBaseProjectileAutoList::AutoList()[i] ) );
+		CBaseProjectile* pProjectile = static_cast<CBaseProjectile*>( IBaseProjectileAutoList::AutoList()[i] );
+		pProjectile->SetTouch( NULL );
+		pProjectile->AddEffects( EF_NODRAW );
+		UTIL_Remove( pProjectile );
+	}
+
+	FOR_EACH_VEC( ITFFlameEntityAutoList::AutoList(), i )
+	{
+		CTFFlameEntity* pFlameEnt = static_cast<CTFFlameEntity*>( ITFFlameEntityAutoList::AutoList()[i] );
+
+		pFlameEnt->SetTouch( NULL );
+		pFlameEnt->AddEffects( EF_NODRAW );
+		UTIL_Remove( pFlameEnt );
+	}
+
+	FOR_EACH_VEC( ITFFlameManager::AutoList(), i )
+	{
+		CTFFlameManager* pFlameManager = static_cast<CTFFlameManager*>( ITFFlameManager::AutoList()[i] );
+		pFlameManager->ClearPoints();
 	}
 }
 
