@@ -5469,7 +5469,7 @@ void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 		bool bShouldSkipRespawn = false;
 		// Skip the respawn at the beginning of a round in casual/comp mode since we already
 		// handled it when the pre-round doors closed over the players' views
-		if ( ( GetRoundsPlayed() == 0 ) && ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) )
+		if ( ( GetRoundsPlayed() == 0 ) && ( State_Get() == GR_STATE_BETWEEN_RNDS || State_Get() == GR_STATE_PREROUND ) && ( GetRoundRestartTime() < 0.0f || GetRoundRestartTime() - gpGlobals->curtime <= TOURNAMENT_NOCANCEL_TIME ) )
 		{
 			CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
 			if ( !pMaster || !pMaster->PlayingMiniRounds() || ( pMaster->GetCurrentRoundIndex() == 0 ) )

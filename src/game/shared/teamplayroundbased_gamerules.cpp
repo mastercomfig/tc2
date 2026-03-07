@@ -1487,6 +1487,10 @@ void CTeamplayRoundBasedRules::State_Leave()
 {
 	if ( m_pCurStateInfo && m_pCurStateInfo->pfnLeaveState )
 	{
+		if ( mp_showroundtransitions.GetInt() > 0 )
+		{
+			Msg( "Gamerules: leaving state '%s'\n", m_pCurStateInfo->m_pStateName );
+		}
 		(this->*m_pCurStateInfo->pfnLeaveState)();
 	}
 }
@@ -1642,8 +1646,7 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && GetRoundsPlayed() == 0 && !m_bAllowBetweenRounds )
 	{
 		CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-		bool bPlayedMiniRound = pMaster && pMaster->PlayingMiniRounds();
-		if ( !bPlayedMiniRound && !( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) ) )
+		if ( !pMaster || !pMaster->PlayingMiniRounds() || ( pMaster->GetCurrentRoundIndex() == 0 ) )
 		{
 			// we already did a round respawn in this case.
 			bDoRoundRespawn = false;
@@ -3073,6 +3076,11 @@ void CTeamplayRoundBasedRules::CreateTimeLimitTimer( void )
 //-----------------------------------------------------------------------------
 void CTeamplayRoundBasedRules::RoundRespawn( void )
 {
+	if ( mp_showroundtransitions.GetInt() > 0 )
+	{
+		Msg( "Gamerules: round respawn\n");
+	}
+
 	m_flRoundStartTime = gpGlobals->curtime;
 
 	if ( m_bForceMapReset || PrevRoundWasWaitingForPlayers() )
