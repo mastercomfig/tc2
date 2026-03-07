@@ -82,7 +82,6 @@ public:
 
 	virtual void			OnDataChanged( DataUpdateType_t type );
 
-	float					m_flSpawnTime;
 	bool					m_bCritical;
 
 	// Server specific.

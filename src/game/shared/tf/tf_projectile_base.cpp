@@ -64,8 +64,6 @@ CTFBaseProjectile::CTFBaseProjectile()
 	// Client specific.
 #ifdef CLIENT_DLL
 
-	m_flSpawnTime = 0.0f;
-
 	// Server specific.
 #else
 
@@ -99,8 +97,6 @@ void CTFBaseProjectile::Spawn( void )
 {
 	// Client specific.
 #ifdef CLIENT_DLL
-
-	m_flSpawnTime = gpGlobals->curtime;
 
 	BaseClass::Spawn();
 
@@ -327,7 +323,7 @@ int CTFBaseProjectile::DrawModel( int flags )
 				flBaseTime = 0.0f;
 			}
 		}
-		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+		if ( gpGlobals->curtime - GetProjectileSpawnTime() < flBaseTime )
 			return 0;
 	}
 

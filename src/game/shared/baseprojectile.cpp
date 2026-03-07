@@ -59,7 +59,7 @@ CBaseProjectile::CBaseProjectile()
 	m_bCanCollideWithTeammates = false;
 #endif
 	m_hOriginalLauncher = NULL;
-
+	m_flProjectileSpawnTime = 0.0f;
 }
 
 
@@ -123,6 +123,8 @@ void CBaseProjectile::SetLauncher( CBaseEntity *pLauncher )
 void CBaseProjectile::Spawn()
 {
 	BaseClass::Spawn();
+
+	m_flProjectileSpawnTime = gpGlobals->curtime;
 
 #ifdef GAME_DLL
 	ResetCollideWithTeammates();

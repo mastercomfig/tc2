@@ -91,10 +91,6 @@ public:
 
 	virtual int		DrawModel( int flags );
 	virtual void	PostDataUpdate( DataUpdateType_t type );
-
-private:
-
-	float	 m_flSpawnTime;
 #else
 
 public:

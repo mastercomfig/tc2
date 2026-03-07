@@ -83,8 +83,6 @@ public:
 	virtual void	CreateTrails( void ) { }
 
 protected:
-
-	float	 m_flSpawnTime;
 	int		m_iCachedDeflect;
 	Vector m_vecSpawnLoc;
 	Vector m_vecPredLoc;

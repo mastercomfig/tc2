@@ -88,8 +88,7 @@ CTFBaseRocket::CTFBaseRocket()
 	
 // Client specific.
 #ifdef CLIENT_DLL
-
-	m_flSpawnTime = 0.0f;
+	
 	m_iCachedDeflect = false;
 	
 // Server specific.
@@ -144,8 +143,6 @@ void CTFBaseRocket::Spawn( void )
 // Client specific.
 #ifdef CLIENT_DLL
 
-	m_flSpawnTime = gpGlobals->curtime;
-
 // Server specific.
 #else
 
@@ -190,7 +187,7 @@ void CTFBaseRocket::Spawn( void )
 //-----------------------------------------------------------------------------
 void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 {
-	if (type == DATA_UPDATE_DATATABLE_CHANGED && gpGlobals->curtime - m_flSpawnTime <= gpGlobals->interval_per_tick * 5.0f && m_bPredicting)
+	if ( type == DATA_UPDATE_DATATABLE_CHANGED && gpGlobals->curtime - GetProjectileSpawnTime() <= gpGlobals->interval_per_tick * 5.0f && m_bPredicting )
 	{
 		// once our data updates settle into velocity sim, we no longer client predict velocity.
 		if ( (GetNetworkOrigin() - m_vecSpawnLoc).LengthSqr() > 20.0f * 20.0f )
@@ -282,7 +279,7 @@ void CTFBaseRocket::ClientPredictThink()
 	{
 		return;
 	}
-	if ( gpGlobals->curtime - m_flSpawnTime > gpGlobals->interval_per_tick * 5.0f && GetGravity() != 0.0f )
+	if ( gpGlobals->curtime - GetProjectileSpawnTime() > gpGlobals->interval_per_tick * 5.0f && GetGravity() != 0.0f )
 	{
 		m_bPredicting = false;
 		return;
@@ -338,7 +335,7 @@ int CTFBaseRocket::DrawModel( int flags )
 				flBaseTime = 0.0f;
 			}
 		}
-		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+		if ( gpGlobals->curtime - GetProjectileSpawnTime() < flBaseTime )
 			return 0;
 	}
 

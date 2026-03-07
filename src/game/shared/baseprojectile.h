@@ -65,6 +65,8 @@ public:
 	CBaseEntity *GetOriginalLauncher() const { return m_hOriginalLauncher; }
 	CBaseEntity		*GetLauncher( void ) { return m_hLauncher; }
 
+	float GetProjectileSpawnTime( void ) { return m_flProjectileSpawnTime; }
+
 protected:
 	CNetworkHandleForDerived( CBaseEntity, m_hLauncher );
 #ifdef GAME_DLL
@@ -83,6 +85,8 @@ private:
 #endif // GAME_DLL
 
 	CNetworkHandle( CBaseEntity, m_hOriginalLauncher );
+
+	float m_flProjectileSpawnTime;
 
 #ifdef TF_DLL
 	CUtlVector< int > m_vecEntsHit;

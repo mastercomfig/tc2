@@ -4179,21 +4179,25 @@ bool CTFBot::ShouldFireCompressionBlast( void )
 			return false;
 		}
 
-		if ( IsDifficulty( CTFBot::NORMAL ) )
+		// In MvM, all of our reflects are random chance.
+		if ( TFGameRules()->IsMannVsMachineMode() )
 		{
-			// normal bots reflect some of the time
-			if ( TransientlyConsistentRandomValue( 1.0f ) < 0.5f )
+			if ( IsDifficulty( CTFBot::NORMAL ) )
 			{
-				return false;
+				// normal bots reflect some of the time
+				if ( TransientlyConsistentRandomValue( 1.0f ) < 0.5f )
+				{
+					return false;
+				}
 			}
-		}
 
-		if ( IsDifficulty( CTFBot::HARD ) )
-		{
-			// hard bots reflect most of the time
-			if ( TransientlyConsistentRandomValue( 1.0f ) < 0.1f )
+			if ( IsDifficulty( CTFBot::HARD ) )
 			{
-				return false;
+				// hard bots reflect most of the time
+				if ( TransientlyConsistentRandomValue( 1.0f ) < 0.1f )
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -4209,6 +4213,30 @@ bool CTFBot::ShouldFireCompressionBlast( void )
 
 			if ( IsRangeLessThan( pushVictim, tf_bot_pyro_shove_away_range.GetFloat() ) )
 			{
+				if ( !tf_bot_pyro_always_reflect.GetBool() )
+				{
+					// in non-MvM, we still use randomness for pushing players only.
+					if ( !TFGameRules()->IsMannVsMachineMode() )
+					{
+						if ( IsDifficulty( CTFBot::NORMAL ) )
+						{
+							// normal bots reflect some of the time
+							if ( TransientlyConsistentRandomValue( 1.0f ) < 0.5f )
+							{
+								return false;
+							}
+						}
+
+						if ( IsDifficulty( CTFBot::HARD ) )
+						{
+							// hard bots reflect most of the time
+							if ( TransientlyConsistentRandomValue( 1.0f ) < 0.1f )
+							{
+								return false;
+							}
+						}
+					}
+				}
 				// our threat is very close - shove them!
 
 				// always shove ubers
@@ -4267,6 +4295,51 @@ bool CTFBot::ShouldFireCompressionBlast( void )
 		// is this something I want to deflect?
 		if ( !pObject->IsDeflectable() )
 			continue;
+
+		// In non-MvM we act a little bit more like a human with the reflect reaction time.
+		if ( !TFGameRules()->IsMannVsMachineMode() )
+		{
+			float flReactionTime = 0.0f;
+			float flReactionTimeMin = 0.0f;
+			float flReactionTimeLo = 0.0f;
+			float flReactionTimeHi = 0.0f;
+			if ( !tf_bot_pyro_always_reflect.GetBool() )
+			{
+				if ( IsDifficulty( CTFBot::NORMAL ) )
+				{
+					flReactionTimeMin = 0.05f;
+					flReactionTimeLo = 0.3f;
+					flReactionTimeHi = 0.7f;
+				}
+				else if ( IsDifficulty( CTFBot::HARD ) )
+				{
+					flReactionTimeLo = 0.1f;
+					flReactionTimeHi = 0.3f;
+				}
+				else if ( IsDifficulty( CTFBot::EXPERT ) )
+				{
+					flReactionTimeLo = 0.0f;
+					flReactionTimeHi = 0.075f;
+				}
+				flReactionTime = RandomFloat( flReactionTimeLo, flReactionTimeHi );
+			}
+			// if we don't have a reaction time, then skip this.
+			if ( flReactionTime > 0.01f )
+			{
+				CBaseProjectile* pProjectile = dynamic_cast<CBaseProjectile*>( pObject );
+				// TODO(mcoms): we should track when WE saw the projectile, but this is fine for now.
+				const float flProjectileSeenFor = gpGlobals->curtime - pProjectile->GetProjectileSpawnTime();
+				// degrade chance to reflect if we didn't have a good chance to react.
+				if ( flProjectileSeenFor < flReactionTime )
+				{
+					float flThreshold = RemapValClamped( flProjectileSeenFor, flReactionTimeMin, flReactionTime, 0.0f, 1.0f );
+					if ( RandomFloat() >= flThreshold )
+					{
+						continue;
+					}
+				}
+			}
+		}
 
 		if ( FClassnameIs( pObject, "tf_projectile_rocket" ) || FClassnameIs( pObject, "tf_projectile_energy_ball" ) )
 		{

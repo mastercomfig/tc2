@@ -397,7 +397,7 @@ int CTFGrenadePipebombProjectile::DrawModel( int flags )
 			}
 		}
 		// m_flCreationTime?
-		if ( gpGlobals->curtime - m_flSpawnTime < flBaseTime )
+		if ( gpGlobals->curtime - GetProjectileSpawnTime() < flBaseTime )
 			return 0;
 	}
 
