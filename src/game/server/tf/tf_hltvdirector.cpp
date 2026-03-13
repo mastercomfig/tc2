@@ -293,6 +293,7 @@ const char** CTFHLTVDirector::GetModEvents()
 		"winlimit_changed",
 		"stop_watch_changed",
 		"show_match_summary",
+		"hide_match_summary",
 		"rematch_failed_to_create",
 		"player_next_map_vote_change",
 		"vote_maps_changed",

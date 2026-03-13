@@ -104,3 +104,11 @@ event HudMatchStatus_ShowCountdown
 	SetVisible CountdownLabel 0 9.9
 	SetVisible CountdownLabelShadow 0 9.9
 }
+
+event HudMatchStatus_HideMatchWinDoors
+{
+	RunEventChild MatchDoors PlayDoorOpenAnim 0
+
+	SetVisible MatchDoors	0 2.5
+	SetVisible	FrontParticlePanel	0	2.5
+}

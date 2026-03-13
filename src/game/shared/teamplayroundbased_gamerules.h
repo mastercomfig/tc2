@@ -429,7 +429,7 @@ public:
 
 	bool IsGameOver( void ){ return ( CheckTimeLimit( false ) || CheckWinLimit( false ) || CheckMaxRounds( false ) || CheckNextLevelCvar( false ) ); }
 
-	virtual bool	StopWatchShouldBeTimedWin( void ) { return m_bStopWatchShouldBeTimedWin; }
+	virtual bool	StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) { return m_bStopWatchShouldBeTimedWin; }
 
 protected:
 	virtual void Think( void );

@@ -1894,6 +1894,9 @@
 	"show_match_summary"
 	{}
 
+	"hide_match_summary"
+	{}
+
 	"experience_changed"
 	{}
 

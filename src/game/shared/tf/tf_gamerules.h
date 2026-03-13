@@ -143,6 +143,8 @@ enum {
 	STOPWATCH_CAPTURE_TIME_NOT_SET = 0,
 	STOPWATCH_RUNNING,
 	STOPWATCH_OVERTIME,
+	STOPWATCH_FULFILLED,
+	STOPWATCH_DEFENDED,
 };
 
 enum class EDraftPhase : uint8
@@ -1061,7 +1063,7 @@ bool IsCreepWaveMode( void ) const;
 	int		CalculateCurrencyAmount_ByType( CurrencyRewards_t nType );									// How much to give players for specific items and events, i.e. cash collection bonus, small packs
 	int		DistributeCurrencyAmount( int nAmount, CTFPlayer *pTFPlayer = NULL, bool bShared = true, bool bCountAsDropped = false, bool bIsBonus = false );	// Distributes nAmount to a specific player or team
 
-	virtual bool StopWatchShouldBeTimedWin( void ) OVERRIDE;
+	virtual bool StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) OVERRIDE;
 
 public:
 	void SetPlayerNextMapVote( int nIndex, EUserNextMapVote eState ) { m_ePlayerWantsRematch.Set( nIndex, eState ); }
@@ -1069,8 +1071,10 @@ public:
 	CTrainingModeLogic *GetTrainingModeLogic() { return m_hTrainingModeLogic; }
 	CTFHolidayEntity *GetHolidayLogic() const { return m_hHolidayLogic; }
 
+	CTeamRoundTimer* GetStopWatchTimer( void ) { return m_hStopWatchTimer.Get(); }
+
 	void	HandleCTFCaptureBonus( int nTeam );
-	bool	TournamentModeCanEndWithTimelimit( void ){ return ( GetStopWatchTimer() == NULL ); }
+	bool	TournamentModeCanEndWithTimelimit( void );
 
 	CTeamRoundTimer *GetKothTeamTimer( int iTeam )
 	{
@@ -1173,8 +1177,6 @@ private:
 	int m_iCurrentMiniRoundMask;
 
 	CHandle<CTeamRoundTimer>	m_hStopWatchTimer;
-
-	CTeamRoundTimer* GetStopWatchTimer( void ) { return (CTeamRoundTimer*)m_hStopWatchTimer.Get(); }
 
 	CHandle<CTeamRoundTimer>	m_hItemDraftTimer;
 	CHandle<CTeamRoundTimer>	m_hBluReserveTimer;
@@ -1334,9 +1336,27 @@ private:
 	CNetworkArray( EUserNextMapVote, m_ePlayerWantsRematch, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkVar( ENextMapVotingState, m_eRematchState );
 	CNetworkArray( MapDefIndex_t, m_nNextMapVoteOptions, 3 );
+	
+	CNetworkArray( int, m_nSeriesPoints, TF_TEAM_COUNT );
+	CNetworkVar( bool, m_bPlayingMultiSeriesIntermission );
+	bool m_bMatchIsPlayingOut;
 
 	float		m_flCTFCaptureBonusTime;
 public:
+
+	int GetSeriesPoints( int nTeam ) const
+	{
+		Assert( nTeam >= 0 && nTeam < TF_TEAM_COUNT );
+		return m_nSeriesPoints[ nTeam ];
+	}
+
+#ifdef GAME_DLL
+	void AddSeriesPoint( int nTeam )
+	{
+		Assert( nTeam >= 0 && nTeam < TF_TEAM_COUNT );
+		m_nSeriesPoints.Set( nTeam, m_nSeriesPoints[ nTeam ] + 1 );
+	}
+#endif
 
 	bool m_bControlSpawnsPerTeam[ MAX_TEAMS ][ MAX_CONTROL_POINTS ];
 	int	 m_iPreviousRoundWinners;
@@ -1359,6 +1379,9 @@ public:
 
 	bool CanInitiateDuels( void );
 
+	bool IsPlayingMultiSeriesIntermission() { return m_bPlayingMultiSeriesIntermission; }
+	bool IsMatchPlayingOut() { return m_bMatchIsPlayingOut; }
+
 #ifdef GAME_DLL
 
 	// Used on sd_doomsday_event to nag players about picking up the tickets
@@ -1367,6 +1390,8 @@ public:
 	bool DoomsdayTicketTimerElapsed( void ) const { return m_doomsdayTicketsTimer.HasStarted() && m_doomsdayTicketsTimer.IsElapsed(); }
 
 	int GetBossCount() const { return m_activeBosses.Count(); }
+
+	void SetMultiSeriesIntermission( bool bIntermission ) { m_bPlayingMultiSeriesIntermission = bIntermission; }
 
 	CBaseCombatCharacter *GetActiveBoss( int iBoss = 0 )
 	{

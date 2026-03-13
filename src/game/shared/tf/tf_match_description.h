@@ -51,7 +51,8 @@ public:
 #ifdef CLIENT_DLL
 	virtual bool BGetRoundStartBannerParameters( int& nSkin, int& nBodyGroup ) const = 0;
 	virtual bool BGetRoundDoorParameters( int& nSkin, int& nLogoBodyGroup ) const = 0;
-	virtual const char *GetMapLoadBackgroundOverride( bool bWideScreen ) const = 0;
+	virtual const char* GetMapLoadBackgroundOverride( bool bWideScreen ) const = 0;
+	virtual void StopWinMusic( int nWinningTeam, bool bGameOver ) const {};
 	virtual void SetupBadgePanel( CBaseModelPanel *pModelPanel, const LevelInfo_t& level, const CSteamID& steamID, bool bInPlacement ) const;
 	bool BPlayerIsInPlacement( CSteamID steamID ) const;
 	bool BLocalPlayerIsInPlacement() const;
@@ -107,6 +108,7 @@ public:
 	inline bool BUsesAutoReady() const							{ return m_bAutoReady; }
 	inline bool BUsesPreRoundDoors() const						{ return m_bShowPreRoundDoors; }
 	inline bool BUsesPostRoundDoors() const						{ return m_bShowPostRoundDoors; }
+	inline bool BUsesMultiSeries() const						{ return m_bUsesMultiSeries; }
 	inline bool BDistributePerformanceMedals() const			{ return m_bDistributePerformanceMedals; }
 	inline bool BUsesMatchHUD() const							{ return m_bUseMatchHud; }
 	inline bool BAllowDrawingAtMatchHistory() const				{ return m_bAllowDrawingAtMatchSummary; }
@@ -181,6 +183,7 @@ protected:
 	bool                    m_bUsesXP                             = false;
 	bool                    m_bUsesDashboardOnRoundEnd            = true;
 	bool                    m_bUsesSurveys                        = false;
+	bool                    m_bUsesMultiSeries                    = false;
 	// Be strict about finding quality matches, for more-competitive matchgroups that want to prioritize match quality
 	// over speed.
 	bool                    m_bStrictMatchmakerScoring            = false;

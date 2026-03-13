@@ -12,6 +12,7 @@
 	#include "tf_gamerules.h"
 	#include "tf_ladder_data.h"
 	#include "tf_rating_data.h"
+	#include "engine/IEngineSound.h"
 #endif
 
 
@@ -47,6 +48,7 @@ public:
 		m_bScramblesTeamsOnRollingMatch = true;
 		m_bUsesXP						= true;
 		m_bUsesSurveys					= true;
+		m_bUsesMultiSeries              = true;
 		m_pszModeNameLocToken			= "#TF_Matchmaking_HeaderCasual";
 		m_pszRichPresenceLocToken		= "Casual";
 		m_bAllowPartyJoins				= true;
@@ -80,6 +82,27 @@ public:
 	virtual const char *GetMapLoadBackgroundOverride( bool bWidescreen ) const OVERRIDE
 	{
 		return NULL;
+	}
+
+	virtual void StopWinMusic( int nWinningTeam, bool bGameOver ) const OVERRIDE
+	{
+		// Custom for game over
+		if ( bGameOver )
+		{
+			C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+			if ( pLocalPlayer )
+			{
+				int iLocalTeam = pLocalPlayer->GetTeamNumber();
+				if ( iLocalTeam == nWinningTeam )
+				{
+					C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndWinMusicCasual" );
+				}
+				else
+				{
+					C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndLoseMusicCasual" );
+				}
+			}
+		}
 	}
 #endif
 
@@ -128,8 +151,8 @@ public:
 
 		engine->ServerCommand( CFmtStr( "exec %s\n", pszExecFile ) );
 
-		TFGameRules()->SetInStopWatch(bUseStopWatch);
-		mp_tournament_stopwatch.SetValue(bUseStopWatch);
+		TFGameRules()->SetInStopWatch( bUseStopWatch );
+		mp_tournament_stopwatch.SetValue( bUseStopWatch );
 
 		// Hack for now, this map is having issues with players getting dropped while connecting
 		if ( !Q_stricmp( szCurrentMap, "pl_corruption" ) )
@@ -161,6 +184,7 @@ public:
 
 	bool BMatchIsSafeToLeaveForPlayer( const CMatchInfo* pMatchInfo, const CMatchInfo::PlayerMatchData_t *pMatchPlayer ) const
 	{
+		// TODO(mcoms): multi-series
 		return true;
 	}
 

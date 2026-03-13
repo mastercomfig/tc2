@@ -117,6 +117,8 @@ private:
 	void RecalculateMedalCounts();
 	void UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &pBadgePanels, TFSectionedListPanel *pPlayerList );
 
+	void UpdateMatchTimeRemaining();
+
 	bool SubActionTime(float flSubActionTime);
 
 	void InternalUpdateMedalCountForType( int iTeam, StatMedal_t eMedal );
@@ -148,6 +150,10 @@ private:
 	CExLabel					*m_pRedTeamScoreDropshadow;
 	EditablePanel				*m_pRedTeamScoreBG;
 	EditablePanel				*m_pRedPlayerListBG;
+	EditablePanel				*m_pBlueTeamSeriesBG;
+	EditablePanel				*m_pRedTeamSeriesBG;
+	CExLabel					*m_pBlueTeamSeries;
+	CExLabel					*m_pRedTeamSeries;
 	EditablePanel				*m_pBlueMedalsPanel;
 	EditablePanel				*m_pRedMedalsPanel;
 	vgui::ImagePanel			*m_pRedTeamImage;
@@ -159,6 +165,7 @@ private:
 	EditablePanel				*m_pStatsLabelPanel;
 	CExLabel					*m_pStatsAndMedals;
 	CExLabel					*m_pStatsAndMedalsShadow;
+	CExLabel					*m_pMatchTimeRemainingLabel;
 	CExLabel					*m_pBlueTeamName;
 	CExLabel					*m_pRedTeamName;
   	CExLabel					*m_pRedTeamWinner;
@@ -236,6 +243,8 @@ private:
 
 	int m_iCurrentState;
 	float m_flNextActionTime;
+
+	bool m_bShortMode;
 
 	int m_nMedalsToAward_Bronze_Blue;
 	int m_nMedalsToAward_Silver_Blue;

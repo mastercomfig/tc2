@@ -752,6 +752,7 @@ void CTFHudTimeStatus::OnThink()
 												  TFGameRules() && 
 												  !TFGameRules()->InSetup() &&
 												  !TFGameRules()->IsInWaitingForPlayers() &&
+												  !TFGameRules()->InOvertime() &&
 												  pTimer->IsRoundMaxTimerSet() &&
 												  nServerTimeLimit;
 				

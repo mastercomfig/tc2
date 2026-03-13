@@ -274,8 +274,8 @@ void CHudTournament::PreparePanel( void )
 	if ( TFGameRules()->IsInPreMatch() )
 	{
 		bool bCountdownVisible = false;
-		bool bAutoReady = TFGameRules()->IsEmulatingMatch() == 1;
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+		bool bAutoReady = false;
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 		if ( pMatchDesc )
 		{
 			bAutoReady = pMatchDesc->BUsesAutoReady();
@@ -413,7 +413,7 @@ void CHudTournament::PreparePanel( void )
 			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
 			if ( m_pCountdownBG )
 			{
-				m_pCountdownBG->SetImage( m_iLocalTeam ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
+				m_pCountdownBG->SetImage( m_iLocalTeam == TF_TEAM_BLUE ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
 			}
 		}
 	}
@@ -433,7 +433,7 @@ void CHudTournament::PreparePanel( void )
 	SetDialogVariable( "bluestate", TFGameRules()->IsTeamReady( TF_TEAM_BLUE ) ? g_pVGuiLocalize->Find( "Tournament_TeamReady" ) : g_pVGuiLocalize->Find( "Tournament_TeamNotReady" ) );
 	SetDialogVariable( "redstate", TFGameRules()->IsTeamReady( TF_TEAM_RED ) ? g_pVGuiLocalize->Find( "Tournament_TeamReady" ) : g_pVGuiLocalize->Find( "Tournament_TeamNotReady" ) );
 	
-	if ( m_bTeamReady[TF_TEAM_BLUE] != TFGameRules()->IsTeamReady( TF_TEAM_BLUE ) || m_bTeamReady[TF_TEAM_RED] != TFGameRules()->IsTeamReady( TF_TEAM_RED ) )
+	if ( !m_bReadyStatusMode && ( m_bTeamReady[TF_TEAM_BLUE] != TFGameRules()->IsTeamReady( TF_TEAM_BLUE ) || m_bTeamReady[TF_TEAM_RED] != TFGameRules()->IsTeamReady( TF_TEAM_RED ) ) )
 	{
 		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
 
@@ -602,6 +602,17 @@ void CHudTournament::OnTick( void )
 						bShouldBeVisible = false;
 					}
 				}
+				
+				if ( !m_pScoreboard.Get() && gViewPortInterface )
+				{
+					m_pScoreboard = ( CTFClientScoreBoardDialog* )( gViewPortInterface->FindPanelByName( PANEL_SCOREBOARD ) );
+				}
+
+				if ( m_pScoreboard.Get() && m_pScoreboard->IsVisible() )
+				{
+					bShouldBeVisible = false;
+				}
+
 				if ( m_bShouldBeVisible != bShouldBeVisible )
 				{
 					m_bShouldBeVisible = bShouldBeVisible;
@@ -1444,7 +1455,8 @@ void CHudStopWatch::OnTick( void )
 	bool bInFreezeCam = ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM );
 
 	bool bProperMatch = TFGameRules()->IsInTournamentMode() || TFGameRules()->IsCompetitiveMode();
-	if ( !bProperMatch || TFGameRules()->IsInPreMatch() || !TFGameRules()->IsInStopWatch() || bInFreezeCam || TFGameRules()->State_Get() == GR_STATE_GAME_OVER  )
+	// TODO(mcoms): does hiding it suffice for stopwatch states?
+	if ( !bProperMatch || TFGameRules()->IsInPreMatch() || !TFGameRules()->IsInStopWatch() || bInFreezeCam || TFGameRules()->State_Get() == GR_STATE_GAME_OVER || TFGameRules()->GetStopWatchState() == STOPWATCH_DEFENDED || TFGameRules()->GetStopWatchState() == STOPWATCH_FULFILLED  )
 	{
 		m_bShouldBeVisible = false;
 		return;
@@ -1521,6 +1533,8 @@ void CHudStopWatch::OnTick( void )
 				}
 			}
 
+			iPoints = Max( iPoints, 0 );
+
 			wchar_t wzScoreVal[128];
 			static wchar_t wzScore[128];
 			wchar_t *pszPoints = NULL;
@@ -1572,13 +1586,27 @@ void CHudStopWatch::OnTick( void )
 			m_pStopWatchDescriptionBG->SetVisible( false );
 			m_pStopWatchDescriptionLabel->SetVisible( false );
 
-			SetDialogVariable( "descriptionlabel", g_pVGuiLocalize->Find( "#Tournament_StopWatch_CapVictory" ) );
+			// UNDONE(mcoms): description is not used
+#if 0
+			wchar_t wzHelp[128];
+
+			if ( pPlayer->GetTeam() == pAttacker )
+			{
+				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( "Tournament_StopWatch_AttackerScore" ), 1, pDefender->Get_Localized_Name() );
+			}
+			else
+			{
+				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( "Tournament_StopWatch_LabelDefender" ), 1, pAttacker->Get_Localized_Name() );
+			}
+			SetDialogVariable( "descriptionlabel", wzHelp );
+#endif
 
 			m_pStopWatchImage->SetImage( "../hud/ico_time_60" );
 
 			wchar_t wzScoreVal[128];
 
-			int iPoints = (pDefender->Get_Score() - pAttacker->Get_Score()) + 1;
+			int iPoints = ( pDefender->Get_Score() - pAttacker->Get_Score() ) + 1;
+			iPoints = Max( iPoints, 0 );
 			wchar_t wzVal[16];
 
 			swprintf( wzVal, ARRAYSIZE( wzVal ), L"%x", iPoints );

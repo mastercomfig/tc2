@@ -317,6 +317,7 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	ListenForGameEvent( "teamplay_round_start" );
 	ListenForGameEvent( "restart_timer_time" );
 	ListenForGameEvent( "show_match_summary" );
+	ListenForGameEvent( "hide_match_summary" );
 }
 
 //-----------------------------------------------------------------------------
@@ -657,6 +658,21 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("CompetitiveGame_LowerChatWindow", false);
 		}
+	}
+	else if ( FStrEq( "hide_match_summary", event->GetName() ) )
+	{
+		// TODO(mcoms): multi-series: this doesn't work right now, timing issue between starting the match and hiding it before
+#if 0
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
+		if ( pMatchDesc && pMatchDesc->BUsesPostRoundDoors() )
+		{
+			const bool bMatchSummaryStage = TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && pMatchDesc->BUseMatchSummaryStage();
+			if ( !bMatchSummaryStage )
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_HideMatchWinDoors", false );
+			}
+		}
+#endif
 	}
 }
 

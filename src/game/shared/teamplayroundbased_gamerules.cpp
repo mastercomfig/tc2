@@ -38,6 +38,7 @@
 	#include "tf_gamerules.h"
 	#ifdef GAME_DLL
 		#include "player_vs_environment/tf_population_manager.h"
+		#include "tf_team.h"
 		#include "../server/tf/tf_gc_server.h"
 		#include "../server/tf/tf_objective_resource.h"
 	#else
@@ -1269,6 +1270,21 @@ bool CTeamplayRoundBasedRules::CheckTimeLimit( bool bAllowEnd /*= true*/ )
 				return false;
 			}
 
+#ifdef TF_DLL
+			// if we're just checking for time limit, then it's not a win condition on its own for multi-series.
+			if ( !bAllowEnd && GetTimeLeft() <= 0 )
+			{
+				if ( TFGameRules() )
+				{
+					ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+					if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+					{
+						return false;
+					}
+				}
+			}
+#endif
+
 			bSwitchDueToTime = false;
 		}
 
@@ -2087,6 +2103,59 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 		mp_tournament_readymode.SetValue( true );
 		SetAllowBetweenRounds( true );
 	}
+
+	// if we are doing stopwatch, and we have a set time, that means this win completes the stopwatch back and forth.
+	if ( TFGameRules()->MatchmakingShouldUseStopwatchMode() && m_flStopWatchTotalTime >= 0.0f )
+	{
+		int      iStopWatchWinner;
+		CTFTeam* pAttacker = NULL;
+		CTFTeam* pDefender = NULL;
+
+		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+		{
+			CTFTeam* pTeam = GetGlobalTFTeam( i );
+
+			if ( pTeam )
+			{
+				if ( pTeam->GetRole() == TEAM_ROLE_DEFENDERS )
+				{
+					pDefender = pTeam;
+				}
+
+				if ( pTeam->GetRole() == TEAM_ROLE_ATTACKERS )
+				{
+					pAttacker = pTeam;
+				}
+			}
+		}
+		CTeamRoundTimer* pTimer = TFGameRules()->GetStopWatchTimer();
+		if ( pTimer && pAttacker && pDefender )
+		{
+			if ( pAttacker->GetScore() > pDefender->GetScore() )
+			{
+				// getting more points is an absolute decider.
+				iStopWatchWinner = pAttacker->GetTeamNumber();
+			}
+			else if ( pDefender->GetScore() > pAttacker->GetScore() )
+			{
+				iStopWatchWinner = pDefender->GetTeamNumber();
+			}
+			else
+			{
+				// teams are even.
+				if ( pTimer->GetTimeRemaining() > 0.0f )
+				{
+					// attackers still have some time left, so they beat the time.
+					iStopWatchWinner = pAttacker->GetTeamNumber();
+				}
+				else
+				{
+					iStopWatchWinner = pDefender->GetTeamNumber();
+				}
+			}
+			TFGameRules()->AddSeriesPoint( iStopWatchWinner );
+		}
+	}
 #endif
 
 	m_flStateTransitionTime = gpGlobals->curtime + GetBonusRoundTime( bGameOver );
@@ -2108,7 +2177,61 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 {
 	if ( gpGlobals->curtime > m_flStateTransitionTime )
 	{
-		bool bDone = ( CheckTimeLimit() || CheckWinLimit() || CheckMaxRounds() || CheckNextLevelCvar() );
+		bool bWinLimitReached = CheckWinLimit();
+		bool bMaxRoundsReached = CheckMaxRounds();
+		bool bTimeLimitReached = CheckTimeLimit();
+		bool bNextLevelReached = CheckNextLevelCvar();
+
+		bool bDone = ( bTimeLimitReached || bWinLimitReached || bMaxRoundsReached || bNextLevelReached );
+
+#ifdef TF_DLL
+		if ( TFGameRules() )
+		{
+			ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+			if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+			{
+				// In a multi-series match we override the traditional WinLimit/MaxRounds behavior.
+				// A round win will trigger this state. If the series is complete (Win/MaxRounds limit hit),
+				// we add a series point, tell the clients we're setting up the next series, and re-evaluate bDone.
+				bool bSeriesComplete = ( bWinLimitReached || bMaxRoundsReached );
+
+				if ( TFGameRules()->MatchmakingShouldUseStopwatchMode() && !TFGameRules()->GetStopWatchTimer() )
+				{
+					// if we're in a win state and we are no longer tracking the stopwatch, that means we did a full stopwatch back and forth
+					bSeriesComplete = true;
+				}
+
+				if ( bSeriesComplete )
+				{
+					if ( GetWinningTeam() != TEAM_UNASSIGNED )
+					{
+						TFGameRules()->AddSeriesPoint( GetWinningTeam() );
+					}
+					// Are we done with the entire match?
+					// The match is done if the time limit is reached, AND the series points are not tied.
+					bool bIsTied = false;
+					int  nRedPoints = TFGameRules()->GetSeriesPoints( TF_TEAM_RED );
+					int  nBluePoints = TFGameRules()->GetSeriesPoints( TF_TEAM_BLUE );
+					if ( nRedPoints == nBluePoints )
+					{
+						bIsTied = true;
+					}
+					if ( !bTimeLimitReached || bIsTied )
+					{
+						SetForceMapReset( true ); // Ensure the map resets for the next series
+						
+						// Setup intermission
+						TFGameRules()->SetMultiSeriesIntermission( true );
+					}
+				}
+				else
+				{
+					// Series is not complete yet (e.g. they only won 1 out of 2 rounds in a series).
+					bDone = false;
+				}
+			}
+		}
+#endif // TF_DLL
 
 		// check the win limit, max rounds, time limit and nextlevel cvar before starting the next round
 		if ( !bDone )
@@ -2204,6 +2327,10 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 
 				float flPostMatchPeriod = ( pMatchDesc || TFGameRules()->IsEmulatingMatch() ) ? GetPostMatchPeriod() : 10.0f;
+				if ( TFGameRules()->IsPlayingMultiSeriesIntermission() )
+				{
+					flPostMatchPeriod = 10.0f;
+				}
 
 				bool bWillLeaveMap = false;
 				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
@@ -2534,8 +2661,13 @@ void CTeamplayRoundBasedRules::State_Enter_RESTART( void )
 
 	ResetScores();
 
-	// reset the round time
-	ResetMapTime();
+#ifdef TF_DLL
+	if ( !TFGameRules() || !TFGameRules()->IsMatchPlayingOut() )
+	{
+		// reset the round time
+		ResetMapTime();
+	}
+#endif
 
 	State_Transition( GR_STATE_PREROUND );
 }
@@ -2851,7 +2983,7 @@ void CTeamplayRoundBasedRules::RestartTournament( void )
 	SetInWaitingForPlayers( true );
 	m_bAwaitingReadyRestart = true;
 	m_flStopWatchTotalTime = -1.0f;
-	m_bStopWatch = false;
+	SetInStopWatch( false );
 
 	// we might have had a stalemate during the last round
 	// so reset this bool each time we restart the tournament
@@ -3563,7 +3695,11 @@ void CTeamplayRoundBasedRules::ResetScores( void )
 	// assume we always want to reset the scores 
 	// unless someone tells us not to for the next reset 
 	m_bResetTeamScores = true;
+#ifdef TF_DLL
+	m_bResetPlayerScores = !TFGameRules() || !TFGameRules()->IsMatchPlayingOut();
+#else
 	m_bResetPlayerScores = true;
+#endif
 	m_bResetRoundsPlayed = true;
 	//m_flStopWatchTime = -1.0f;
 }
