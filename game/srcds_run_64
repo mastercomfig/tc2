@@ -306,7 +306,21 @@ detectcpu() {
 }
 
 update() {
-	updatesingle
+	#updatesingle
+	updatemod
+}
+
+updatemod() {
+	# Run the script update
+
+	if test -n "$AUTO_UPDATE"; then
+		echo "Updating server."
+		echo "----------------------------"
+		eval "./update_dedicated.sh"
+		echo "----------------------------"
+	fi
+
+	return 1
 }
 
 updatesingle() {
