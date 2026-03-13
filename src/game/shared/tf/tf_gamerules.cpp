@@ -6162,7 +6162,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		{
 			// Use comp voice lines only for 6v6.  The guys talk about "Sixes" a lot, so it doesn't make sense to
 			// use in other competitive modes.
-			if ( GetCurrentMatchGroup() == k_eTFMatchGroup_Ladder_6v6 )
+			if ( GetCurrentMatchGroupWithEmulation() == k_eTFMatchGroup_Ladder_6v6 || TFGameRules()->IsInSixesMode() )
 			{
 				pPlayer->SpeakConceptIfAllowed( MP_CONCEPT_ROUND_START_COMP );
 			}
