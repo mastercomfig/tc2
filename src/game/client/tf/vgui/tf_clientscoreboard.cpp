@@ -995,6 +995,13 @@ void CTFClientScoreBoardDialog::Update()
 //-----------------------------------------------------------------------------
 void CTFClientScoreBoardDialog::UpdateTeamInfo()
 {
+	bool bMultiSeries = false;
+	if ( TFGameRules() )
+	{
+		ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries();
+	}
+
 	// update the team sections in the scoreboard
 	for ( int teamIndex = TF_TEAM_RED; teamIndex <= TF_TEAM_BLUE; teamIndex++ )
 	{
@@ -1040,7 +1047,7 @@ void CTFClientScoreBoardDialog::UpdateTeamInfo()
 			SetDialogVariable( pDialogVarTeamPlayerCount, string1 );
 
 			// set team score in dialog
-			SetDialogVariable( pDialogVarTeamScore, team->Get_Score() );
+			SetDialogVariable( pDialogVarTeamScore, bMultiSeries ? TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( teamIndex ) ) : team->Get_Score() );
 
 			// set the team name
 			SetDialogVariable( pDialogVarTeamName, team->Get_Localized_Name() );

@@ -2104,9 +2104,12 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 		SetAllowBetweenRounds( true );
 	}
 
+	Msg("[MULTI-SERIES DEBUG] Team Won\n");
+
 	// if we are doing stopwatch, and we have a set time, that means this win completes the stopwatch back and forth.
 	if ( TFGameRules()->MatchmakingShouldUseStopwatchMode() && m_flStopWatchTotalTime >= 0.0f )
 	{
+		Msg("[MULTI-SERIES DEBUG] Detected Stopwatch.\n");
 		int      iStopWatchWinner;
 		CTFTeam* pAttacker = NULL;
 		CTFTeam* pDefender = NULL;
@@ -2131,14 +2134,17 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 		CTeamRoundTimer* pTimer = TFGameRules()->GetStopWatchTimer();
 		if ( pTimer && pAttacker && pDefender )
 		{
+			Msg("[MULTI-SERIES DEBUG] Calculating Stopwatch Score.\n");
 			if ( pAttacker->GetScore() > pDefender->GetScore() )
 			{
 				// getting more points is an absolute decider.
 				iStopWatchWinner = pAttacker->GetTeamNumber();
+				Msg("[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pAttacker->GetScore(), pDefender->GetScore());
 			}
 			else if ( pDefender->GetScore() > pAttacker->GetScore() )
 			{
 				iStopWatchWinner = pDefender->GetTeamNumber();
+				Msg("[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pDefender->GetScore(), pAttacker->GetScore());
 			}
 			else
 			{
@@ -2147,13 +2153,15 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 				{
 					// attackers still have some time left, so they beat the time.
 					iStopWatchWinner = pAttacker->GetTeamNumber();
+					Msg("[MULTI-SERIES DEBUG] %d beat the clock (%f left).\n", iStopWatchWinner, pTimer->GetTimeRemaining());
 				}
 				else
 				{
 					iStopWatchWinner = pDefender->GetTeamNumber();
+					Msg("[MULTI-SERIES DEBUG] %d set the clock (%f total).\n", iStopWatchWinner, m_flStopWatchTotalTime);
 				}
 			}
-			TFGameRules()->AddSeriesPoint( iStopWatchWinner );
+			TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( iStopWatchWinner ) );
 		}
 	}
 #endif
@@ -2205,13 +2213,14 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				{
 					if ( GetWinningTeam() != TEAM_UNASSIGNED )
 					{
-						TFGameRules()->AddSeriesPoint( GetWinningTeam() );
+						TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ) );
+						Msg("[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason );
 					}
 					// Are we done with the entire match?
 					// The match is done if the time limit is reached, AND the series points are not tied.
 					bool bIsTied = false;
-					int  nRedPoints = TFGameRules()->GetSeriesPoints( TF_TEAM_RED );
-					int  nBluePoints = TFGameRules()->GetSeriesPoints( TF_TEAM_BLUE );
+					int nRedPoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_DEFENDERS );
+					int nBluePoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_INVADERS );
 					if ( nRedPoints == nBluePoints )
 					{
 						bIsTied = true;

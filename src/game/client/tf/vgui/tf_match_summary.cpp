@@ -530,9 +530,9 @@ void CTFMatchSummary::UpdateTeamInfo()
 	int  iBluScore = 0;
 	if ( GetGlobalTFTeam( TF_TEAM_RED ) && GetGlobalTFTeam( TF_TEAM_BLUE ) )
 	{
-		iRedScore = bMultiSeries ? TFGameRules()->GetSeriesPoints( TF_TEAM_RED ) : GetGlobalTFTeam( TF_TEAM_RED )->Get_Score();
-		iBluScore = bMultiSeries ? TFGameRules()->GetSeriesPoints( TF_TEAM_BLUE ) : GetGlobalTFTeam( TF_TEAM_BLUE )->Get_Score();
-		bUseWinnerLabel = !bMultiSeries || !TFGameRules()->IsPlayingMultiSeriesIntermission();
+		iRedScore = bMultiSeries ? TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) ) : GetGlobalTFTeam( TF_TEAM_RED )->Get_Score();
+		iBluScore = bMultiSeries ? TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) ) : GetGlobalTFTeam( TF_TEAM_BLUE )->Get_Score();
+		bUseWinnerLabel = !bMultiSeries;
 	}
 
 	int nWinningTeam = TEAM_INVALID;
