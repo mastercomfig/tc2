@@ -73,6 +73,34 @@ event HudMatchStatus_ShowMatchStartDoors_Fast
 	SetVisible CountdownBG 1 11
 }
 
+event HudMatchStatus_ShowMatchStartDoors_FromClosed
+{
+	SetVisible	MatchDoors	1	0
+	SetVisible	BlueTeamPanel	1	0
+	SetVisible	RedTeamPanel	1	0
+	SetVisible CountdownLabel 1 0
+	SetVisible CountdownLabelShadow 1 0
+	Animate CountdownLabel ypos 150 Linear 0 0
+	Animate CountdownLabelShadow ypos 150 Linear 0 0
+
+	Animate CountdownLabel ypos c-3 Gain 0.75 0 0.4
+	Animate CountdownLabelShadow ypos c-0 Gain 0.75 0 0.4
+
+	SetVisible	HudTournamentBG 0	2
+	RunEventChild MatchDoors PlayDoorOpenAnim 7
+
+	RunEvent HudTournament_AnimateTeams_In 0.25
+	RunEvent HudTournament_AnimateTeams_Out 7.70
+
+	SetVisible MatchDoors	0 9
+	SetVisible CountdownLabel 0 9.9
+	SetVisible CountdownLabelShadow 0 9.9
+
+	RunEvent HudTournament_DoorsCleanup 10
+	
+	SetVisible CountdownBG 1 11
+}
+
 event HudTournament_MoveTimerDown
 {
 	Animate CountdownLabel ypos 150 Linear 0 0
