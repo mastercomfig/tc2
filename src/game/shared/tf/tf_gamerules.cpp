@@ -2300,7 +2300,7 @@ bool CTFGameRules::IsBetaActive( void ) const
 
 bool CTFGameRules::IsPreRoundPushEnabled( void )
 {
-	if ( GetActiveRoundTimer() && ( GetActiveRoundTimer()->GetSetupTimeLength() > 0 ) )
+	if ( IsAttackDefenseMode() )
 	{
 		return false;
 	}
