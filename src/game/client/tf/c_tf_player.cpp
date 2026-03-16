@@ -10375,13 +10375,6 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 		}
 	}
 
-	// Update our viewmodel whenever we switch view modes
-	C_TFPlayer *pTFObserverTarget = ToTFPlayer( GetObserverTarget() );
-	if ( pTFObserverTarget && pTFObserverTarget != this )
-	{
-		pTFObserverTarget->FlushAllPlayerVisibilityState();
-	}
-
 	// Update our weapon's visibility when we switch
 	C_TFWeaponBase *pWeapon = GetActiveTFWeapon();
 	if ( pWeapon )
@@ -11520,7 +11513,6 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 		int iTarget = event->GetInt( "obs_target" );
 		if ( iTarget == entindex() || iOldTarget == entindex() )
 		{
-			int iMode = event->GetInt( "mode" );
 			// Update visibility of any worn items.
 			FlushAllPlayerVisibilityState();
 		}
