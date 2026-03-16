@@ -6329,6 +6329,11 @@ bool CTFPlayerShared::HasDemoShieldEquipped() const
 	return GetEquippedDemoShield( m_pOuter ) != NULL;
 }
 
+CTFWearableDemoShield* CTFPlayerShared::GetDemoShield()
+{
+	return GetEquippedDemoShield( m_pOuter );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

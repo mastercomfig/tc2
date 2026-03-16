@@ -541,6 +541,11 @@ public:
 	void	SetDemomanChargeMeter( float val )  { m_flChargeMeter = Clamp( val, 0.0f, 100.0f); }
 	void	CalcChargeCrit( bool bForceCrit=false );
 	bool	HasDemoShieldEquipped() const;
+#ifdef CLIENT_DLL
+	class C_TFWearableDemoShield* GetDemoShield();
+#else
+	class CTFWearableDemoShield* GetDemoShield();
+#endif
 
 	bool	IsJumping( void ) const			{ return m_bJumping; }
 	void	SetJumping( bool bJumping );

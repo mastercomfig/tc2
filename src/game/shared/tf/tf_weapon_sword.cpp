@@ -207,30 +207,15 @@ void CTFDecapitationMeleeWeaponBase::UpdateAttachmentModels( void )
 
 	CTFWearableDemoShield* pMyShield = dynamic_cast<CTFWearableDemoShield*>( m_hShield.Get() );
 
+	if ( !pMyShield )
+	{
+		pMyShield = pTFPlayer->m_Shared.GetDemoShield();
+		m_hShield.Set( pMyShield );
+	}
+
 	if ( pMyShield )
 	{
 		pMyShield->UpdateAttachmentModels();
-	}
-	else
-	{
-		// Find a shield wearable...
-		for ( int i=0; i<pTFPlayer->GetNumWearables(); ++i )
-		{
-			CEconWearable* pItem = pTFPlayer->GetWearable(i);
-			if ( !pItem )
-				continue;
-
-			pMyShield = dynamic_cast<CTFWearableDemoShield*>( pItem );
-			if ( !pMyShield )
-				continue;
-
-			m_hShield.Set( pMyShield );
-		}
-
-		if ( pMyShield )
-		{
-			pMyShield->UpdateAttachmentModels();
-		}
 	}
 }
 

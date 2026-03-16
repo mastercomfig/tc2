@@ -23997,18 +23997,7 @@ bool CTFGameRules::CanUpgradeWithAttrib( CTFPlayer *pPlayer, int iWeaponSlot, at
 				}
 			}
 
-			bool bShieldEquipped = false;
-			if ( pPlayer->IsPlayerClass( TF_CLASS_DEMOMAN ) )
-			{
-				for ( int i = 0; i < pPlayer->GetNumWearables(); ++i )
-				{
-					CTFWearableDemoShield *pWearableShield = dynamic_cast< CTFWearableDemoShield* >( pPlayer->GetWearable( i ) );
-					if ( pWearableShield )
-					{
-						bShieldEquipped = true;
-					}
-				}
-			}
+			const bool bShieldEquipped = pPlayer->IsPlayerClass( TF_CLASS_DEMOMAN ) ? pPlayer->m_Shared.HasDemoShieldEquipped() : false;
 
 			return ( ( iWeaponSlot == TF_WPN_TYPE_PRIMARY && 
 					( pPlayer->IsPlayerClass( TF_CLASS_SCOUT ) || 
