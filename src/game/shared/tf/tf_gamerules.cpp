@@ -3107,18 +3107,6 @@ bool CTFGameRules::MatchmakingShouldUseStopwatchMode( void )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CTFGameRules::IsAttackDefenseMode( void )
-{
-	CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-	bool bRetVal = !tf_tc2_mode.GetBool() &&  !HasMultipleTrains() && ( tf_gamemode_payload.GetBool() || ( pMaster && ( pMaster->PlayingMiniRounds() || pMaster->ShouldSwitchTeamsOnRoundWin() ) ) );
-
-	tf_attack_defend_map.SetValue( bRetVal );
-	return bRetVal;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void CTFGameRules::SetPowerupMode( bool bValue )
 {
 	// Powerup mode uses grapple and changes some gamerule variables.
@@ -3137,7 +3125,6 @@ void CTFGameRules::SetPowerupMode( bool bValue )
 	m_bPowerupMode = bValue;
 }
 
-#ifdef GAME_DLL
 //-----------------------------------------------------------------------------
 void CTFGameRules::EndManagedMvMMatch( bool bKickPlayersToParties )
 {
@@ -3152,8 +3139,22 @@ void CTFGameRules::EndManagedMvMMatch( bool bKickPlayersToParties )
 }
 #endif // GAME_DLL
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFGameRules::IsAttackDefenseMode( void )
+{
+#ifdef GAME_DLL
+	CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+	bool                     bRetVal = !tf_tc2_mode.GetBool() && !HasMultipleTrains() && ( tf_gamemode_payload.GetBool() || ( pMaster && ( pMaster->PlayingMiniRounds() || pMaster->ShouldSwitchTeamsOnRoundWin() ) ) );
 
-#endif // STAGING_ONLY
+	tf_attack_defend_map.SetValue( bRetVal );
+
+	return bRetVal;
+#else
+	return tf_attack_defend_map.GetBool();
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:

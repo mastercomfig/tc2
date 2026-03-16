@@ -186,13 +186,12 @@ void CRoundCounterPanel::CreateRoundPanels( ImageVector& vecImages, const char* 
 	}
 }
 
-extern ConVar tf_attack_defend_map;
 //-----------------------------------------------------------------------------
 // Purpose: Loop through and conditionally set visible some panels
 //-----------------------------------------------------------------------------
 void VisibleCondition( CRoundCounterPanel::ImageVector& vecImages, int iMax )
 {
-	bool bInStopWatch = tf_attack_defend_map.GetBool();
+	bool bInStopWatch = TFGameRules() && TFGameRules()->IsAttackDefenseMode();
 
 	FOR_EACH_VEC( vecImages, i )
 	{
