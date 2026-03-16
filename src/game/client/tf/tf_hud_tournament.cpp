@@ -393,6 +393,16 @@ void CHudTournament::PreparePanel( void )
 			}
 		}
 
+		C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != m_iLocalTeam )
+		{
+			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
+			if ( m_pCountdownBG )
+			{
+				m_pCountdownBG->SetImage( m_iLocalTeam == TF_TEAM_BLUE ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
+			}
+		}
+
 		if ( m_bCountDownVisible != bCountdownVisible )
 		{
 			m_bCountDownVisible = bCountdownVisible;
@@ -404,16 +414,6 @@ void CHudTournament::PreparePanel( void )
 			else
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudTournament_HideTimer", false);
-			}
-		}
-
-		C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != m_iLocalTeam )
-		{
-			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
-			if ( m_pCountdownBG )
-			{
-				m_pCountdownBG->SetImage( m_iLocalTeam == TF_TEAM_BLUE ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
 			}
 		}
 	}
