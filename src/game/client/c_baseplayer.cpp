@@ -636,7 +636,13 @@ void C_BasePlayer::SetObserverMode ( int iNewMode )
 			g_ClientVirtualReality.AlignTorsoAndViewToWeapon();
 		}
 
+#ifdef TF_CLIENT_DLL
+		CTFPlayer* pTFPlayer = ToTFPlayer( this );
+		if ( pTFPlayer )
+			pTFPlayer->FlushAllPlayerVisibilityState();
+#else
 		UpdateVisibility();
+#endif
 	}
 }
 

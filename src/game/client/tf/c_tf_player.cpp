@@ -4407,7 +4407,7 @@ void C_TFPlayer::SetDormant( bool bDormant )
 
 	if ( IsDormant() && !bDormant )
 	{
-		SetBodygroupsDirty();
+		FlushAllPlayerVisibilityState();
 
 		if ( IsTaunting() )
 		{
@@ -4663,8 +4663,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			m_flDisguiseEndEffectStartTime = MAX( m_flDisguiseEndEffectStartTime, gpGlobals->curtime );
 
 			// Update visibility of any worn items.
-			UpdateWearables();
-			SetBodygroupsDirty();
+			FlushAllPlayerVisibilityState();
 
 			// Remove decals.
 			RemoveAllDecals();
@@ -4801,7 +4800,12 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			if ( m_iOldObserverMode == OBS_MODE_IN_EYE )
 			{
 				CBaseEntity* pObserveTarget = GetObserverTarget();
-				if( pObserveTarget )
+				C_TFPlayer* pTFPlayer = ToTFPlayer( pObserveTarget );
+				if ( pTFPlayer )
+				{
+					pTFPlayer->FlushAllPlayerVisibilityState();
+				}
+				else if ( pObserveTarget )
 				{
 					pObserveTarget->UpdateVisibility();
 				}
@@ -4830,8 +4834,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 				}
 
 				// Update visibility of any worn items.
-				pTFOldObserverTarget->UpdateWearables();
-				pTFOldObserverTarget->SetBodygroupsDirty();
+				pTFOldObserverTarget->FlushAllPlayerVisibilityState();
 
 				if ( IsReplay() )
 				{
@@ -4849,8 +4852,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 				}
 
 				// Update visibility of any worn items.
-				pTFObserverTarget->UpdateWearables();
-				pTFObserverTarget->SetBodygroupsDirty();
+				pTFObserverTarget->FlushAllPlayerVisibilityState();
 			}
 		}
 
@@ -4905,7 +4907,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 
 		if ( m_bOldCustomModelVisible != m_PlayerClass.CustomModelIsVisibleToSelf() )
 		{
-			UpdateVisibility();
+			FlushAllPlayerVisibilityState();
 		}
 	}
 
@@ -8318,7 +8320,7 @@ void C_TFPlayer::ClientPlayerRespawn( void )
 		m_flStrandedSpawnAnchorTime = gpGlobals->curtime + 7.0f;
 	}
 
-	UpdateVisibility();
+	FlushAllPlayerVisibilityState();
 
 	DestroyBoneAttachments();
 
@@ -8467,8 +8469,7 @@ void C_TFPlayer::CalculateVisionUsingCurrentFlags( void )
 			if ( !pPlayer->IsAlive() )
 				continue;
 
-			pPlayer->UpdateWearables();
-			pPlayer->SetBodygroupsDirty();
+			pPlayer->FlushAllPlayerVisibilityState();
 			if ( pPlayer->GetActiveWeapon() )
 			{
 				pPlayer->GetActiveWeapon()->RestartParticleEffect();
@@ -10396,8 +10397,7 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 			pWeapon->UpdateAttachmentModels();
 		}
 
-		pTFObserverTarget->UpdateWearables();
-		pTFObserverTarget->SetBodygroupsDirty();
+		pTFObserverTarget->FlushAllPlayerVisibilityState();
 	}
 
 	// Update our weapon's visibility when we switch
@@ -11533,8 +11533,7 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 				}
 
 				// Update visibility of any worn items.
-				UpdateWearables();
-				SetBodygroupsDirty();
+				FlushAllPlayerVisibilityState();
 			}
 		}
 	}
@@ -11555,8 +11554,7 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 			}
 
 			// Update visibility of any worn items.
-			UpdateWearables();
-			SetBodygroupsDirty();
+			FlushAllPlayerVisibilityState();
 		}
 	}
 	else if ( FStrEq( event->GetName(), "post_inventory_application" ) )
@@ -11565,6 +11563,7 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 		C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( iPlayer ) );
 		if ( pPlayer )
 		{
+			// TODO(mcoms): should this be FlushAllPlayerVisibilityState()?
 			pPlayer->SetBodygroupsDirty();
 		}
 	}
