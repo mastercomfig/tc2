@@ -256,12 +256,18 @@ void CTFProjectile_Flare::Explode( trace_t *pTrace, CBaseEntity *pOther )
 					VectorNormalize( vecToTarget );
 					vecToTarget.z = 1.0;
 
+					// UNDONE(mcoms): use new airblast functionality
+#if 0
 					// apply airblast - Apply stun if they are effectively grounded so we can knock them up
 					if ( !pTFVictim->m_Shared.InCond( TF_COND_KNOCKED_INTO_AIR ) )
 					{
 						pTFVictim->m_Shared.StunPlayer( 0.5, 1.f, TF_STUN_MOVEMENT, ToTFPlayer( pAttacker ) );
 					}
-					
+#else
+					pTFVictim->m_Shared.AddCond( TF_COND_LOST_FOOTING, 0.5f );
+					pTFVictim->m_Shared.AddCond( TF_COND_AIR_CURRENT );
+					pTFVictim->m_Shared.AddCond( TF_COND_KNOCKED_INTO_AIR );
+#endif
 					float flForce = bIsBurningVictim ? 400.0f : 100.0f;
 					pTFVictim->ApplyGenericPushbackImpulse( vecToTarget * flForce, ToTFPlayer( pAttacker ) );
 				}

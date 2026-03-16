@@ -845,11 +845,18 @@ void CTFGrenadePipebombProjectile::PipebombTouch( CBaseEntity *pOther )
 					CTFPlayer *pVictim = ToTFPlayer( pOther );
 					if ( pVictim )
 					{
+						// UNDONE(mcoms)
+#if 0
 						// apply airblast - Apply stun if they are effectively grounded so we can knock them up
 						if ( !pVictim->m_Shared.InCond( TF_COND_KNOCKED_INTO_AIR ) )
 						{
 							pVictim->m_Shared.StunPlayer( 0.5, 1.f, TF_STUN_MOVEMENT, ToTFPlayer( pAttacker ) );
 						}
+#else
+						pVictim->m_Shared.AddCond( TF_COND_LOST_FOOTING, 0.5f );
+						pVictim->m_Shared.AddCond( TF_COND_AIR_CURRENT );
+						pVictim->m_Shared.AddCond( TF_COND_KNOCKED_INTO_AIR );
+#endif
 
 						Vector vecToTarget = pVictim->WorldSpaceCenter() - pAttacker->WorldSpaceCenter();
 						VectorNormalize( vecToTarget );
