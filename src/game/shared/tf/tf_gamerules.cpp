@@ -5831,7 +5831,7 @@ bool CTFGameRules::StopWatchShouldBeTimedWin( bool bSkipForMultiSeries )
 {
 	StopWatchShouldBeTimedWin_Calculate();
 	ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
-	if ( bSkipForMultiSeries && GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+	if ( bSkipForMultiSeries && GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 	{
 		return false;
 	}
@@ -5883,7 +5883,7 @@ void CTFGameRules::StopWatchModeThink( void )
 	{
 		bool bCanForceEnd = true;
 		ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
-		if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+		if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 		{
 			bCanForceEnd = false; // Multi-series stopwatch uses the timer just for points comparison; it doesn't forcefully end the round.
 		}
@@ -22535,7 +22535,7 @@ void CTFGameRules::HandleCTFCaptureBonus( int nTeam )
 bool CTFGameRules::TournamentModeCanEndWithTimelimit( void )
 {
 	ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
-	if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+	if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 		return true;
 
 	return ( GetStopWatchTimer() == NULL );

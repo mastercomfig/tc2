@@ -46,17 +46,29 @@ bool ShouldUseMatchHUD()
 #ifdef TF2_OG
 	return false;
 #else
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if ( !TFGameRules() )
+		return false;
+	
+	// MvM uses its own HUD
+	if ( TFGameRules()->IsMannVsMachineMode() )
 		return false;
 
-	if ( TFGameRules() && TFGameRules()->IsCompetitiveGame() && !TFGameRules()->IsInPlay() && !TFGameRules()->ShowMatchSummary() && ( TFGameRules()->GetRoundRestartTime() <= 0.0f || TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime > 11.0f ) )
-	{
+	// must show match HUD during match summary
+	if ( TFGameRules()->ShowMatchSummary() )
+		return true;
+
+	// must show match HUD during final countdown in matchmaking
+	if ( ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && TFGameRules()->GetRoundRestartTime() > 0.0f && TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime <= 11.0f )
+		return true;
+
+	// don't show match HUD while we are showing conditions and player ready status
+	if ( TFGameRules()->IsCompetitiveGame() && !TFGameRules()->IsInPlay() )
 		return false;
-	}
 
 	// TODO(mcoms): enforce this better
+	// forcing match HUD on for competitive mode.
 	C_TFPlayer* pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( TFGameRules() && ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2 ) && pTFPlayer && pTFPlayer->GetTeamNumber() >= FIRST_GAME_TEAM )
+	if ( ( TFGameRules()->IsMatchTypeCompetitive() || TFGameRules()->IsEmulatingMatch() == 2 ) && pTFPlayer && pTFPlayer->GetTeamNumber() >= FIRST_GAME_TEAM )
 		return true;
 
 	return tf_use_match_hud.GetBool();
@@ -673,6 +685,8 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 			}
 		}
 #endif
+		// reset the HUD
+		gHUD.ResetHUD();
 	}
 }
 

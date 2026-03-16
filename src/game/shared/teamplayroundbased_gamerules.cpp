@@ -403,7 +403,7 @@ CON_COMMAND_F( mp_forcewin, "Forces team to win", FCVAR_CHEAT )
 	CTeamplayRoundBasedRules *pRules = dynamic_cast<CTeamplayRoundBasedRules*>( GameRules() );
 	if ( pRules )
 	{
-		int iTeam = TEAM_UNASSIGNED;		
+		int iTeam;		
 		if ( args.ArgC() == 1 )
 		{
 			// if no team specified, use player 1's team
@@ -414,11 +414,11 @@ CON_COMMAND_F( mp_forcewin, "Forces team to win", FCVAR_CHEAT )
 			}
 			else
 			{
-				Msg( "Unable to determine default team. Usage: mp_forcewin <opt: team#>\n" );
+				Msg( "Unable to determine default team. Usage: mp_forcewin <opt: team#> <opt: reason>\n" );
 				return;
 			}
 		}
-		else if ( args.ArgC() == 2 )
+		else if ( args.ArgC() == 2 || args.ArgC() == 3 )
 		{
 			// if team # specified, use that
 			iTeam = atoi( args[1] );
@@ -429,7 +429,23 @@ CON_COMMAND_F( mp_forcewin, "Forces team to win", FCVAR_CHEAT )
 			return;
 		}
 
-		int iWinReason = ( TEAM_UNASSIGNED == iTeam ? WINREASON_STALEMATE : WINREASON_ALL_POINTS_CAPTURED );
+		int iWinReason;
+		if ( iTeam == TEAM_UNASSIGNED )
+		{
+			iWinReason = WINREASON_STALEMATE;
+		}
+		else
+		{
+			iWinReason = WINREASON_ALL_POINTS_CAPTURED;
+			if ( args.ArgC() == 3 )
+			{
+				int iSpecifiedReason = atoi( args[2] );
+				if ( iSpecifiedReason < WINREASON_COUNT )
+				{
+					iWinReason = iSpecifiedReason;
+				}
+			}
+		}
 		pRules->SetWinningTeam( iTeam, iWinReason );
 	}
 }
@@ -1277,7 +1293,7 @@ bool CTeamplayRoundBasedRules::CheckTimeLimit( bool bAllowEnd /*= true*/ )
 				if ( TFGameRules() )
 				{
 					ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
-					if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+					if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 					{
 						return false;
 					}
@@ -2104,64 +2120,90 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 		SetAllowBetweenRounds( true );
 	}
 
-	Msg("[MULTI-SERIES DEBUG] Team Won\n");
-
-	// if we are doing stopwatch, and we have a set time, that means this win completes the stopwatch back and forth.
-	if ( TFGameRules()->MatchmakingShouldUseStopwatchMode() && m_flStopWatchTotalTime >= 0.0f )
+	ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+	if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 	{
-		Msg("[MULTI-SERIES DEBUG] Detected Stopwatch.\n");
-		int      iStopWatchWinner;
-		CTFTeam* pAttacker = NULL;
-		CTFTeam* pDefender = NULL;
+		Msg( "[MULTI-SERIES DEBUG] Team Won\n" );
 
-		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+		// if we're at the end of a stopwatch round.
+		if ( TFGameRules()->IsInStopWatch() && m_bForceMapReset && TFGameRules()->GetStopWatchTimer() )
 		{
-			CTFTeam* pTeam = GetGlobalTFTeam( i );
-
-			if ( pTeam )
+			// only reward the defending team for winning, since we already score who is the best attacker through stopwatch.
+			// if an attacking team wins, then the only way for the other team to get a stopwatch point is to also win, but faster.
+			// therefore, in that case, the differential in scoring is the stopwatch point.
+			// if the attacking teams loses, then the other team can beat their # of points, and could potentially win.
+			// in either case, winning just effectively adds a 2-0 differential, without really evaluating performance.
+			// however, rewarding a successful defense does distinguish a team for being able to defend.
+			// both teams being able to defend successfully marks both teams having some sort of skill preventing the other team from winning
+			// even if one team does win the stopwatch point.
+			if ( m_iWinningTeam != TEAM_UNASSIGNED )
 			{
+				CTFTeam* pTeam = GetGlobalTFTeam( m_iWinningTeam );
 				if ( pTeam->GetRole() == TEAM_ROLE_DEFENDERS )
 				{
-					pDefender = pTeam;
+					TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ) );
+					Msg( "[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason );
 				}
+			}
 
-				if ( pTeam->GetRole() == TEAM_ROLE_ATTACKERS )
+			// did we do the stopwatch back and forth?
+			if ( !TFGameRules()->GetStopWatchTimer()->IsWatchingTimeStamps() )
+			{
+				Msg( "[MULTI-SERIES DEBUG] Detected Stopwatch end.\n" );
+				int      iStopWatchWinner;
+				CTFTeam* pAttacker = NULL;
+				CTFTeam* pDefender = NULL;
+
+				for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
 				{
-					pAttacker = pTeam;
+					CTFTeam* pTeam = GetGlobalTFTeam( i );
+
+					if ( pTeam )
+					{
+						if ( pTeam->GetRole() == TEAM_ROLE_DEFENDERS )
+						{
+							pDefender = pTeam;
+						}
+
+						if ( pTeam->GetRole() == TEAM_ROLE_ATTACKERS )
+						{
+							pAttacker = pTeam;
+						}
+					}
+				}
+				CTeamRoundTimer* pTimer = TFGameRules()->GetStopWatchTimer();
+				if ( pTimer && pAttacker && pDefender )
+				{
+					Msg( "[MULTI-SERIES DEBUG] Calculating Stopwatch Score.\n" );
+					if ( pAttacker->GetScore() > pDefender->GetScore() )
+					{
+						// getting more points is an absolute decider.
+						iStopWatchWinner = pAttacker->GetTeamNumber();
+						Msg( "[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pAttacker->GetScore(), pDefender->GetScore() );
+					}
+					else if ( pDefender->GetScore() > pAttacker->GetScore() )
+					{
+						iStopWatchWinner = pDefender->GetTeamNumber();
+						Msg( "[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pDefender->GetScore(), pAttacker->GetScore() );
+					}
+					else
+					{
+						// teams are even.
+						if ( pTimer->GetTimeRemaining() > 0.0f )
+						{
+							// attackers still have some time left, so they beat the time.
+							iStopWatchWinner = pAttacker->GetTeamNumber();
+							Msg( "[MULTI-SERIES DEBUG] %d beat the clock (%f left).\n", iStopWatchWinner, pTimer->GetTimeRemaining() );
+						}
+						else
+						{
+							iStopWatchWinner = pDefender->GetTeamNumber();
+							Msg( "[MULTI-SERIES DEBUG] %d set the clock (%f total).\n", iStopWatchWinner, m_flStopWatchTotalTime );
+						}
+					}
+					TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( iStopWatchWinner ) );
 				}
 			}
-		}
-		CTeamRoundTimer* pTimer = TFGameRules()->GetStopWatchTimer();
-		if ( pTimer && pAttacker && pDefender )
-		{
-			Msg("[MULTI-SERIES DEBUG] Calculating Stopwatch Score.\n");
-			if ( pAttacker->GetScore() > pDefender->GetScore() )
-			{
-				// getting more points is an absolute decider.
-				iStopWatchWinner = pAttacker->GetTeamNumber();
-				Msg("[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pAttacker->GetScore(), pDefender->GetScore());
-			}
-			else if ( pDefender->GetScore() > pAttacker->GetScore() )
-			{
-				iStopWatchWinner = pDefender->GetTeamNumber();
-				Msg("[MULTI-SERIES DEBUG] %d captured more points (%d > %d).\n", iStopWatchWinner, pDefender->GetScore(), pAttacker->GetScore());
-			}
-			else
-			{
-				// teams are even.
-				if ( pTimer->GetTimeRemaining() > 0.0f )
-				{
-					// attackers still have some time left, so they beat the time.
-					iStopWatchWinner = pAttacker->GetTeamNumber();
-					Msg("[MULTI-SERIES DEBUG] %d beat the clock (%f left).\n", iStopWatchWinner, pTimer->GetTimeRemaining());
-				}
-				else
-				{
-					iStopWatchWinner = pDefender->GetTeamNumber();
-					Msg("[MULTI-SERIES DEBUG] %d set the clock (%f total).\n", iStopWatchWinner, m_flStopWatchTotalTime);
-				}
-			}
-			TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( iStopWatchWinner ) );
 		}
 	}
 #endif
@@ -2196,7 +2238,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 		if ( TFGameRules() )
 		{
 			ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
-			if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+			if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 			{
 				// In a multi-series match we override the traditional WinLimit/MaxRounds behavior.
 				// A round win will trigger this state. If the series is complete (Win/MaxRounds limit hit),
@@ -2211,7 +2253,8 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 
 				if ( bSeriesComplete )
 				{
-					if ( GetWinningTeam() != TEAM_UNASSIGNED )
+					// if we are in stopwatch, we already gave a point elsewhere.
+					if ( GetWinningTeam() != TEAM_UNASSIGNED && !TFGameRules()->MatchmakingShouldUseStopwatchMode() )
 					{
 						TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ) );
 						Msg("[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason );

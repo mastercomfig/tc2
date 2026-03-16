@@ -522,7 +522,7 @@ void CTFMatchSummary::UpdateTeamInfo()
 	if ( TFGameRules() )
 	{
 		ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
-		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries();
+		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode();
 	}
 
 	bool bUseWinnerLabel = false;

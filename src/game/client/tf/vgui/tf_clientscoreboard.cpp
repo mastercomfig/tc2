@@ -999,7 +999,7 @@ void CTFClientScoreBoardDialog::UpdateTeamInfo()
 	if ( TFGameRules() )
 	{
 		ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
-		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries();
+		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode();
 	}
 
 	// update the team sections in the scoreboard
