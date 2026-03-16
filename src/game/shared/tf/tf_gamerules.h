@@ -968,6 +968,7 @@ bool IsCreepWaveMode( void ) const;
 	void SetSetup( bool bSetup );
 	void ManageStopwatchTimer( bool bInSetup );
 	virtual void HandleTeamScoreModify( int iTeam, int iScore);
+	void MarkStopWatchTime( void );
 
 	bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex );
 

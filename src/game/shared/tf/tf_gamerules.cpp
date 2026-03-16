@@ -5719,6 +5719,7 @@ void CTFGameRules::RestartTournament( void )
 	if ( GetStopWatchTimer() )
 	{
 		UTIL_Remove( GetStopWatchTimer() );
+		m_hStopWatchTimer = NULL;
 	}
 
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
@@ -5781,6 +5782,14 @@ void CTFGameRules::HandleTeamScoreModify( int iTeam, int iScore )
 {
 	BaseClass::HandleTeamScoreModify( iTeam, iScore );
 
+	MarkStopWatchTime();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFGameRules::MarkStopWatchTime( void )
+{
 	if ( IsInStopWatch() == true )
 	{
 		if ( GetStopWatchTimer() )
@@ -5789,7 +5798,6 @@ void CTFGameRules::HandleTeamScoreModify( int iTeam, int iScore )
 			{
 				GetStopWatchTimer()->SetStopWatchTimeStamp();
 			}
-	
 			StopWatchModeThink();
 		}
 	}
@@ -5813,7 +5821,7 @@ void CTFGameRules::StopWatchShouldBeTimedWin_Calculate( void )
 			if ( pMaster == NULL )
 				return;
 
-			int iNumPoints = pMaster->GetNumPoints();
+			int iNumPoints = ShouldScorePerRound() ? 1 : pMaster->GetNumPoints();
 
 			CTFTeam *pAttacker = NULL;
 			CTFTeam *pDefender = NULL;

@@ -1221,6 +1221,11 @@ int CTeamControlPointMaster::TeamOwnsAllPoints( CTeamControlPoint *pOverridePoin
 //-----------------------------------------------------------------------------
 bool CTeamControlPointMaster::WouldNewCPOwnerWinGame( CTeamControlPoint *pPoint, int iNewOwner )
 {
+	if ( m_iInvalidCapWinner == 1 || m_iInvalidCapWinner == iNewOwner )
+	{
+		return false;
+	}
+
 	return ( TeamOwnsAllPoints( pPoint, iNewOwner ) == iNewOwner );
 }
 

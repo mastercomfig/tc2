@@ -304,27 +304,48 @@ void CTeamControlPoint::InputReset( inputdata_t &input )
 //-----------------------------------------------------------------------------
 void CTeamControlPoint::HandleScoring( int iTeam )
 {
-	if ( TeamplayRoundBasedRules() && !TeamplayRoundBasedRules()->ShouldScorePerRound() )
+	// someone reclaiming their point cannot give them score.
+	if ( m_iDefaultOwner == iTeam )
 	{
-		GetGlobalTeam( iTeam )->AddScore( 1 );
-		TeamplayRoundBasedRules()->HandleTeamScoreModify( iTeam, 1 );
-
-		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-		if ( pMaster && !pMaster->WouldNewCPOwnerWinGame( this, iTeam ) )
+		return;
+	}
+	if ( TeamplayRoundBasedRules() )
+	{
+		if ( !TeamplayRoundBasedRules()->ShouldScorePerRound() )
 		{
+			GetGlobalTeam( iTeam )->AddScore( 1 );
+			TeamplayRoundBasedRules()->HandleTeamScoreModify( iTeam, 1 );
+
+			CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+			if ( pMaster && !pMaster->WouldNewCPOwnerWinGame( this, iTeam ) )
+			{
 #ifdef TF_DLL
-			if ( TeamplayRoundBasedRules()->GetGameType() == TF_GAMETYPE_ESCORT )
-			{
-				CBroadcastRecipientFilter filter;
-				EmitSound( filter, entindex(), "Hud.EndRoundScored" );
-			}
-			else
+				if ( TeamplayRoundBasedRules()->GetGameType() == TF_GAMETYPE_ESCORT )
+				{
+					CBroadcastRecipientFilter filter;
+					EmitSound( filter, entindex(), "Hud.EndRoundScored" );
+				}
+				else
 #endif
-			{
-				CTeamRecipientFilter filter( iTeam );
-				EmitSound( filter, entindex(), "Hud.EndRoundScored" );
+				{
+					CTeamRecipientFilter filter( iTeam );
+					EmitSound( filter, entindex(), "Hud.EndRoundScored" );
+				}
 			}
 		}
+#ifdef TF_DLL
+		else
+		{
+			// if we score per round, and this wins the round, then mark the stopwatch time.
+			CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+			if ( pMaster && pMaster->WouldNewCPOwnerWinGame( this, iTeam ) )
+			{
+				// maybe we should just handle it generically since this will add 1 score.
+				TeamplayRoundBasedRules()->HandleTeamScoreModify( iTeam, 1 );
+				//TFGameRules()->MarkStopWatchTime();
+			}
+		}
+#endif
 	}
 }
 
