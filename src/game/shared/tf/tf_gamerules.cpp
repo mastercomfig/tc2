@@ -789,7 +789,7 @@ ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_m
 
 ConVar tf_jumpdmgreduction_always_apply( "tf_jumpdmgreduction_always_apply", "0" );
 #endif // GAME_DLL
-ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "10", FCVAR_REPLICATED );
+ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "30", FCVAR_REPLICATED );
 
 ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
