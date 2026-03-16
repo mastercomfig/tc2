@@ -403,7 +403,7 @@ void CHudTournament::PreparePanel( void )
 			}
 		}
 
-		if ( m_bCountDownVisible != bCountdownVisible && m_iLocalTeam > LAST_SHARED_TEAM )
+		if ( m_bCountDownVisible != bCountdownVisible && m_iLocalTeam > LAST_SHARED_TEAM && pLocalPlayer->IsAlive() )
 		{
 			m_bCountDownVisible = bCountdownVisible;
 
@@ -593,6 +593,7 @@ void CHudTournament::OnTick( void )
 			if ( TFGameRules()->IsInWaitingForPlayers() && TFGameRules()->State_Get() != GR_STATE_GAME_OVER )
 			{
 				bool bShouldBeVisible = true;
+				bool bShouldInvalidate = true;
 				PreparePanel();
 
 				if ( !TFGameRules()->IsInArenaMode() )
@@ -611,12 +612,13 @@ void CHudTournament::OnTick( void )
 				if ( m_pScoreboard.Get() && m_pScoreboard->IsVisible() )
 				{
 					bShouldBeVisible = false;
+					bShouldInvalidate = false;
 				}
 
 				if ( m_bShouldBeVisible != bShouldBeVisible )
 				{
 					m_bShouldBeVisible = bShouldBeVisible;
-					bNeedsInvalidate = true;
+					bNeedsInvalidate = bShouldInvalidate;
 				}
 			}
 			else if ( m_bShouldBeVisible )
