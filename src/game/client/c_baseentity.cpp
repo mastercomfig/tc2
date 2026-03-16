@@ -1374,7 +1374,7 @@ void C_BaseEntity::UpdateVisibility()
 	// This is to prevent servers creating fake cosmetic items and attaching them to players.
 	if ( !engine->IsPlayingDemo() )
 	{
-		static bool bIsStaging = ( engine->GetAppID() == 810 );
+		static bool bIsStaging = true;
 		if ( !m_bValidatedOwner )
 		{
 			bool bRetry = false;
