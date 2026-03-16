@@ -4827,12 +4827,6 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			C_TFPlayer *pTFOldObserverTarget = ToTFPlayer( m_hOldObserverTarget.Get() );
 			if ( m_hOldObserverTarget != GetObserverTarget() && pTFOldObserverTarget )
 			{
-				C_TFWeaponBase *pWeapon = pTFOldObserverTarget->m_Shared.GetActiveTFWeapon();
-				if ( pWeapon )
-				{
-					pWeapon->UpdateAttachmentModels();
-				}
-
 				// Update visibility of any worn items.
 				pTFOldObserverTarget->FlushAllPlayerVisibilityState();
 
@@ -4845,12 +4839,6 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			C_TFPlayer *pTFObserverTarget = ToTFPlayer( GetObserverTarget() );
 			if ( pTFObserverTarget )
 			{
-				C_TFWeaponBase *pWeapon = pTFObserverTarget->m_Shared.GetActiveTFWeapon();
-				if ( pWeapon )
-				{
-					pWeapon->UpdateAttachmentModels();
-				}
-
 				// Update visibility of any worn items.
 				pTFObserverTarget->FlushAllPlayerVisibilityState();
 			}
@@ -10389,14 +10377,8 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 
 	// Update our viewmodel whenever we switch view modes
 	C_TFPlayer *pTFObserverTarget = ToTFPlayer( GetObserverTarget() );
-	if ( pTFObserverTarget )
+	if ( pTFObserverTarget && pTFObserverTarget != this )
 	{
-		C_TFWeaponBase *pWeapon = pTFObserverTarget->m_Shared.GetActiveTFWeapon();
-		if ( pWeapon )
-		{
-			pWeapon->UpdateAttachmentModels();
-		}
-
 		pTFObserverTarget->FlushAllPlayerVisibilityState();
 	}
 
@@ -10405,6 +10387,7 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 	if ( pWeapon )
 	{
 		pWeapon->UpdateModelIndex();
+		pWeapon->UpdateAttachmentModels();
 		pWeapon->UpdateVisibility();
 	}
 
@@ -11526,12 +11509,6 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 
 			if ( iOld == OBS_MODE_IN_EYE || iNew == OBS_MODE_IN_EYE )
 			{
-				C_TFWeaponBase *pWeapon = m_Shared.GetActiveTFWeapon();
-				if ( pWeapon )
-				{
-					pWeapon->UpdateAttachmentModels();
-				}
-
 				// Update visibility of any worn items.
 				FlushAllPlayerVisibilityState();
 			}
@@ -11544,15 +11521,6 @@ void C_TFPlayer::FireGameEvent( IGameEvent *event )
 		if ( iTarget == entindex() || iOldTarget == entindex() )
 		{
 			int iMode = event->GetInt( "mode" );
-			if ( iMode == OBS_MODE_IN_EYE )
-			{
-				C_TFWeaponBase *pWeapon = m_Shared.GetActiveTFWeapon();
-				if ( pWeapon )
-				{
-					pWeapon->UpdateAttachmentModels();
-				}
-			}
-
 			// Update visibility of any worn items.
 			FlushAllPlayerVisibilityState();
 		}
