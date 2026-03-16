@@ -79,11 +79,6 @@
 			"image"			"competitive/competitive_logo_laurel"
 			"scaleImage"	"1"
 			"proportionaltoparent"	"1"
-
-			if_competitive
-			{
-				"visible"		"1"
-			}
 		}
 		
 		"playerpanels_kv"
