@@ -3110,7 +3110,7 @@ bool CTFGameRules::MatchmakingShouldUseStopwatchMode( void )
 bool CTFGameRules::IsAttackDefenseMode( void )
 {
 	CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
-	bool bRetVal = !HasMultipleTrains() && ( tf_gamemode_payload.GetBool() || ( pMaster && ( pMaster->PlayingMiniRounds() || pMaster->ShouldSwitchTeamsOnRoundWin() ) ) );
+	bool bRetVal = !tf_tc2_mode.GetBool() &&  !HasMultipleTrains() && ( tf_gamemode_payload.GetBool() || ( pMaster && ( pMaster->PlayingMiniRounds() || pMaster->ShouldSwitchTeamsOnRoundWin() ) ) );
 
 	tf_attack_defend_map.SetValue( bRetVal );
 	return bRetVal;
@@ -3306,7 +3306,7 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		for ( int i = 1; i <= MAX_PLAYERS; ++i )
 		{
 			CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
-			if ( !pPlayer || pPlayer->GetTeamNumber() != iTeam )
+			if ( pPlayer && pPlayer->GetTeamNumber() == iTeam )
 			{
 				if ( !m_bPlayerReady[i] && ( !pMatchDesc || pMatchDesc->BRequiresCompleteMatches() ) )
 					return false;
@@ -4095,6 +4095,19 @@ void CTFGameRules::LevelInitPostEntity( void )
 	m_bShowMatchSummary.Set( false );
 	m_bPlayersAreOnMatchSummaryStage.Set( false );
 
+	if ( IsAttackDefenseMode() )
+	{
+		CTFTeam* pRedTeam = GetGlobalTFTeam( TF_TEAM_RED );
+		if ( pRedTeam && pRedTeam->GetRole() == TEAM_ROLE_NONE )
+		{
+			pRedTeam->SetRole( TEAM_ROLE_DEFENDERS );
+		}
+		CTFTeam* pBlueTeam = GetGlobalTFTeam( TF_TEAM_BLUE );
+		if ( pBlueTeam && pBlueTeam->GetRole() == TEAM_ROLE_NONE )
+		{
+			pBlueTeam->SetRole( TEAM_ROLE_ATTACKERS );
+		}
+	}
 
 	ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
 	if ( IsEmulatingMatch() )

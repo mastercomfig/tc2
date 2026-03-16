@@ -6799,10 +6799,27 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 			{
 				iTeam = TF_TEAM_BLUE;
 			}
-			else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT || pRed->GetRole() == TEAM_ROLE_DEFENDERS )
+			else if ( TFGameRules()->IsAttackDefenseMode() )
 			{
 				// AutoTeam should give new players to the attackers on A/D maps if the teams are even
-				iTeam = TF_TEAM_BLUE;
+				for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+				{
+					CTFTeam* pTeam = GetGlobalTFTeam( i );
+
+					if ( pTeam )
+					{
+						if ( pTeam->GetRole() == TEAM_ROLE_ATTACKERS )
+						{
+							iTeam = pTeam->GetTeamNumber();
+							break;
+						}
+					}
+				}
+				if ( iTeam == TEAM_SPECTATOR )
+				{
+					// assume blue otherwise
+					iTeam = TF_TEAM_BLUE;
+				}
 			}
 			else
 			{
@@ -6884,7 +6901,24 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 		else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT || pRed->GetRole() == TEAM_ROLE_DEFENDERS )
 		{
 			// AutoTeam should give new players to the attackers on A/D maps if the teams are even
-			iTeam = TF_TEAM_BLUE;
+			for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+			{
+				CTFTeam* pTeam = GetGlobalTFTeam( i );
+
+				if ( pTeam )
+				{
+					if ( pTeam->GetRole() == TEAM_ROLE_ATTACKERS )
+					{
+						iTeam = pTeam->GetTeamNumber();
+						break;
+					}
+				}
+			}
+			if ( iTeam == TEAM_SPECTATOR )
+			{
+				// assume blue otherwise
+				iTeam = TF_TEAM_BLUE;
+			}
 		}
 		else
 		{
