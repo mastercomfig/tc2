@@ -2631,10 +2631,11 @@ void CTFPlayer::CheckForIdle( void )
 		if ( IsCoaching() && GetStudent() != NULL )
 			return;
 
-		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
+		if ( TFGameRules()->ShowMatchSummary() )
 			return;
 
-		if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS && !mp_idleunready.GetBool() )
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
+		if ( TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS && ( !mp_idleunready.GetBool() || !TFGameRules()->IsCompetitiveGame() || ( pMatchDesc && pMatchDesc->BUsesAutoReady() ) ) )
 			return;
 
 		if ( TFGameRules()->State_Get() != GR_STATE_BETWEEN_RNDS && !mp_idledealduringplay.GetBool() )

@@ -3245,6 +3245,11 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 	if ( IsMannVsMachineMode() && iTeam == TF_TEAM_PVE_INVADERS )
 		return true;
 
+	int iPlayerReadyCount = 0;
+	int iTeamSize;
+
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+
 	CMatchInfo *pMatch = GTFGCClientSystem()->GetMatch();
 	if ( pMatch )
 	{
@@ -3252,9 +3257,6 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 		if ( nMatchPlayers <= 0 )
 			return false;
 
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-		
-		int iPlayerReadyCount = 0;
 		for ( int i = 0; i < nMatchPlayers; i++ )
 		{
 			CMatchInfo::PlayerMatchData_t *pPlayerData = pMatch->GetMatchDataForPlayer( i );
@@ -3273,56 +3275,61 @@ bool CTFGameRules::PlayerReadyStatus_ArePlayersOnTeamReady( int iTeam )
 			}
 		}
 
-		const int iMatchSize = pMatch->GetCanonicalMatchSize();
-		
-		if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
+		if ( pMatch->GetNumTotalMatchPlayers() == 1 )
 		{
-			return iPlayerReadyCount > 0 || pMatch->GetNumTotalMatchPlayers() == 1 ;
+			iTeamSize = 1;
 		}
 		else
 		{
-			int iTeamSize;
-			if (IsMannVsMachineMode())
+			const int iMatchSize = pMatch->GetCanonicalMatchSize();
+			if ( IsMannVsMachineMode() )
 			{
 				iTeamSize = iMatchSize;
 			}
-			else
+			else if ( !pMatchDesc->BRequiresCompleteMatches() )
 			{
+				// only auto-start a match if we have a 9v9 available.
+				// otherwise, just keep waiting for players, unless we've been
+				// waiting for a while, then we move down to a 6v6.
 				const float flMatchTeamRatio = m_flRestartRoundStartTime > 0 && gpGlobals->curtime - m_flRestartRoundStartTime > 90.0f ? 0.5f : 0.75f;
 				iTeamSize = ( iMatchSize / 2 ) * flMatchTeamRatio;
 			}
-			return iPlayerReadyCount >= iTeamSize;
+			else
+			{
+				iTeamSize = 1;
+			}
 		}
 	}
-
-	// Non-match
-	int iPlayerReadyCount = 0;
-	for ( int i = 1; i <= MAX_PLAYERS; ++i )
+	else
 	{
-		CBasePlayer *pPlayer = UTIL_PlayerByIndex( i );
-		if ( !pPlayer || ToTFPlayer( pPlayer )->GetTeamNumber() != iTeam )
-			continue;
-
-		if ( !m_bPlayerReady[i] )
+		// Non-match
+		for ( int i = 1; i <= MAX_PLAYERS; ++i )
 		{
-			return false;
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
+			if ( !pPlayer || pPlayer->GetTeamNumber() != iTeam )
+			{
+				if ( !m_bPlayerReady[i] && ( !pMatchDesc || pMatchDesc->BRequiresCompleteMatches() ) )
+					return false;
+
+				iPlayerReadyCount++;
+			}
+		}
+
+		if ( IsMannVsMachineMode() )
+		{
+			iTeamSize = 6;
+		}
+		else if ( pMatchDesc && !pMatchDesc->BRequiresCompleteMatches() )
+		{
+			iTeamSize = ( m_flRestartRoundStartTime > 0 && gpGlobals->curtime - m_flRestartRoundStartTime > 90.0f ) ? 6 : 9;
 		}
 		else
 		{
-			iPlayerReadyCount++;
+			iTeamSize = mp_tournament_readymode_team_size.GetInt();
 		}
 	}
 
-	if ( IsEmulatingMatch() == 1 )
-	{
-		// only auto-start an emulated match if we have a 9v9 available.
-		// otherwise, just keep waiting for players, unless we've been
-		// waiting for a while, then we move down to a 6v6.
-		return m_flRestartRoundStartTime > 0 && gpGlobals->curtime - m_flRestartRoundStartTime > 90.0f ? iPlayerReadyCount >= 6 : iPlayerReadyCount >= 9;
-	}
-
-	// Team isn't ready if there was nobody on it.
-	return iPlayerReadyCount > mp_tournament_readymode_team_size.GetInt();
+	return iPlayerReadyCount >= iTeamSize;
 }
 
 //-----------------------------------------------------------------------------
@@ -3541,8 +3548,8 @@ void CTFGameRules::PlayerReadyStatus_UpdatePlayerState( CTFPlayer *pTFPlayer, bo
 			else if ( m_flRestartRoundTime < 0 && !PlayerReadyStatus_ShouldStartCountdown() )
 			{
 				bool bReadyForDropDeadTimer = false;
-				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-				if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+				if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
 				{
 					bReadyForDropDeadTimer = true;
 				}
@@ -8993,8 +9000,8 @@ bool CTFGameRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 			if ( State_Get() != GR_STATE_BETWEEN_RNDS )
 				return true;
 
-			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-			if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+			if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
 				return true;
 
 			// Make sure we have enough to allow ready mode commands
@@ -14834,8 +14841,8 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 		{
 			if ( !pPlayer->IsBot() && State_Get() != GR_STATE_RND_RUNNING )
 			{
-				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-				if ( IsEmulatingMatch() != 1 && ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() ) )
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+				if ( !pMatchDesc || !pMatchDesc->BUsesAutoReady() )
 				{
 					// Always reset when a player leaves this type of match if it isn't MvM
 					if ( !IsMannVsMachineMode() )
@@ -14843,6 +14850,8 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 						PlayerReadyStatus_ResetState();
 					}
 				}
+				// UNDONE: match can just continue even if someone disconnects, as long as conditions are met.
+#if 0
 				else if ( !IsTeamReady( pPlayer->GetTeamNumber() ) )
 				{
 					if ( IsPlayerReady( pPlayer->entindex() ) )
@@ -14888,6 +14897,16 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 						PlayerReadyStatus_ResetState();
 					}
 				}
+#else
+				else
+				{
+					if ( IsPlayerReady( pPlayer->entindex() ) )
+					{
+						// Clear the ready status so it doesn't block the rest of the team
+						PlayerReadyStatus_UpdatePlayerState( pPlayer, false );
+					}
+				}
+#endif
 			}
 		}
 
@@ -22756,8 +22775,8 @@ void CTFGameRules::BetweenRounds_Start( void )
 		m_hCompetitiveLogicEntity->OnSpawnRoomDoorsShouldUnlock();
 	}
 
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
-	if ( IsEmulatingMatch() == 1 || pMatchDesc && pMatchDesc->BUsesAutoReady() )
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
+	if ( pMatchDesc && pMatchDesc->BUsesAutoReady() )
 	{
 		for ( int i = 1; i <= MAX_PLAYERS; i++ )
 		{

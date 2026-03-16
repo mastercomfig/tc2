@@ -1891,7 +1891,7 @@ void CTeamplayRoundBasedRules::CheckReadyRestart( void )
 	// check round restart
 	if ( m_flRestartRoundTime > 0 && m_flRestartRoundTime <= gpGlobals->curtime && !g_pServerBenchmark->IsBenchmarkRunning() )
 	{
-		m_flRestartRoundTime.Set( -1.f );
+		m_flRestartRoundTime.Set( -1.0f );
 		m_flRestartRoundStartTime.Set( -1.0f );
 
 #ifdef TF_DLL
