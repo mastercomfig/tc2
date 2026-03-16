@@ -86,23 +86,13 @@ public:
 
 	virtual void StopWinMusic( int nWinningTeam, bool bGameOver ) const OVERRIDE
 	{
-		// Custom for game over
-		if ( bGameOver )
-		{
-			C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-			if ( pLocalPlayer )
-			{
-				int iLocalTeam = pLocalPlayer->GetTeamNumber();
-				if ( iLocalTeam == nWinningTeam )
-				{
-					C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndWinMusicCasual" );
-				}
-				else
-				{
-					C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndLoseMusicCasual" );
-				}
-			}
-		}
+		// stop all sounds
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndWinMusicCasual" );
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.MatchEndLoseMusicCasual" );
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "MatchMaking.RoundEndStalemateMusic" );
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "Game.Stalemate" );
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "Game.YourTeamWon" );
+		C_BaseEntity::StopSound( SOUND_FROM_LOCAL_PLAYER, "Game.YourTeamLost" );
 	}
 #endif
 
