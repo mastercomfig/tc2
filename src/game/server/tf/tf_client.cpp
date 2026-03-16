@@ -53,9 +53,10 @@ void FinishClientPutInServer( CTFPlayer *pPlayer )
 {
 	{
 		bool save = engine->LockNetworkStringTables( false );
-	
+
 		pPlayer->InitialSpawn();
 		pPlayer->Spawn();
+		pPlayer->RunNullCommand();
 	
 		engine->LockNetworkStringTables( save );
 	}
