@@ -403,7 +403,7 @@ void CHudTournament::PreparePanel( void )
 			}
 		}
 
-		if ( m_bCountDownVisible != bCountdownVisible )
+		if ( m_bCountDownVisible != bCountdownVisible && m_iLocalTeam > LAST_SHARED_TEAM )
 		{
 			m_bCountDownVisible = bCountdownVisible;
 
