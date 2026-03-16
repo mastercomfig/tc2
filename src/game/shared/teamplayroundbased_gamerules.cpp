@@ -1689,6 +1689,11 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 	{
 		RoundRespawn();
 	}
+	else if ( GetActiveRoundTimer() && GetActiveRoundTimer()->GetSetupTimeLength() > 0 )
+	{
+		// if we have setup time, then we need to activate it here, because BetweenRounds_End ends setup.
+		SetSetup( true );
+	}
 
 	IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_round_start" );
 	if ( event )
