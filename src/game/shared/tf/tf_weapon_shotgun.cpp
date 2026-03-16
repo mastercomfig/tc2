@@ -332,10 +332,6 @@ void CTFScatterGun::FireBullet( CTFPlayer *pPlayer )
 		if ( !pOwner )
 			return;
 
-		// No knockback during pre-round freeze.
-		if ( TFGameRules() && (TFGameRules()->State_Get() == GR_STATE_PREROUND) )
-			return;
-
 		// Knock the firer back!
 		if ( !(pOwner->GetFlags() & FL_ONGROUND) && !pPlayer->m_Shared.m_bScattergunJump )
 		{
@@ -448,6 +444,12 @@ void CTFScatterGun::FinishReload( void )
 //-----------------------------------------------------------------------------
 bool CTFScatterGun::HasKnockback( void )
 {
+	// No knockback during pre-round freeze.
+	if ( TFGameRules() && ( TFGameRules()->State_Get() == GR_STATE_PREROUND ) && !TFGameRules()->IsPreRoundPushEnabled() )
+	{
+		return false;
+	}
+
 	int iWeaponMod = 0;
 	CALL_ATTRIB_HOOK_INT( iWeaponMod, set_scattergun_has_knockback );
 	if ( iWeaponMod == 1 )
