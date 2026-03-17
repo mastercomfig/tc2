@@ -64,6 +64,8 @@ ConVar tf_bot_debug_tags( "tf_bot_debug_tags", "0", FCVAR_CHEAT, "ent_text will 
 
 ConVar tf_bot_spawn_use_preset_roster( "tf_bot_spawn_use_preset_roster", "1", FCVAR_CHEAT, "Bot will choose class from a preset class table." );
 
+ConVar tf_bot_random_items_apply_filter( "tf_bot_random_items_apply_filter", "1", FCVAR_CHEAT, "Apply filters to random item equips on bots, for skipping medals and some minor reskins." );
+
 extern ConVar tf_bot_sniper_spot_max_count;
 extern ConVar tf_bot_fire_weapon_min_time;
 extern ConVar tf_bot_sniper_misfire_chance;
@@ -4540,10 +4542,19 @@ void CTFBot::GiveRandomItem( loadout_positions_t loadoutPosition )
 	{
 		const CTFItemDefinition *pItemDef = dynamic_cast< const CTFItemDefinition * >( mapItemDefs[i] );
 
-		if ( pItemDef && pItemDef->GetLoadoutSlot( GetPlayerClass()->GetClassIndex() ) == loadoutPosition )
+		if ( !pItemDef )
+			continue;
+		
+		if ( pItemDef->GetLoadoutSlot( GetPlayerClass()->GetClassIndex() ) != loadoutPosition )
+			continue;
+
+		if ( tf_bot_random_items_apply_filter.GetBool() )
 		{
-			itemVector.AddToTail( pItemDef );
+			if ( pItemDef->GetEquipRegionMask() & GetItemSchema()->GetEquipRegionBitMaskByName( "medal" ) )
+				continue;
 		}
+		
+		itemVector.AddToTail( pItemDef );
 	}
 
 	if ( itemVector.Count() > 0 )
