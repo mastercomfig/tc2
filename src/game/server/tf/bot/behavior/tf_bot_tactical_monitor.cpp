@@ -61,6 +61,12 @@ void CTFBotTacticalMonitor::MonitorArmedStickyBombs( CTFBot *me )
 	{
 		m_stickyBombCheckTimer.Start( RandomFloat( 0.3f, 1.0f ) );
 
+		// skip detonating stickies during setup
+		if ( TFGameRules()->InSetup() )
+			return;
+
+		Vector myPosition = me->GetAbsOrigin();
+
 		// are there any enemies on/near my sticky bombs?
 		CTFPipebombLauncher *gun = dynamic_cast< CTFPipebombLauncher * >( me->Weapon_GetSlot( TF_WPN_TYPE_SECONDARY ) );
 		if ( gun )
@@ -100,6 +106,13 @@ void CTFBotTacticalMonitor::MonitorArmedStickyBombs( CTFBot *me )
 						}
 
 						const float closeRange = 150.0f;
+
+						if ( ( myPosition - sticky->GetAbsOrigin() ).IsLengthLessThan( closeRange ) )
+						{
+							// shouldn't detonate a sticky trap next to me!
+							continue;
+						}
+
 						if ( ( knownVector[k].GetLastKnownPosition() - sticky->GetAbsOrigin() ).IsLengthLessThan( closeRange ) )
 						{
 							// they are close - blow it!
