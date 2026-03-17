@@ -577,10 +577,14 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 	{
 		if( medigun->GetMedigunType() == MEDIGUN_RESIST )
 		{
+			const bool bHasAnyPreference = ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BULLETS ) ) || ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BLAST ) ) || ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_FIRE ) );
+			const int iRandomSwitches = TFGameRules()->IsMannVsMachineMode() ? 0 : Floor2Int( me->TransientlyConsistentRandomValue( 5.0f ) * 3.0f );
+			int iSwitches = 0;
 			// If I'm a Vaccinnator medic and am told to prefer a certain type of resist, then cycle to that resist
 			while( ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BULLETS )	&& medigun->GetResistType() != MEDIGUN_BULLET_RESIST )
 				|| ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BLAST )	&& medigun->GetResistType() != MEDIGUN_BLAST_RESIST )
-				|| ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_FIRE )		&& medigun->GetResistType() != MEDIGUN_FIRE_RESIST ) )
+				|| ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_FIRE )		&& medigun->GetResistType() != MEDIGUN_FIRE_RESIST )
+				|| !bHasAnyPreference && iSwitches++ < iRandomSwitches )
 			{
 				medigun->CycleResistType();
 			}
@@ -632,7 +636,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 		bool useUber = false;
 		if ( IsReadyToDeployUber( medigun ) && CanDeployUber( me, medigun ) )
 		{
-			if( medigun->GetMedigunType() == MEDIGUN_RESIST )
+			if ( medigun->GetMedigunType() == MEDIGUN_RESIST )
 			{
 				// uber if I'm getting low and have recently taken damage
 				if ( me->GetTimeSinceLastInjury( GetEnemyTeam( me->GetTeamNumber() ) ) < 1.0f )
@@ -645,11 +649,19 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 					useUber = true;
 				}
 			}
+			else if ( medigun->GetChargeType() == MEDIGUN_CHARGE_CRITICALBOOST )
+			{
+				bool isInCombat = actualHealTarget ? actualHealTarget->GetTimeSinceWeaponFired() < 1.0f : false;
+				useUber = isInCombat;
+			}
 			else
 			{
 				// use uber if our patient's health is getting low
 				const float healthyRatio = 0.5f;
 				useUber = ( ( (float)m_patient->GetHealth() / (float)m_patient->GetMaxHealth() ) < healthyRatio );
+
+				// TODO(mcoms): check UTIL_EntitiesInBox like CTFBot::ShouldFireCompressionBlast
+				// base off of 100dmg, falloff by distance approximation from spawn time. 100%->50%
 
 				// don't uber our patient if he's already uber from some other source
 				if ( m_patient->m_Shared.InCond( TF_COND_INVULNERABLE ) || m_patient->m_Shared.InCond( TF_COND_MEGAHEAL ) )
