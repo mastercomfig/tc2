@@ -773,14 +773,17 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		UpdatePlayerList();
 		UpdateTeamInfo();
 
-		if ( m_pMatchStartModelPanel->m_hModel == NULL )
+		if ( m_flMatchSummaryShowTime < 0.0f && m_pMatchStartModelPanel )
 		{
-			m_pMatchStartModelPanel->UpdateModel();
-		}
+			if ( m_pMatchStartModelPanel->m_hModel == NULL )
+			{
+				m_pMatchStartModelPanel->UpdateModel();
+			}
 
-		m_pMatchStartModelPanel->SetBodyGroup( "logos", nSubModel );
-		m_pMatchStartModelPanel->UpdateModel();
-		m_pMatchStartModelPanel->SetSkin( nSkin );
+			m_pMatchStartModelPanel->SetBodyGroup( "logos", nSubModel );
+			m_pMatchStartModelPanel->UpdateModel();
+			m_pMatchStartModelPanel->SetSkin( nSkin );
+		}
 
 		if ( TFGameRules()->IsPreRoundPushEnabled() )
 		{
