@@ -791,6 +791,7 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 			if ( m_flMatchSummaryShowTime >= 0.0f )
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors_FromClosed", false );
+				m_flMatchSummaryShowTime = -1.0f;
 			}
 			else
 			{

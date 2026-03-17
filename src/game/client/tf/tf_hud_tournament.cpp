@@ -399,6 +399,11 @@ void CHudTournament::PreparePanel( void )
 		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != m_iLocalTeam )
 		{
 			m_iLocalTeam = pLocalPlayer->GetTeamNumber();
+			// bit of a hack: don't show the countdown while we are changing the image
+			if ( !m_bCountDownVisible )
+			{
+				bCountdownVisible = false;
+			}
 			if ( m_pCountdownBG )
 			{
 				m_pCountdownBG->SetImage( m_iLocalTeam == TF_TEAM_BLUE ? "../hud/color_panel_blu" : "../hud/color_panel_red" );
@@ -1459,8 +1464,8 @@ void CHudStopWatch::OnTick( void )
 	bool bInFreezeCam = ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM );
 
 	bool bProperMatch = TFGameRules()->IsInTournamentMode() || TFGameRules()->IsCompetitiveMode();
-	// TODO(mcoms): does hiding it suffice for stopwatch states?
-	if ( !bProperMatch || TFGameRules()->IsInPreMatch() || !TFGameRules()->IsInStopWatch() || bInFreezeCam || TFGameRules()->State_Get() == GR_STATE_GAME_OVER || TFGameRules()->GetStopWatchState() == STOPWATCH_DEFENDED || TFGameRules()->GetStopWatchState() == STOPWATCH_FULFILLED  )
+	// TODO(mcoms): does hiding it suffice for stopwatch states STOPWATCH_DEFENDED and STOPWATCH_FULFILLED?
+	if ( !bProperMatch || TFGameRules()->IsInPreMatch() || !TFGameRules()->IsInStopWatch() || bInFreezeCam || TFGameRules()->State_Get() == GR_STATE_GAME_OVER || TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS || TFGameRules()->GetStopWatchState() == STOPWATCH_DEFENDED || TFGameRules()->GetStopWatchState() == STOPWATCH_FULFILLED )
 	{
 		m_bShouldBeVisible = false;
 		return;
@@ -1470,8 +1475,16 @@ void CHudStopWatch::OnTick( void )
 		m_bShouldBeVisible = true;
 	}
 
-	if ( m_pTimePanel && ObjectiveResource() )
+	// TODO(mcoms) if we are in win state, we shouldn't update? because gamerules could swap team scores during it
+	if ( m_pTimePanel && ObjectiveResource() && TFGameRules()->State_Get() != GR_STATE_TEAM_WIN )
 	{
+		bool bMultiSeries = false;
+		if ( TFGameRules() )
+		{
+			ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+			bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode();
+		}
+
 		int iActiveTimer = ObjectiveResource()->GetStopWatchTimer();
 		m_pTimePanel->SetTimerIndex( iActiveTimer );
 
@@ -1514,12 +1527,18 @@ void CHudStopWatch::OnTick( void )
 		}
 		else if ( TFGameRules()->GetStopWatchState() == STOPWATCH_RUNNING )
 		{
-			bool bCappedAllPoints = TFGameRules() && TFGameRules()->StopWatchShouldBeTimedWin();
 
 			m_pTimePanel->SetVisible( true );
 			m_pStopWatchLabel->SetVisible( false );
-			
-			if ( bCappedAllPoints )
+
+			// TODO(mcoms): should we hide in the capped all points case?
+#if 0
+			const bool bCappedAllPoints = TFGameRules() && TFGameRules()->StopWatchShouldBeTimedWin();
+#else
+			const bool bCappedAllPoints = false;
+#endif
+			const bool bScorePerRound = !ObjectiveResource()->ShouldScorePerCapture();
+			if ( bCappedAllPoints || bScorePerRound )
 			{
 				m_pStopWatchScore->SetVisible( false );
 				m_pStopWatchPointsLabel->SetVisible( false );
@@ -1577,7 +1596,7 @@ void CHudStopWatch::OnTick( void )
 
 			if ( pPlayer->GetTeam() == pAttacker )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( "Tournament_StopWatch_TimeVictory" ), 1, pDefender->Get_Localized_Name() );
+				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatch_TimeVictory%s", bMultiSeries ? "_Series" : "" ) ), 1, pDefender->Get_Localized_Name() );
 			}
 			else
 			{
@@ -1611,7 +1630,7 @@ void CHudStopWatch::OnTick( void )
 
 			if ( pPlayer->GetTeam() == pAttacker )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( "Tournament_StopWatch_AttackerScore" ), 1, pDefender->Get_Localized_Name() );
+				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatch_AttackerScore%s", bMultiSeries ? "_Series" : "" ) ), 1, pDefender->Get_Localized_Name() );
 			}
 			else
 			{
@@ -1636,17 +1655,18 @@ void CHudStopWatch::OnTick( void )
 
 			swprintf( wzVal, ARRAYSIZE( wzVal ), L"%x", iPoints );
 			
+			// TODO(mcoms): what to do for score per round?
 			if ( pPlayer->GetTeam() == pAttacker )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( "Tournament_StopWatchPointCaptureAttacker" ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureAttacker", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" ) );
 			}
 			else if ( pPlayer->GetTeam() == pDefender )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( "Tournament_StopWatchPointCaptureDefender" ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureDefender", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
 			}
 			else
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( "Tournament_StopWatchPointCaptureSpectator" ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureSpectator", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
 			}
 
 			SetDialogVariable( "stopwatchlabel", wzScoreVal );	

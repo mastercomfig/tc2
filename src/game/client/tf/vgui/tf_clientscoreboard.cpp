@@ -187,6 +187,8 @@ CTFClientScoreBoardDialog::CTFClientScoreBoardDialog( IViewPort *pViewPort ) : C
 	m_pBlueTeamImage = new ImagePanel( this, "BlueTeamImage" );
 
 	m_pServerTimeLeftValue = NULL;
+	m_pServerTimeLeftLabel = NULL;
+	m_bServerTimeLeftLabelSeries = false;
 	m_pFontTimeLeftNumbers = vgui::INVALID_FONT;
 	m_pFontTimeLeftString = vgui::INVALID_FONT;
 
@@ -389,6 +391,8 @@ void CTFClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 	}
 
 	m_pServerTimeLeftValue = dynamic_cast< CExLabel* >( FindChildByName( "ServerTimeLeftValue" ) );
+	m_pServerTimeLeftLabel = dynamic_cast< CExLabel* >( FindChildByName( "ServerTimeLeftLabel" ) );
+	m_bServerTimeLeftLabelSeries = false;
 	m_pFontTimeLeftNumbers = pScheme->GetFont( "ScoreboardMediumSmall", true );
 	m_pFontTimeLeftString = pScheme->GetFont( "ScoreboardVerySmall", true );
 
@@ -828,9 +832,21 @@ void CTFClientScoreBoardDialog::OnScoreBoardMouseRightRelease( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFClientScoreBoardDialog::UseMouseMode( void )
+bool CTFClientScoreBoardDialog::UseMouseMode( bool bCheckIfActive )
 {
-	return tf_scoreboard_mouse_mode.GetInt() == 1 || ( tf_scoreboard_mouse_mode.GetInt() == 2 && m_bMouseActivated );
+	const int iMouseMode = tf_scoreboard_mouse_mode.GetInt();
+	if ( iMouseMode )
+	{
+		if ( bCheckIfActive )
+		{
+			if ( iMouseMode == 2 )
+			{
+				return m_bMouseActivated;
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -2063,6 +2079,13 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 //-----------------------------------------------------------------------------
 void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 {
+	bool bMultiSeries = false;
+	if ( TFGameRules() )
+	{
+		ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+		bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode();
+	}
+
 	wchar_t wzServerTimeHrsLeft[128];
 	wchar_t wzServerTimeMinLeft[128];
 	wchar_t wzServerTimeSecLeft[128];
@@ -2074,9 +2097,15 @@ void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 	int iSeconds = 0;
 	int iServerTimeLimit = mp_timelimit.GetInt() * 60;
 
+	if ( m_pServerTimeLeftLabel && bMultiSeries != m_bServerTimeLeftLabelSeries )
+	{
+		m_bServerTimeLeftLabelSeries = bMultiSeries;
+		m_pServerTimeLeftLabel->SetText( CFmtStr( "#Scoreboard_TimeLeftLabel%s", bMultiSeries ? "_Series" : "" ) );
+	}
+
 	if ( iServerTimeLimit == 0 )
 	{ 
-		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_NoTimeLimit" ), 0 );
+		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( CFmtStr( "#Scoreboard_NoTimeLimit%s", bMultiSeries ? "_Series" : "" ) ), 0 );
 		SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 
 		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_NoTimeLimitNew" ), 0 );
@@ -2099,10 +2128,10 @@ void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 	}
 	if ( iTimeLeft == 0 )
 	{
-		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_ChangeOnRoundEnd" ), 0 );
+		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( CFmtStr( "#Scoreboard_ChangeOnRoundEnd%s", bMultiSeries ? "_Series" : "" ) ), 0 );
 		SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 
-		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_ChangeOnRoundEndNew" ), 0 );
+		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( CFmtStr( "#Scoreboard_ChangeOnRoundEndNew%s", bMultiSeries ? "_Series" : "" ) ), 0 );
 		SetDialogVariable( "servertime", wzServerTimeLeft );
 
 		if ( m_pServerTimeLeftValue && m_pServerTimeLeftValue->IsVisible() && ( m_pFontTimeLeftString != vgui::INVALID_FONT ) )
@@ -2130,7 +2159,7 @@ void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 
 	if ( iHours == 0 )
 	{
-		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_TimeLeftNoHours" ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft );
+		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( CFmtStr( "#Scoreboard_TimeLeftNoHours%s", bMultiSeries ? "_Series" : "" ) ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft );
 		SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 
 		g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_TimeLeftNoHoursNew" ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft );
@@ -2139,7 +2168,7 @@ void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 		return;
 	}
 	
-	g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_TimeLeft" ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft );
+	g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( CFmtStr( "#Scoreboard_TimeLeft%s", bMultiSeries ? "_Series" : "" ) ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft );
 	SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 
 	g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#Scoreboard_TimeLeftNew" ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft );
