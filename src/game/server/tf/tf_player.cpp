@@ -13831,34 +13831,35 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 		}
 	}
 
+
+	// Attackers who fire 100% critical shots from the imbalance event don't get their (or their medic's) kills, but we do count deaths as that's mostly a measure of participation
+	CTFPlayer* pPowerupAttacker = ToTFPlayer( info_modified.GetAttacker() );
 	if ( TFGameRules() && TFGameRules()->IsPowerupMode() )
 	{
-		// Attackers who fire 100% critical shots from the imbalance event don't get their (or their medic's) kills but we do count deaths as that's mostly a measure of participation
-		CTFPlayer *pPowerupAttacker = ToTFPlayer( info_modified.GetAttacker() );
 		// Report Kill
 		CTF_GameStats.Event_PowerUpModeDeath( pPowerupAttacker, this );
-		if ( pPowerupAttacker && ( pPowerupAttacker != this ) && !pPowerupAttacker->m_Shared.InCond( TF_COND_RUNE_IMBALANCE ) )
-		{
-			pPowerupAttacker->m_nMannpowerKills++;
+	}
+	if ( pPowerupAttacker && ( pPowerupAttacker != this ) && !pPowerupAttacker->m_Shared.InCond( TF_COND_RUNE_IMBALANCE ) )
+	{
+		pPowerupAttacker->m_nMannpowerKills++;
 
-			// Any medics who were healing the attacker also count this as a kill
-			int nNumHealers = pPowerupAttacker->m_Shared.GetNumHealers();
-		
-			if ( nNumHealers > 0 )
+		// Any medics who were healing the attacker also count this as a kill
+		int nNumHealers = pPowerupAttacker->m_Shared.GetNumHealers();
+	
+		if ( nNumHealers > 0 )
+		{
+			for ( int i = 0; i < nNumHealers; i++ )
 			{
-				for ( int i = 0; i < nNumHealers; i++ )
+				CTFPlayer *pMedic = ToTFPlayer( pPowerupAttacker->m_Shared.GetHealerByIndex( i ) );
+				if ( pMedic )
 				{
-					CTFPlayer *pMedic = ToTFPlayer( pPowerupAttacker->m_Shared.GetHealerByIndex( i ) );
-					if ( pMedic )
-					{
-						pMedic->m_nMannpowerKills++;
-					}
+					pMedic->m_nMannpowerKills++;
 				}
 			}
 		}
-
-		m_nMannpowerDeaths++;
 	}
+
+	m_nMannpowerDeaths++;
 
 	// Drop your powerup rune when you die 
 	if ( m_Shared.IsCarryingRune() )
@@ -14658,6 +14659,10 @@ void CTFPlayer::TeamFortress_ClientDisconnected( void )
 		SetIsCoaching( false );
 		GetStudent()->SetCoach( NULL );
 	}
+	
+	m_nMannpowerKills = 0;
+	m_nMannpowerDeaths = 0;
+	m_bMannpowerHereForFullInterval = false;
 
 	if ( TFGameRules() && TFGameRules()->IsPowerupMode()  )
 	{
@@ -14667,10 +14672,6 @@ void CTFPlayer::TeamFortress_ClientDisconnected( void )
 			CTFRune::CreateRune( GetAbsOrigin(), m_Shared.GetCarryingRuneType(), TEAM_ANY, true, false );
 		}
 		// Clean up Mannpower data
-		m_nMannpowerKills = 0;
-		m_nMannpowerDeaths = 0;
-		m_bMannpowerHereForFullInterval = false;
-
 		if ( m_bIsInMannpowerDominantCondition )
 		{
 			CSteamID steamIDForPlayer;

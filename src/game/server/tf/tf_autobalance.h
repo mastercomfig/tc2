@@ -44,6 +44,8 @@ public:
 
 	// called after entities think
 	virtual void FrameUpdatePostEntityThink();
+	
+	double       GetPlayerAutoBalanceScore( CTFPlayer* pTFPlayer ) const;
 
 private:
 	void Reset();
@@ -55,7 +57,6 @@ private:
 
 	bool IsAlreadyCandidate( CTFPlayer *pTFPlayer ) const;
 	double GetTeamAutoBalanceScore( int nTeam ) const;
-	double GetPlayerAutoBalanceScore( CTFPlayer *pTFPlayer ) const;
 	CTFPlayer *FindNextCandidate();
 	bool FindCandidates();
 	bool ValidateCandidates();

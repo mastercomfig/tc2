@@ -100,6 +100,11 @@ public:
 	virtual bool ShouldScrambleTeams( void ){ return m_bScrambleTeams; }
 	virtual void HandleScrambleTeams( void ){ return; }
 
+	// Used to determine if we should shuffle the teams
+	virtual void SetShuffleTeams( bool bShuffle ){ m_bShuffleTeams = bShuffle; }
+	virtual bool ShouldShuffleTeams( void ){ return m_bShuffleTeams; }
+	virtual void HandleTeamShuffle( void ){ return; }
+
 	virtual bool PointsMayAlwaysBeBlocked(){ return false; }
 	
 protected:
@@ -114,6 +119,7 @@ private:
 	char m_szTeamList[TEAMPLAY_TEAMLISTLENGTH];
 	bool m_bSwitchTeams;
 	bool m_bScrambleTeams;
+	bool m_bShuffleTeams;
 
 #endif
 };

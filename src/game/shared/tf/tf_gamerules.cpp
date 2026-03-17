@@ -6300,10 +6300,7 @@ void CTFGameRules::SetupOnRoundRunning( void )
 		m_hGamerulesProxy->StateEnterRoundRunning();
 	}
 
-	if ( TFGameRules() && TFGameRules()->IsPowerupMode() )
-	{
-		PowerupModeInitKillCountTimer();
-	}
+	PowerupModeInitKillCountTimer();
 }
 
 //-----------------------------------------------------------------------------
@@ -9735,17 +9732,20 @@ void CTFGameRules::Think()
 		m_flNextFlagAlert = gpGlobals->curtime + 5.0f;
 	}
 
-	if ( m_bPowerupImbalanceMeasuresRunning )
+	if ( IsPowerupMode() )
 	{
-		if ( m_flTimeToStopImbalanceMeasures < gpGlobals->curtime )
+		if ( m_bPowerupImbalanceMeasuresRunning )
 		{
-			PowerupTeamImbalance( TEAM_UNASSIGNED ); // passing TEAM_UNASSIGNED will fire the ImbalanceMeasuresOver output
-			m_bPowerupImbalanceMeasuresRunning = false;
+			if ( m_flTimeToStopImbalanceMeasures < gpGlobals->curtime )
+			{
+				PowerupTeamImbalance( TEAM_UNASSIGNED ); // passing TEAM_UNASSIGNED will fire the ImbalanceMeasuresOver output
+				m_bPowerupImbalanceMeasuresRunning = false;
+			}
 		}
-	}
-	if ( gpGlobals->curtime > m_flNextPowerupModeKillCountTimer )
-	{
-		PowerupModeKillCountCompare();
+		if ( gpGlobals->curtime > m_flNextPowerupModeKillCountTimer )
+		{
+			PowerupModeKillCountCompare();
+		}
 	}
 
 	PeriodicHalloweenUpdate();
@@ -18181,6 +18181,137 @@ void CTFGameRules::HandleScrambleTeams( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Team Shuffle randomly balances mid-tier players to bridge the total point gap without scattering teams
+//-----------------------------------------------------------------------------
+void CTFGameRules::HandleTeamShuffle( void )
+{
+#ifdef GAME_DLL
+	CUtlVector< CTFPlayer* > vecRed;
+	CUtlVector< CTFPlayer* > vecBlue;
+
+	CollectPlayers( &vecRed, TF_TEAM_RED );
+	CollectPlayers( &vecBlue, TF_TEAM_BLUE );
+
+	if ( vecRed.Count() == 0 || vecBlue.Count() == 0 )
+		return;
+
+	const int MAX_STATUS_SWAPS = 3;
+	int nSwapsCompleted = 0;
+	CUtlVector< CTFPlayer* > vecSwappedPlayers;
+
+	while ( nSwapsCompleted < MAX_STATUS_SWAPS )
+	{
+		double nTeamScoreRed = 0.0;
+		double nTeamScoreBlue = 0.0;
+		
+		FOR_EACH_VEC( vecRed, i )
+		{
+			if ( vecRed[i] )
+				nTeamScoreRed += TFAutoBalance()->GetPlayerAutoBalanceScore( vecRed[i] );
+		}
+		FOR_EACH_VEC( vecBlue, i )
+		{
+			if ( vecBlue[i] )
+				nTeamScoreBlue += TFAutoBalance()->GetPlayerAutoBalanceScore( vecBlue[i] );
+		}
+
+		double nDelta = fabs( nTeamScoreRed - nTeamScoreBlue );
+		// If perfectly balanced or delta is very small, break early
+		if ( nDelta <= 100.0 )
+			break;
+
+		int nDominatingTeam = ( nTeamScoreRed > nTeamScoreBlue ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+		int nLosingTeam = ( nDominatingTeam == TF_TEAM_RED ) ? TF_TEAM_BLUE : TF_TEAM_RED;
+
+		CUtlVector< CTFPlayer* > &vecDominating = ( nTeamScoreRed > nTeamScoreBlue ) ? vecRed : vecBlue;
+		CUtlVector< CTFPlayer* > &vecLosing = ( nTeamScoreRed > nTeamScoreBlue ) ? vecBlue : vecRed;
+
+		// Goal point swap difference to perfectly even out teams
+		double nTargetPlayerSwapDelta = nDelta / 2.0;
+
+		double nBestSwapDeltaDiff = 9999999.0;
+		int iBestDomIndex = -1;
+		int iBestLoseIndex = -1;
+		CTFPlayer *pBestDominatingTarget = NULL;
+		CTFPlayer *pBestLosingTarget = NULL;
+
+		// Iterate to find the optimal mid-tier swap
+		FOR_EACH_VEC( vecDominating, i )
+		{
+			CTFPlayer *pDomPlayer = vecDominating[i];
+			if ( !pDomPlayer || vecSwappedPlayers.HasElement( pDomPlayer ) )
+				continue;
+
+			double nDomScore = TFAutoBalance()->GetPlayerAutoBalanceScore( pDomPlayer );
+
+			FOR_EACH_VEC( vecLosing, j )
+			{
+				CTFPlayer *pLosePlayer = vecLosing[j];
+				if ( !pLosePlayer || vecSwappedPlayers.HasElement( pLosePlayer ) )
+					continue;
+
+				double nLoseScore = TFAutoBalance()->GetPlayerAutoBalanceScore( pLosePlayer );
+
+				// Determine how close this pair's gap bridges the Target Delta
+				double nPlayerDelta = nDomScore - nLoseScore;
+
+				// If they aren't helping to close the gap (i.e. losing player actually has more points than dom player)
+				if ( nPlayerDelta <= 0.0 )
+					continue;
+
+				// Add a slight penalty curve
+				float flPenalty = 1.0f;
+				if ( pDomPlayer->m_nMannpowerKills >= nTargetPlayerSwapDelta ) // Heuristic for top player
+				{
+					flPenalty += 0.5f;
+				}
+				
+				double nSwapDeltaDiff = fabs( nTargetPlayerSwapDelta - nPlayerDelta ) * flPenalty;
+
+				if ( nSwapDeltaDiff < nBestSwapDeltaDiff )
+				{
+					nBestSwapDeltaDiff = nSwapDeltaDiff;
+					pBestDominatingTarget = pDomPlayer;
+					pBestLosingTarget = pLosePlayer;
+					iBestDomIndex = i;
+					iBestLoseIndex = j;
+				}
+			}
+		}
+
+		if ( pBestDominatingTarget && pBestLosingTarget )
+		{
+			// Force changes
+			pBestDominatingTarget->ForceChangeTeam( nLosingTeam );
+			pBestLosingTarget->ForceChangeTeam( nDominatingTeam );
+
+			// Tell people that we've switched these players
+			UTIL_ClientPrintAll( HUD_PRINTTALK, "#game_teamshuffle_players_swapped", pBestDominatingTarget->GetPlayerName(), pBestLosingTarget->GetPlayerName() );
+			
+			// Move them in local vectors so the next iteration counts them on their new team
+			vecDominating.Remove( iBestDomIndex );
+			vecLosing.AddToTail( pBestDominatingTarget );
+
+			vecLosing.Remove( iBestLoseIndex ); // Be careful: deleting iBestDomIndex doesn't affect iBestLoseIndex, since they are from different lists.
+			vecDominating.AddToTail( pBestLosingTarget );
+
+			// Prevent reswaps
+			vecSwappedPlayers.AddToTail( pBestDominatingTarget );
+			vecSwappedPlayers.AddToTail( pBestLosingTarget );
+
+			nSwapsCompleted++;
+		}
+		else
+		{
+			break; // No valid swaps found
+		}
+	}
+
+	// scrambleteams_auto tracking
+	ResetTeamsRoundWinTracking();
+#endif
+}
+	
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFGameRules::TeamPlayerCountChanged( CTFTeam *pTeam )
@@ -24495,14 +24626,17 @@ void CTFGameRules::PowerupModeInitKillCountTimer()
 		pTFPlayer->m_bMannpowerHereForFullInterval = true;
 	}
 
-	m_flNextPowerupModeKillCountTimer = gpGlobals->curtime + tf_powerup_mode_killcount_timer_length.GetFloat();
-
-	// clean up our vector of dominant players that might have quit
-	FOR_EACH_VEC_BACK( m_PowerupModeDominantDisconnect, nIndex )
+	if ( IsPowerupMode() )
 	{
-		if ( m_PowerupModeDominantDisconnect[nIndex].m_flRemoveDominantConditionTime <= gpGlobals->curtime )
+		m_flNextPowerupModeKillCountTimer = gpGlobals->curtime + tf_powerup_mode_killcount_timer_length.GetFloat();
+
+		// clean up our vector of dominant players that might have quit
+		FOR_EACH_VEC_BACK( m_PowerupModeDominantDisconnect, nIndex )
 		{
-			m_PowerupModeDominantDisconnect.Remove( nIndex );
+			if ( m_PowerupModeDominantDisconnect[nIndex].m_flRemoveDominantConditionTime <= gpGlobals->curtime )
+			{
+				m_PowerupModeDominantDisconnect.Remove( nIndex );
+			}
 		}
 	}
 }

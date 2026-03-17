@@ -39,11 +39,14 @@
 	#ifdef GAME_DLL
 		#include "player_vs_environment/tf_population_manager.h"
 		#include "tf_team.h"
-		#include "../server/tf/tf_gc_server.h"
-		#include "../server/tf/tf_objective_resource.h"
+		#include "tf_gc_server.h"
+		#include "tf_objective_resource.h"
+		#include "player_resource.h"
+		#include "tf_player_resource.h"
+		#include "tf_autobalance.h" // Added by user instruction
 	#else
-		#include "../client/tf/tf_gc_client.h"
-		#include "../client/tf/c_tf_objective_resource.h"
+		#include "tf_gc_client.h"
+		#include "c_tf_objective_resource.h"
 	#endif // GAME_DLL
 #endif
 
@@ -359,6 +362,10 @@ void cc_ScrambleTeams( const CCommand& args )
 static ConCommand mp_scrambleteams( "mp_scrambleteams", cc_ScrambleTeams, "Scramble the teams and restart the game" );
 ConVar mp_scrambleteams_auto( "mp_scrambleteams_auto", "1", FCVAR_NOTIFY, "Server will automatically scramble the teams if criteria met.  Only works on dedicated servers." );
 ConVar mp_scrambleteams_auto_windifference( "mp_scrambleteams_auto_windifference", "2", FCVAR_NOTIFY, "Number of round wins a team must lead by in order to trigger an auto scramble." );
+
+ConVar mp_shuffleteams_auto( "mp_shuffleteams_auto", "1", FCVAR_NOTIFY, "Server will automatically shuffle players without resetting if criteria met." );
+ConVar mp_shuffleteams_auto_seriesdifference( "mp_shuffleteams_auto_seriesdifference", "2", FCVAR_NOTIFY, "Number of series wins a team must lead by in order to trigger an auto shuffle." );
+ConVar mp_shuffleteams_auto_score_disparity( "mp_shuffleteams_auto_score_disparity", "1.5", FCVAR_NOTIFY, "Total score ratio (WinningTeam to LosingTeam) indicating an imbalanced stomp, triggering a shuffle." );
 
 // Classnames of entities that are preserved across round restarts
 static const char *s_PreserveEnts[] =
@@ -2281,6 +2288,47 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 						
 						// Setup intermission
 						TFGameRules()->SetMultiSeriesIntermission( true );
+
+						if ( mp_shuffleteams_auto.GetBool() )
+						{
+							int nSeriesDelta = abs( nRedPoints - nBluePoints );
+							if ( nSeriesDelta >= mp_shuffleteams_auto_seriesdifference.GetInt() )
+							{
+								// Evaluate team disparity
+								double nTeamScoreRed = 0.0;
+								double nTeamScoreBlue = 0.0;
+								
+								for ( int i = 1; i <= MAX_PLAYERS; i++ )
+								{
+									CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+									if ( pPlayer )
+									{
+										if ( pPlayer->GetTeamNumber() == TF_TEAM_RED )
+											nTeamScoreRed += TFAutoBalance()->GetPlayerAutoBalanceScore( pPlayer );
+										else if ( pPlayer->GetTeamNumber() == TF_TEAM_BLUE )
+											nTeamScoreBlue += TFAutoBalance()->GetPlayerAutoBalanceScore( pPlayer );
+									}
+								}
+
+								if ( nTeamScoreRed > 0.0 && nTeamScoreBlue > 0.0 )
+								{
+									double flDisparity = 1.0;
+									if ( nTeamScoreRed > nTeamScoreBlue )
+									{
+										flDisparity = nTeamScoreRed / nTeamScoreBlue;
+									}
+									else
+									{
+										flDisparity = nTeamScoreBlue / nTeamScoreRed;
+									}
+
+									if ( flDisparity >= mp_shuffleteams_auto_score_disparity.GetFloat() )
+									{
+										SetShuffleTeams( true );
+									}
+								}
+							}
+						}
 					}
 				}
 				else
@@ -3327,6 +3375,12 @@ void CTeamplayRoundBasedRules::RoundRespawn( void )
 	{
 		HandleScrambleTeams();
 		SetScrambleTeams( false );
+	}
+
+	if ( ShouldShuffleTeams() )
+	{
+		HandleTeamShuffle();
+		SetShuffleTeams( false );
 	}
 
 #if defined( REPLAY_ENABLED )

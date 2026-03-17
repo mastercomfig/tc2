@@ -440,6 +440,7 @@ public:
 	int				GetAssignedHumanTeam( void );
 	virtual void	HandleSwitchTeams( void );
 	virtual void	HandleScrambleTeams( void );
+	virtual void	HandleTeamShuffle( void );
 	bool			CanChangeClassInStalemate( void );
 	bool			CanChangeTeam( int iCurrentTeam ) const;
 

@@ -37,6 +37,7 @@ CTeamplayRules::CTeamplayRules()
 	m_DisableDeathPenalty = false;
 	m_bSwitchTeams = false;
 	m_bScrambleTeams = false;
+	m_bShuffleTeams = false;
 
 	memset( team_names, 0, sizeof(team_names) );
 	memset( team_scores, 0, sizeof(team_scores) );
