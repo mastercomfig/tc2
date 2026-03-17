@@ -295,6 +295,8 @@ public:
 
 	float GetStateTransitionTime( void ){ return m_flStateTransitionTime; }
 
+	virtual bool StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) { return m_bStopWatchShouldBeTimedWin; }
+
 #ifdef CLIENT_DLL
 	virtual void Update( float frametime ) OVERRIDE;
 #endif
@@ -429,8 +431,6 @@ public:
 	virtual bool ShouldWaitToStartRecording( void ){ return IsInWaitingForPlayers(); }
 
 	bool IsGameOver( void ){ return ( CheckTimeLimit( false ) || CheckWinLimit( false ) || CheckMaxRounds( false ) || CheckNextLevelCvar( false ) ); }
-
-	virtual bool	StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) { return m_bStopWatchShouldBeTimedWin; }
 
 protected:
 	virtual void Think( void );
@@ -578,8 +578,6 @@ protected:
 
 	float						m_flLastTeamWin;
 
-	bool						m_bStopWatchShouldBeTimedWin;
-
 private:
 
 	CUtlMap < int, int >	m_GameTeams;  // Team index, Score
@@ -617,6 +615,7 @@ protected:
 	CNetworkVar( bool, m_bInSetup ); // Are we currently in setup?
 	CNetworkVar( int, m_iSetupTime ); // The full setup time for this round
 	CNetworkVar( bool, m_bSwitchedTeamsThisRound );
+	CNetworkVar( bool, m_bStopWatchShouldBeTimedWin );
 
 protected:
 	CNetworkVar( int,			m_iWinningTeam );				// Set before entering GR_STATE_TEAM_WIN

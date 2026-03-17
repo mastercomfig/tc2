@@ -732,6 +732,8 @@ bool IsCreepWaveMode( void ) const;
 	ETFMatchGroup GetCurrentMatchGroupWithEmulation() const;
 	bool IsManagedMatchEnded() const;
 
+	virtual bool StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) OVERRIDE;
+
 	bool UsePlayerReadyStatusMode( void );
 	bool PlayerReadyStatus_HaveMinPlayersToEnable( void );
 #ifdef GAME_DLL
@@ -1063,8 +1065,6 @@ bool IsCreepWaveMode( void ) const;
 	int		CalculateCurrencyAmount_CustomPack( int nAmount );											// If we should drop a custom currency pack, and how much money to put in - 0 means don't drop
 	int		CalculateCurrencyAmount_ByType( CurrencyRewards_t nType );									// How much to give players for specific items and events, i.e. cash collection bonus, small packs
 	int		DistributeCurrencyAmount( int nAmount, CTFPlayer *pTFPlayer = NULL, bool bShared = true, bool bCountAsDropped = false, bool bIsBonus = false );	// Distributes nAmount to a specific player or team
-
-	virtual bool StopWatchShouldBeTimedWin( bool bSkipForMultiSeries = true ) OVERRIDE;
 
 public:
 	void SetPlayerNextMapVote( int nIndex, EUserNextMapVote eState ) { m_ePlayerWantsRematch.Set( nIndex, eState ); }

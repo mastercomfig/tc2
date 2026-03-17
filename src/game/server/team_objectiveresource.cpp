@@ -28,6 +28,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseTeamObjectiveResource, DT_BaseTeamObjective
 	SendPropInt( SENDINFO(m_iNumControlPoints), 4, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO(m_bPlayingMiniRounds) ),
 	SendPropBool( SENDINFO(m_bControlPointsReset) ),
+	SendPropBool( SENDINFO( m_bScorePerCapture ) ),
 	SendPropInt( SENDINFO(m_iUpdateCapHudParity), CAPHUD_PARITY_BITS, SPROP_UNSIGNED ),
 
 	// data variables
@@ -74,6 +75,7 @@ BEGIN_DATADESC( CBaseTeamObjectiveResource )
 	DEFINE_FIELD( m_iNumControlPoints, FIELD_INTEGER ),
 	DEFINE_FIELD( m_bPlayingMiniRounds, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bControlPointsReset, FIELD_BOOLEAN ),
+	DEFINE_FIELD( m_bScorePerCapture, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_iUpdateCapHudParity, FIELD_INTEGER ),
 	DEFINE_FIELD( m_flCustomPositionX, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flCustomPositionY, FIELD_FLOAT ),

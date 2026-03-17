@@ -8,11 +8,13 @@
 #include "cbase.h"
 #include "team_objectiveresource.h"
 #include "team_control_point_master.h"
+#include "teamplay_round_timer.h"
 #include "teamplayroundbased_gamerules.h"
 
 #if defined ( TF_DLL )
 #include "tf_gamerules.h"
 #include "filesystem.h"
+#include "tf_team.h"
 #endif
 
 BEGIN_DATADESC( CTeamControlPointMaster )
@@ -503,6 +505,7 @@ bool CTeamControlPointMaster::FindControlPointRounds( void )
 		g_pObjectiveResource->SetPlayingMiniRounds( bFoundRounds );
 		g_pObjectiveResource->SetCapLayoutInHUD( STRING(m_iszCapLayoutInHUD) );
 		g_pObjectiveResource->SetCapLayoutCustomPosition( m_flCustomPositionX, m_flCustomPositionY );
+		g_pObjectiveResource->SetScorePerCap( m_bScorePerCapture );
 	}
 
 	return bFoundRounds;
@@ -927,13 +930,20 @@ void CTeamControlPointMaster::InternalSetWinner( int iTeam )
 	}
 	else
 	{
+		int iWinReason = WINREASON_ALL_POINTS_CAPTURED;
+		if ( GetGlobalTFTeam( iTeam ) && GetGlobalTFTeam( iTeam )->GetRole() == TEAM_ROLE_DEFENDERS )
+		{
+			// TODO(mcoms): also handle stopwatch case
+			iWinReason = WINREASON_DEFEND_UNTIL_TIME_LIMIT;
+		}
+
 		if ( !bForceMapReset )
 		{
-			TeamplayGameRules()->SetWinningTeam( iTeam, WINREASON_ALL_POINTS_CAPTURED, bForceMapReset );
+			TeamplayGameRules()->SetWinningTeam( iTeam, iWinReason, bForceMapReset );
 		}
 		else
 		{
-			TeamplayGameRules()->SetWinningTeam( iTeam, WINREASON_ALL_POINTS_CAPTURED, bForceMapReset, m_bSwitchTeamsOnWin );
+			TeamplayGameRules()->SetWinningTeam( iTeam, iWinReason, bForceMapReset, m_bSwitchTeamsOnWin );
 		}
 
 		FireTeamWinOutput( iTeam );

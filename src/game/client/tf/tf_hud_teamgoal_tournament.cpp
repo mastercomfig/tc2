@@ -422,7 +422,7 @@ void CHudTeamGoalTournament::SetupStopWatchLabel( void )
 	//Attackers capped something last round case
 	if ( iPoints > 0 )
 	{
-		bool bCappedAllPoints = ( iPoints == ObjectiveResource()->GetNumControlPoints() );
+		bool bCappedAllPoints = TFGameRules() && TFGameRules()->StopWatchShouldBeTimedWin();
 
 		g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( bCappedAllPoints ? "Tournament_StopWatch_GoalTextPointsAndTimeAndClose" : "Tournament_StopWatch_GoalTextPointsAndTime" ), 5, wszDefendersName, wszPoints, wszTime, wszAttackersName, wszPoints );
 

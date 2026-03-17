@@ -59,6 +59,7 @@ public:
 	bool TeamCanCapPoint( int index, int team );
 	void SetCapLayoutInHUD( const char *pszLayout ) { Q_strncpy(m_pszCapLayoutInHUD.GetForModify(), pszLayout, MAX_CAPLAYOUT_LENGTH ); }
 	void SetCapLayoutCustomPosition( float flPositionX, float flPositionY ) { m_flCustomPositionX = flPositionX; m_flCustomPositionY = flPositionY; }
+	void SetScorePerCap( bool bScorePerCap ) { m_bScorePerCapture = bScorePerCap; }
 	void SetWarnOnCap( int index, int iWarnLevel );
 	void SetWarnSound( int index, string_t iszSound );
 	void SetCPGroup( int index, int iCPGroup );
@@ -176,6 +177,7 @@ private:
 	CNetworkVar( int, m_iNumControlPoints );	
 	CNetworkVar( bool, m_bPlayingMiniRounds );	
 	CNetworkVar( bool, m_bControlPointsReset );
+	CNetworkVar( bool, m_bScorePerCapture );
 	CNetworkVar( int, m_iUpdateCapHudParity );
 
 	// data variables

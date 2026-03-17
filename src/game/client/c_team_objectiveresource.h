@@ -165,6 +165,8 @@ public:
 	const char *GetCapLayoutInHUD( void ) { return m_pszCapLayoutInHUD; }
 	void GetCapLayoutCustomPosition( float& flCustomPositionX, float& flCustomPositionY ) { flCustomPositionX = m_flCustomPositionX; flCustomPositionY = m_flCustomPositionY; }
 
+	bool ShouldScorePerCapture( void ) const { return m_bScorePerCapture; }
+
 	bool PlayingMiniRounds( void ){ return m_bPlayingMiniRounds; }
 	bool IsInMiniRound( int index_ ) { return m_bInMiniRound[index_]; }
 
@@ -280,6 +282,7 @@ protected:
 	int		m_iPrevNumControlPoints;
 	bool	m_bPlayingMiniRounds;
 	bool	m_bControlPointsReset;
+	bool	m_bScorePerCapture;
 	bool	m_bOldControlPointsReset;
 	int		m_iUpdateCapHudParity;
 	int		m_iOldUpdateCapHudParity;

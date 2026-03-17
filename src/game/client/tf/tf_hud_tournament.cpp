@@ -281,6 +281,8 @@ void CHudTournament::PreparePanel( void )
 			bAutoReady = pMatchDesc->BUsesAutoReady();
 		}
 
+		int nTime = -1;
+
 		if ( !bAutoReady && ( TFGameRules()->IsWaitingForTeams() || TFGameRules()->GetRoundRestartTime() < 0 ) )
 		{
 			if ( m_bReadyStatusMode )
@@ -319,7 +321,7 @@ void CHudTournament::PreparePanel( void )
 		else
 		{
 			float flTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
-			int nTime = Ceil2Int( flTime );
+			nTime = Ceil2Int( flTime );
 			
 			wchar szCountdown[64];
 			wchar_t wzVal[16];
@@ -407,7 +409,7 @@ void CHudTournament::PreparePanel( void )
 		{
 			m_bCountDownVisible = bCountdownVisible;
 
-			if ( m_bCountDownVisible )
+			if ( m_bCountDownVisible && ( !m_bCompetitiveMode || nTime > 10 ) )
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, TFGameRules() && TFGameRules()->IsMannVsMachineMode() ? "HudTournament_ShowTimerDefault" : "HudTournament_ShowTimerCompetitive", false );
 			}
@@ -1531,7 +1533,14 @@ void CHudStopWatch::OnTick( void )
 				}
 				else
 				{
-					iPoints = pDefender->Get_Score() - pAttacker->Get_Score();
+					int iDefenderScore = pDefender->Get_Score();
+					int iAttackerScore = pAttacker->Get_Score();
+					// if the attackers didn't win a round, adjust the defender score since they got a point
+					if ( !ObjectiveResource()->ShouldScorePerCapture() && iDefenderScore == 0 )
+					{
+						iAttackerScore -= 1;
+					}
+					iPoints = iDefenderScore - iAttackerScore;
 				}
 			}
 
@@ -1585,11 +1594,9 @@ void CHudStopWatch::OnTick( void )
 			m_pStopWatchScore->SetVisible( false );
 			m_pStopWatchPointsLabel->SetVisible( false );
 
-			m_pStopWatchDescriptionBG->SetVisible( false );
-			m_pStopWatchDescriptionLabel->SetVisible( false );
+			m_pStopWatchDescriptionBG->SetVisible( true );
+			m_pStopWatchDescriptionLabel->SetVisible( true );
 
-			// UNDONE(mcoms): description is not used
-#if 0
 			wchar_t wzHelp[128];
 
 			if ( pPlayer->GetTeam() == pAttacker )
@@ -1601,13 +1608,19 @@ void CHudStopWatch::OnTick( void )
 				g_pVGuiLocalize->ConstructString_safe( wzHelp, g_pVGuiLocalize->Find( "Tournament_StopWatch_LabelDefender" ), 1, pAttacker->Get_Localized_Name() );
 			}
 			SetDialogVariable( "descriptionlabel", wzHelp );
-#endif
 
 			m_pStopWatchImage->SetImage( "../hud/ico_time_60" );
 
 			wchar_t wzScoreVal[128];
 
-			int iPoints = ( pDefender->Get_Score() - pAttacker->Get_Score() ) + 1;
+			int iDefenderScore = pDefender->Get_Score();
+			int iAttackerScore = pAttacker->Get_Score();
+			// if the attackers didn't win a round, adjust the defender score since they got a point
+			if ( !ObjectiveResource()->ShouldScorePerCapture() && iDefenderScore == 0 )
+			{
+				iAttackerScore -= 1;
+			}	
+			int iPoints = ( iDefenderScore - iAttackerScore ) + 1;
 			iPoints = Max( iPoints, 0 );
 			wchar_t wzVal[16];
 

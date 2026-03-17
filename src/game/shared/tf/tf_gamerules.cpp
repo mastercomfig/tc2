@@ -3142,6 +3142,22 @@ void CTFGameRules::EndManagedMvMMatch( bool bKickPlayersToParties )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
+bool CTFGameRules::StopWatchShouldBeTimedWin( bool bSkipForMultiSeries )
+{
+#ifdef GAME_DLL
+	StopWatchShouldBeTimedWin_Calculate();
+#endif
+	ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
+	if ( bSkipForMultiSeries && GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
+	{
+		return false;
+	}
+	return m_bStopWatchShouldBeTimedWin;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
 bool CTFGameRules::IsAttackDefenseMode( void )
 {
 #ifdef GAME_DLL
@@ -5856,20 +5872,6 @@ void CTFGameRules::StopWatchShouldBeTimedWin_Calculate( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFGameRules::StopWatchShouldBeTimedWin( bool bSkipForMultiSeries )
-{
-	StopWatchShouldBeTimedWin_Calculate();
-	ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
-	if ( bSkipForMultiSeries && GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
-	{
-		return false;
-	}
-	return m_bStopWatchShouldBeTimedWin;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CTFGameRules::StopWatchModeThink( void )
 {
 	if ( IsInTournamentMode() == false || IsInStopWatch() == false )
@@ -5916,12 +5918,15 @@ void CTFGameRules::StopWatchModeThink( void )
 		{
 			bCanForceEnd = false; // Multi-series stopwatch uses the timer just for points comparison; it doesn't forcefully end the round.
 		}
+
+		int iAttackerScore = pAttacker->GetScore();
+		int iDefenderScore = pDefender->GetScore();
 		
 		if ( pTimer->GetTimeRemaining() <= 0.0f )
 		{
 			if ( StopWatchShouldBeTimedWin( false ) )
 			{
-				if ( pAttacker->GetScore() < pDefender->GetScore() )
+				if ( iAttackerScore < iDefenderScore )
 				{
 					if ( bCanForceEnd )
 					{
@@ -5936,7 +5941,12 @@ void CTFGameRules::StopWatchModeThink( void )
 			}
 			else
 			{
-				if ( pAttacker->GetScore() > pDefender->GetScore() )
+				// if we score per round, and it wasn't a timed win, and the timer is 0, that means we won last round and got a point for defending. so we need to adjust.
+				if ( ShouldScorePerRound() && m_flStopWatchTotalTime == 0.0f )
+				{
+					iAttackerScore -= 1;
+				}
+				if ( iAttackerScore > iDefenderScore )
 				{
 					if ( bCanForceEnd )
 					{
@@ -5962,7 +5972,7 @@ void CTFGameRules::StopWatchModeThink( void )
 		}
 		else
 		{
-			if ( pAttacker->GetScore() >= pDefender->GetScore() )
+			if ( iAttackerScore >= iDefenderScore )
 			{
 				if ( bCanForceEnd )
 				{
@@ -6019,6 +6029,16 @@ void CTFGameRules::ManageStopwatchTimer( bool bInSetup )
 	if ( mp_tournament_stopwatch.GetBool() == false )
 		return;
 
+	if ( State_Get() == GR_STATE_BETWEEN_RNDS )
+	{
+		if ( bInSetup && m_hStopWatchTimer )
+		{
+			variant_t sVariant;
+			m_hStopWatchTimer->AcceptInput( "Pause", NULL, NULL, sVariant, 0 );
+		}
+		return;
+	}
+
 	bool bAttacking = false;
 	bool bDefending = false;
 
@@ -6072,7 +6092,6 @@ void CTFGameRules::ManageStopwatchTimer( bool bInSetup )
 			{
 				DispatchSpawn( pStopWatch );
 				pStopWatch->SetCaptureWatchState( false );
-				
 
 				sVariant.SetInt( m_flStopWatchTotalTime );
 				pStopWatch->AcceptInput( "Enable", NULL, NULL, sVariant, 0 );
