@@ -133,6 +133,8 @@ private:
 	vgui::HFont					m_hPlayerListFont;
 
 	int m_iUseMatchHUD;
+
+	float m_flMatchSummaryShowTime;
 };
 
 //-----------------------------------------------------------------------------

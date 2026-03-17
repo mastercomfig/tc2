@@ -325,6 +325,8 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
 	m_mapAvatarsToImageList.RemoveAll();
 
+	m_flMatchSummaryShowTime = -1.0f;
+
 	ListenForGameEvent( "teamplay_round_start" );
 	ListenForGameEvent( "restart_timer_time" );
 	ListenForGameEvent( "show_match_summary" );
@@ -633,6 +635,8 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 
+		m_flMatchSummaryShowTime = -1.0f;
+
 		if ( pMatchDesc )
 		{
 			// FIX: Refresh versus doors so late-joiners do not see the wrong skin
@@ -664,6 +668,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 				else
 				{
 					g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchWinDoors_NoOpen", false );
+					m_flMatchSummaryShowTime = gpGlobals->curtime;
 				}
 			}
 
@@ -672,18 +677,6 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 	}
 	else if ( FStrEq( "hide_match_summary", event->GetName() ) )
 	{
-		// TODO(mcoms): multi-series: this doesn't work right now, timing issue between starting the match and hiding it before
-#if 0
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
-		if ( pMatchDesc && pMatchDesc->BUsesPostRoundDoors() )
-		{
-			const bool bMatchSummaryStage = TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && pMatchDesc->BUseMatchSummaryStage();
-			if ( !bMatchSummaryStage )
-			{
-				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_HideMatchWinDoors", false );
-			}
-		}
-#endif
 		// reset the HUD
 		gHUD.ResetHUD();
 	}
@@ -694,6 +687,21 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 	// this is the round start countdown for matches
 	// Update the timer
 	SetDialogVariable( "countdown", nTime );
+
+	// if we're counting down from high, we need to hide the match win doors
+	if ( nTime > 11 && m_flMatchSummaryShowTime >= 0.0f )
+	{
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
+		if ( pMatchDesc && pMatchDesc->BUsesPostRoundDoors() )
+		{
+			const bool bMatchSummaryStage = TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && pMatchDesc->BUseMatchSummaryStage();
+			if ( !bMatchSummaryStage )
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_HideMatchWinDoors", false );
+			}
+		}
+		m_flMatchSummaryShowTime = -1.0f;
+	}
 
 	wchar_t* pSectionString = NULL;
 	if ( TFGameRules()->IsCompetitiveGame() && TFGameRules()->GetRoundsPlayed() > 0 )
@@ -780,7 +788,14 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		}
 		else
 		{
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors", false );
+			if ( m_flMatchSummaryShowTime >= 0.0f )
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors_FromClosed", false );
+			}
+			else
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors", false );
+			}
 		}
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "CompetitiveGame_LowerChatWindow", false);	// Lowering chat window to minimize overlap with team lineup ui
 
