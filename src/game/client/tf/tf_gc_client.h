@@ -13,7 +13,7 @@
 #include "gcsdk/gcclientsdk.h"
 //#include "dota_gamerules.h"
 #include "tf_gcmessages.pb.h"
-#include "../clientsteamcontext.h"
+#include "clientsteamcontext.h"
 #include "gc_clientsystem.h"
 #include "GameEventListener.h"
 #include "tf_quickplay_shared.h"

@@ -1082,7 +1082,7 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 		if ( pPlayer && pPlayer->m_flInterpolationTime >= 1.0f )
 		{
 			float flInterpTime = gpGlobals->interpolation_amount;
-			float flTickFrac = flInterpTime * TICK_INTERVAL;
+			//float flTickFrac = flInterpTime * TICK_INTERVAL;
 			bool bIsAttackFrame = false;
 
 			C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();

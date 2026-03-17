@@ -525,7 +525,7 @@ int CTFBaseBoss::OnTakeDamage_Alive( const CTakeDamageInfo &rawInfo )
 		gameeventmanager->FireEvent( event );
 	}
 
-	int iPrevHealth = GetHealth();
+	//int iPrevHealth = GetHealth();
 
 	int result = BaseClass::OnTakeDamage_Alive( info );
 

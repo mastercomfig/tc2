@@ -7,7 +7,7 @@
 #include "steamworks_gamestats.h"
 
 #if defined( CLIENT_DLL )
-#include "../client/replay/genericclassbased_replay.h"
+#include "replay/genericclassbased_replay.h"
 #include "replay/replayvideo.h"
 #include "replay/vgui/replaybrowserrenderdialog.h"
 #endif

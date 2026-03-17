@@ -16,9 +16,9 @@
 	#include "NextBotIntentionInterface.h"
 	#include "NextBotBehavior.h"
 	#include "NextBot.h"
-	#include "../server/NextBot/Path/NextBotPathFollow.h"
-	#include "../server/NextBot/Path/NextBotPath.h"
-	#include "../server/tf/halloween/headless_hatman_body.h"
+	#include "Path/NextBotPathFollow.h"
+	#include "Path/NextBotPath.h"
+	#include "halloween/headless_hatman_body.h"
 	#include "tf_obj_dispenser.h"
 #else
 	#include "c_obj_dispenser.h"
