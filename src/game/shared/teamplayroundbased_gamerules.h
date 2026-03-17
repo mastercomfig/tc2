@@ -273,6 +273,7 @@ public:
 	virtual void HandleTeamScoreModify( int iTeam, int iScore) {  };
 
 	float GetRoundRestartTime( void ) const { return m_flRestartRoundTime; }
+	float GetRoundRestartStartTime( void ) const { return m_flRestartRoundStartTime; }
 
 	virtual bool IsAllTalkActive() OVERRIDE;
 
