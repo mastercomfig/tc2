@@ -1514,17 +1514,28 @@ void CHudStopWatch::OnTick( void )
 		}
 		else if ( TFGameRules()->GetStopWatchState() == STOPWATCH_RUNNING )
 		{
+			bool bCappedAllPoints = TFGameRules() && TFGameRules()->StopWatchShouldBeTimedWin();
+
 			m_pTimePanel->SetVisible( true );
 			m_pStopWatchLabel->SetVisible( false );
-			m_pStopWatchScore->SetVisible( true );
-			m_pStopWatchPointsLabel->SetVisible( true );
+			
+			if ( bCappedAllPoints )
+			{
+				m_pStopWatchScore->SetVisible( false );
+				m_pStopWatchPointsLabel->SetVisible( false );
+			}
+			else
+			{
+				m_pStopWatchScore->SetVisible( true );
+				m_pStopWatchPointsLabel->SetVisible( true );
+			}
 
 			m_pStopWatchImage->SetImage( "../hud/ico_time_10" );
 
 			CTeamRoundTimer *pTimer = dynamic_cast< CTeamRoundTimer* >( ClientEntityList().GetEnt( iActiveTimer ) );
 
 			int iPoints = 0;
-		
+
 			if ( pTimer )
 			{
 				if ( pTimer->IsWatchingTimeStamps() )
@@ -1547,8 +1558,7 @@ void CHudStopWatch::OnTick( void )
 			iPoints = Max( iPoints, 0 );
 
 			wchar_t wzScoreVal[128];
-			static wchar_t wzScore[128];
-			wchar_t *pszPoints = NULL;
+			wchar_t *pszPoints;
 			_snwprintf( wzScoreVal, ARRAYSIZE( wzScoreVal ), L"%i", iPoints );
 
 			if ( 1 == iPoints ) 
