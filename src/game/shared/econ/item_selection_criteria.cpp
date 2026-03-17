@@ -177,6 +177,27 @@ bool CItemSelectionCriteria::BInitFromKV( KeyValues *pKVCriteria )
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+CEconItemDefinition* CItemSelectionCriteria::GetCandidateDefinition( void )
+{
+	const char* pszItemName = NULL;
+	FOR_EACH_VEC( m_vecConditions, i )
+	{
+		if ( m_vecConditions[i]->GetEOp() != k_EOperator_String_EQ )
+			continue;
+		if ( !FStrEq( m_vecConditions[i]->GetField(), "name" ) )
+			continue;
+		pszItemName = m_vecConditions[i]->GetValue();
+		break;
+	}
+	if ( pszItemName )
+	{
+		return GetItemSchema()->GetItemDefinitionByName( pszItemName );
+	}
+	return NULL;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:

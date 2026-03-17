@@ -90,6 +90,8 @@ public:
 	  void			SetInitialQuantity( uint32 unQuantity )		{ m_unInitialQuantity = unQuantity; m_bInitialQuantitySet = true; }
 	  void			SetIgnoreEnabledFlag( bool bIgnore )		{ m_bIgnoreEnabledFlag = bIgnore; }
 
+	  CEconItemDefinition *GetCandidateDefinition( void );
+
 	  // Tags
 	  void			SetTags( const char *pszTags );
 

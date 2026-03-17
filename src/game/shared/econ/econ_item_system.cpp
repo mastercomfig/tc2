@@ -319,12 +319,24 @@ item_definition_index_t CEconItemSystem::GenerateRandomItem( CItemSelectionCrite
 	CUtlVector<item_definition_index_t> vecMatches;
 	const CEconItemSchema::ItemDefinitionMap_t &mapDefs = m_itemSchema.GetItemDefinitionMap();
 
+	CEconItemDefinition* pSingleCandidateDefinition = pCriteria->GetCandidateDefinition();
+
 HackMakeValidList:
-	FOR_EACH_MAP_FAST( mapDefs, i )
+	if ( pSingleCandidateDefinition )
 	{
-		if ( pCriteria->BEvaluate( mapDefs[i] ) )
+		if ( pCriteria->BEvaluate( pSingleCandidateDefinition ) )
 		{
-			vecMatches.AddToTail( mapDefs.Key( i ) );
+			vecMatches.AddToTail( pSingleCandidateDefinition->GetDefinitionIndex() );
+		}
+	}
+	else
+	{
+		FOR_EACH_MAP_FAST( mapDefs, i )
+		{
+			if ( pCriteria->BEvaluate( mapDefs[i] ) )
+			{
+				vecMatches.AddToTail( mapDefs.Key( i ) );
+			}
 		}
 	}
 
@@ -342,10 +354,10 @@ HackMakeValidList:
 	}
 
 	// Choose a random match
-	int iChosenIdx = RandomInt( 0, (iValidItems-1) );
+	int iChosenIdx = iValidItems == 1 ? 0 : RandomInt( 0, (iValidItems-1) );
 	item_definition_index_t iChosenItem = vecMatches[iChosenIdx];
 
-	const CEconItemDefinition *pItemDef = m_itemSchema.GetItemDefinition( iChosenItem );
+	const CEconItemDefinition *pItemDef = pSingleCandidateDefinition ? pSingleCandidateDefinition : m_itemSchema.GetItemDefinition( iChosenItem );
 	if ( !pItemDef )
 		return INVALID_ITEM_DEF_INDEX;
 
