@@ -6009,7 +6009,7 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 //-----------------------------------------------------------------------------
 // Purpose: Create and give the named item to the player. Then return it.
 //-----------------------------------------------------------------------------
-CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, const CEconItemView *pScriptItem, bool bForce )
+CBaseEntity* CTFPlayer::GiveNamedItem( const char*pszClassName, int iSubType, const CEconItemView* pScriptItem, bool bForce )
 {
 	// We need to support players putting any shotgun into a shotgun slot, pistol into a pistol slot, etc.
 	// For legacy reasons, different classes actually spawn different entities for their shotguns/pistols/etc.
@@ -6017,14 +6017,14 @@ CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, const 
 	if ( !bForce )
 	{
 		// We don't do this if force is set, since a spy might be disguising as this character, etc.
-		pszName = TranslateWeaponEntForClass( pszName, GetPlayerClass()->GetClassIndex() );
+		pszClassName = TranslateWeaponEntForClass( pszClassName, GetPlayerClass()->GetClassIndex() );
 	}
 
-	if ( !pszName )
+	if ( !pszClassName )
 		return NULL;
 
 	// If I already own this type don't create one
-	if ( Weapon_OwnsThisType(pszName, iSubType) && !bForce)
+	if ( Weapon_OwnsThisType( pszClassName, iSubType ) && !bForce )
 	{
 		Assert(0);
 		return NULL;
@@ -6035,20 +6035,20 @@ CBaseEntity	*CTFPlayer::GiveNamedItem( const char *pszName, int iSubType, const 
 	if ( pScriptItem )
 	{
 		// Generate a weapon directly from that item	
-		pItem = ItemGeneration()->GenerateItemFromScriptData( pScriptItem, GetLocalOrigin(), vec3_angle, pszName );
+		pItem = ItemGeneration()->GenerateItemFromScriptData( pScriptItem, GetLocalOrigin(), vec3_angle, pszClassName );
 	}
 	else
 	{
 		// Generate a base item of the specified type
 		CItemSelectionCriteria criteria;
 		criteria.SetQuality( AE_NORMAL );
-		criteria.BAddCondition( "name", k_EOperator_String_EQ, pszName, true );
-		pItem = ItemGeneration()->GenerateRandomItem( &criteria, GetAbsOrigin(), vec3_angle, pszName );
+		criteria.BAddCondition( "item_class", k_EOperator_String_EQ, pszClassName, true );
+		pItem = ItemGeneration()->GenerateRandomItem( &criteria, GetAbsOrigin(), vec3_angle, pszClassName );
 	}
 
 	if ( pItem == NULL )
 	{
-		Msg( "Failed to generate base item: %s\n", pszName );
+		Msg( "Failed to generate base item: %s\n", pszClassName );
 		return NULL;
 	}
 
