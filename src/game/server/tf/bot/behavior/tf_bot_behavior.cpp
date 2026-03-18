@@ -54,6 +54,7 @@ ConVar tf_bot_fire_weapon_allowed( "tf_bot_fire_weapon_allowed", "1", FCVAR_CHEA
 ConVar tf_bot_reevaluate_class_in_spawnroom( "tf_bot_reevaluate_class_in_spawnroom", "1", FCVAR_CHEAT, "If set, bots will opportunisticly switch class while in spawnrooms if their current class is no longer their first choice." );
 
 ConVar tf_bot_random_items( "tf_bot_random_items", "0", FCVAR_NONE, "Bots will equip random loadout" );
+ConVar tf_bot_random_items_dist( "tf_bot_random_items_dist", "1", FCVAR_CHEAT, "Don't force random items. Instead, apply a random distribution to also using stock." );
 
 //---------------------------------------------------------------------------------------------
 Action< CTFBot > *CTFBotMainAction::InitialContainedAction( CTFBot *me )
@@ -90,15 +91,33 @@ ActionResult< CTFBot >	CTFBotMainAction::OnStart( CTFBot *me, Action< CTFBot > *
 	}
 #endif // TF_CREEP_MODE
 
-	if ( tf_bot_random_items.GetBool() && ( !TFGameRules()->IsMannVsMachineMode() || me->GetTeamNumber() != TF_TEAM_PVE_INVADERS ) )
+	if ( tf_bot_random_items.GetBool() && ( !TFGameRules()->IsMannVsMachineMode() || me->GetTeamNumber() != TF_TEAM_PVE_INVADERS ) && ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.9f ) )
 	{
-		me->GiveRandomItem( LOADOUT_POSITION_PRIMARY );
-		me->GiveRandomItem( LOADOUT_POSITION_SECONDARY );
-		me->GiveRandomItem( LOADOUT_POSITION_MELEE );
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.5f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_PRIMARY );
+		}
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.6f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_SECONDARY );
+		}
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.9f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_MELEE );
+		}
 
-		me->GiveRandomItem( LOADOUT_POSITION_HEAD );
-		me->GiveRandomItem( LOADOUT_POSITION_MISC );
-		me->GiveRandomItem( LOADOUT_POSITION_MISC2 );
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.9f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_HEAD );
+		}
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.5f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_MISC );
+		}
+		if ( !tf_bot_random_items_dist.GetBool() || RandomFloat() < 0.4f )
+		{
+			me->GiveRandomItem( LOADOUT_POSITION_MISC2 );
+		}
 	}
 
 	return Continue();
