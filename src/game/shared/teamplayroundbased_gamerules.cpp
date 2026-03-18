@@ -96,7 +96,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTeamplayRoundBasedRules, DT_TeamplayRoundBasedRules
 	RecvPropBool( RECVINFO( m_bInSetup ) ),
 	RecvPropInt( RECVINFO( m_iSetupTime ) ),
 	RecvPropInt( RECVINFO( m_bSwitchedTeamsThisRound ) ),
-	RecvPropInt( RECVINFO( m_bStopWatchShouldBeTimedWin ) ),
+	RecvPropBool( RECVINFO( m_bStopWatchShouldBeTimedWin ) ),
 	RecvPropBool( RECVINFO( m_bAwaitingReadyRestart ) ),
 	RecvPropTime( RECVINFO( m_flRestartRoundTime ) ),
 	RecvPropTime( RECVINFO( m_flRestartRoundStartTime ) ),
