@@ -218,21 +218,22 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *me )
 		return false;
 	}
 
-	// TODO(mcoms): when we have too many spawn exits, we shouldn't consider them?
 	// this is causing a huge spike in an explosion of nav area IsPotentiallyVisible checks.
-	if ( enemySpawnExitVector->Count() > 30 )
+	int iCount = enemySpawnExitVector->Count();
+	if ( iCount > 30 )
 	{
 		if ( tf_bot_debug_spy.GetBool() )
 		{
-			DevMsg( "%3.2f: Too many enemy spawn room exit areas found\n", gpGlobals->curtime );
+			DevMsg( "%3.2f: Too many enemy spawn room exit areas found (%d)\n", gpGlobals->curtime, iCount );
 		}
-		return false;
+		// skip
+		iCount = 0;
 	}
 
-	// find nearby place to hide hear enemy spawn exit(s)
+	// find nearby place to hide near enemy spawn exit(s)
 	CUtlVector< CNavArea * > nearbyAreaVector;
 	const float nearbyHideRange = 2500.0f;
-	for( int x=0; x<enemySpawnExitVector->Count(); ++x )
+	for ( int x = 0; x < iCount; ++x )
 	{
 		CTFNavArea *enemySpawnExitArea = enemySpawnExitVector->Element( x );
 
@@ -255,7 +256,7 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *me )
 			continue;
 
 		bool isHidden = true;
-		for( int j=0; j<enemySpawnExitVector->Count(); ++j )
+		for ( int j = 0; j < iCount; ++j )
 		{
 			if ( area->IsPotentiallyVisible( enemySpawnExitVector->Element(j) ) )
 			{
@@ -277,7 +278,7 @@ bool CTFBotSpyInfiltrate::FindHidingSpot( CTFBot *me )
 			DevMsg( "%3.2f: Can't find any non-visible hiding areas, trying for anything near the spawn exit...\n", gpGlobals->curtime );
 		}
 
-		for( i=0; i<nearbyAreaVector.Count(); ++i )
+		for ( i = 0; i < iCount; ++i )
 		{
 			CTFNavArea *area = (CTFNavArea *)nearbyAreaVector[i];
 

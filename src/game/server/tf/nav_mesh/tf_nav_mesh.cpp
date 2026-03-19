@@ -1713,7 +1713,7 @@ public:
 //--------------------------------------------------------------------------------------------------------
 void CTFNavMesh::CollectAndMarkSpawnRoomExits( CTFNavArea *area, CUtlVector< CTFNavArea * > *exitAreaVector )
 {
-	for( int dir=0; dir<NUM_DIRECTIONS; ++dir )
+	for ( int dir=0; dir<NUM_DIRECTIONS; ++dir )
 	{
 		const NavConnectVector *connect = area->GetAdjacentAreas( (NavDirType)dir );
 		if ( connect )
@@ -1724,6 +1724,14 @@ void CTFNavMesh::CollectAndMarkSpawnRoomExits( CTFNavArea *area, CUtlVector< CTF
 
 				if ( !adjArea->HasAttributeTF( TF_NAV_SPAWN_ROOM_BLUE | TF_NAV_SPAWN_ROOM_RED ) )
 				{
+					FOR_EACH_VEC( (*exitAreaVector), exitIt )
+					{
+						// some other area marked this exit
+						if ( exitAreaVector->Element( exitIt ) == area )
+						{
+							return;
+						}
+					}
 					// adjacent area leads out of spawn room - this is an exit
 					area->SetAttributeTF( TF_NAV_SPAWN_ROOM_EXIT );
 					exitAreaVector->AddToTail( area );
