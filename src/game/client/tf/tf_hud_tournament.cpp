@@ -1527,7 +1527,6 @@ void CHudStopWatch::OnTick( void )
 		}
 		else if ( TFGameRules()->GetStopWatchState() == STOPWATCH_RUNNING )
 		{
-
 			m_pTimePanel->SetVisible( true );
 			m_pStopWatchLabel->SetVisible( false );
 
@@ -1653,7 +1652,7 @@ void CHudStopWatch::OnTick( void )
 			iPoints = Max( iPoints, 0 );
 			wchar_t wzVal[16];
 
-			swprintf( wzVal, ARRAYSIZE( wzVal ), L"%x", iPoints );
+			swprintf( wzVal, ARRAYSIZE( wzVal ), L"%d", iPoints );
 			
 			// TODO(mcoms): what to do for score per round?
 			if ( pPlayer->GetTeam() == pAttacker )
