@@ -3536,6 +3536,7 @@ public:
 		const IMaterial* pMaterialOverride = pItem->GetMaterialOverride( pItem->GetTeamNumber() );
 		const bool cbIsControllingMaterial = pMaterialOverride == NULL || pMaterialOverride == m_pMaterial;
 
+		// TODO(mcoms): should we force high res for weapons without an owner? what is the state for inventory weapons?
 		// if we're not using high res, check if we should down res
 		// We may force low res for some composites. 
 		if ( pItem->ShouldWeaponSkinUseLowRes() || ( !pItem->ShouldWeaponSkinUseHighRes() && !cbPlayerIsLocalPlayer ) )
@@ -4140,7 +4141,7 @@ C_TFPlayer::~C_TFPlayer()
 	{
 		g_ItemEffectMeterManager.ClearExistingMeters();
 
-		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
+		if ( TFGameRules() && ( TFGameRules()->InMatchStartFreeze() || TFGameRules()->ShowMatchSummary() ) )
 		{
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_RestoreChatWindow", false );
 		}

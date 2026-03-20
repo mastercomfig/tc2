@@ -679,6 +679,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 	{
 		// reset the HUD
 		gHUD.ResetHUD();
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_RestoreChatWindow", false );
 	}
 }
 
