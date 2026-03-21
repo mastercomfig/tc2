@@ -557,6 +557,10 @@ void ClientModeTFNormal::Init()
 	extern void Training_Init();
 	Training_Init();
 
+	// restrict commands by default, which is default off for community mods.
+	engine->SetRestrictClientCommands( true );
+	engine->SetRestrictServerCommands( true );
+
 	BaseClass::Init();
 
 	m_bPendingRichPresenceUpdate = true;
