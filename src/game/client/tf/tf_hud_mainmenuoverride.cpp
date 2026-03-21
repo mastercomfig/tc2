@@ -200,6 +200,8 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_flCheckTrainingAt = 0;
 	m_bWasInTraining = false;
 
+	m_bGameUIVisible = false;
+
 	ScheduleItemCheck();
 
  	m_pToolTip = new CMainMenuToolTip( this );
@@ -342,26 +344,39 @@ void CHudMainMenuOverride::OnTick()
 	bool bInReplay = false;
 #endif
 
+	const bool bGameUIVisible = ( bInGame && !bBackgroundLevel ) ? enginevgui->IsGameUIVisible() : ( !bIsConnected || bBackgroundLevel );
+	if ( m_bGameUIVisible != bGameUIVisible )
+	{
+		// workaround for game UI activated/hidden events not firing in the engine
+		m_bGameUIVisible = bGameUIVisible;
+		if ( bGameUIVisible )
+		{
+			OnGameUIActivated();
+		}
+		else
+		{
+			OnGameUIHidden();
+		}
+	}
+
 	if ( bInGame || bInReplay || bIsConnected || bBackgroundLevel )
 	{
 		if ( m_pMainMenuWebUi )
 		{
-			const bool bShouldWebUiShow = ( bInGame && !bBackgroundLevel ) ? enginevgui->IsGameUIVisible() : ( !bIsConnected || bBackgroundLevel );
-
 			if ( GetGameStateManager()->IsReady() )
 			{
 				m_pMainMenuWebUi->LoadInteractivePanel();
 			}
 
-			if ( m_pMainMenuWebUi->IsVisible() != bShouldWebUiShow )
+			if ( m_pMainMenuWebUi->IsVisible() != bGameUIVisible )
 			{
 				if ( GetGameStateManager()->IsReady() )
 				{
-					if ( !bShouldWebUiShow )
+					if ( !bGameUIVisible )
 					{
 						GetGameStateManager()->QueueEvent( "closedmenu", "" );
 					}
-					m_pMainMenuWebUi->SetVisible( bShouldWebUiShow );
+					m_pMainMenuWebUi->SetVisible( bGameUIVisible );
 				}
 			}
 		}
@@ -376,6 +391,24 @@ void CHudMainMenuOverride::OnTick()
 			Msg( "Executing deferred connect command: %s\n", szConnectAdr );
 			engine->ExecuteClientCmd( CFmtStr( "connect %s -%s\n", szConnectAdr, "ConnectStringOnCommandline" ) );
 		}
+	}
+}
+
+void CHudMainMenuOverride::OnGameUIActivated()
+{
+	IGameEvent* event = gameeventmanager->CreateEvent( "gameui_activated" );
+	if ( event )
+	{
+		gameeventmanager->FireEventClientSide( event );
+	}
+}
+
+void CHudMainMenuOverride::OnGameUIHidden()
+{
+	IGameEvent* event = gameeventmanager->CreateEvent( "gameui_hidden" );
+	if ( event )
+	{
+		gameeventmanager->FireEventClientSide( event );
 	}
 }
 

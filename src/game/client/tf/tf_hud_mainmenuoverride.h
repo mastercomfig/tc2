@@ -136,6 +136,9 @@ public:
 
 	void		OnTick();
 
+	void OnGameUIActivated();
+	void OnGameUIHidden();
+
 	virtual GameActionSet_t GetPreferredActionSet() { return GAME_ACTION_SET_NONE; } // Seems like this should be GAME_ACTION_SET_MENU, but it's not because it's apparently visible *all* *the* *time*
 
 #ifdef _DEBUG
@@ -227,6 +230,8 @@ private:
 
 	float					m_flCheckTrainingAt;
 	bool					m_bWasInTraining;
+
+	bool					m_bGameUIVisible;
 
 	float					m_flCheckUnclaimedItems;
 
