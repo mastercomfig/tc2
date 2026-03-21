@@ -99,9 +99,9 @@ Panel* GetBackgroundDimmer()
 			Button::ApplySchemeSettings( pScheme );
 
 			SetCommand( "dimmer_clicked" );
-			SetMouseInputEnabled( true );
+			SetMouseInputEnabled( false );
 			SetKeyBoardInputEnabled( false ); // This can never be true
-			SetVisible( true );
+			SetVisible( false );
 			SetProportional( true );
 			SetBounds( 0, 0, g_pClientMode->GetViewport()->GetWide(), g_pClientMode->GetViewport()->GetTall() - YRES( 59 ) ); // Magically touch the top of the footer
 			SetZPos( 1000 );
@@ -1347,6 +1347,11 @@ void CTFMatchmakingDashboard::UpdateDimmer()
 	bool bShowDimmer = bAnySlidePanels;
 
 	Panel* pDimmer = GetDashboardPanel().GetPanel( k_eBGDimmer );
+	if ( bShowDimmer && !pDimmer->IsVisible() )
+	{
+		// init visibility
+		pDimmer->SetVisible( true );
+	}
 	int nDimmerAlpha = bShowDimmer ? 230 : 0;
 	g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( pDimmer, "alpha", nDimmerAlpha, 0.0f, 0.4f, vgui::AnimationController::INTERPOLATOR_GAIN, 0.8f, true, false );
 	pDimmer->SetMouseInputEnabled( bShowDimmer );
