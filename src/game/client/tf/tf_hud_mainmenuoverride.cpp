@@ -427,6 +427,8 @@ void CHudMainMenuOverride::AttachToGameUI( void )
 	SetKeyBoardInputEnabled( true );
 	SetMouseInputEnabled( true );
 	SetCursor(dc_arrow);
+	MakePopup();
+	MoveToFront();
 }
 
 //-----------------------------------------------------------------------------

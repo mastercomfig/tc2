@@ -758,10 +758,17 @@ bool HTML::FindDialogVisible()
 //-----------------------------------------------------------------------------
 void HTML::OnKeyCodeTyped(KeyCode code)
 {
+	// TODO(mcoms): disable input controls?
+	const bool bDisableInputs = true;
 	switch( code )
 	{
 	case KEY_PAGEDOWN:
 		{
+			if ( bDisableInputs )
+			{
+				BaseClass::OnKeyTyped( code );
+				return;
+			}
 		int val = _vbar->GetValue();
 		val += 200;
 		_vbar->SetValue(val);
@@ -769,18 +776,32 @@ void HTML::OnKeyCodeTyped(KeyCode code)
 		}
 	case KEY_PAGEUP:
 		{
-		int val = _vbar->GetValue();
-		val -= 200;
-		_vbar->SetValue(val);
-		break;	
+			if ( bDisableInputs )
+			{
+				BaseClass::OnKeyTyped( code );
+				return;
+			}
+			int val = _vbar->GetValue();
+			val -= 200;
+			_vbar->SetValue(val);
+			break;	
 		}
 	case KEY_F5:
 		{
-		Refresh();
-		break;
+			if ( bDisableInputs )
+			{
+				BaseClass::OnKeyTyped( code );
+				return;
+			}
+			Refresh();
+			break;
 		}
 	case KEY_F:
 		{
+			if ( bDisableInputs )
+			{
+				break;
+			}
 			if ( (input()->IsKeyDown(KEY_LCONTROL) || input()->IsKeyDown(KEY_RCONTROL) )
 				|| ( IsOSX() && ( input()->IsKeyDown(KEY_LWIN) || input()->IsKeyDown(KEY_RWIN) ) ) )
 			{
@@ -797,6 +818,10 @@ void HTML::OnKeyCodeTyped(KeyCode code)
 		}
 	case KEY_ESCAPE:
 		{
+			if ( bDisableInputs )
+			{
+				break;
+			}
 			if ( FindDialogVisible() )
 			{
 				HideFindDialog();
@@ -805,6 +830,10 @@ void HTML::OnKeyCodeTyped(KeyCode code)
 		}
 	case KEY_TAB:
 		{
+			if ( bDisableInputs )
+			{
+				break;
+			}
 			if ( input()->IsKeyDown(KEY_LCONTROL) || input()->IsKeyDown(KEY_RCONTROL) )
 			{
 				// pass control-tab to parent (through baseclass)
@@ -1673,7 +1702,8 @@ void HTML::BrowserHorizontalScrollBarSizeResponse( HTML_HorizontalScroll_t *pCmd
 	{
 		m_scrollHorizontal = scrollHorizontal;
 		UpdateSizeAndScrollBars();
-		m_bNeedsFullTextureUpload = true;
+		// TODO(mcoms): skip texture update if scroll bar changes?
+		//m_bNeedsFullTextureUpload = true;
 	}
 	else
 		m_scrollHorizontal = scrollHorizontal;
@@ -1695,7 +1725,8 @@ void HTML::BrowserVerticalScrollBarSizeResponse( HTML_VerticalScroll_t *pCmd )
 	{
 		m_scrollVertical = scrollVertical;
 		UpdateSizeAndScrollBars();
-		m_bNeedsFullTextureUpload = true;
+		// TODO(mcoms): skip texture update if scroll bar changes?
+		//m_bNeedsFullTextureUpload = true;
 	}
 	else
 		m_scrollVertical = scrollVertical;
