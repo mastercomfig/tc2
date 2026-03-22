@@ -209,12 +209,23 @@ void CRoundCounterPanel::PerformLayout()
 	if ( !TFGameRules() || !ShouldUseMatchHUD() )
 		return;
 
+	C_TFTeam* pTeams[TF_TEAM_COUNT];
+	pTeams[TF_TEAM_RED] = GetGlobalTFTeam( TF_TEAM_RED );
+	pTeams[TF_TEAM_BLUE] = GetGlobalTFTeam( TF_TEAM_BLUE );
+
+	if ( !pTeams[TF_TEAM_RED] || !pTeams[TF_TEAM_BLUE] )
+		return;
+
 	// Layout the round indicators
-	LayoutPanels( m_vecBlueRoundIndicators, EAlignment::ALIGN_WEST, (GetWide() / 2) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	LayoutPanels( m_vecRedRoundIndicators, EAlignment::ALIGN_EAST, (GetWide() / 2) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	LayoutPanels( m_vecBlueRoundIndicators, EAlignment::ALIGN_WEST, ( GetWide() / 2 ) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	VisibleCondition( m_vecBlueRoundIndicators, mp_winlimit.GetInt() );
+	LayoutPanels( m_vecRedRoundIndicators, EAlignment::ALIGN_EAST, ( GetWide() / 2 ) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	VisibleCondition( m_vecRedRoundIndicators, mp_winlimit.GetInt() );
 	// Layout the win indicators
-	LayoutPanels( m_vecBlueWinIndicators, EAlignment::ALIGN_WEST, (GetWide() / 2) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	LayoutPanels( m_vecRedWinIndicators, EAlignment::ALIGN_EAST, (GetWide() / 2) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	LayoutPanels( m_vecBlueWinIndicators, EAlignment::ALIGN_WEST, ( GetWide() / 2 ) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	VisibleCondition( m_vecBlueWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_BLUE]->m_iScore ) );
+	LayoutPanels( m_vecRedWinIndicators, EAlignment::ALIGN_EAST, ( GetWide() / 2 ) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
+	VisibleCondition( m_vecRedWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_RED]->m_iScore ) );
 }
 
 void CRoundCounterPanel::OnThink()
@@ -252,17 +263,7 @@ void CRoundCounterPanel::FireGameEvent(IGameEvent * event )
 
 void CRoundCounterPanel::UpdateRoundLabels()
 {
-	C_TFTeam* pTeams[TF_TEAM_COUNT];
-	pTeams[TF_TEAM_RED] = GetGlobalTFTeam( TF_TEAM_RED );
-	pTeams[TF_TEAM_BLUE] = GetGlobalTFTeam( TF_TEAM_BLUE );
-
-	if ( !pTeams[TF_TEAM_RED] || !pTeams[TF_TEAM_BLUE] )
-		return;
-	
-	VisibleCondition( m_vecBlueRoundIndicators, mp_winlimit.GetInt() );
-	VisibleCondition( m_vecRedRoundIndicators, mp_winlimit.GetInt() );
-	VisibleCondition( m_vecBlueWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_BLUE]->m_iScore ) );
-	VisibleCondition( m_vecRedWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_RED]->m_iScore ) );
+	// TODO(mcoms): remove this
 }
 
 //-----------------------------------------------------------------------------
@@ -745,7 +746,7 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 	// and that's way easier to do with engine access.
 	// we can also make a conditional refresh but it feels awkward since we need to force slamming the value and keep attempting
 	// until our entity is in sync, and the conditions for that seem fuzzy.
-	m_pRoundCounter->UpdateRoundLabels();
+	m_pRoundCounter->InvalidateLayout( true );
 
 	if ( pSectionString )
 	{
