@@ -31,6 +31,8 @@ class CInteractiveWebPanel : public EditablePanel
     void ApplySchemeSettings(IScheme* pScheme) override;
     void PerformLayout() override;
 
+    void SetVisible(bool state) override;
+
     void LoadInteractivePanel();
 
 private:

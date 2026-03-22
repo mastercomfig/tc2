@@ -87,3 +87,12 @@ void CInteractiveWebPanel::PerformLayout()
 	m_pHTML->SetZoomLevel((float)zoomLevel);
 }
 
+void CInteractiveWebPanel::SetVisible(bool state)
+{
+	BaseClass::SetVisible( state );
+	if ( m_pHTML )
+	{
+		m_pHTML->SetVisible( state );
+	}
+}
+

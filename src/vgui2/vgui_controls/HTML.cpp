@@ -1266,6 +1266,9 @@ void HTML::CHTMLFindBar::OnCommand( const char *pchCmd )
 //-----------------------------------------------------------------------------
 void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 {
+	if ( !IsVisible() )
+		return;
+
 	int tw = 0, tt = 0;
 	if ( m_iHTMLTextureID != 0 )
 	{
