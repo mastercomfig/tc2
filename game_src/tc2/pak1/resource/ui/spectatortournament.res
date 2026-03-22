@@ -381,10 +381,10 @@
 		"bgcolor_override"		"255 255 255 0"
 		"PaintBackgroundType"	"0"
 		
-		"model_ypos"		"10"
+		"model_ypos"		"20"
 		"model_center_x"	"1"
-		"model_wide"		"90"
-		"model_tall"		"60"
+		"model_wide"		"80"
+		"model_tall"		"50"
 		
 		"text_xpos"		"10"
 		"text_ypos"		"10"
@@ -401,13 +401,14 @@
 			"fieldName"		"itemmodelpanel"
 			"use_item_rendertarget" "0"
 			"useparentbg"		"1"
+			"inventory_image_type"	"1"
 		}
 		
 		"ItemLabel"
 		{	
 			"ControlName"	"Label"
 			"fieldName"		"ItemLabel"
-			"font"			"DefaultSmall"
+			"font"			"ItemFontAttribSmall"
 			"xpos"			"10"
 			"ypos"			"3"
 			"zpos"			"1"
