@@ -20,7 +20,7 @@
 		"fieldName"		"PlayerStatusClassImage"
 		"xpos"			"25"	[$WIN32]
 		"xpos_minmode"	"15"	[$WIN32]
-		"ypos"			"r88"	[$WIN32]
+		"ypos"			"rs1.2"	[$WIN32]
 		"ypos_minmode"	"r54"	[$WIN32]
 		"xpos"			"57"	[$X360]
 		"ypos"			"r110"	[$X360]
@@ -40,7 +40,7 @@
 		"fieldName"		"PlayerStatusSpyImage"
 		"xpos"			"3"		[$WIN32]
 		"xpos_minmode"	"-5"	[$WIN32]
-		"ypos"			"r67"	[$WIN32]
+		"ypos"			"rs1.27"	[$WIN32]
 		"ypos_minmode"	"r44"	[$WIN32]
 		"xpos"			"35"	[$X360]
 		"ypos"			"r89"	[$X360]
@@ -129,7 +129,7 @@
 		
 		"xpos"			"0"	[$WIN32]
 		"xpos_minmode"	"0"	[$WIN32]
-		"ypos"			"r214"	[$WIN32]
+		"ypos"			"rs1.075"	[$WIN32]
 		"ypos_minmode"	"r88"	[$WIN32]
 		"zpos"			"2"		
 		"wide"			"100"
@@ -142,7 +142,7 @@
 		"enabled"		"1"
 		
 		"render_texture"	"0"
-		"fov"			"12"
+		"fov"			"18"
 		"allow_rot"		"1"
 
 		"disable_speak_event"	"1"

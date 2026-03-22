@@ -21,7 +21,7 @@
 		"nemesis_width"		"15"
 		"class_width"		"15"
 		"score_width"		"25"
-		"ping_width"		"25"
+		"ping_width"		"19"
 		"killstreak_width"	"18"
 		"killstreak_image_width" "15"
 	}
@@ -631,7 +631,7 @@
 		"fieldName"		"ClassImage"
 		"xpos"			"22"
 		"xpos_lodef"	"12"
-		"ypos"			"350"
+		"ypos"			"rs1.392"
 		"zpos"			"3"
 		"wide"			"92"
 		"tall"			"92"
@@ -643,6 +643,7 @@
 		if_mvm
 		{
 			"visible"		"1"
+			"ypos"			"rs1.390"
 		}
 	}
 	"classmodelpanel"
@@ -651,7 +652,7 @@
 		"fieldName"		"classmodelpanel"
 		
 		"xpos"			"-10"
-		"ypos"			"185"
+		"ypos"			"rs1.140"
 		"zpos"			"10"		
 		"wide"			"130"
 		"tall"			"260"
@@ -661,7 +662,7 @@
 		"enabled"		"1"
 		
 		"render_texture"	"0"
-		"fov"			"12"
+		"fov"			"18"
 		"allow_rot"		"1"
 
 		"disable_speak_event"	"1"
@@ -669,6 +670,7 @@
 		if_mvm
 		{
 			"visible"		"0"
+			"ypos"			"rs1.140"
 		}
 				
 		"model"
@@ -680,7 +682,7 @@
 			"angles_z" "0"
 			"origin_x" "200"
 			"origin_y" "0"
-			"origin_z" "-60"
+			"origin_z" "-100"
 			"frame_origin_x"	"0"
 			"frame_origin_y"	"0"
 			"frame_origin_z"	"0"
