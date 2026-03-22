@@ -1339,9 +1339,13 @@ private:
 	CNetworkVar( ENextMapVotingState, m_eRematchState );
 	CNetworkArray( MapDefIndex_t, m_nNextMapVoteOptions, 3 );
 	
+	CNetworkArray( int, m_nPrevSeriesScore, TF_TEAM_COUNT );
+	CNetworkVar( int, m_nSeriesNum );
+
 	CNetworkArray( int, m_nSeriesPoints, TF_TEAM_COUNT );
 	CNetworkVar( bool, m_bPlayingMultiSeriesIntermission );
 	bool m_bMatchIsPlayingOut;
+	bool m_bStartMatchRoundImmediately;
 
 	float		m_flCTFCaptureBonusTime;
 public:
@@ -1352,11 +1356,33 @@ public:
 		return m_nSeriesPoints[ nTeam ];
 	}
 
+	int GetPrevSeriesScore( int nTeam ) const
+	{
+		Assert( nTeam >= 0 && nTeam < TF_TEAM_COUNT );
+		return m_nPrevSeriesScore[ nTeam ];
+	}
+
+	int GetSeriesCount() const
+	{
+		return m_nSeriesNum;
+	}
+
 #ifdef GAME_DLL
 	void AddSeriesPoint( int nTeam )
 	{
 		Assert( nTeam >= 0 && nTeam < TF_TEAM_COUNT );
 		m_nSeriesPoints.Set( nTeam, m_nSeriesPoints[ nTeam ] + 1 );
+	}
+	void IncrementSeriesCount()
+	{
+		m_nSeriesNum.Set( m_nSeriesNum + 1 );
+	}
+	void SnapshotSeriesScore()
+	{
+		for ( int i = 0; i < TF_TEAM_COUNT; i++ )
+		{
+			m_nPrevSeriesScore.Set( i, m_nSeriesPoints[ i ] );
+		}
 	}
 #endif
 
@@ -1383,6 +1409,8 @@ public:
 
 	bool IsPlayingMultiSeriesIntermission() { return m_bPlayingMultiSeriesIntermission; }
 	bool IsMatchPlayingOut() { return m_bMatchIsPlayingOut; }
+	bool ShouldStartMatchRoundImmediately() { return m_bStartMatchRoundImmediately; }
+	void SetStartMatchRoundImmediately( bool bStartImmediate ) { m_bStartMatchRoundImmediately = bStartImmediate; }
 
 #ifdef GAME_DLL
 
@@ -1393,7 +1421,15 @@ public:
 
 	int GetBossCount() const { return m_activeBosses.Count(); }
 
-	void SetMultiSeriesIntermission( bool bIntermission ) { m_bPlayingMultiSeriesIntermission = bIntermission; }
+	void SetMultiSeriesIntermission( bool bIntermission ) 
+	{ 
+		if ( bIntermission && !m_bPlayingMultiSeriesIntermission )
+			IncrementSeriesCount();
+		else if ( !bIntermission && m_bPlayingMultiSeriesIntermission )
+			SnapshotSeriesScore();
+
+		m_bPlayingMultiSeriesIntermission = bIntermission; 
+	}
 
 	CBaseCombatCharacter *GetActiveBoss( int iBoss = 0 )
 	{

@@ -1544,9 +1544,11 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	RecvPropBool( RECVINFO( m_bMapHasMatchSummaryStage ) ),
 	RecvPropBool( RECVINFO( m_bPlayersAreOnMatchSummaryStage ) ),
 	RecvPropBool( RECVINFO( m_bStopWatchWinner ) ),
-	RecvPropArray3( RECVINFO_ARRAY(m_ePlayerWantsRematch), RecvPropInt( RECVINFO(m_ePlayerWantsRematch[0]), 0, RecvProxy_PlayerVotedForMap ) ),
+	RecvPropArray3( RECVINFO_ARRAY( m_ePlayerWantsRematch ), RecvPropInt( RECVINFO( m_ePlayerWantsRematch[0] ), 0, RecvProxy_PlayerVotedForMap ) ),
 	RecvPropInt( RECVINFO( m_eRematchState ) ),
-	RecvPropArray3( RECVINFO_ARRAY(m_nNextMapVoteOptions), RecvPropInt( RECVINFO(m_nNextMapVoteOptions[0]), 0, RecvProxy_NewMapVoteStateChanged ) ),
+	RecvPropArray3( RECVINFO_ARRAY( m_nNextMapVoteOptions ), RecvPropInt( RECVINFO( m_nNextMapVoteOptions[0] ), 0, RecvProxy_NewMapVoteStateChanged ) ),
+	RecvPropArray3( RECVINFO_ARRAY( m_nPrevSeriesScore ), RecvPropInt( RECVINFO( m_nPrevSeriesScore[0] ) ) ),
+	RecvPropInt( RECVINFO( m_nSeriesNum ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_nSeriesPoints ), RecvPropInt( RECVINFO( m_nSeriesPoints[0] ) ) ),
 	RecvPropBool( RECVINFO( m_bPlayingMultiSeriesIntermission ) ),
 
@@ -1618,9 +1620,11 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	SendPropBool( SENDINFO( m_bMapHasMatchSummaryStage ) ),
 	SendPropBool( SENDINFO( m_bPlayersAreOnMatchSummaryStage ) ),
 	SendPropBool( SENDINFO( m_bStopWatchWinner ) ),
-	SendPropArray3( SENDINFO_ARRAY3(m_ePlayerWantsRematch), SendPropInt( SENDINFO_ARRAY(m_ePlayerWantsRematch), -1, SPROP_UNSIGNED | SPROP_VARINT ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_ePlayerWantsRematch ), SendPropInt( SENDINFO_ARRAY( m_ePlayerWantsRematch ), -1, SPROP_UNSIGNED | SPROP_VARINT ) ),
 	SendPropInt( SENDINFO( m_eRematchState ) ),
-	SendPropArray3( SENDINFO_ARRAY3(m_nNextMapVoteOptions), SendPropInt( SENDINFO_ARRAY(m_nNextMapVoteOptions), -1, SPROP_UNSIGNED | SPROP_VARINT ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_nNextMapVoteOptions ), SendPropInt( SENDINFO_ARRAY( m_nNextMapVoteOptions ), -1, SPROP_UNSIGNED | SPROP_VARINT ) ),
+	SendPropArray3( SENDINFO_ARRAY3( m_nPrevSeriesScore ), SendPropInt( SENDINFO_ARRAY( m_nPrevSeriesScore ), -1, SPROP_UNSIGNED | SPROP_VARINT ) ),
+	SendPropInt( SENDINFO( m_nSeriesNum ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_nSeriesPoints ), SendPropInt( SENDINFO_ARRAY( m_nSeriesPoints ) ) ),
 	SendPropBool( SENDINFO( m_bPlayingMultiSeriesIntermission ) ),
 
@@ -3816,6 +3820,7 @@ CTFGameRules::CTFGameRules()
 	m_flIntermissionEndTime = 0.0f;
 	m_flNextPeriodicThink = 0.0f;
 	m_bMatchIsPlayingOut = false;
+	m_bStartMatchRoundImmediately = false;
 	SetMultiSeriesIntermission( false );
 
 	ListenForGameEvent( "teamplay_point_captured" );
@@ -4510,7 +4515,7 @@ void CTFGameRules::KickPlayersNewMatchIDRequestFailed()
 	Assert( m_eRematchState == NEXT_MAP_VOTE_STATE_MAP_CHOSEN_PAUSE );
 
 	// Let everyone know the rematch failed.
-	if ( m_eRematchState == NEXT_MAP_VOTE_STATE_MAP_CHOSEN_PAUSE )
+	if ( GetCurrentNextMapVotingState() == NEXT_MAP_VOTE_STATE_MAP_CHOSEN_PAUSE )
 	{
 		CBroadcastRecipientFilter filter;
 		UTIL_ClientPrintFilter( filter, HUD_PRINTTALK, "#TF_Matchmaking_RollingQueue_NewRematch_GCFail" );
@@ -5780,6 +5785,7 @@ void CTFGameRules::FullRestartTournament( void )
 	}
 
 	m_bMatchIsPlayingOut = false;
+	m_bStartMatchRoundImmediately = false;
 	
 	if ( !IsCommunityGameMode() )
 		SetAllowBetweenRounds( true );
@@ -9246,7 +9252,7 @@ void CTFGameRules::Think()
 					return;
 				}
 
-				if ( m_eRematchState == NEXT_MAP_VOTE_STATE_WAITING_FOR_USERS_TO_VOTE )
+				if ( GetCurrentNextMapVotingState() == NEXT_MAP_VOTE_STATE_WAITING_FOR_USERS_TO_VOTE )
 				{
 					bool bVotePeriodExpired = false;
 					// Judgment time has arrived.  Force a result below
@@ -9298,7 +9304,7 @@ void CTFGameRules::Think()
 						}
 					}
 				}
-				else if ( m_eRematchState == NEXT_MAP_VOTE_STATE_MAP_CHOSEN_PAUSE )
+				else if ( GetCurrentNextMapVotingState() == NEXT_MAP_VOTE_STATE_MAP_CHOSEN_PAUSE )
 				{
 					// CTFGCServerSystem is in control at this point
 				}
@@ -9327,13 +9333,21 @@ void CTFGameRules::Think()
 
 				if ( IsPlayingMultiSeriesIntermission() )
 				{
+					// TODO(mcoms): reset team ready state?
 					m_bMatchIsPlayingOut = true;
+					m_flRestartRoundStartTime = -1.0f;
+					m_bStartMatchRoundImmediately = PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_BLUE ) && PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_RED );
+					if ( !ShouldStartMatchRoundImmediately() )
+					{
+						SetAllowBetweenRounds( true );
+						PlayerReadyStatus_ResetState();
+						MatchSummaryEnd();
+					}
 					SetMultiSeriesIntermission( false );
 					ShouldResetScores( true, false );
 					ShouldResetRoundsPlayed( true );
 					ResetScores();
 					m_flStateTransitionTime = -1.0f;
-					MatchSummaryEnd();
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
 						SetAllowBetweenRounds( true );
@@ -9347,12 +9361,15 @@ void CTFGameRules::Think()
 				{
 					// Matchmaking path
 					m_bMatchIsPlayingOut = false;
+					m_bStartMatchRoundImmediately = false;
+					m_flStateTransitionTime = -1.0f;
 					pMatchDesc->PostMatchClearServerSettings();
 					return;
 				}
 				else if ( IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
 				{
 					m_bMatchIsPlayingOut = false;
+					m_bStartMatchRoundImmediately = false;
 					m_flStateTransitionTime = -1.0f;
 					ResetManagedMatch();
 					MatchSummaryEnd();
@@ -9385,6 +9402,8 @@ void CTFGameRules::Think()
 						MatchSummaryEnd();
 					}
 					m_bMatchIsPlayingOut = false;
+					m_bStartMatchRoundImmediately = false;
+					m_flStateTransitionTime = -1.0f;
 					g_fGameOver = false;
 					if ( !IsCommunityGameMode() )
 						SetAllowBetweenRounds( true );
@@ -9525,14 +9544,14 @@ void CTFGameRules::Think()
 						}
 					}
 				}
-				else if (!IsManagedMatchEnded() && nActiveMatchPlayers < 1)
+				else if ( !IsManagedMatchEnded() && nActiveMatchPlayers < 1 )
 				{
 					// For non-complete mode, just stop the match if we lose all players
 					Msg("Competitive managed match in progress, but no remaining match players.  Stopping match.\n");
 					bEndMatch = true;
 				}
 
-				if (bEndMatch)
+				if ( bEndMatch )
 				{
 					StopCompetitiveMatch( CMsgGC_Match_Result_Status_MATCH_FAILED_ABANDON );
 				}
@@ -14939,8 +14958,10 @@ void CTFGameRules::ClientDisconnected( edict_t *pClient )
 					}
 				}
 #else
-				else
+				else if ( !IsTeamReady( pPlayer->GetTeamNumber() ) && !(( m_flRestartRoundTime > 0 && m_flRestartRoundTime - gpGlobals->curtime > TOURNAMENT_NOCANCEL_TIME ) || ( mp_restartgame.GetInt() > 0 )) )
 				{
+					// TODO(mcoms): is this the right conditions? maybe not good for competitive.
+					// if the team isn't ready, and the round isn't already restarting, clear the ready state.
 					if ( IsPlayerReady( pPlayer->entindex() ) )
 					{
 						// Clear the ready status so it doesn't block the rest of the team
@@ -18329,7 +18350,14 @@ void CTFGameRules::TeamPlayerCountChanged( CTFTeam *pTeam )
 bool CTFGameRules::BAttemptMapVoteRollingMatch()
 {
 	if ( IsManagedMatchEnded() )
-		{ return false; }
+	{
+		return false;
+	}
+
+	if ( IsPlayingMultiSeriesIntermission() )
+	{
+		return false;
+	}
 
 	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
 	return pMatchDesc && GTFGCClientSystem()->CanRequestNewMatchForLobby() && pMatchDesc->BUsesMapVoteAfterMatchEnds();
@@ -22942,6 +22970,7 @@ void CTFGameRules::BetweenRounds_Start( void )
 		m_hGamerulesProxy->StateEnterBetweenRounds();
 	}
 
+	// TODO(mcoms): maybe avoid running this if series does a quick restart?
 	if ( m_hCompetitiveLogicEntity )
 	{
 		m_hCompetitiveLogicEntity->OnSpawnRoomDoorsShouldUnlock();
@@ -23000,7 +23029,8 @@ void CTFGameRules::BetweenRounds_Think( void )
 		PlayerReadyStatus_UpdateTeamStatus();
 
 		// Everyone is ready, or the drop-dead timer naturally ticked down to countdown
-		const bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) || m_bMatchIsPlayingOut );
+		const bool bStartImmediately = ShouldStartMatchRoundImmediately();
+		const bool bStartFinalCountdown = ( PlayerReadyStatus_ShouldStartCountdown() || ( m_flRestartRoundTime > 0 && RoundFloatToNearestInt( m_flRestartRoundTime - gpGlobals->curtime ) == 10 ) || bStartImmediately );
 
 		if ( bStartFinalCountdown )
 		{
@@ -23010,7 +23040,15 @@ void CTFGameRules::BetweenRounds_Think( void )
 
 		// It's the FINAL COUNTDOOOWWWNNnnnnnnnnn
 		float flDropDeadTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
-		if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime > flDropDeadTime ) )
+		if ( bStartImmediately )
+		{
+			m_flRestartRoundStartTime.Set( gpGlobals->curtime );
+			m_flRestartRoundTime.Set( flDropDeadTime - 5.0f );
+			m_flCompModeRespawnPlayersAtMatchStart = gpGlobals->curtime;
+			m_bStartMatchRoundImmediately = false;
+			MatchSummaryEnd();
+		}
+		else if ( bStartFinalCountdown && ( m_flRestartRoundTime < 0 || m_flRestartRoundTime > flDropDeadTime ) )
 		{
 			m_flRestartRoundTime.Set( flDropDeadTime );
 

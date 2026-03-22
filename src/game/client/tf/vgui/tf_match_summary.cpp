@@ -107,6 +107,8 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_pRedTeamSeriesBG = new EditablePanel( m_pRedTeamPanel, "RedTeamSeriesBG" );
 	m_pBlueTeamSeries = new CExLabel( m_pBlueTeamPanel, "BlueTeamSeries", "" );
 	m_pRedTeamSeries = new CExLabel( m_pRedTeamPanel, "RedTeamSeries", "" );
+	m_pBlueTeamSeriesReason = new CExLabel( m_pBlueTeamPanel, "BlueTeamSeriesReason", "" );
+	m_pRedTeamSeriesReason = new CExLabel( m_pRedTeamPanel, "RedTeamSeriesReason", "" );
 	m_pBlueMedalsPanel = new EditablePanel( m_pTeamScoresPanel, "BlueMedals" );
 	m_pRedMedalsPanel = new EditablePanel( m_pTeamScoresPanel, "RedMedals" );
 	m_pRedTeamImage = new vgui::ImagePanel( m_pRedTeamPanel, "RedTeamImage" );
@@ -139,6 +141,8 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_pMVPStat4Title = new CExLabel(m_pMVPPanel, "MVPStat4Title", "");
 	m_pMVPStat4Label = new CExLabel(m_pMVPPanel, "MVPStat4Label", "");
 
+	m_pMatchSeriesLabel = new CExLabel( m_pMainStatsContainer, "MatchSeriesLabel", "" );
+	m_pMatchTimeRemainingTitleLabel = new CExLabel( m_pMainStatsContainer, "MatchTimeRemainingTitleLabel", "" );
 	m_pMatchTimeRemainingLabel = new CExLabel( m_pMainStatsContainer, "MatchTimeRemainingLabel", "" );
 
 	m_pImageList = NULL;
@@ -1027,16 +1031,20 @@ void CTFMatchSummary::UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &pBadgePanel
 //-----------------------------------------------------------------------------
 void CTFMatchSummary::UpdateMatchTimeRemaining()
 {
-	if ( !m_pMatchTimeRemainingLabel )
+	if ( !m_pMatchSeriesLabel || !m_pMatchTimeRemainingTitleLabel || !m_pMatchTimeRemainingLabel )
 	{
 		return;
 	}
 
 	if ( !TFGameRules() || !TFGameRules()->IsPlayingMultiSeriesIntermission() )
 	{
+		m_pMatchSeriesLabel->SetVisible( false );
+		m_pMatchTimeRemainingTitleLabel->SetVisible( false );
 		m_pMatchTimeRemainingLabel->SetVisible( false );
 		return;
 	}
+	m_pMatchSeriesLabel->SetVisible( true );
+	m_pMatchTimeRemainingTitleLabel->SetVisible( true );
 	m_pMatchTimeRemainingLabel->SetVisible( true );
 	
 	wchar_t wzServerTimeHrsLeft[128];
@@ -1045,6 +1053,14 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	wchar_t wzServerTimeLeft[128];
 
 	int iTimeLeft = ( TFGameRules() && TFGameRules()->GetTimeLeft() > 0 ) ? TFGameRules()->GetTimeLeft() : 0;
+
+	wchar_t wszSeriesNum[16];
+	swprintf( wszSeriesNum, ARRAYSIZE( wszSeriesNum ), L"%d", TFGameRules()->GetSeriesCount() );
+
+	wchar_t wszSeries[128];
+	g_pVGuiLocalize->ConstructString_safe( wszSeries, g_pVGuiLocalize->Find( "TF_Series_TitleCount" ), 1, wszSeriesNum );
+
+	m_pMainStatsContainer->SetDialogVariable( "serieslabel", wszSeries );
 
 	if ( iTimeLeft == 0 )
 	{
@@ -1195,7 +1211,14 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 			}
 		}
 
-		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInPanels", false );
+		if ( TFGameRules() && TFGameRules()->IsPlayingMultiSeriesIntermission() )
+		{
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInOutPanels", false );
+		}
+		else
+		{
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInPanels", false );
+		}
 	}
 	else if ( FStrEq( type, "hide_match_summary" ) )
 	{
@@ -1419,6 +1442,7 @@ void CTFMatchSummary::OnTick()
 	{
 		const bool bMultiSeries = TFGameRules() && TFGameRules()->IsPlayingMultiSeriesIntermission();
 		m_bShortMode = TFGameRules() ? ( bMultiSeries || TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime <= 11.0f ) : false;
+		bUseNewCasualSummaryScreen = !bUseMatchSummaryStage && !m_bShortMode;
 		bool bUseStage = ( bMapHasMatchSummaryStage && bUseMatchSummaryStage && !m_bShortMode );
 
 		Update();
@@ -1453,12 +1477,55 @@ void CTFMatchSummary::OnTick()
 			m_pBlueTeamSeries->SetVisible( bMultiSeries );
 		if ( m_pRedTeamSeries )
 			m_pRedTeamSeries->SetVisible( bMultiSeries );
+		if ( m_pRedTeamSeriesReason )
+			m_pRedTeamSeriesReason->SetVisible( bMultiSeries );
+		if ( m_pBlueTeamSeriesReason )
+			m_pBlueTeamSeriesReason->SetVisible( bMultiSeries );
+		
+		if ( bMultiSeries )
+		{
+			int nRedPoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_DEFENDERS );
+			int nBluePoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_INVADERS );
+			int nPrevRed = TFGameRules()->GetPrevSeriesScore( TF_GC_TEAM_DEFENDERS );
+			int nPrevBlue = TFGameRules()->GetPrevSeriesScore( TF_GC_TEAM_INVADERS );
+			
+			int nRedDelta = nRedPoints - nPrevRed;
+			int nBlueDelta = nBluePoints - nPrevBlue;
+
+			auto GetReasonText = []( int nDelta, int nOtherDelta ) -> const wchar_t*
+			{
+				if ( nDelta >= 2 )
+				{
+					return L"+1 Defense Win\n+1 Best Offense Score";
+				}
+				else if ( nDelta == 1 )
+				{
+					if ( TFGameRules()->IsAttackDefenseMode() )
+					{
+						return (nOtherDelta >= 1) ? L"+1 Defense Win" : L"+1 Best Offense Score";
+					}
+					return L"+1 Series Win";
+				}
+				return L"";
+			};
+
+			if ( m_pRedTeamSeriesReason )
+			{
+				m_pRedTeamSeriesReason->SetText( GetReasonText( nRedDelta, nBlueDelta ) );
+			}
+			if ( m_pBlueTeamSeriesReason )
+			{
+				m_pBlueTeamSeriesReason->SetText( GetReasonText( nBlueDelta, nRedDelta ) );
+			}
+		}
 
 		if ( GTFGCClientSystem()->GetSurveyRequest().has_match_id() )
 		{
 			Panel* pSurveyPanel = CreateSurveyQuestionPanel( this, GTFGCClientSystem()->GetSurveyRequest() );
 			pSurveyPanel->MakePopup();
 		}
+
+		Msg("[Match Summary Init] bUseStage: %d, bUseNewCasualSummaryScreen: %d, bFoundMVP: %d, bMultiSeries: %d, bShortMode: %d\n", bUseStage, bUseNewCasualSummaryScreen, m_bFoundMVP, bMultiSeries, m_bShortMode);
 
 		m_iCurrentState = MS_STATE_DRAWING;
 		if ( bUseStage )
@@ -1573,6 +1640,19 @@ void CTFMatchSummary::OnTick()
 					m_pStatsLabelPanel->SetVisible( true );
 				}
 
+				if ( m_pMatchSeriesLabel )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pMatchSeriesLabel, "ypos", m_iAnimMatchSeriesLabel, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
+				if ( m_pMatchTimeRemainingTitleLabel )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pMatchTimeRemainingTitleLabel, "ypos", m_iAnimMatchTimeRemainingTitleLabel, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
+				if ( m_pMatchTimeRemainingLabel )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pMatchTimeRemainingLabel, "ypos", m_iAnimMatchTimeRemainingLabel, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
+
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pStatsLabelPanel, "ypos", m_bLargeMatchGroup ? m_iAnimStatsLabelPanel12v12YPos : m_iAnimStatsLabelPanel6v6YPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pBlueMedalsPanel, "ypos", m_iAnimBlueMedalsYPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedMedalsPanel, "ypos", m_iAnimRedMedalsYPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
@@ -1590,6 +1670,10 @@ void CTFMatchSummary::OnTick()
 				{
 					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pBlueTeamSeries, "wide", m_iAnimBlueTeamScore, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				}
+				if ( m_pBlueTeamSeriesReason )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pBlueTeamSeriesReason, "wide", m_iAnimBlueTeamScore, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pBluePlayerListBG, "wide",  m_iAnimBluePlayerListBG, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamScore, "wide", m_iAnimRedTeamScoreWide, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamScore, "xpos", m_iAnimRedTeamScoreXPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
@@ -1606,6 +1690,11 @@ void CTFMatchSummary::OnTick()
 				{
 					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamSeries, "wide", m_iAnimRedTeamScoreWide, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamSeries, "xpos", m_iAnimRedTeamScoreXPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
+				if ( m_pRedTeamSeriesReason )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamSeriesReason, "wide", m_iAnimRedTeamScoreWide, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pRedTeamSeriesReason, "xpos", m_iAnimRedTeamScoreXPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				}
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pPlayerListRedParent, "wide", m_iAnimRedPlayerListParentWide, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pPlayerListRedParent, "xpos", m_iAnimRedPlayerListParentXPos, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );

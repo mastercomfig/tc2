@@ -209,23 +209,12 @@ void CRoundCounterPanel::PerformLayout()
 	if ( !TFGameRules() || !ShouldUseMatchHUD() )
 		return;
 
-	C_TFTeam* pTeams[ TF_TEAM_COUNT ];
-	pTeams[ TF_TEAM_RED ] = GetGlobalTFTeam( TF_TEAM_RED );
-	pTeams[ TF_TEAM_BLUE ] = GetGlobalTFTeam( TF_TEAM_BLUE );
-
-	if ( !pTeams[ TF_TEAM_RED ] || !pTeams[ TF_TEAM_BLUE ] )
-		return;
-
 	// Layout the round indicators
 	LayoutPanels( m_vecBlueRoundIndicators, EAlignment::ALIGN_WEST, (GetWide() / 2) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	VisibleCondition( m_vecBlueRoundIndicators, mp_winlimit.GetInt() );
 	LayoutPanels( m_vecRedRoundIndicators, EAlignment::ALIGN_EAST, (GetWide() / 2) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	VisibleCondition( m_vecRedRoundIndicators, mp_winlimit.GetInt() );
 	// Layout the win indicators
 	LayoutPanels( m_vecBlueWinIndicators, EAlignment::ALIGN_WEST, (GetWide() / 2) - m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	VisibleCondition( m_vecBlueWinIndicators, Min( mp_winlimit.GetInt(), pTeams[ TF_TEAM_BLUE ]->m_iScore ) );
 	LayoutPanels( m_vecRedWinIndicators, EAlignment::ALIGN_EAST, (GetWide() / 2) + m_nIndicatorStartOffset, m_nIndicatorPanelStep );
-	VisibleCondition( m_vecRedWinIndicators, Min( mp_winlimit.GetInt(), pTeams[ TF_TEAM_RED ]->m_iScore ) );
 }
 
 void CRoundCounterPanel::OnThink()
@@ -261,6 +250,21 @@ void CRoundCounterPanel::FireGameEvent(IGameEvent * event )
 	}
 }
 
+void CRoundCounterPanel::UpdateRoundLabels()
+{
+	C_TFTeam* pTeams[TF_TEAM_COUNT];
+	pTeams[TF_TEAM_RED] = GetGlobalTFTeam( TF_TEAM_RED );
+	pTeams[TF_TEAM_BLUE] = GetGlobalTFTeam( TF_TEAM_BLUE );
+
+	if ( !pTeams[TF_TEAM_RED] || !pTeams[TF_TEAM_BLUE] )
+		return;
+	
+	VisibleCondition( m_vecBlueRoundIndicators, mp_winlimit.GetInt() );
+	VisibleCondition( m_vecRedRoundIndicators, mp_winlimit.GetInt() );
+	VisibleCondition( m_vecBlueWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_BLUE]->m_iScore ) );
+	VisibleCondition( m_vecRedWinIndicators, Min( mp_winlimit.GetInt(), pTeams[TF_TEAM_RED]->m_iScore ) );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Layout the round panels
 //-----------------------------------------------------------------------------
@@ -276,7 +280,7 @@ void CRoundCounterPanel::LayoutPanels( ImageVector& vecImages, EAlignment eAlign
 		const int nXStartPos = eAlignment == ALIGN_EAST ? nStartPos : nStartPos;
 		const int nStep = ( nMaxWide / mp_winlimit.GetInt() );
 		const int nXOffset = nStep * i;
-		// Step out the panels by the steph width
+		// Step out the panels by the step width
 		int nXPos = eAlignment == ALIGN_EAST ? nXStartPos + nXOffset - ( pPanel->GetWide() / 2 ) + ( nStep / 2 )
 											 : nXStartPos - nXOffset - ( pPanel->GetWide() / 2 ) - ( nStep / 2 );
 		pPanel->SetPos( nXPos, pPanel->GetYPos() );
@@ -321,6 +325,8 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	m_pRedLeaderAvatarBG = new EditablePanel( m_pRedTeamPanel, "RedLeaderAvatarBG" );
 	m_pRedTeamImage = new ImagePanel( m_pRedTeamPanel, "RedTeamImage" );
 	m_pRedTeamName = new CExLabel( m_pRedTeamPanel, "RedTeamLabel", "" );
+
+	m_pCountdownLabel = new CExLabel( this, "CountdownLabel", "" );
 
 	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
 	m_mapAvatarsToImageList.RemoveAll();
@@ -434,6 +440,8 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 
 	m_hPlayerListFont = pScheme->GetFont( "Default", true );
 
+	m_flMatchSummaryShowTime = -1.0f;
+
 	UpdatePlayerList();
 	UpdateTeamInfo();
 }
@@ -524,6 +532,21 @@ void CTFHudMatchStatus::OnThink()
 		}
 	}
 
+	// if we're still showing the match summary doors when the round is starting, then hide.
+	if ( TFGameRules()->State_Get() != GR_STATE_BETWEEN_RNDS && m_flMatchSummaryShowTime >= 0.0f && !TFGameRules()->ShowMatchSummary() && TFGameRules()->GetRoundsPlayed() == 0 )
+	{
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
+		if ( pMatchDesc && pMatchDesc->BUsesPostRoundDoors() )
+		{
+			const bool bMatchSummaryStage = TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && pMatchDesc->BUseMatchSummaryStage();
+			if ( !bMatchSummaryStage )
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_HideMatchWinDoors", false );
+			}
+		}
+		m_flMatchSummaryShowTime = -1.0f;
+	}
+
 	// check for an active timer and turn the time panel on or off if we need to
 	if ( m_pTimePanel )
 	{
@@ -612,7 +635,7 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 	if ( FStrEq("teamplay_round_start", event->GetName() ) )
 	{
 		// Drop the round sign right when the match starts on rounds > 1
-		if ( TFGameRules()->GetRoundsPlayed() > 0 )
+		if ( TFGameRules()->GetRoundsPlayed() > 0 && TFGameRules()->State_Get() == GR_STATE_PREROUND )
 		{
 			ShowRoundSign( TFGameRules()->GetRoundsPlayed() );
 		}
@@ -717,6 +740,13 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 		}
 	}
 
+	// TODO(mcoms): this isn't a great condition to update the round pips, but eh.
+	// the better fix is to change the order of net update entity snapshots and game events,
+	// and that's way easier to do with engine access.
+	// we can also make a conditional refresh but it feels awkward since we need to force slamming the value and keep attempting
+	// until our entity is in sync, and the conditions for that seem fuzzy.
+	m_pRoundCounter->UpdateRoundLabels();
+
 	if ( pSectionString )
 	{
 		SetDialogVariable( "tournamenttimesection", pSectionString );
@@ -753,6 +783,19 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowCountdown", false );
 		}
 		break;
+	case 5:
+		if ( TFGameRules()->GetRoundsPlayed() > 0 )
+		{
+			if ( m_pCountdownLabel && !m_pCountdownLabel->IsVisible() )
+			{
+				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowCountdown_Fast", false );
+			}
+		}
+		else if ( m_pMatchStartModelPanel && m_pMatchStartModelPanel->IsVisible() && m_flMatchSummaryShowTime > 0.0f )
+		{
+			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( GET_HUDELEMENT( CHudTournament ), "HudTournament_MoveTimerDown", false );
+			ShowMatchStartDoors();
+		}
 	}
 }
 
@@ -774,7 +817,9 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		UpdatePlayerList();
 		UpdateTeamInfo();
 
-		if ( m_flMatchSummaryShowTime < 0.0f && m_pMatchStartModelPanel )
+		bool bFromMatchSummary = m_flMatchSummaryShowTime >= 0.0f;
+
+		if ( !bFromMatchSummary && m_pMatchStartModelPanel )
 		{
 			if ( m_pMatchStartModelPanel->m_hModel == NULL )
 			{
@@ -792,7 +837,7 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		}
 		else
 		{
-			if ( m_flMatchSummaryShowTime >= 0.0f )
+			if ( bFromMatchSummary )
 			{
 				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( this, "HudMatchStatus_ShowMatchStartDoors_FromClosed", false );
 				m_flMatchSummaryShowTime = -1.0f;
@@ -848,10 +893,13 @@ void CTFHudMatchStatus::ShowMatchStartDoors()
 		gViewPortInterface->ShowPanel( PANEL_CLASS_RED, false );
 		gViewPortInterface->ShowPanel( PANEL_CLASS_BLUE, false );
 
-		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( pLocalPlayer )
+		if ( !bFromMatchSummary )
 		{
-			pLocalPlayer->EmitSound( pMatchDesc ? pMatchDesc->GetMatchStartSound() : "MatchMaking.RoundStartCasual" );
+			C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+			if ( pLocalPlayer )
+			{
+				pLocalPlayer->EmitSound( pMatchDesc ? pMatchDesc->GetMatchStartSound() : "MatchMaking.RoundStartCasual" );
+			}
 		}
 	}
 }

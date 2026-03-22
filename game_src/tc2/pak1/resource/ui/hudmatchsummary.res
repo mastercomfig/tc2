@@ -11,6 +11,10 @@
 		"zpos"			"20"
 		"visible"		"0"
 
+		"AnimMatchSeriesLabel"				"90"
+		"AnimMatchTimeRemainingTitleLabel"	"140"
+		"AnimMatchTimeRemainingLabel"		"160"
+
 		"AnimBluePlayerListParent"		"p.47"
 		"AnimBlueTeamScore"				"p.46"
 		"AnimBlueTeamScoreDropshadow"	"p.46"
@@ -320,6 +324,23 @@
 					"visible"		"1"
 					"enabled"		"1"
 				}
+				"BlueTeamSeriesReason"
+				{
+					"ControlName"		"CExLabel"
+					"fieldName"		"BlueTeamSeriesReason"
+					"font"			"MatchSummaryStatsAndMedals"
+					"labelText"		""
+					"textAlignment"		"east"
+					"xpos"			"5"
+					"ypos"			"c34.5"
+					"zpos"			"4"
+					"wide"			"p.19"
+					"tall"			"40"
+					"autoResize"	"0"
+					"pinCorner"		"0"
+					"visible"		"0"
+					"enabled"		"1"
+				}
 				"BlueTeamScoreDropshadow"
 				{
 					"ControlName"		"CExLabel"
@@ -619,6 +640,23 @@
 					"autoResize"	"0"
 					"pinCorner"		"0"
 					"visible"		"1"
+					"enabled"		"1"
+				}
+				"RedTeamSeriesReason"
+				{
+					"ControlName"		"CExLabel"
+					"fieldName"		"RedTeamSeriesReason"
+					"font"			"MatchSummaryStatsAndMedals"
+					"labelText"		""
+					"textAlignment"		"west"
+					"xpos"			"r5-p.19"
+					"ypos"			"c34.5"
+					"zpos"			"4"
+					"wide"			"p.19"
+					"tall"			"40"
+					"autoResize"	"0"
+					"pinCorner"		"0"
+					"visible"		"0"
 					"enabled"		"1"
 				}
 				"RedTeamScoreDropshadow"
@@ -1059,16 +1097,50 @@
 				}
 			}
 		}
+		
+		"MatchSeriesLabel"
+		{
+			"ControlName"		"CExLabel"
+			"fieldName"		"MatchSeriesLabel"
+			"font"			"HudFontGiantBold"
+			"labelText"		"%serieslabel%"
+			"textAlignment"		"center"
+			"xpos"			"0"
+			"ypos"			"-90"
+			"zpos"			"100"
+			"wide"			"f0"
+			"tall"			"50"
+			"visible"		"0"
+			"enabled"		"1"
+			"fgcolor"		"TanLight"
+		}
+		
+		"MatchTimeRemainingTitleLabel"
+		{
+			"ControlName"		"CExLabel"
+			"fieldName"		"MatchTimeRemainingTitleLabel"
+			"font"			"MatchSummaryWinner"
+			"labelText"		"#Scoreboard_TimeLeftLabel_Series"
+			"textAlignment"		"center"
+			"xpos"			"0"
+			"ypos"			"-40"
+			"zpos"			"100"
+			"wide"			"f0"
+			"tall"			"20"
+			"visible"		"0"
+			"enabled"		"1"
+			"fgcolor"		"TanLight"
+		}
 
 		"MatchTimeRemainingLabel"
 		{
 			"ControlName"		"CExLabel"
 			"fieldName"		"MatchTimeRemainingLabel"
-			"font"			"MatchSummaryStatsAndMedals"
+			"font"			"MatchSummaryWinner"
 			"labelText"		"%servertimeleft%"
 			"textAlignment"		"center"
 			"xpos"			"0"
-			"ypos"			"r30"
+			"ypos"			"0"
 			"zpos"			"100"
 			"wide"			"f0"
 			"tall"			"20"

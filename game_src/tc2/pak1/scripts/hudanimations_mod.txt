@@ -43,6 +43,8 @@
 //
 //  SetString <panel name> <string varname> <stringvalue> <set time>
 
+//--------------------------------------------------------------------------
+
 event HudMatchStatus_ShowMatchStartDoors_Fast
 {
 	SetVisible	MatchDoors	1	0
@@ -87,19 +89,48 @@ event HudMatchStatus_ShowMatchStartDoors_FromClosed
 	Animate CountdownLabelShadow ypos c-0 Gain 0.75 0 0.4
 
 	SetVisible	HudTournamentBG 0	2
-	RunEventChild MatchDoors PlayDoorOpenAnim 7
+	RunEventChild MatchDoors PlayDoorOpenAnim 2
 
 	RunEvent HudTournament_AnimateTeams_In 0.25
-	RunEvent HudTournament_AnimateTeams_Out 7.70
+	RunEvent HudTournament_AnimateTeams_Out 2.70
 
-	SetVisible MatchDoors	0 9
-	SetVisible CountdownLabel 0 9.9
-	SetVisible CountdownLabelShadow 0 9.9
+	SetVisible MatchDoors	0 4
+	SetVisible CountdownLabel 0 4.9
+	SetVisible CountdownLabelShadow 0 4.9
 
-	RunEvent HudTournament_DoorsCleanup 10
+	RunEvent HudTournament_DoorsCleanup 5
 	
-	SetVisible CountdownBG 1 11
+	SetVisible CountdownBG 1 6
 }
+
+event HudMatchStatus_HideMatchWinDoors
+{
+	RunEventChild MatchDoors PlayDoorOpenAnim 0
+
+	SetVisible MatchDoors			0	2.5
+	SetVisible FrontParticlePanel	0	2.5
+}
+
+event HudMatchSummary_SlideOutPanels
+{
+	Animate BlueTeamPanel xpos -320 Accel 0 0.68
+	Animate RedTeamPanel xpos 320 Accel 0 0.68
+}
+
+event HudMatchSummary_SlideInOutPanels
+{
+	RunEvent HudMatchSummary_SlideInPanels 0
+	RunEvent HudMatchSummary_SlideOutPanels 6
+}
+
+//--------------------------------------------------------------------------
+
+event CompetitiveGame_LowerChatWindow
+{
+	Animate HudChat ypos rs0.5 Accel 0 0
+}
+
+//--------------------------------------------------------------------------
 
 event HudTournament_MoveTimerDown
 {
@@ -133,10 +164,18 @@ event HudMatchStatus_ShowCountdown
 	SetVisible CountdownLabelShadow 0 9.9
 }
 
-event HudMatchStatus_HideMatchWinDoors
+event HudMatchStatus_ShowCountdown_Fast
 {
-	RunEventChild MatchDoors PlayDoorOpenAnim 0
-
-	SetVisible MatchDoors	0 2.5
-	SetVisible	FrontParticlePanel	0	2.5
+	SetVisible CountdownSectionLabel 1 0
+	SetVisible CountdownLabel 1 0
+	SetVisible CountdownLabelShadow 1 0
+	Animate CountdownLabel ypos 150 Linear 0 0
+	Animate CountdownLabelShadow ypos 150 Linear 0 0
+	Animate CountdownLabel ypos c-3 Gain 0.75 0 0.4
+	Animate CountdownLabelShadow ypos c-0 Gain 0.75 0 0.4
+	SetVisible CountdownSectionLabel 0 4.9
+	SetVisible CountdownLabel 0 4.9
+	SetVisible CountdownLabelShadow 0 4.9
 }
+
+//--------------------------------------------------------------------------

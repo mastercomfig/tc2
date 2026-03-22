@@ -1774,8 +1774,8 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 				if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) )
 				{
 					// we do a countdown after the first round, so we need some extra pre-round time
-					flTransitionTime += TOURNAMENT_NOCANCEL_TIME;
-					m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
+					flTransitionTime += TOURNAMENT_NOCANCEL_TIME - 5.0f;
+					m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME - 5.0f;
 				}
 			}
 		}
@@ -2227,7 +2227,8 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 	SendWinPanelInfo( bGameOver );
 
 #ifdef TF_DLL
-	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && bGameOver )
+	// TODO(mcoms): mini matches?
+	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) && bGameOver && !TFGameRules()->IsPlayingMultiSeriesIntermission() )
 	{
 		TFGameRules()->StopCompetitiveMatch( CMsgGC_Match_Result_Status_MATCH_SUCCEEDED );
 	}
@@ -2436,7 +2437,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				float flPostMatchPeriod = ( pMatchDesc || TFGameRules()->IsEmulatingMatch() ) ? GetPostMatchPeriod() : 10.0f;
 				if ( TFGameRules()->IsPlayingMultiSeriesIntermission() )
 				{
-					flPostMatchPeriod = 10.0f;
+					flPostMatchPeriod = 8.0f;
 				}
 
 				bool bWillLeaveMap = false;

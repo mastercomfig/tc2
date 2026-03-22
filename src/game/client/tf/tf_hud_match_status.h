@@ -40,6 +40,8 @@ public:
 
 	virtual void FireGameEvent(IGameEvent * event) OVERRIDE;
 
+	void UpdateRoundLabels();
+
 private:
 
 	void CreateRoundPanels( ImageVector& vecImages, const char* pszName, KeyValues* pKVSettings );
@@ -123,7 +125,9 @@ private:
 	CAvatarImagePanel			*m_pBlueLeaderAvatarImage;
 	EditablePanel				*m_pBlueLeaderAvatarBG;
 	vgui::ImagePanel			*m_pBlueTeamImage;
-	CExLabel					*m_pBlueTeamName;
+	CExLabel*                    m_pBlueTeamName;
+	
+	CExLabel*                    m_pCountdownLabel;
 
 	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution
 	CPanelAnimationVarAliasType( int, m_iSpacerWidth, "spacer", "5", "proportional_int" );

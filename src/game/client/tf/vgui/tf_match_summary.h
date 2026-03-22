@@ -154,6 +154,8 @@ private:
 	EditablePanel				*m_pRedTeamSeriesBG;
 	CExLabel					*m_pBlueTeamSeries;
 	CExLabel					*m_pRedTeamSeries;
+	CExLabel					*m_pBlueTeamSeriesReason;
+	CExLabel					*m_pRedTeamSeriesReason;
 	EditablePanel				*m_pBlueMedalsPanel;
 	EditablePanel				*m_pRedMedalsPanel;
 	vgui::ImagePanel			*m_pRedTeamImage;
@@ -165,6 +167,8 @@ private:
 	EditablePanel				*m_pStatsLabelPanel;
 	CExLabel					*m_pStatsAndMedals;
 	CExLabel					*m_pStatsAndMedalsShadow;
+	CExLabel					*m_pMatchSeriesLabel;
+	CExLabel                    *m_pMatchTimeRemainingTitleLabel;
 	CExLabel					*m_pMatchTimeRemainingLabel;
 	CExLabel					*m_pBlueTeamName;
 	CExLabel					*m_pRedTeamName;
@@ -204,6 +208,10 @@ private:
 	CPanelAnimationVar( Color, m_clrGoldMedal, "GoldMedalText", "214 186 24 255" );
 	CPanelAnimationVar( Color, m_clrSilverMedal, "SilverMedalText", "222 218 222 255" );
 	CPanelAnimationVar( Color, m_clrBronzeMedal, "BronzeMedalText", "214 125 57 255" );
+	
+	CPanelAnimationVarAliasType( int, m_iAnimMatchSeriesLabel, "AnimMatchSeriesLabel", "0", "proportional_width" );
+	CPanelAnimationVarAliasType( int, m_iAnimMatchTimeRemainingTitleLabel, "AnimMatchTimeRemainingTitleLabel", "0", "proportional_width" );
+	CPanelAnimationVarAliasType( int, m_iAnimMatchTimeRemainingLabel, "AnimMatchTimeRemainingLabel", "0", "proportional_width" );
 
 	CPanelAnimationVarAliasType( int, m_iAnimBluePlayerListParent, "AnimBluePlayerListParent", "0", "proportional_width" );
 	CPanelAnimationVarAliasType( int, m_iAnimBlueTeamScore, "AnimBlueTeamScore", "0", "proportional_width" );
