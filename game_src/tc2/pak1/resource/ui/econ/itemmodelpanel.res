@@ -93,7 +93,7 @@
 			"visible"		"1"
 			"enabled"		"1"
 			"labelText"		"%itemname%"
-			"textAlignment"	"south"
+			"textAlignment"	"center"
 			"fgcolor"		"235 226 202 255"
 			"centerwrap"	"1"
 		}
