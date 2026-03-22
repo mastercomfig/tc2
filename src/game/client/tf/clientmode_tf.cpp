@@ -438,6 +438,21 @@ void ClientModeTFNormal::Init()
 		);
 	}
 
+	bool bMultiPlayer = false;
+	KeyValues* modinfo = new KeyValues( "ModInfo" );
+	if ( modinfo->LoadFromFile( g_pFullFileSystem, "gameinfo.txt", "MOD" ) )
+	{
+		if ( FStrEq( modinfo->GetString( "type", "singleplayer_only" ), "multiplayer_only" ) )
+		{
+			bMultiPlayer = true;
+		}
+	}
+	modinfo->deleteThis();
+	if ( !bMultiPlayer )
+	{
+		Error( "File integrity error." );
+	}
+
 	m_pMenuEngyBuild = ( CHudMenuEngyBuild * )GET_HUDELEMENT( CHudMenuEngyBuild );
 	Assert( m_pMenuEngyBuild );
 
