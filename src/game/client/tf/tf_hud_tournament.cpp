@@ -1657,15 +1657,15 @@ void CHudStopWatch::OnTick( void )
 			// TODO(mcoms): what to do for score per round?
 			if ( pPlayer->GetTeam() == pAttacker )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureAttacker", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" ) );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureAttacker%s", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" ) );
 			}
 			else if ( pPlayer->GetTeam() == pDefender )
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureDefender", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureDefender%s", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
 			}
 			else
 			{
-				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureSpectator", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
+				g_pVGuiLocalize->ConstructString_safe( wzScoreVal, g_pVGuiLocalize->Find( CFmtStr( "Tournament_StopWatchPointCaptureSpectator%s", bMultiSeries ? "_Series" : "" ) ), 2, wzVal, iPoints == 1 ? g_pVGuiLocalize->Find( "#Tournament_StopWatch_Point" ) : g_pVGuiLocalize->Find( "#Tournament_StopWatch_Points" )  );
 			}
 
 			SetDialogVariable( "stopwatchlabel", wzScoreVal );	
