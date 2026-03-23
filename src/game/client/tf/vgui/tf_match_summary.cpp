@@ -1484,10 +1484,10 @@ void CTFMatchSummary::OnTick()
 		
 		if ( bMultiSeries )
 		{
-			int nRedPoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_DEFENDERS );
-			int nBluePoints = TFGameRules()->GetSeriesPoints( TF_GC_TEAM_INVADERS );
-			int nPrevRed = TFGameRules()->GetPrevSeriesScore( TF_GC_TEAM_DEFENDERS );
-			int nPrevBlue = TFGameRules()->GetPrevSeriesScore( TF_GC_TEAM_INVADERS );
+			int nRedPoints = TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) );
+			int nBluePoints = TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) );
+			int nPrevRed = TFGameRules()->GetPrevSeriesScore( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) );
+			int nPrevBlue = TFGameRules()->GetPrevSeriesScore( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) );
 			
 			int nRedDelta = nRedPoints - nPrevRed;
 			int nBlueDelta = nBluePoints - nPrevBlue;
