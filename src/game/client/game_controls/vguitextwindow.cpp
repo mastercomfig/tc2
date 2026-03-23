@@ -102,7 +102,8 @@ CTextWindow::CTextWindow(IViewPort *pViewPort) : Frame(NULL, PANEL_INFO	)
 	SetTitleBarVisible( false );
 
 	m_pTextMessage = new TextEntry( this, "TextMessage" );
-	m_pHTMLMessage = new CMOTDHTML( this,"HTMLMessage" );
+	//m_pHTMLMessage = new CMOTDHTML( this,"HTMLMessage" );
+	m_pHTMLMessage = NULL;
 	m_pTitleLabel  = new Label( this, "MessageTitle", "Message Title" );
 	m_pOK		   = new Button(this, "ok", "#PropertyDialog_OK");
 
@@ -168,7 +169,7 @@ void CTextWindow::ShowURL( const char *URL, bool bAllowUserToDisable )
 	#endif
 
 	ClientModeShared *mode = ( ClientModeShared * )GetClientModeNormal();
-	if ( ( bAllowUserToDisable && cl_disablehtmlmotd.GetBool() ) || !mode->IsHTMLInfoPanelAllowed() )
+	if ( ( bAllowUserToDisable && cl_disablehtmlmotd.GetBool() ) || !mode->IsHTMLInfoPanelAllowed() || !m_pHTMLMessage )
 	{
 		Warning( "Blocking HTML info panel '%s'; Using plaintext instead.\n", URL );
 
@@ -182,7 +183,10 @@ void CTextWindow::ShowURL( const char *URL, bool bAllowUserToDisable )
 				const char *data = (const char *)g_pStringTableInfoPanel->GetStringUserData( index, &length );
 				if ( data && data[0] )
 				{
-					m_pHTMLMessage->SetVisible( false );
+					if ( m_pHTMLMessage )
+					{
+						m_pHTMLMessage->SetVisible( false );
+					}
 					ShowText( data );
 				}
 			}
