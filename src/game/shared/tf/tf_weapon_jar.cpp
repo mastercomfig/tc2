@@ -386,8 +386,14 @@ void JarExplode( int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeap
 			if ( !pPlayer->IsAlive() )
 				continue;
 
-			if ( (vContactPoint - pPlayer->WorldSpaceCenter()).LengthSqr() > flCheckRadius * flCheckRadius )
-				continue;
+			CCollisionProperty *pCollisionProp = pPlayer->CollisionProp();
+			if ( pCollisionProp )
+			{
+				Vector vecNearest;
+				pCollisionProp->CalcNearestPoint( vContactPoint, &vecNearest );
+				if ( vContactPoint.DistToSqr( vecNearest ) > flCheckRadius * flCheckRadius )
+					continue;
+			}
 
 			// Do a quick trace to see if there's any geometry in the way.
 			// Pee isn't stopped by other entities. Splishy splashy.
