@@ -268,7 +268,7 @@ void C_BaseCombatWeapon::DrawCrosshair()
 	// Find out if this weapon's auto-aimed onto a target
 	bool bOnTarget = ( m_iState == WEAPON_IS_ONTARGET );
 	
-	if ( player->GetFOV() >= 90 )
+	if ( player->GetFOV() >= 75 )
 	{ 
 		// normal crosshairs
 		if ( bOnTarget && GetWpnData().iconAutoaim )
