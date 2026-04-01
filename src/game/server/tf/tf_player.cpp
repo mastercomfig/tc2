@@ -4178,7 +4178,7 @@ void CTFPlayer::Spawn()
 	m_Shared.ClearDamageEvents();
 	m_AchievementData.ClearHistories();
 
-	m_flLastDamageTime = 0.f;
+	m_flLastDamageTime = 0.0f;
 	m_flMvMLastDamageTime = 0.f;
 	m_flLastDamageDoneTime = 0.f;
 	m_iMaxSentryKills = 0;
@@ -4510,6 +4510,8 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 
 	if ( bRefillHealthAndAmmo )
 	{
+		m_flLastDamageTime = 0.0f;
+
 		if ( m_Shared.InCond( TF_COND_BURNING ) )
 		{
 			m_Shared.RemoveCond( TF_COND_BURNING );
