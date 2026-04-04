@@ -6867,7 +6867,7 @@ ConVar tf_deflect_minicrits("tf_deflect_minicrits", "1", FCVAR_REPLICATED | FCVA
 //-----------------------------------------------------------------------------
 bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity *pVictimBaseEntity, bool bAllowDamage )
 {
-	info.SetDamageForForceCalc( info.GetDamage() );
+	if (!info.GetDamageForForceCalc()) info.SetDamageForForceCalc( info.GetDamage() );
 	bool bDebug = tf_debug_damage.GetBool();
 
 	CTFPlayer *pVictim = ToTFPlayer( pVictimBaseEntity );
