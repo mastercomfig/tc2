@@ -261,11 +261,6 @@ void CRoundCounterPanel::FireGameEvent(IGameEvent * event )
 	}
 }
 
-void CRoundCounterPanel::UpdateRoundLabels()
-{
-	// TODO(mcoms): remove this
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Layout the round panels
 //-----------------------------------------------------------------------------

@@ -3759,7 +3759,7 @@ public:
 	CGameItemDefinition_EconItemInterfaceWrapper( const CEconItemDefinition *pEconItemDefinition, entityquality_t eQuality, uint32 nPaintkitDefIndex )
 		: m_pEconItemDefinition( pEconItemDefinition )
 		, m_eQuality( eQuality )
-		, m_nPaintkitDefIndex(nPaintkitDefIndex)
+		, m_nPaintkitDefIndex( nPaintkitDefIndex )
 	{
 		Assert( m_pEconItemDefinition );
 	}
@@ -3789,12 +3789,12 @@ public:
 
 		m_pEconItemDefinition->IterateAttributes( pIterator );
 
-		if (m_nPaintkitDefIndex != 0)
+		if ( m_nPaintkitDefIndex != 0 )
 		{
 			static CSchemaAttributeDefHandle pAttrDef_PaintKitProtoDefIndex( "paintkit_proto_def_index" );
-			if (pAttrDef_PaintKitProtoDefIndex)
+			if ( pAttrDef_PaintKitProtoDefIndex )
 			{
-				pIterator->OnIterateAttributeValue(pAttrDef_PaintKitProtoDefIndex, (attrib_value_t)m_nPaintkitDefIndex);
+				pIterator->OnIterateAttributeValue( pAttrDef_PaintKitProtoDefIndex, (attrib_value_t)m_nPaintkitDefIndex );
 			}
 		}
 	}

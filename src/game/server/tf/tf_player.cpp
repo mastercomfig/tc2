@@ -6011,7 +6011,7 @@ void CTFPlayer::ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData )
 //-----------------------------------------------------------------------------
 // Purpose: Create and give the named item to the player. Then return it.
 //-----------------------------------------------------------------------------
-CBaseEntity* CTFPlayer::GiveNamedItem( const char*pszClassName, int iSubType, const CEconItemView* pScriptItem, bool bForce )
+CBaseEntity *CTFPlayer::GiveNamedItem( const char *pszClassName, int iSubType, const CEconItemView* pScriptItem, bool bForce )
 {
 	// We need to support players putting any shotgun into a shotgun slot, pistol into a pistol slot, etc.
 	// For legacy reasons, different classes actually spawn different entities for their shotguns/pistols/etc.

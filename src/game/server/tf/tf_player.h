@@ -740,7 +740,7 @@ public:
 	void				ManageRegularWeapons( TFPlayerClassData_t *pData );
 	void				ManageRegularWeaponsLegacy( TFPlayerClassData_t *pData );	// Older, pre-inventory method of managing regular weapons
 	void				ManageBuilderWeapons( TFPlayerClassData_t *pData );
-	virtual CBaseEntity* GiveNamedItem( const char*pszClassName, int iSubType = 0, const CEconItemView* pScriptItem = NULL, bool bForce = false );
+	virtual CBaseEntity *GiveNamedItem( const char *pszClassName, int iSubType = 0, const CEconItemView* pScriptItem = NULL, bool bForce = false );
 	void				PostInventoryApplication( void );
 	bool				ItemIsAllowed( CEconItemView *pItem );
 	void				RemovePlayerAttributes( bool bSetBonuses );

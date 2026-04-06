@@ -40,8 +40,6 @@ public:
 
 	virtual void FireGameEvent(IGameEvent * event) OVERRIDE;
 
-	void UpdateRoundLabels();
-
 private:
 
 	void CreateRoundPanels( ImageVector& vecImages, const char* pszName, KeyValues* pKVSettings );

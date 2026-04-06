@@ -27,7 +27,7 @@ public:
 	CItemGeneration( void );
 
 	// Generate a random item matching the specified criteria
-	CBaseEntity* GenerateRandomItem( CItemSelectionCriteria* pCriteria, const Vector& vecOrigin, const QAngle& vecAngles, const char* pszOverrideClassName = NULL, int iClass = TF_CLASS_UNDEFINED );
+	CBaseEntity *GenerateRandomItem( CItemSelectionCriteria *pCriteria, const Vector &vecOrigin, const QAngle &vecAngles, const char *pszOverrideClassName = NULL, int iClass = TF_CLASS_UNDEFINED );
 
 	// Generate a random item matching the specified definition index
 	CBaseEntity *GenerateItemFromDefIndex( int iDefIndex, const Vector &vecOrigin, const QAngle &vecAngles );
