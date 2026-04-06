@@ -159,8 +159,6 @@ public:
 protected:
 	virtual void ApplySchemeSettings( IScheme *pScheme );
 
-	vgui::Menu *m_pContextMenu;
-
 private:
 	STEAM_CALLBACK( HTML, BrowserNeedsPaint, HTML_NeedsPaint_t, m_NeedsPaint );
 	STEAM_CALLBACK( HTML, BrowserStartRequest, HTML_StartRequest_t, m_StartRequest );
@@ -196,6 +194,7 @@ private:
 	MESSAGE_FUNC_PTR( OnEditNewLine, "TextNewLine", panel );
 	MESSAGE_FUNC_INT( DismissJSDialog, "DismissJSDialog", result );
 
+	vgui::Menu *m_pContextMenu;
 	vgui::Panel *m_pInteriorPanel;
 	vgui::ScrollBar *_hbar,*_vbar;
 	vgui::DHANDLE<vgui::FileOpenDialog> m_hFileOpenDialog;
