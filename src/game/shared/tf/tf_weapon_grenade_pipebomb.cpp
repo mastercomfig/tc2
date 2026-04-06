@@ -679,6 +679,8 @@ bool CTFGrenadePipebombProjectile::DetonateStickies()
 
 	int iStickiesRemoved = 0;
 
+	// TODO(mcoms): should filter out by radius, also add explosive tolerance
+
 	trace_t tr;
 	for ( int i = 0; i < count; i++ )
 	{
@@ -1365,7 +1367,12 @@ public:
 		if ( pGrenade )
 		{
 			const bool bHighlighted = pGrenade->IsHighlighted();
-			if ( bHighlighted || ( !pGrenade->m_bDefensiveBomb && pGrenade->HasStickyEffects() ) )
+			bool bArmedHighlight = false;
+			if ( !bHighlighted && !pGrenade->m_bDefensiveBomb && pGrenade->HasStickyEffects() )
+			{
+				bArmedHighlight = ( ( gpGlobals->curtime - pGrenade->m_flCreationTime ) > pGrenade->GetLiveTime() );
+			}
+			if ( bHighlighted || bArmedHighlight )
 			{
 				int iTeamNumber = pGrenade->GetTeamNumber();
 				if ( iTeamNumber == TF_TEAM_RED )
