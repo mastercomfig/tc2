@@ -18224,17 +18224,36 @@ void CTFGameRules::HandleTeamShuffle( void )
 	{
 		double nTeamScoreRed = 0.0;
 		double nTeamScoreBlue = 0.0;
+
+		int iNumHumansRed = 0;
+		int iNumHumansBlue = 0;
 		
 		FOR_EACH_VEC( vecRed, i )
 		{
 			if ( vecRed[i] )
+			{
 				nTeamScoreRed += TFAutoBalance()->GetPlayerAutoBalanceScore( vecRed[i] );
+				if ( !vecRed[i]->IsBot() )
+				{
+					iNumHumansRed++;
+				}
+			}
 		}
 		FOR_EACH_VEC( vecBlue, i )
 		{
 			if ( vecBlue[i] )
+			{
 				nTeamScoreBlue += TFAutoBalance()->GetPlayerAutoBalanceScore( vecBlue[i] );
+				if ( !vecBlue[i]->IsBot() )
+				{
+					iNumHumansBlue++;
+				}
+			}
 		}
+
+		// one human left, no more swaps.
+		if ( iNumHumansRed == 1 || iNumHumansBlue == 1 )
+			break;
 
 		double nDelta = fabs( nTeamScoreRed - nTeamScoreBlue );
 		// If perfectly balanced or delta is very small, break early
@@ -18305,9 +18324,6 @@ void CTFGameRules::HandleTeamShuffle( void )
 			// Force changes
 			pBestDominatingTarget->ForceChangeTeam( nLosingTeam );
 			pBestLosingTarget->ForceChangeTeam( nDominatingTeam );
-
-			// Tell people that we've switched these players
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "#game_teamshuffle_players_swapped", pBestDominatingTarget->GetPlayerName(), pBestLosingTarget->GetPlayerName() );
 			
 			// Move them in local vectors so the next iteration counts them on their new team
 			vecDominating.Remove( iBestDomIndex );
@@ -18326,6 +18342,12 @@ void CTFGameRules::HandleTeamShuffle( void )
 		{
 			break; // No valid swaps found
 		}
+	}
+
+	if ( nSwapsCompleted > 0 )
+	{
+		// Tell people that we've shuffled
+		UTIL_ClientPrintAll( HUD_PRINTTALK, "#game_teamshuffle" );
 	}
 
 	// scrambleteams_auto tracking
