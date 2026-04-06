@@ -14,7 +14,6 @@
 #include <vgui_controls/EditablePanel.h>
 #include "vgui_controls/HTML.h"
 #include <string>
-#include "interactivehtml.h"
 
 using namespace vgui;
 
@@ -42,7 +41,7 @@ private:
     bool m_bLoadOnStart;
     std::string m_szPath;
 
-    CInteractiveHTML* m_pHTML;
+    HTML* m_pHTML;
 };
 
 #endif	// INTERACTIVEWEBPANEL_H

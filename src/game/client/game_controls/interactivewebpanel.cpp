@@ -22,7 +22,7 @@ CInteractiveWebPanel::CInteractiveWebPanel( vgui::Panel *pParent, const char *pN
     m_bInited = false;
 	m_bLoadOnStart = bLoadOnStart;
 
-	m_pHTML = new CInteractiveHTML(this, "InteractiveWebHTML", bDynamic, false );
+	m_pHTML = new HTML( this, "InteractiveWebHTML", bDynamic, false );
 }
 
 //-----------------------------------------------------------------------------
