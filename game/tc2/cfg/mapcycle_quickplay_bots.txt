@@ -28,7 +28,6 @@ plr_bananabay
 koth_lazarus
 koth_brazil
 pl_pier
-pl_wutville_event
 pd_snowville_event
 koth_cascade
 pl_breadspace
