@@ -1774,8 +1774,16 @@ void CTeamplayRoundBasedRules::State_Enter_PREROUND( void )
 				if ( ( TFGameRules()->GetRoundsPlayed() > 0 ) )
 				{
 					// we do a countdown after the first round, so we need some extra pre-round time
-					flTransitionTime += TOURNAMENT_NOCANCEL_TIME - 5.0f;
-					m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME - 5.0f;
+					if ( TFGameRules()->IsCompetitiveGame() )
+					{
+						flTransitionTime += TOURNAMENT_NOCANCEL_TIME;
+						m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME;
+					}
+					else
+					{
+						flTransitionTime += TOURNAMENT_NOCANCEL_TIME - 5.0f;
+						m_flCountdownTime = gpGlobals->curtime + TOURNAMENT_NOCANCEL_TIME - 5.0f;
+					}
 				}
 			}
 		}
