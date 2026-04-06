@@ -168,6 +168,7 @@ private:
 	CExLabel					*m_pStatsAndMedals;
 	CExLabel					*m_pStatsAndMedalsShadow;
 	CExLabel					*m_pMatchSeriesLabel;
+	CExLabel					*m_pMatchNextSeriesLabel;
 	CExLabel                    *m_pMatchTimeRemainingTitleLabel;
 	CExLabel					*m_pMatchTimeRemainingLabel;
 	CExLabel					*m_pBlueTeamName;
@@ -210,6 +211,7 @@ private:
 	CPanelAnimationVar( Color, m_clrBronzeMedal, "BronzeMedalText", "214 125 57 255" );
 	
 	CPanelAnimationVarAliasType( int, m_iAnimMatchSeriesLabel, "AnimMatchSeriesLabel", "0", "proportional_width" );
+	CPanelAnimationVarAliasType( int, m_iAnimMatchNextSeriesLabel, "AnimMatchNextSeriesLabel", "0", "proportional_width" );
 	CPanelAnimationVarAliasType( int, m_iAnimMatchTimeRemainingTitleLabel, "AnimMatchTimeRemainingTitleLabel", "0", "proportional_width" );
 	CPanelAnimationVarAliasType( int, m_iAnimMatchTimeRemainingLabel, "AnimMatchTimeRemainingLabel", "0", "proportional_width" );
 

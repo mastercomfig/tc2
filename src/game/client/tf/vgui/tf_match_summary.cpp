@@ -142,6 +142,7 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	m_pMVPStat4Label = new CExLabel(m_pMVPPanel, "MVPStat4Label", "");
 
 	m_pMatchSeriesLabel = new CExLabel( m_pMainStatsContainer, "MatchSeriesLabel", "" );
+	m_pMatchNextSeriesLabel = new CExLabel( m_pMainStatsContainer, "MatchNextSeriesLabel", "" );
 	m_pMatchTimeRemainingTitleLabel = new CExLabel( m_pMainStatsContainer, "MatchTimeRemainingTitleLabel", "" );
 	m_pMatchTimeRemainingLabel = new CExLabel( m_pMainStatsContainer, "MatchTimeRemainingLabel", "" );
 
@@ -1031,7 +1032,7 @@ void CTFMatchSummary::UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &pBadgePanel
 //-----------------------------------------------------------------------------
 void CTFMatchSummary::UpdateMatchTimeRemaining()
 {
-	if ( !m_pMatchSeriesLabel || !m_pMatchTimeRemainingTitleLabel || !m_pMatchTimeRemainingLabel )
+	if ( !m_pMatchSeriesLabel || !m_pMatchNextSeriesLabel || !m_pMatchTimeRemainingTitleLabel || !m_pMatchTimeRemainingLabel )
 	{
 		return;
 	}
@@ -1039,11 +1040,13 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	if ( !TFGameRules() || !TFGameRules()->IsPlayingMultiSeriesIntermission() )
 	{
 		m_pMatchSeriesLabel->SetVisible( false );
+		m_pMatchNextSeriesLabel->SetVisible( false );
 		m_pMatchTimeRemainingTitleLabel->SetVisible( false );
 		m_pMatchTimeRemainingLabel->SetVisible( false );
 		return;
 	}
 	m_pMatchSeriesLabel->SetVisible( true );
+	m_pMatchNextSeriesLabel->SetVisible( true );
 	m_pMatchTimeRemainingTitleLabel->SetVisible( true );
 	m_pMatchTimeRemainingLabel->SetVisible( true );
 	
@@ -1060,7 +1063,14 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	wchar_t wszSeries[128];
 	g_pVGuiLocalize->ConstructString_safe( wszSeries, g_pVGuiLocalize->Find( "TF_Series_TitleCount" ), 1, wszSeriesNum );
 
+	wchar_t wszNextSeriesTime[16];
+	swprintf( wszNextSeriesTime, ARRAYSIZE( wszNextSeriesTime ), L"%d", Ceil2Int( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) );
+
+	wchar_t wszNextSeries[128];
+	g_pVGuiLocalize->ConstructString_safe( wszNextSeries, g_pVGuiLocalize->Find( "TF_Series_NextIn" ), 1, wszNextSeriesTime );
+
 	m_pMainStatsContainer->SetDialogVariable( "serieslabel", wszSeries );
+	m_pMainStatsContainer->SetDialogVariable( "nextserieslabel", wszNextSeries );
 
 	if ( iTimeLeft == 0 )
 	{
@@ -1643,6 +1653,10 @@ void CTFMatchSummary::OnTick()
 				if ( m_pMatchSeriesLabel )
 				{
 					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pMatchSeriesLabel, "ypos", m_iAnimMatchSeriesLabel, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
+				}
+				if ( m_pMatchNextSeriesLabel )
+				{
+					g_pClientMode->GetViewportAnimationController()->RunAnimationCommand( m_pMatchNextSeriesLabel, "ypos", m_iAnimMatchNextSeriesLabel, 0.0, 0.1, vgui::AnimationController::INTERPOLATOR_ACCEL );
 				}
 				if ( m_pMatchTimeRemainingTitleLabel )
 				{

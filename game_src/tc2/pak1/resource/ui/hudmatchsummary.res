@@ -14,6 +14,7 @@
 		"AnimMatchSeriesLabel"				"90"
 		"AnimMatchTimeRemainingTitleLabel"	"140"
 		"AnimMatchTimeRemainingLabel"		"160"
+		"AnimMatchNextSeriesLabel"			"r60"
 
 		"AnimBluePlayerListParent"		"p.47"
 		"AnimBlueTeamScore"				"p.46"
@@ -1110,6 +1111,23 @@
 			"zpos"			"100"
 			"wide"			"f0"
 			"tall"			"50"
+			"visible"		"0"
+			"enabled"		"1"
+			"fgcolor"		"TanLight"
+		}
+		
+		"MatchNextSeriesLabel"
+		{
+			"ControlName"		"CExLabel"
+			"fieldName"		"MatchNextSeriesLabel"
+			"font"			"MatchSummaryWinner"
+			"labelText"		"%nextserieslabel%"
+			"textAlignment"		"center"
+			"xpos"			"0"
+			"ypos"			"r-20"
+			"zpos"			"100"
+			"wide"			"f0"
+			"tall"			"20"
 			"visible"		"0"
 			"enabled"		"1"
 			"fgcolor"		"TanLight"
