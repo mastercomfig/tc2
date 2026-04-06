@@ -578,7 +578,7 @@ ActionResult< CTFBot >	CTFBotMedicHeal::Update( CTFBot *me, float interval )
 		if( medigun->GetMedigunType() == MEDIGUN_RESIST )
 		{
 			const bool bHasAnyPreference = ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BULLETS ) ) || ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BLAST ) ) || ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_FIRE ) );
-			const int iRandomSwitches = TFGameRules()->IsMannVsMachineMode() ? 0 : Floor2Int( me->TransientlyConsistentRandomValue( 5.0f ) * 3.0f );
+			const int iRandomSwitches = TFGameRules()->IsMannVsMachineMode() || bHasAnyPreference ? 0 : Floor2Int( me->TransientlyConsistentRandomValue( 5.0f ) * 2.0f );
 			int iSwitches = 0;
 			// If I'm a Vaccinnator medic and am told to prefer a certain type of resist, then cycle to that resist
 			while( ( me->HasAttribute( CTFBot::PREFER_VACCINATOR_BULLETS )	&& medigun->GetResistType() != MEDIGUN_BULLET_RESIST )
