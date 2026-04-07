@@ -1604,8 +1604,6 @@ void CTFPlayerShared::SyncConditions( int nPreviousConditions, int nNewCondition
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::RemoveAllCond()
 {
-	m_ConditionList.RemoveAll();
-
 	int i;
 	for ( i=0;i<TF_COND_LAST;i++ )
 	{
@@ -1614,6 +1612,8 @@ void CTFPlayerShared::RemoveAllCond()
 			RemoveCond( (ETFCond)i );
 		}
 	}
+
+	m_ConditionList.RemoveAll();
 
 #ifdef GAME_DLL
 	// hack for now
@@ -7763,6 +7763,11 @@ void CTFPlayerShared::UpdateCritBoostEffect( ECritBoostUpdateType eUpdateType )
 	if ( !m_pOuter->IsLocalPlayer() )
 	{
 		bShouldDisplayCritBoostEffect &= !InCond( TF_COND_DISGUISED );
+	}
+
+	if ( m_pOuter->IsDormant() )
+	{
+		bShouldDisplayCritBoostEffect = false;
 	}
 
 	// Remove our current crit-boosted effect if we're forcing a refresh (in which case we'll

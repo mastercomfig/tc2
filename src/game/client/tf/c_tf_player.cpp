@@ -4436,6 +4436,8 @@ void C_TFPlayer::SetDormant( bool bDormant )
 
 	// Deliberately skip base combat weapon
 	C_BaseEntity::SetDormant( bDormant );
+
+	m_Shared.UpdateCritBoostEffect();
 }
 
 //-----------------------------------------------------------------------------
