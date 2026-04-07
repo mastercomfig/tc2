@@ -16,13 +16,37 @@
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+struct CCrosshairElement
+{
+	CCrosshairElement();
+	~CCrosshairElement();
+
+	void Init();
+	void Shutdown();
+	void Update( const char* szTextureName );
+	void Draw( int x, int y, float flScale, Color color, int iGap = 0 );
+	bool HasCrosshair() { return m_szTextureName[0] != '\0'; }
+
+	// texture ID
+	int m_iTextureID;
+	// name of the current crosshair
+	char m_szTextureName[256];
+	IVguiMatInfo* m_pMaterial;
+	
+	IVguiMatInfoVar* m_pFrameVar;
+	int m_nNumFrames;
+	int m_nFrame;
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 class CHudTFCrosshair : public CHudCrosshair
 {
 public:
 	DECLARE_CLASS_SIMPLE( CHudTFCrosshair, CHudCrosshair );
 
 	CHudTFCrosshair( const char *name );
-	virtual ~CHudTFCrosshair( void );
 
 	virtual void Init() OVERRIDE;
 	virtual void LevelShutdown( void ) OVERRIDE;
@@ -34,19 +58,14 @@ protected:
 	void HandleDamageEvent(CTFPlayer* pAttacker, CBaseCombatCharacter* pVictim, int iDamage, int iHealth);
 
 private:
-	int					m_iCrosshairTextureID;
-	IVguiMatInfo		*m_pCrosshairMaterial;
-	IVguiMatInfoVar		*m_pFrameVar;
-	int					m_nNumFrames;
-	int					m_nPrevFrame;
+	CCrosshairElement m_Crosshair;
+	CCrosshairElement m_DmgCrosshair;
+	CCrosshairElement m_StickbombViewCrosshair;
 
-	int					m_iDmgCrosshairTextureID;
-	IVguiMatInfo*		m_pDmgCrosshairMaterial;
 	int					m_iDamaged;
 	bool				m_bKill;
 	float				m_flDamageOffTime;
 
-	char				m_szPreviousCrosshair[256];	// name of the current crosshair
 	float				m_flTimeToHideUntil;
 };
 
