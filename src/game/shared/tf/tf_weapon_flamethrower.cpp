@@ -1691,25 +1691,48 @@ bool CTFFlameThrower::DeflectPlayer( CTFPlayer *pTarget, CTFPlayer *pOwner, Vect
 			VectorNormalize( vecToTarget );
 		}
 
-		float flAirblastConeScale = 1.f;
-		CALL_ATTRIB_HOOK_FLOAT( flAirblastConeScale, mult_airblast_cone_scale );
+		bool bIsPointBlankHit = false;
+		Vector vecOwnerPos = pOwner->GetAbsOrigin();
+		Vector vecTargetPos = pTarget->GetAbsOrigin();
+		
+		// Flatten to XY plane
+		Vector vecToTarget2D = vecTargetPos - vecOwnerPos;
+		vecToTarget2D.z = 0.0f; 
+		float flDist2D = VectorNormalize( vecToTarget2D );
 
-		truncatedcone_t testCone;
-		testCone.origin	= pOwner->EyePosition();
-		testCone.normal	= vecForward;
-		testCone.h		= 2.f * GetDeflectionRadius(); // diameter of enum sphere
-		testCone.theta	= flAirblastConeScale * tf_flamethrower_airblast_cone_angle;
+		// Flatten look vector to XY plane
+		Vector vecForward2D = vecForward;
+		vecForward2D.z = 0.0f;
+		VectorNormalize( vecForward2D );
 
-
-		Vector vTargetAbsMins = pTarget->GetAbsOrigin() + pTarget->WorldAlignMins();
-		Vector vTargetAbsMaxs = pTarget->GetAbsOrigin() + pTarget->WorldAlignMaxs();
-
-		// Require our target be in a cone in front of us
-		if ( !physcollision->IsBoxIntersectingCone( vTargetAbsMins, vTargetAbsMaxs, testCone ) )
+		// ~85 units is roughly melee range. 
+		// DotProduct > -0.2f ensures they aren't completely behind the Pyro.
+		float flPointBlankRadius = 85.0f; 
+		if ( flDist2D <= flPointBlankRadius && DotProduct( vecForward2D, vecToTarget2D ) > -0.2f )
 		{
-			return false;
+			bIsPointBlankHit = true;
 		}
 
+		if ( !bIsPointBlankHit )
+		{
+			float flAirblastConeScale = 1.f;
+			CALL_ATTRIB_HOOK_FLOAT( flAirblastConeScale, mult_airblast_cone_scale );
+
+			truncatedcone_t testCone;
+			testCone.origin	= pOwner->EyePosition();
+			testCone.normal	= vecForward;
+			testCone.h		= 2.f * GetDeflectionRadius(); // diameter of enum sphere
+			testCone.theta	= flAirblastConeScale * tf_flamethrower_airblast_cone_angle;
+
+			Vector vTargetAbsMins = pTarget->GetAbsOrigin() + pTarget->WorldAlignMins();
+			Vector vTargetAbsMaxs = pTarget->GetAbsOrigin() + pTarget->WorldAlignMaxs();
+
+			// Require our target be in a cone in front of us
+			if ( !physcollision->IsBoxIntersectingCone( vTargetAbsMins, vTargetAbsMaxs, testCone ) )
+			{
+				return false;
+			}
+		}
 
 		if ( pTarget != pOwner )
 		{
