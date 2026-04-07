@@ -1283,7 +1283,7 @@ void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 	}
 
 	// update the vgui texture
-	if ( m_bNeedsFullTextureUpload || m_iHTMLTextureID == 0  || tw != (int)pCallback->unWide || tt != (int)pCallback->unTall )
+	if ( m_iHTMLTextureID == 0 || tw != (int)pCallback->unWide || tt != (int)pCallback->unTall )
 	{
 		m_bNeedsFullTextureUpload = false;
 		if ( m_iHTMLTextureID != 0 )
@@ -1296,14 +1296,10 @@ void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 		m_allocedTextureWidth = pCallback->unWide;
 		m_allocedTextureHeight = pCallback->unTall;
 	}
-	else if ( (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 )
-	{
-		// same size texture, just bits changing in it, lets twiddle
-		surface()->DrawUpdateRegionTextureRGBA( m_iHTMLTextureID, pCallback->unUpdateX, pCallback->unUpdateY, (const unsigned char *)pCallback->pBGRA, pCallback->unUpdateWide, pCallback->unUpdateTall, IMAGE_FORMAT_BGRA8888 );
-	}
 	else
 	{
-		surface()->DrawSetTextureRGBAEx( m_iHTMLTextureID, (const unsigned char *)pCallback->pBGRA,pCallback->unWide, pCallback->unTall, IMAGE_FORMAT_BGRA8888 );
+		m_bNeedsFullTextureUpload = false;
+		surface()->DrawSetTextureRGBAEx( m_iHTMLTextureID, (const unsigned char *)pCallback->pBGRA, pCallback->unWide, pCallback->unTall, IMAGE_FORMAT_BGRA8888 );
 	}
 
 	// need a paint next time
