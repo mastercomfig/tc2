@@ -356,10 +356,6 @@ void CTFGrenadePipebombProjectile::SetHighlight( bool bHighlight )
 	{
 		if ( m_bHighlight )
 		{
-			m_pGlowEffect->SetColor( Vector( 150, 150, 150 ) );
-		}
-		else
-		{
 			if ( GetTeamNumber() == TF_TEAM_RED )
 			{
 				m_pGlowEffect->SetColor( Vector( 150, 0, 0 ) );
@@ -368,6 +364,10 @@ void CTFGrenadePipebombProjectile::SetHighlight( bool bHighlight )
 			{
 				m_pGlowEffect->SetColor( Vector( 0, 0, 150 ) );
 			}
+		}
+		else
+		{
+			m_pGlowEffect->SetColor( Vector( 150, 150, 150 ) );
 		}
 	}
 }
@@ -1516,20 +1516,17 @@ int CTFGrenadePipebombProjectile::UpdateTransmitState()
 //-----------------------------------------------------------------------------
 int CTFGrenadePipebombProjectile::ShouldTransmit( const CCheckTransmitInfo *pInfo )
 {
-	if ( m_bDefensiveBomb )
+	CBaseEntity *pRecipientEntity = CBaseEntity::Instance( pInfo->m_pClientEnt );
+	CBasePlayer *pRecipientPlayer = ToBasePlayer( pRecipientEntity );
+	
+	if ( pRecipientEntity && pRecipientEntity == GetOwnerEntity() )
 	{
-		CBaseEntity *pRecipientEntity = CBaseEntity::Instance( pInfo->m_pClientEnt );
-		CBasePlayer *pRecipientPlayer = ToBasePlayer( pRecipientEntity );
-		
-		if ( pRecipientEntity && pRecipientEntity == GetOwnerEntity() )
-		{
-			return FL_EDICT_ALWAYS;
-		}
-		
-		if ( pRecipientPlayer && pRecipientPlayer->GetObserverTarget() == GetOwnerEntity() )
-		{
-			return FL_EDICT_ALWAYS;
-		}
+		return FL_EDICT_ALWAYS;
+	}
+	
+	if ( pRecipientPlayer && pRecipientPlayer->GetObserverTarget() == GetOwnerEntity() )
+	{
+		return FL_EDICT_ALWAYS;
 	}
 
 	return BaseClass::ShouldTransmit( pInfo );
