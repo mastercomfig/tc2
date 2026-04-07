@@ -434,12 +434,21 @@ void CTFPipebombLauncher::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFPipebombLauncher::SecondaryAttack( void )
 {
-	DetonateAction();
+	const bool bDoSkill = DetonateAction();
+	CTFPlayer* pPlayer = ToTFPlayer( GetOwner() );
+	if ( pPlayer )
+	{
+		// only update shared skill cooldown if it's not coming up already
+		if ( pPlayer->m_Shared.GetNextClassSpecialTime() <= gpGlobals->curtime )
+		{
+			pPlayer->m_Shared.SetNextClassSpecialTime( gpGlobals->curtime + ( bDoSkill ? 0.25f : 0.1f ) );
+		}
+	}
 }
 
 bool CTFPipebombLauncher::DetonateAction()
 {
-	if ( !CanAttack(TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY) )
+	if ( !CanAttack( TF_CAN_ATTACK_FLAG_PIPEBOMBLAUNCHER_SECONDARY ) )
 		return false;
 
 	if ( m_iPipebombCount > 0 )
@@ -447,7 +456,20 @@ bool CTFPipebombLauncher::DetonateAction()
 		// Get a valid player.
 		CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
 		if ( !pPlayer )
+		{
 			return false;
+		}
+
+		if ( pPlayer->m_Shared.GetNextClassSpecialTime() > gpGlobals->curtime )
+		{
+			if ( m_flLastDenySoundTime <= gpGlobals->curtime )
+			{
+				// Deny!
+				m_flLastDenySoundTime = gpGlobals->curtime + 1;
+				WeaponSound( SPECIAL2 );
+			}
+			return false;
+		}
 
 		//If one or more pipebombs failed to detonate then play a sound.
 		if ( DetonateRemotePipebombs( false ) == true )
@@ -601,28 +623,74 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		return true;
 
 	// Dot product from the view angle to determine which bombs to detonate.
-	bool bFailedToDetonate = true;
+	Vector vecPlayerForward;
+	AngleVectors( pPlayer->EyeAngles(), &vecPlayerForward, NULL, NULL );
+	vecPlayerForward.NormalizeInPlace();
+
+	// Determine the dynamic dot product threshold based on FOV
+	const float flScreenRadius = 0.15f; 
+	float flFOV = pPlayer->GetFOV(); 
+	float flTanHalfVert = 0.75f * tan( DEG2RAD( flFOV ) * 0.5f );
+	float flDynamicThreshold = cos( atan( flScreenRadius * flTanHalfVert ) );
+
 	int count = m_Pipebombs.Count();
+
+	// Find the anchoring bomb
+	CTFGrenadePipebombProjectile *pAnchorBomb = NULL;
+	float flBestDist = FLT_MAX; // Start with an infinitely large distance
 	for ( int i=0; i<count; ++i )
 	{
 		CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
 		if ( !pTemp || pTemp->IsEffectActive( EF_NODRAW ) )
 			continue;
 
-		Vector vecToTarget;
-		vecToTarget = pTemp->WorldSpaceCenter() - pPlayer->EyePosition();
-		vecToTarget.NormalizeInPlace();
-
-		Vector vecPlayerForward;
-		AngleVectors( pPlayer->EyeAngles(), &vecPlayerForward, NULL, NULL );
-		vecPlayerForward.NormalizeInPlace();
-
-		bool bArmed = ( ( gpGlobals->curtime - pTemp->m_flCreationTime ) > pTemp->GetLiveTime() );
-		float flDist = pPlayer->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
+		Vector vecToTarget = pTemp->WorldSpaceCenter() - pPlayer->EyePosition();
+		float flDistToBomb = vecToTarget.NormalizeInPlace();
+		
 		float flDot = DotProduct( vecToTarget, vecPlayerForward );
 
-		// Detonate sticky bombs directly under the crosshair or under our feet (to allow sticky jumping)
-		if ( flDot > 0.975f || flDist < pTemp->GetDamageRadius() )
+		// must be inside the targeting circle
+		if ( flDot > flDynamicThreshold )
+		{
+			// pick the one closest to the player
+			if ( flDistToBomb < flBestDist )
+			{
+				flBestDist = flDistToBomb;
+				pAnchorBomb = pTemp;
+			}
+		}
+	}
+
+	// detonate all valid bombs
+	bool bFailedToDetonate = true;
+	for ( int i=0; i<count; ++i )
+	{
+		CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
+		if ( !pTemp || pTemp->IsEffectActive( EF_NODRAW ) )
+			continue;
+
+		float flDistToPlayer = pPlayer->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
+		bool bShouldDetonate = false;
+
+		// Det around the anchor bomb
+		if ( pAnchorBomb )
+		{
+			float flDistToAnchor = pAnchorBomb->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
+			const float flClusterDist = pTemp->GetDamageRadius() * 0.75f;
+			if ( flDistToAnchor <= flClusterDist )
+			{
+				bShouldDetonate = true;
+			}
+		}
+
+		// Sticky jumping should det too
+		if ( flDistToPlayer < pTemp->GetDamageRadius() )
+		{
+			bShouldDetonate = true;
+		}
+
+		// Execution
+		if ( bShouldDetonate )
 		{
 			switch ( iEffect )
 			{
@@ -632,6 +700,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 #endif
 				break;
 			case TF_PIPEBOMB_DETONATE:
+				bool bArmed = ( ( gpGlobals->curtime - pTemp->m_flCreationTime ) > pTemp->GetLiveTime() );
 				if ( bArmed )
 				{
 					bFailedToDetonate = false;

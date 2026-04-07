@@ -260,7 +260,7 @@ void CTFWeaponBaseMelee::SecondaryAttack()
 	}
 	else
 	{
-		if (!CanAttack())
+		if ( !CanAttack() )
 			return;
 	}
 
@@ -318,7 +318,10 @@ void CTFWeaponBaseMelee::Swing( CTFPlayer *pPlayer )
 
 	m_flNextPrimaryAttack = gpGlobals->curtime + flFireDelay;
 	m_flNextSecondaryAttack = gpGlobals->curtime + flFireDelay;
-	pPlayer->m_Shared.SetNextStealthTime( m_flNextSecondaryAttack );
+	if ( pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY )
+	{
+		pPlayer->m_Shared.SetNextStealthTime( m_flNextSecondaryAttack );
+	}
 
 	SetWeaponIdleTime( m_flNextPrimaryAttack + m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeIdleEmpty );
 

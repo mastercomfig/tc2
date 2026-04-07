@@ -12752,25 +12752,31 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 		return true;
 	}
 
+	// we now reuse this spy specific variable for all special class actions.
+	if ( m_Shared.GetNextClassSpecialTime() <= gpGlobals->curtime )
+	{
+		return false;
+	}
+
+	bool bUpdateCooldown = true;
+
 	switch( GetPlayerClass()->GetClassIndex() )
 	{
 	case TF_CLASS_SPY:
 		{
 			if ( !m_Shared.InCond( TF_COND_TAUNTING ) )
 			{
-				if ( m_Shared.m_flStealthNextChangeTime <= gpGlobals->curtime )
+				// Feign death if we have the right equipment mod.
+				CTFWeaponInvis* pInvisWatch = static_cast<CTFWeaponInvis*>( Weapon_OwnsThisID( TF_WEAPON_INVIS ) );
+				if ( pInvisWatch )
 				{
-					// Feign death if we have the right equipment mod.
-					CTFWeaponInvis* pInvisWatch = static_cast<CTFWeaponInvis*>( Weapon_OwnsThisID( TF_WEAPON_INVIS ) );
-					if ( pInvisWatch )
-					{
-						bDoSkill = pInvisWatch->ActivateInvisibilityWatch();
-					}
+					bDoSkill = pInvisWatch->ActivateInvisibilityWatch();
+					// activate invisibility watch does this for us.
+					bUpdateCooldown = false;
 				}
 			}
 		}
 		break;
-
 	case TF_CLASS_DEMOMAN:
 		if ( !m_Shared.HasPasstimeBall() )
 		{
@@ -12799,6 +12805,12 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 		break;
 	default:
 		break;
+	}
+
+	if ( bUpdateCooldown )
+	{
+		// have a shared cooldown for special skill, if it was successful, don't spam it!
+		m_Shared.SetNextClassSpecialTime( gpGlobals->curtime + ( bDoSkill ? 0.25f : 0.1f ) );
 	}
 
 	return bDoSkill;
