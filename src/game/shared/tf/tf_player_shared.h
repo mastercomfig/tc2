@@ -471,7 +471,9 @@ public:
 	void	NoteLastDamageTime( int nDamage );
 	void	OnSpyTouchedByEnemy( void );
 	float	GetLastStealthExposedTime( void ) { return m_flLastStealthExposeTime; }
+	float   GetNextClassSpecialTime( void ) { return m_flStealthNextChangeTime; }
 	void	SetNextStealthTime( float flTime ) { m_flStealthNextChangeTime = flTime; }
+	void    SetNextClassSpecialTime( float flTime ) { m_flStealthNextChangeTime = flTime; }
 	bool	IsFullyInvisible( void ) { return ( GetPercentInvisible() == 1.f ); }
 
 	bool	IsEnteringOrExitingFullyInvisible( void );
