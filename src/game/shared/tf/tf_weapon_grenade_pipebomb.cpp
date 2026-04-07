@@ -20,6 +20,7 @@
 #include "IEffects.h"
 #include "materialsystem/imaterialvar.h"
 #include "functionproxy.h"
+#include "glow_outline_effect.h"
 // Server specific.
 #else
 #include "tf_player.h"
@@ -339,6 +340,36 @@ void CTFGrenadePipebombProjectile::CreateTrailParticles( void )
 		}
 	}
 
+}
+
+void CTFGrenadePipebombProjectile::SetHighlight( bool bHighlight )
+{
+	if ( !m_bPulsed )
+		return;
+
+	if ( m_bHighlight == bHighlight )
+		return;
+
+	m_bHighlight = bHighlight;
+
+	if ( m_pGlowEffect )
+	{
+		if ( m_bHighlight )
+		{
+			m_pGlowEffect->SetColor( Vector( 150, 150, 150 ) );
+		}
+		else
+		{
+			if ( GetTeamNumber() == TF_TEAM_RED )
+			{
+				m_pGlowEffect->SetColor( Vector( 150, 0, 0 ) );
+			}
+			else
+			{
+				m_pGlowEffect->SetColor( Vector( 0, 0, 150 ) );
+			}
+		}
+	}
 }
 
 
@@ -1474,7 +1505,7 @@ int CTFGrenadePipebombProjectile::UpdateTransmitState()
 {
 	if ( m_bDefensiveBomb )
 	{
-		return SetTransmitState( FL_EDICT_ALWAYS );
+		return SetTransmitState( FL_EDICT_FULLCHECK );
 	}
 
 	return BaseClass::UpdateTransmitState();
@@ -1487,7 +1518,18 @@ int CTFGrenadePipebombProjectile::ShouldTransmit( const CCheckTransmitInfo *pInf
 {
 	if ( m_bDefensiveBomb )
 	{
-		return FL_EDICT_ALWAYS;
+		CBaseEntity *pRecipientEntity = CBaseEntity::Instance( pInfo->m_pClientEnt );
+		CBasePlayer *pRecipientPlayer = ToBasePlayer( pRecipientEntity );
+		
+		if ( pRecipientEntity && pRecipientEntity == GetOwnerEntity() )
+		{
+			return FL_EDICT_ALWAYS;
+		}
+		
+		if ( pRecipientPlayer && pRecipientPlayer->GetObserverTarget() == GetOwnerEntity() )
+		{
+			return FL_EDICT_ALWAYS;
+		}
 	}
 
 	return BaseClass::ShouldTransmit( pInfo );

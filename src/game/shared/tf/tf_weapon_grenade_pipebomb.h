@@ -85,7 +85,7 @@ public:
 	virtual void	Simulate( void );
 	virtual void	CreateTrailParticles( void );
 
-	void			SetHighlight( bool bHighlight ) { if ( m_bPulsed ) m_bHighlight = bHighlight; }
+	void			SetHighlight( bool bHighlight );
 	bool			IsHighlighted( void ) { return m_bHighlight; }
 
 	int				m_iCachedDeflect;

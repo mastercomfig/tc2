@@ -652,10 +652,13 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		// must be inside the targeting circle
 		if ( flDot > flDynamicThreshold )
 		{
-			// pick the one closest to the player
-			if ( flDistToBomb < flBestDist )
+			// Prioritize bombs we are looking directly at, but still factor in distance slightly.
+			// The score is lower the better.
+			float flScore = ( 1.0f - flDot ) * 10000.0f + flDistToBomb;
+			
+			if ( flScore < flBestDist )
 			{
-				flBestDist = flDistToBomb;
+				flBestDist = flScore;
 				pAnchorBomb = pTemp;
 			}
 		}
@@ -666,8 +669,19 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 	for ( int i=0; i<count; ++i )
 	{
 		CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
-		if ( !pTemp || pTemp->IsEffectActive( EF_NODRAW ) )
+		if ( !pTemp )
 			continue;
+
+		if ( pTemp->IsEffectActive( EF_NODRAW ) )
+		{
+			if ( iEffect == TF_PIPEBOMB_HIGHLIGHT )
+			{
+#ifdef CLIENT_DLL
+				pTemp->SetHighlight( false );
+#endif
+			}
+			continue;
+		}
 
 		float flDistToPlayer = pPlayer->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
 		bool bShouldDetonate = false;
