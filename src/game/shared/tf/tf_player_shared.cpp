@@ -12753,7 +12753,7 @@ bool CTFPlayer::DoClassSpecialSkill( void )
 	}
 
 	// we now reuse this spy specific variable for all special class actions.
-	if ( m_Shared.GetNextClassSpecialTime() <= gpGlobals->curtime )
+	if ( m_Shared.GetNextClassSpecialTime() > gpGlobals->curtime )
 	{
 		return false;
 	}
