@@ -2,10 +2,10 @@
 name = "play"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-particles", "1", "-condebug", "-nobreakpad", "-nominidumps", "+ip", "127.0.0.1"]
+args = ["-steam", "-particles", "1", "-condebug", "-nobreakpad", "-nominidumps", "-disable_d3d9_hacks", "-sw", "-noborder", "+ip", "127.0.0.1", +mat_tonemapping_occlusion_use_stencil", "1", "+mat_disable_ps_patch", "1"]
 
 [[actions]]
 name = "vulkan"
 path = "tc2_win64.exe"
 platform = "windows"
-args = ["-steam", "-vulkan", "-particles", "1", "-condebug", "-nobreakpad", "-nominidumps", "+ip", "127.0.0.1"]
+args = ["-steam", "-vulkan", "-particles", "1", "-condebug", "-nobreakpad", "-nominidumps", "-disable_d3d9_hacks", "-sw", "-noborder", "+ip", "127.0.0.1", +mat_tonemapping_occlusion_use_stencil", "1", "+mat_disable_ps_patch", "1"]

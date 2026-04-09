@@ -2,4 +2,4 @@
 name = "play"
 path = "tc2.sh"
 platform = "linux"
-args = ["-steam", "-particles", "1", "+ip", "127.0.0.1"]
+args = ["-steam", "-gathermod", "-particles", "1", "-nobreakpad", "-nominidumps", "-disable_d3d9_hacks", "-full", "+ip", "127.0.0.1", +mat_tonemapping_occlusion_use_stencil", "1", "+mat_disable_ps_patch", "1"]
