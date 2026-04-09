@@ -97,7 +97,19 @@ elif [ $PLATFORM = "linux" ]; then
 fi
 
 for F in "${EXES[@]}"; do
-  cp -f ${DEV_DIR}/${F}${EXE_EXT} ${CLEAN_DIR}/${F}${EXE_EXT}
+  EXE=${F}${EXE_EXT}
+  cp -f ${DEV_DIR}/${EXE} ${CLEAN_DIR}/${EXE}
+  if [ $PLATFORM = "win" ]; then
+    if [ -f ${DEV_DIR}/${F,,}.pdb ]; then
+      cp -f ${DEV_DIR}/${F,,}.pdb ${CLEAN_DEBUG_DIR}/${F,,}.pdb
+    fi
+  elif [ $PLATFORM = "linux" ]; then
+    # Linux binaries aren't stripped by the build scripts, so separate the
+    # debug info and strip them here.
+    cp -f ${CLEAN_DIR}/${EXE} ${CLEAN_DEBUG_DIR}/${EXE}.dbg
+    objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${EXE}.dbg ${CLEAN_DIR}/${EXE}
+    strip ${CLEAN_DIR}/${EXE}
+  fi
 done
 
 for F in "${DLLS[@]}"; do
