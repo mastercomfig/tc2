@@ -14,7 +14,7 @@
 		"AnimMatchSeriesLabel"				"90"
 		"AnimMatchTimeRemainingTitleLabel"	"140"
 		"AnimMatchTimeRemainingLabel"		"160"
-		"AnimMatchNextSeriesLabel"			"r60"
+		"AnimMatchNextSeriesLabel"			"340"
 
 		"AnimBluePlayerListParent"		"p.47"
 		"AnimBlueTeamScore"				"p.46"
