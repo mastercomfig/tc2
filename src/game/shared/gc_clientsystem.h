@@ -12,6 +12,12 @@
 #ifdef CLIENT_DLL
 	#include "clientsteamcontext.h"
 #endif
+#include "tier1/utldelegate.h"
+
+namespace GCSDK
+{
+	class CWebAPIValues;
+}
 
 //=============================================================================
 //
@@ -44,12 +50,15 @@ public:
 	// Connection status
 	bool BConnectedtoGC() const { return m_bConnectedToGC; }
 
+	ISteamHTTP* GetSteamHTTP() const;
+
+	typedef CUtlDelegate< void ( GCSDK::CWebAPIValues * ) > ComtressCallback_t;
+
 	// GC Messages
 	bool BSendMessage( uint32 unMsgType, const uint8 *pubData, uint32 cubData );
 	bool BSendMessage( const GCSDK::CGCMsgBase& msg );
 	bool BSendMessage( const GCSDK::CProtoBufMsgBase& msg );
-	bool BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg );
-	void OnComtressMsgResponseReceived( HTTPRequestCompleted_t* pInfo, bool bIOFailure );
+	bool BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg, ComtressCallback_t callback = ComtressCallback_t() );
 
 	// GC SOCache
 	GCSDK::CGCClientSharedObjectCache *GetSOCache( const CSteamID &steamID );
@@ -63,7 +72,8 @@ public:
 		void GameServerActivate();
 #endif
 	
-	CCallResult<CGCClientSystem, HTTPRequestCompleted_t> m_RequestCompleted;
+	
+	// CCallResult<CGCClientSystem, HTTPRequestCompleted_t> m_RequestCompleted; // Deprecated
 
 	char const * GetTxnCountryCode() const { return m_sTxnCountryCode.Get(); }
 
@@ -92,6 +102,10 @@ private:
 	CUtlString m_sTxnCountryCode;
 
 	void ThinkConnection();
+
+	friend class CComtressRequest;
+	void RemoveComtressRequest( class CComtressRequest *pRequest );
+	CUtlVector< class CComtressRequest * > m_vecComtressRequests;
 
 	friend class CGCClientSystemJob;
 };

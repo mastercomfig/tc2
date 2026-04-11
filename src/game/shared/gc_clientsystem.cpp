@@ -12,6 +12,7 @@
 #include "tf_wartracker.h"
 #endif
 //#include "gcsdk/msgprotobuf.h"
+#include "gcsdk/webapi_response.h"
 
 #ifdef TF_CLIENT_DLL
 #include "secure_command_line.h"
@@ -92,6 +93,17 @@ GCSDK::CGCClient *CGCClientSystem::GetGCClient()
 }
 
 
+ISteamHTTP* CGCClientSystem::GetSteamHTTP() const
+{
+#ifdef GAME_DLL
+	if ( engine->IsDedicatedServer() )
+	{
+		return SteamGameServerHTTP();
+	}
+#endif
+	return SteamHTTP();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -119,25 +131,95 @@ bool CGCClientSystem::BSendMessage( const GCSDK::CProtoBufMsgBase& msg )
 }
 
 #ifdef GAME_DLL
-ConVar sv_private_token( "sv_private_token", "0", FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_SERVER_CANNOT_QUERY );
+ConVar sv_private_token( "sv_private_token", "", FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_SERVER_CANNOT_QUERY );
 #endif
+
+//-----------------------------------------------------------------------------
+// Purpose: Helper class to handle Comtress message responses with callbacks
+//-----------------------------------------------------------------------------
+class CComtressRequest
+{
+public:
+	CComtressRequest( CGCClientSystem *pSystem, HTTPRequestHandle hRequest, CGCClientSystem::ComtressCallback_t callback )
+	{
+		m_pSystem = pSystem;
+		m_hRequest = hRequest;
+		m_Callback = callback;
+	}
+
+	void OnComtressMsgResponseReceived( HTTPRequestCompleted_t *pInfo, bool bIOFailure )
+	{
+		if ( !pInfo )
+		{
+			DevWarning( "Comtress msg failed.\n" );
+			m_pSystem->GetSteamHTTP()->ReleaseHTTPRequest( m_hRequest );
+			Cleanup();
+			return;
+		}
+
+		if ( !pInfo->m_bRequestSuccessful || pInfo->m_eStatusCode != k_EHTTPStatusCode200OK )
+		{
+			DevWarning( "Comtress msg failed. %d\n", pInfo->m_eStatusCode );
+		}
+
+		// Extract the result
+		uint32 unBytes;
+		if ( m_pSystem->GetSteamHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unBytes ) )
+		{
+			CUtlBuffer bufResponse( 0, 0, CUtlBuffer::TEXT_BUFFER );
+			bufResponse.EnsureCapacity( unBytes + 1 );
+			if ( m_pSystem->GetSteamHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, ( uint8* )bufResponse.Base(), unBytes ) )
+			{
+				bufResponse.SeekPut( CUtlBuffer::SEEK_HEAD, unBytes );
+				( ( char* )bufResponse.Base() )[unBytes] = '\0';
+
+				// Parse it to json and extract the data
+				GCSDK::CWebAPIValues* pValues = GCSDK::CWebAPIValues::ParseJSON( bufResponse );
+
+				if ( m_Callback )
+				{
+					m_Callback( pValues );
+				}
+
+				if ( pValues )
+				{
+					delete pValues;
+				}
+			}
+		}
+
+		m_pSystem->GetSteamHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
+		Cleanup();
+	}
+
+	HTTPRequestHandle m_hRequest;
+	CCallResult< CComtressRequest, HTTPRequestCompleted_t > m_CallbackCompleted;
+
+private:
+	void Cleanup()
+	{
+		m_pSystem->RemoveComtressRequest( this );
+		delete this;
+	}
+
+	CGCClientSystem *m_pSystem;
+	CGCClientSystem::ComtressCallback_t m_Callback;
+};
 
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
+bool CGCClientSystem::BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg, ComtressCallback_t callback )
 {
 #ifdef GAME_DLL
 	// not supporting listen server for now
 	if ( !engine->IsDedicatedServer() )
 		return false;
 
-	// requiring an authenticated server for now
-	const char* szToken = sv_private_token.GetString();
-	if ( szToken && szToken[0] == '0' )
+	if ( !GetSteamHTTP() )
 		return false;
 
-	HTTPRequestHandle hRequest = SteamGameServerHTTP()->CreateHTTPRequest( k_EHTTPMethodPOST,"https://api.teamcomtress.com/webapi/ISDK/SendMessage/v0001" );
+	HTTPRequestHandle hRequest = GetSteamHTTP()->CreateHTTPRequest( k_EHTTPMethodPOST, "https://api.teamcomtress.com/webapi/ISDK/SendMessage/v1" );
 	if ( hRequest == INVALID_HTTPREQUEST_HANDLE )
 	{
 		return false;
@@ -148,7 +230,11 @@ bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
 	jsonReq.SetStatusCode( k_EHTTPStatusCode200OK );
 	GCSDK::CWebAPIValues* pRoot = jsonReq.CreateRootValue( "body" );
 	jsonReq.SetJSONAnonymousRootNode( true );
-	pRoot->SetChildStringValue( "token", szToken );
+	const char* szToken = sv_private_token.GetString();
+	if ( szToken && szToken[0] != '\0' )
+	{
+		pRoot->SetChildStringValue( "token", szToken );
+	}
 	pRoot->SetChildUInt32Value( "msg", msg.GetEMsg() );
 
 	auto        msgBody = msg.GetGenericBody();
@@ -169,34 +255,24 @@ bool CGCClientSystem::BSendMessageComtress(const GCSDK::CProtoBufMsgBase& msg)
 	CUtlBuffer bufBody;
 	jsonReq.BEmitFormattedOutput( GCSDK::k_EWebAPIOutputFormat_JSON, bufBody, 0 );
 	 
-	SteamGameServerHTTP()->SetHTTPRequestRawPostBody( hRequest, "application/json", ( uint8* )bufBody.Base(), bufBody.TellMaxPut() );
+	GetSteamHTTP()->SetHTTPRequestRawPostBody( hRequest, "application/json", ( uint8* )bufBody.Base(), bufBody.TellMaxPut() );
 
 	SteamAPICall_t callResult;
-	if ( !SteamGameServerHTTP()->SendHTTPRequest( hRequest, &callResult ) )
+	if ( !GetSteamHTTP()->SendHTTPRequest( hRequest, &callResult ) )
 	{
 		jsonReq.Clear();
 		return false;
 	}
 
-	m_RequestCompleted.Set( callResult, this, &CGCClientSystem::OnComtressMsgResponseReceived );
+	CComtressRequest *pRequest = new CComtressRequest( this, hRequest, callback );
+	m_vecComtressRequests.AddToTail( pRequest );
+	pRequest->m_CallbackCompleted.Set( callResult, pRequest, &CComtressRequest::OnComtressMsgResponseReceived );
 
 	return true;
 #else
 	// todo(mcoms): client
 	return false;
 #endif
-}
-
-void CGCClientSystem::OnComtressMsgResponseReceived(HTTPRequestCompleted_t* pInfo, bool bIOFailure)
-{
-	if ( !pInfo )
-	{
-		return;
-	}
-	if ( pInfo->m_hRequest != INVALID_HTTPCOOKIE_HANDLE )
-	{
-		SteamGameServerHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
-	}
 }
 
 
@@ -293,6 +369,8 @@ void CGCClientSystem::Shutdown()
 	// Reset the init flag.
 	m_bInittedGC = false;
 	m_bConnectedToGC = false;
+
+	m_vecComtressRequests.PurgeAndDeleteElements();
 }
 
 
@@ -397,6 +475,11 @@ void CGCClientSystem::SetConnectedToGC( bool bConnected )
 		gameeventmanager->FireEventClientSide( pEvent );
 	}
 #endif
+}
+
+void CGCClientSystem::RemoveComtressRequest( CComtressRequest *pRequest )
+{
+	m_vecComtressRequests.FindAndRemove( pRequest );
 }
 
 

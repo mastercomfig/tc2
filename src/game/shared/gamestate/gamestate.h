@@ -11,6 +11,7 @@
 #pragma once
 #endif
 
+#include <utility>
 #include <functional>
 #include "igamesystem.h"
 
@@ -24,8 +25,9 @@ public:
 	virtual void Shutdown() OVERRIDE;
 	virtual char const* Name() OVERRIDE { return "CGameStateManager"; }
 	virtual void FireGameEvent( IGameEvent* event ) OVERRIDE;
-	void RegisterMethod(std::string methodName, const std::function<std::string(const std::string& params) >& method);
+	void RegisterMethod(std::string methodName, const std::function<std::pair<bool, std::string>(const std::string& params, int64_t iRpcId) >& method);
 	void UnregisterMethod(std::string methodName);
+	void QueueReturn(int64_t iRpcId, const std::string& strValue);
 	void QueueEvent(const std::string& strEvent, const std::string& strParams);
 
 	bool IsReady() { return m_bReady; }

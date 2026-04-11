@@ -336,13 +336,63 @@ enum ETFGCMsg
 
 	k_EMsgGCParty_MMError						= 6586; // GC -> client, feedback for when an MM error ends your queue/match/etc
 
+	k_EMsgGC_GameServer_UpdateData				= 6587; // game server -> GC, report server data (CMsgGameServerData)
+
 	// Development only messages
 	k_EMsgGCDev_GrantWarKill =					10001; //War kill tracking. No longer in use
 
 	// Max message = 15000 (for tf_gcmessages_interserver)
 };
 
+// Game servers
 
+//
+// k_EMsgGC_GameServer_UpdateData
+//
+message CMsgGameServerData {
+	message Player {
+		optional fixed64 steam_id = 1;
+	}
+
+	optional uint32 revision = 24;
+	optional uint32 query_port = 3;
+	optional uint32 game_port = 4;
+	optional uint32 spectator_port = 5;
+	optional string server_name = 22;
+	optional string game_description = 29;
+	optional string spectator_server_name = 27;
+	optional fixed64 server_steamid = 32;
+	optional fixed32 fake_ip = 28;
+	optional string sdr_ping_location = 30;
+	optional uint32 app_id = 6;
+	optional string gamedir = 7;
+	optional string version = 8;
+	optional string product = 9;
+	optional string region = 10;
+	repeated .CMsgGameServerData.Player players = 11;
+	optional uint32 max_players = 12;
+	optional uint32 bot_count = 13;
+	optional bool password = 14;
+	optional bool secure = 15;
+	optional bool dedicated = 16;
+	optional string os = 17;
+	optional string game_data = 18;
+	optional string game_type = 20;
+	optional string map = 21;
+	optional string game_server_token = 31;
+}
+
+message CMsgGSUserPlaying {
+	optional fixed64 steam_id = 1;
+	optional fixed32 fake_ip = 2;
+	optional bytes token = 3;
+}
+
+message CMsgGSDisconnectNotice {
+	optional fixed64 steam_id = 1;
+}
+
+// Other GC messages
 
 //
 // k_EMsgGCTFGoldenWrenchBroadcast
@@ -408,6 +458,15 @@ message CSOTFDuelSummary
 	optional	uint32		last_duel_timestamp = 5;
 	optional	uint32		last_duel_status = 6;
 };
+
+//
+// CMsgTrackedStat
+//
+message CMsgTrackedStat
+{
+	optional	uint32		tracked_stat_id = 1;
+	optional	int32		tracked_stat_value = 2;
+}
 
 //
 // CTFMapContribution
@@ -2601,6 +2660,9 @@ message CMsgGC_Match_Result
 		optional	uint32             leave_time           = 22;
 		optional	TFMatchLeaveReason leave_reason         = 23;
 		optional	uint32             connect_time         = 24;
+		repeated	float			   time_on_class		= 25;
+		repeated	float			   graph_kills			= 26;
+		repeated	float			   graph_deaths			= 27;
 	};
 	repeated Player players = 10;
 
@@ -2615,6 +2677,22 @@ message CMsgGC_Match_Result
 	// Deprecrated - The reliable message queue for matches requires the new match get acknowledged before we send up
 	//               its corresponding result, so this logic was removed.
 	// optional bool server_created = 17 [ default = false ];
+
+	message EventInfo
+	{
+		enum EventType
+		{
+			EVENT_TYPE_KILL_PLAYER = 0;
+			EVENT_TYPE_CAPTURE_POINT = 1;
+		}
+
+		optional EventType event_type = 1 [default = EVENT_TYPE_KILL_PLAYER];
+		optional fixed64 victim_steam_id = 2;
+		repeated fixed64 killer_steam_id = 3;
+		optional int32 time = 4;
+		optional int32 bounty = 5;
+	};
+	repeated EventInfo events = 18;
 };
 
 message CMsgGC_Match_ResultResponse

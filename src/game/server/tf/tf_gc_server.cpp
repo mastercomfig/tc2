@@ -36,9 +36,10 @@
 #include "tf_gc_shared.h"
 #include "tf_party.h"
 #include "iserver.h"
+#include "hltvdirector.h"
+#include "team.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
-#include "team.h"
 #include "tier0/memdbgon.h"
 
 using namespace GCSDK;
@@ -1281,6 +1282,15 @@ CTFGCServerSystem::CTFGCServerSystem()
 	m_timeLastConnectedToGC = 0.f;
 	m_pMatchInfo = NULL;
 
+	m_iServerIP = 0;
+	m_iServerPort = 0;
+	memset( m_pzServerIP, 0, ARRAYSIZE(m_pzServerIP) );
+	memset( m_pzHostName, 0, ARRAYSIZE(m_pzHostName) );
+	m_iLastNumBots = 0;
+	m_iLastNumHumans = 0;
+	m_flNextGameServerDataUpdate = 0.0;
+	m_bInSteamServerFrame = false;
+
 	g_bWarnedAboutMaxplayersInMVM = false;
 }
 
@@ -1301,6 +1311,8 @@ bool CTFGCServerSystem::Init()
 {
 	ListenForGameEvent( "player_disconnect" );
 	ListenForGameEvent( "player_score_changed" );
+	ListenForGameEvent( "server_spawn" );
+	ListenForGameEvent( "server_shutdown" );
 
 	g_bWarnedAboutMaxplayersInMVM = false;
 	return true;
@@ -1366,6 +1378,16 @@ void CTFGCServerSystem::LevelInitPreEntity()
 //	m_nUploadingMatchStats = EDOTA_MATCH_STATS_IDLE;
 }
 
+void CTFGCServerSystem::LevelInitPostEntity()
+{
+	BaseClass::LevelInitPostEntity();
+
+	// if this is the first time we are updating, then update after 5 seconds of level init
+	if ( m_flNextGameServerDataUpdate == -1.0 )
+	{
+		m_flNextGameServerDataUpdate = CRTime::RTime32TimeCur() + 5.0;
+	}
+}
 
 //-----------------------------------------------------------------------------
 void CTFGCServerSystem::ClientActive( CSteamID steamIDClient )
@@ -1379,6 +1401,8 @@ void CTFGCServerSystem::ClientActive( CSteamID steamIDClient )
 		}
 		return;
 	}
+	
+	UpdateServerDataAndRefresh();
 
 	CMatchInfo *pMatch = GetMatch();
 	CMatchInfo::PlayerMatchData_t *pMatchPlayer = pMatch ? pMatch->GetMatchDataForPlayer( steamIDClient ) : NULL;
@@ -1486,6 +1510,12 @@ void CTFGCServerSystem::PreClientUpdate( )
 	CRTime::UpdateRealTime();
 
 	WebapiEquipmentThink();
+
+	if ( m_flNextGameServerDataUpdate > 0 && m_flNextGameServerDataUpdate <= CRTime::RTime32TimeCur() )
+	{
+		m_flNextGameServerDataUpdate = 0.0;
+		UpdateServerDataAndRefresh();
+	}
 
 	if ( GCClientSystem()->BConnectedtoGC() )
 	{
@@ -2392,6 +2422,80 @@ void CTFGCServerSystem::FireGameEvent( IGameEvent *event )
 		// Add to this player's score XP
 		pMatch->GiveXPRewardToPlayerForAction( steamId, CMsgTFXPSource_XPSourceType_SOURCE_SCORE, event->GetInt( "delta", 0 ) );
 	}
+	else if ( FStrEq( event->GetName(), "server_spawn" ) )
+	{
+		bool bFirstTime = m_iServerIP == 0;
+		
+		{
+			const char *pzAddress = event->GetString( "address" );
+			if ( pzAddress )
+			{
+				m_iServerPort = event->GetInt( "port" );
+				V_snprintf( m_pzServerIP, ARRAYSIZE(m_pzServerIP), "%s:%d", pzAddress, event->GetInt( "port" ) );
+				CUtlStringList IPs;
+				V_SplitString( m_pzServerIP, ".", IPs );
+
+				if ( IPs.Count() < 4 )
+				{
+					m_iServerIP = 0;
+					return;
+				}
+
+				byte ip[4];
+				m_iServerIP = 0;
+				for ( int i=0; i<IPs.Count() && i<4; ++i )
+				{
+					ip[i] = (byte) Q_atoi( IPs[i] );
+				}
+				m_iServerIP = (ip[0]<<24) + (ip[1]<<16) + (ip[2]<<8) + ip[3];
+			}
+			else
+			{
+				V_strncpy( m_pzServerIP, "No Server Address", sizeof( m_pzServerIP ) );
+				m_iServerIP = 0;
+			}
+		}
+
+		{
+			const char *pzHostname = event->GetString( "hostname" );
+			if ( pzHostname )
+			{
+				V_strncpy( m_pzHostName, pzHostname, sizeof( m_pzHostName ) );
+			}
+			else
+			{
+				V_strncpy( m_pzHostName, "No Host Name", sizeof( m_pzHostName ) );
+			}
+		}
+
+		// Override with fake IP
+		IServer* pGameServer = engine->GetIServer();
+		netadr_t netAdrFakeIP;
+		if ( pGameServer && pGameServer->IsUsingFakeIP() )
+		{
+			netAdrFakeIP = pGameServer->GetPublicAddress();
+			if ( netAdrFakeIP.IsValid() )
+			{
+				m_iServerIP = netAdrFakeIP.GetIPHostByteOrder();
+				m_iServerPort = netAdrFakeIP.GetPort();
+			}
+		}
+
+		if ( bFirstTime )
+		{
+			// mark this as first time
+			m_flNextGameServerDataUpdate = -1.0;
+		}
+		else
+		{
+			UpdateServerData();
+		}
+	}
+	else if ( FStrEq( event->GetName(), "server_shutdown" ) )
+	{
+		// TODO(mcoms): this doesn't really work :/
+		UpdateServerData( true );
+	}
 }
 
 CTFParty* CTFGCServerSystem::GetPartyForPlayer( CSteamID steamID ) const
@@ -2699,7 +2803,130 @@ bool CTFGCServerSystem::ShouldHideServer()
 // browser wil not list us.
 //	if ( m_bMMServerMode && tf_mm_strict.GetBool() )
 //		return true;
+	m_bInSteamServerFrame = true;
 	return false;
+}
+
+void CTFGCServerSystem::UpdateServerDataAndRefresh()
+{
+	// TODO(mcoms): this is a very ELEGANT solution to detect when our steam server is in frame vs. refreshing on an event.
+	if ( m_bInSteamServerFrame )
+	{
+		m_bInSteamServerFrame = false;
+		return;
+	}
+	if ( m_flNextGameServerDataUpdate > 0.0 && m_flNextGameServerDataUpdate <= CRTime::RTime32TimeCur() )
+	{
+		// if this isn't an early update, then fulfill the update.
+		// we want this to act as a queue, so we don't want to fulfill too early.
+		m_flNextGameServerDataUpdate = 0.0;
+	}
+	IServer* pGameServer = engine->GetIServer();
+	netadr_t netAdrIP;
+	if ( pGameServer )
+	{
+		m_iServerPort = pGameServer->GetLocalUDPPort();
+		netAdrIP = pGameServer->GetPublicAddress();
+		if ( netAdrIP.IsValid() )
+		{
+			m_iServerIP = netAdrIP.GetIPHostByteOrder();
+			m_iServerPort = netAdrIP.GetPort();
+		}
+	}
+	UpdateServerData();
+}
+
+void CTFGCServerSystem::UpdateServerData( bool bShutdown )
+{
+	if ( m_iServerIP == 0 && !bShutdown )
+	{
+		m_flNextGameServerDataUpdate = Max( m_flNextGameServerDataUpdate, CRTime::RTime32TimeCur() + 1.0);
+		return;
+	}
+
+	GCSDK::CProtoBufMsg<CMsgGameServerData> msg( k_EMsgGC_GameServer_UpdateData );
+	msg.Body().set_revision( 1 );
+
+	const ConVar* hostname = cvar->FindVar( "hostname" );
+	msg.Body().set_server_name( hostname->GetString() );
+
+	msg.Body().set_fake_ip( m_iServerIP );
+	msg.Body().set_game_port( m_iServerPort );
+
+#if defined( _WIN32 )
+		msg.Body().set_os( "w" );
+#elif defined( OSX )
+		msg.Body()
+			.set_os( "m" );
+#else
+		msg.Body()
+			.set_os( "l" );
+#endif
+
+	msg.Body().set_server_steamid( SteamGameServer_GetSteamID() );
+	msg.Body().set_secure( SteamGameServer_BSecure() );
+	msg.Body().set_dedicated( engine->IsDedicatedServer() );
+	msg.Body().set_map( bShutdown ? "" : gpGlobals->mapname.ToCStr() );
+	msg.Body().set_app_id( engine->GetAppID() );
+	msg.Body().set_gamedir( "tc2" );
+	static ConVarRef sv_region( "sv_region" );
+	msg.Body().set_region( sv_region.GetString() );
+	static ConVarRef sv_password( "sv_password" );
+	msg.Body().set_password( *sv_password.GetString() != '\0' );
+	static ConVarRef sv_tags( "sv_tags" );
+	msg.Body().set_game_type( sv_tags.GetString() );
+	// TODO(mcoms): this isn't really the right version, but we can make do.
+	msg.Body().set_version( UTIL_VarArgs( "%d", engine->GetServerVersion() ) );
+
+	// players
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex( i );
+		if ( !pPlayer || !pPlayer->IsConnected() || pPlayer->IsFakeClient() )
+			continue;
+
+		CSteamID steamId;
+		pPlayer->GetSteamID( &steamId );
+		// shouldn't happen, but other system will handle asserting for it
+		if ( !steamId.IsValid() )
+			continue;
+
+		CMsgGameServerData_Player* pPlayerData = msg.Body().add_players();
+		pPlayerData->set_steam_id( steamId.ConvertToUint64() );
+	}
+
+	// max players
+	int iMaxPlayers = gpGlobals->maxClients;
+	static ConVarRef sv_visiblemaxplayers( "sv_visiblemaxplayers" );
+	if ( sv_visiblemaxplayers.GetInt() > 0 && sv_visiblemaxplayers.GetInt() < iMaxPlayers )
+	{
+		iMaxPlayers = sv_visiblemaxplayers.GetInt();
+	}
+	msg.Body().set_max_players( iMaxPlayers );
+	msg.Body().set_bot_count( TheNextBots().GetNextBotCount() );
+
+	BSendMessageComtress( msg, UtlMakeDelegate( this, &CTFGCServerSystem::OnServerDataUpdated ) );
+}
+
+void CTFGCServerSystem::OnServerDataUpdated( GCSDK::CWebAPIValues* pResponse )
+{
+	static ConVarRef sv_private_token( "sv_private_token" );
+	if ( sv_private_token.GetString() && sv_private_token.GetString()[0] != '\0' && engine->IsDedicatedServer() )
+	{
+		return;
+	}
+	if ( GCSDK::CWebAPIValues* pData = pResponse->FindChild( "data" ) )
+	{
+		if ( pData->FindChild( "token" ) )
+		{
+			CUtlString sValue;
+			pData->GetChildStringValue( sValue, "token", "" );
+			if ( !sValue.IsEmpty() )
+			{
+				sv_private_token.SetValue( sValue.String() );
+			}
+		}
+	}
 }
 
 bool CTFGCServerSystem::SteamIDAllowedToConnect(const CSteamID &steamID) const
@@ -3354,7 +3581,6 @@ void CTFGCServerSystem::UpdateConnectedPlayersAndServerInfo( CMsgGameServerMatch
 		nBotCountToSend = -1;
 		sGameServerInfoMap = STRING( gpGlobals->mapname );
 		sGameServerInfoTags = sv_tags.GetString();
-		sGameServerInfoTags.Clear();
 
 		// Set the "map" to the current challenge, if in MvM
 		if ( TFGameRules()->IsMannVsMachineMode() )

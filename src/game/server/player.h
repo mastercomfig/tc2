@@ -174,6 +174,7 @@ enum PlayerConnectedState
 	PlayerConnected,
 	PlayerDisconnecting,
 	PlayerDisconnected,
+	PlayerConnecting,
 };
 
 extern bool gInitHUD;
@@ -1073,7 +1074,7 @@ private:
 	// char					m_szTeamName[TEAM_NAME_LENGTH];
 
 	// Multiplayer handling
-	PlayerConnectedState	m_iConnected;
+	PlayerConnectedState	m_iConnected = PlayerConnecting;
 
 	// from edict_t
 	// CBasePlayer doesn't send this but CCSPlayer does.

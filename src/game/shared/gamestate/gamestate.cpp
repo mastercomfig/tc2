@@ -23,6 +23,8 @@
 #include <codecvt>
 #include <tier0/platform.h>
 #include <tier3/tier3.h>
+#include "utlbuffer.h"
+#include "steam/steam_api.h"
 
 #ifdef TF_CLIENT_DLL
 #include "tf_hud_mainmenuoverride.h"
@@ -72,6 +74,70 @@ struct CWebRpcMessage
 	{
 		return lhs->m_iRpcId > rhs->m_iRpcId;
 	}
+};
+
+//-----------------------------------------------------------------------------
+// Purpose: Helper class to handle asynchronous HTTP fetch requests
+//-----------------------------------------------------------------------------
+class CHttpFetchRequest
+{
+public:
+	CHttpFetchRequest( int64_t iRpcId ) : m_iRpcId( iRpcId ) {}
+
+	void OnHTTPRequestCompleted( HTTPRequestCompleted_t *pInfo, bool bIOFailure )
+	{
+		std::string strResponse;
+		int eStatusCode = 0;
+		uint32 unSize = 0;
+
+		if ( bIOFailure || !pInfo )
+		{
+			DevMsg( "fetch(%lld): IO Failure or null result info\n", m_iRpcId );
+		}
+		else
+		{
+			eStatusCode = pInfo->m_eStatusCode;
+			if ( SteamHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unSize ) && unSize > 0 )
+			{
+				// Limit to 16MB for safety in CUtlBuffer and string concatenation
+				if ( unSize > 16 * 1024 * 1024 )
+				{
+					DevMsg( "fetch(%lld): Response too large (%u bytes), truncating.\n", m_iRpcId, unSize );
+					strResponse = "Response too large";
+					eStatusCode = 0;
+				}
+				else
+				{
+					CUtlBuffer buf( 0, unSize + 1, CUtlBuffer::TEXT_BUFFER );
+					if ( SteamHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, (uint8*)buf.Base(), unSize ) )
+					{
+						buf.SeekPut( CUtlBuffer::SEEK_HEAD, unSize );
+						((char*)buf.Base())[unSize] = '\0';
+						strResponse.assign( (const char*)buf.Base(), unSize );
+					}
+					else
+					{
+						DevMsg( "fetch(%lld): Failed to read response body data\n", m_iRpcId );
+					}
+				}
+			}
+		}
+
+		DevMsg( "fetch(%lld): Completed with status %d (%u bytes)\n", m_iRpcId, eStatusCode, unSize );
+
+		char szStatus[16];
+		V_snprintf( szStatus, sizeof( szStatus ), "%d ", eStatusCode );
+		GetGameStateManager()->QueueReturn( m_iRpcId, std::string( szStatus ) + strResponse );
+
+		if ( pInfo )
+		{
+			SteamHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
+		}
+		delete this;
+	}
+
+	CCallResult<CHttpFetchRequest, HTTPRequestCompleted_t> m_Callback;
+	int64_t m_iRpcId;
 };
 
 class CHTTPServerThread : public CThread
@@ -314,7 +380,16 @@ public:
 					{
 						if ( conn )
 						{
-							DevMsg( "ret(%d): %s\n", pReturn->m_iRpcId, pReturn->m_strValue );
+							if ( pReturn->m_strValue.length() > 512 )
+							{
+								std::string strTruncated = pReturn->m_strValue.substr( 0, 512 );
+								DevMsg( "ret(%lld): %s... [TRUNCATED, total %zu bytes]\n", (long long)pReturn->m_iRpcId, strTruncated.c_str(), pReturn->m_strValue.length() );
+							}
+							else
+							{
+								DevMsg( "ret(%lld): %s\n", (long long)pReturn->m_iRpcId, pReturn->m_strValue.c_str() );
+							}
+
 							conn->send_text( data.dump() );
 						}
 					}
@@ -379,13 +454,17 @@ public:
 					bExecutionAllowed = false;
 				}
 			}
+			DevMsg( "inc(%lld): %s %s\n", pMessage->m_iRpcId, pMessage->m_strMethod.c_str(), pMessage->m_strParams.c_str() );
 			if ( bExecutionAllowed )
 			{
-				std::unordered_map<std::string, std::function<std::string( const std::string& )>>::iterator funcIter;
+				std::unordered_map<std::string, std::function<std::pair<bool, std::string>( const std::string& params, int64_t iRpcId )>>::iterator funcIter;
 				if ( ( funcIter = m_Methods.find( pMessage->m_strMethod ) ) != m_Methods.end() )
 				{
-					const auto& ret = funcIter->second( std::string{ pMessage->m_strParams } );
-					QueueReturnNoLock( pMessage->m_iRpcId, ret );
+					const auto& ret = funcIter->second( std::string{ pMessage->m_strParams }, pMessage->m_iRpcId );
+					if ( ret.first )
+					{
+						QueueReturnNoLock( pMessage->m_iRpcId, ret.second );
+					}
 				}
 				else
 				{
@@ -419,7 +498,7 @@ public:
 		m_hThreadEvent.Set();
 	}
 
-	void RegisterMethod(std::string methodName, const std::function<std::string(const std::string& params) >& method)
+	void RegisterMethod( std::string methodName, const std::function<std::pair<bool, std::string>( const std::string& params, int64_t iRpcId )>& method )
 	{
 		if (!ThreadInMainThread())
 			return;
@@ -485,7 +564,7 @@ private:
 
 	int64_t m_iEventId = 1;
 
-	std::unordered_map<std::string, std::function<std::string(const std::string& psQuery)>> m_Methods;
+	std::unordered_map<std::string, std::function<std::pair<bool, std::string>( const std::string& psQuery, int64_t iRpcId )>> m_Methods;
 };
 
 CGameStateManager::CGameStateManager()
@@ -507,7 +586,7 @@ bool CGameStateManager::Init()
 
 	m_bInit = true;
 
-	RegisterMethod("localize", std::function([](const std::string& params)
+	RegisterMethod("localize", std::function([](const std::string& params, int64_t iRpcId)
 	{
 		std::string str;
 		if (g_pVGuiLocalize)
@@ -515,29 +594,29 @@ bool CGameStateManager::Init()
 			std::wstring text = g_pVGuiLocalize->Find(params.c_str());
 			std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 			str = converter.to_bytes(text);
-			return str;
+			return std::make_pair( true, str );
 		}
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("getcvar", std::function([](const std::string& params)
+	RegisterMethod( "getcvar", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str;
 		ConVarRef cvar(params.c_str(), true);
 		if (cvar.IsValid())
 		{
 			str = cvar.GetString();
-			return str;
+			return std::make_pair( true, str );
 		}
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("setcvar", std::function([](const std::string& params)
+	RegisterMethod( "setcvar", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str;
 		size_t iSpacePos = params.find(' ');
 		if (iSpacePos == std::string::npos)
-			return str;
+			return std::make_pair( true, str );
 
 		std::string cvarName = params.substr(0, iSpacePos);
 		std::string strVal = params.substr(iSpacePos + 1);
@@ -555,16 +634,16 @@ bool CGameStateManager::Init()
 				cvar.SetValue(flFloatVal);
 			}
 		}
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("cmd", std::function([](const std::string& params)
+	RegisterMethod( "cmd", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str;
 		// security check: no multiple commands
 		size_t iSemicolonPos = params.find(';');
 		if (iSemicolonPos != std::string::npos)
-			return str;
+			return std::make_pair( true, str );
 		std::string cmdName;
 		size_t iSpacePos = params.find(' ');
 		if (iSpacePos == std::string::npos)
@@ -575,20 +654,20 @@ bool CGameStateManager::Init()
 		ConCommandBase* pCmd = g_pCVar->FindCommandBase(cmdName.c_str());
 		if (!pCmd)
 		{
-			return str;
+			return std::make_pair( true, str );
 		}
 
 		// security check: no restricted flags
 		if (pCmd->IsFlagSet(FCVAR_CHEAT) || pCmd->IsFlagSet(FCVAR_DEVELOPMENTONLY))
 		{
-			return str;
+			return std::make_pair( true, str );
 		}
 
 		engine->ClientCmd_Unrestricted(params.c_str());
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("getmodes", std::function([](const std::string& params)
+	RegisterMethod( "getmodes", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		int iCount = 0;
 		vmode_s* pList = NULL;
@@ -600,42 +679,42 @@ bool CGameStateManager::Init()
 			CFmtStr res("%d %d;", pList->width, pList->height);
 			str += res.Get();
 		}
-		return str.substr(0, str.length() - 1);
+		return std::make_pair( true, str.substr( 0, str.length() - 1 ) );
 	}));
 
-	RegisterMethod("getmode", std::function([](const std::string& params)
+	RegisterMethod( "getmode", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		const MaterialSystem_Config_t& config = materials->GetCurrentConfigForVideoCard();
 
 		CFmtStr mode("%d %d %d %d", config.m_VideoMode.m_Width, config.m_VideoMode.m_Height, config.Windowed() ? 1 : 0, config.NoWindowBorder() ? 1 : 0);
 		std::string str = mode.Get();
 		
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("playsound", std::function([](const std::string& params)
+	RegisterMethod( "playsound", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		vgui::surface()->PlaySound(params.c_str());
 		std::string str;
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("getingame", std::function([](const std::string& params)
+	RegisterMethod( "getingame", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str = engine->IsInGame() && !engine->IsLevelMainMenuBackground() ? "1" : "0";
-		return str;
+		return std::make_pair( true, str );
 	}));
 
 #ifdef TF_CLIENT_DLL
-	RegisterMethod("mmcmd", std::function([](const std::string& params)
+	RegisterMethod( "mmcmd", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		GetMMDashboard()->OnCommand(params.c_str());
 		std::string str;
-		return str;
+		return std::make_pair( true, str );
 	}));
 #endif
 
-	RegisterMethod("uicmd", std::function([](const std::string& params)
+	RegisterMethod( "uicmd", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str;
 #ifdef TF_CLIENT_DLL
@@ -648,14 +727,74 @@ bool CGameStateManager::Init()
 		// TODO: implement for other games please
 #endif
 
-		return str;
+		return std::make_pair( true, str );
 	}));
 
-	RegisterMethod("openurl", std::function([](const std::string& params)
+	RegisterMethod( "openurl", std::function( []( const std::string& params, int64_t iRpcId )
 	{
 		std::string str;
 		UTIL_OpenWebPage(params.c_str());
-		return str;
+		return std::make_pair( true, str );
+	}));
+
+	RegisterMethod( "fetch", std::function( []( const std::string& params, int64_t iRpcId )
+	{
+		crow::json::rvalue data = crow::json::load( params );
+		if ( !data || data.t() != crow::json::type::Object || !data.has( "url" ) || data["url"].t() != crow::json::type::String )
+			return std::make_pair( true, std::string( "0 Invalid parameters" ) );
+
+		const std::string strURL = data["url"].s();
+		EHTTPMethod eMethod = k_EHTTPMethodGET;
+		if ( data.has( "method" ) && data["method"].t() == crow::json::type::String )
+		{
+			std::string strMethod = data["method"].s();
+			if ( !V_stricmp( strMethod.c_str(), "POST" ) ) eMethod = k_EHTTPMethodPOST;
+			else if ( !V_stricmp( strMethod.c_str(), "PUT" ) ) eMethod = k_EHTTPMethodPUT;
+			else if ( !V_stricmp( strMethod.c_str(), "DELETE" ) ) eMethod = k_EHTTPMethodDELETE;
+			else if ( !V_stricmp( strMethod.c_str(), "PATCH" ) ) eMethod = k_EHTTPMethodPATCH;
+			else if ( !V_stricmp( strMethod.c_str(), "HEAD" ) ) eMethod = k_EHTTPMethodHEAD;
+		}
+
+		HTTPRequestHandle hRequest = SteamHTTP()->CreateHTTPRequest( eMethod, strURL.c_str() );
+		if ( hRequest != INVALID_HTTPREQUEST_HANDLE )
+		{
+			if ( data.has( "body" ) && data["body"].t() == crow::json::type::String )
+			{
+				std::string strBody = data["body"].s();
+				SteamHTTP()->SetHTTPRequestRawPostBody( hRequest, "application/json", ( uint8* )strBody.c_str(), strBody.length() );
+			}
+
+			if ( data.has( "headers" ) && data["headers"].t() == crow::json::type::Object )
+			{
+				for ( auto& item : data["headers"] )
+				{
+					if ( item.t() == crow::json::type::String )
+					{
+						std::string key = item.key();
+						std::string val = item.s();
+						SteamHTTP()->SetHTTPRequestHeaderValue( hRequest, key.c_str(), val.c_str() );
+					}
+				}
+			}
+
+			DevMsg( "fetch(%lld): Requesting %s %s\n", iRpcId, eMethod == k_EHTTPMethodGET ? "GET" : ( eMethod == k_EHTTPMethodPOST ? "POST" : "OTHER" ), strURL.c_str() );
+
+			CHttpFetchRequest* pRequest = new CHttpFetchRequest( iRpcId );
+			SteamAPICall_t hApiCall;
+			if ( SteamHTTP()->SendHTTPRequest( hRequest, &hApiCall ) )
+			{
+				pRequest->m_Callback.Set( hApiCall, pRequest, &CHttpFetchRequest::OnHTTPRequestCompleted );
+				return std::make_pair( false, std::string() );
+			}
+			else
+			{
+				DevMsg( "fetch(%lld): Failed to start request to %s\n", iRpcId, strURL.c_str() );
+				SteamHTTP()->ReleaseHTTPRequest( hRequest );
+				delete pRequest;
+			}
+		}
+
+		return std::make_pair( true, std::string( "0 Failed to start request" ) );
 	}));
 
 	return true;
@@ -697,8 +836,7 @@ void CGameStateManager::FireGameEvent(IGameEvent* event)
 	QueueEvent( "gsi", data );
 }
 
-void CGameStateManager::RegisterMethod(std::string methodName,
-                                       const std::function<std::string(const std::string& params)>& method)
+void CGameStateManager::RegisterMethod( std::string methodName, const std::function<std::pair<bool, std::string>( const std::string& params, int64_t iRpcId )>& method )
 {
 	if (!m_bInit)
 		return;
@@ -716,6 +854,16 @@ void CGameStateManager::UnregisterMethod(std::string methodName)
 	Assert(m_pServerThread);
 
 	m_pServerThread->UnregisterMethod(methodName);
+}
+
+void CGameStateManager::QueueReturn(int64_t iRpcId, const std::string& strValue)
+{
+	if ( !m_bInit )
+		return;
+
+	Assert( m_pServerThread );
+
+	m_pServerThread->QueueReturn( iRpcId, strValue );
 }
 
 void CGameStateManager::QueueEvent(const std::string& strEvent, const std::string& strParams)

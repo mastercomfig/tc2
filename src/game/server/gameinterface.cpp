@@ -1911,6 +1911,9 @@ const char *CServerGameDLL::GetServerBrowserMapOverride()
 
 const char *CServerGameDLL::GetServerBrowserGameData()
 {
+	// this is called when the steam server wants an update, so apply the update.
+	GTFGCClientSystem()->UpdateServerDataAndRefresh();
+
 	CUtlString sResult;
 
 #ifdef TF_DLL

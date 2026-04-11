@@ -24,7 +24,6 @@ pl_swiftwater_final1
 cp_mercenarypark
 cp_mossrock
 pl_enclosure_final
-plr_bananabay
 koth_lazarus
 koth_brazil
 pl_pier

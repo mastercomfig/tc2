@@ -63,7 +63,7 @@
 	"scriptsound"	"Announcer.TheirTeamWiped"
 	"scriptsound"	"Announcer.YourTeamWiped"
 	"scriptsound"	"Announcer.TeamWipeRed"
-	"scriptsound"	"Announcer.TeamWipeBlue"
+	"scriptsound"	"Announcer.TeamWipeBlu"
 	"scriptsound"	"Announcer.Slaughter"
 	"scriptsound"	"MatchMaking.MatchEndBlueWinMusic"
 	"scriptsound"	"MatchMaking.MatchEndRedWinMusic"

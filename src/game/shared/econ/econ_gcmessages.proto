@@ -254,11 +254,7 @@ enum EGCItemMsg
 	k_EMsgGCItemPreviewExpire =					1705;
 	k_EMsgGCItemPreviewExpireNotification =		1706;
 
-// !FIXME! DOTAMERGE
-// This message is 1707 in DOTA, but it came from TF, where it was 1707 at one time, then switched to 1708
-// when the message format changed.
-//	k_EMsgGCItemPreviewItemBoughtNotification = 1707;
-	k_EMsgGCItemPreviewItemBoughtNotification = 1708;
+	k_EMsgGCItemPreviewItemBoughtNotification = 1707;
 
 	// Development only messages
 	k_EMsgGCDev_NewItemRequest =				2001;
