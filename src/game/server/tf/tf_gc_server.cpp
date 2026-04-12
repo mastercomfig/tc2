@@ -1253,6 +1253,14 @@ public:
 };
 GC_REG_JOB( GCSDK::CGCClient, CGCKickPlayerFromLobbyJob, "CGCKickPlayerFromLobbyJob", k_EMsgGC_KickPlayerFromLobby, GCSDK::k_EServerTypeGCClient );
 
+ConVar sv_debug_game_server_update( "sv_debug_game_server_update", "0", FCVAR_HIDDEN );
+
+#define MsgGameServerUpdate( ... )					 \
+	do												 \
+	{												 \
+		if ( sv_debug_game_server_update.GetBool() ) \
+			::Msg( __VA_ARGS__ );					 \
+	} while ( false )
 
 //-----------------------------------------------------------------------------
 CTFGCServerSystem::CTFGCServerSystem()
@@ -1386,6 +1394,7 @@ void CTFGCServerSystem::LevelInitPostEntity()
 	if ( m_flNextGameServerDataUpdate == -1.0 )
 	{
 		m_flNextGameServerDataUpdate = CRTime::RTime32TimeCur() + 5.0;
+		MsgGameServerUpdate( "[GameServerUpdate] LevelInitPostEntity: Update Queued: %f (in %f)\n", m_flNextGameServerDataUpdate, m_flNextGameServerDataUpdate - CRTime::RTime32TimeCur() );
 	}
 }
 
@@ -1513,6 +1522,7 @@ void CTFGCServerSystem::PreClientUpdate( )
 
 	if ( m_flNextGameServerDataUpdate > 0 && m_flNextGameServerDataUpdate <= CRTime::RTime32TimeCur() )
 	{
+		MsgGameServerUpdate( "[GameServerUpdate] PreClientUpdate: Doing game server data update\n");
 		m_flNextGameServerDataUpdate = 0.0;
 		UpdateServerDataAndRefresh();
 	}
@@ -2438,22 +2448,24 @@ void CTFGCServerSystem::FireGameEvent( IGameEvent *event )
 				if ( IPs.Count() < 4 )
 				{
 					m_iServerIP = 0;
-					return;
 				}
-
-				byte ip[4];
-				m_iServerIP = 0;
-				for ( int i=0; i<IPs.Count() && i<4; ++i )
+				else
 				{
-					ip[i] = (byte) Q_atoi( IPs[i] );
+					byte ip[4];
+					m_iServerIP = 0;
+					for ( int i = 0; i < IPs.Count() && i < 4; ++i )
+					{
+						ip[i] = ( byte )Q_atoi( IPs[i] );
+					}
+					m_iServerIP = ( ip[0] << 24 ) + ( ip[1] << 16 ) + ( ip[2] << 8 ) + ip[3];
 				}
-				m_iServerIP = (ip[0]<<24) + (ip[1]<<16) + (ip[2]<<8) + ip[3];
 			}
 			else
 			{
 				V_strncpy( m_pzServerIP, "No Server Address", sizeof( m_pzServerIP ) );
 				m_iServerIP = 0;
 			}
+			MsgGameServerUpdate( "[GameServerUpdate] server_spawn: set IP & port %s %d %d\n", m_pzServerIP, m_iServerIP, m_iServerPort );
 		}
 
 		{
@@ -2466,6 +2478,7 @@ void CTFGCServerSystem::FireGameEvent( IGameEvent *event )
 			{
 				V_strncpy( m_pzHostName, "No Host Name", sizeof( m_pzHostName ) );
 			}
+			MsgGameServerUpdate( "[GameServerUpdate] server_spawn: hostname %s\n", m_pzHostName );
 		}
 
 		// Override with fake IP
@@ -2478,21 +2491,25 @@ void CTFGCServerSystem::FireGameEvent( IGameEvent *event )
 			{
 				m_iServerIP = netAdrFakeIP.GetIPHostByteOrder();
 				m_iServerPort = netAdrFakeIP.GetPort();
+				MsgGameServerUpdate( "[GameServerUpdate] server_spawn: updated IP & port %d %d\n", m_iServerIP, m_iServerPort );
 			}
 		}
 
 		if ( bFirstTime )
 		{
+			MsgGameServerUpdate( "[GameServerUpdate] server_spawn: first time\n" );
 			// mark this as first time
 			m_flNextGameServerDataUpdate = -1.0;
 		}
 		else
 		{
+			MsgGameServerUpdate( "[GameServerUpdate] server_spawn\n" );
 			UpdateServerData();
 		}
 	}
 	else if ( FStrEq( event->GetName(), "server_shutdown" ) )
 	{
+		MsgGameServerUpdate( "[GameServerUpdate] server_shutdown\n" );
 		// TODO(mcoms): this doesn't really work :/
 		UpdateServerData( true );
 	}
@@ -2819,19 +2836,23 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 	// we want this to act as a queue, so we don't want to fulfill too early.
 	if ( m_flNextGameServerDataUpdate > CRTime::RTime32TimeCur() )
 	{
+		MsgGameServerUpdate( "[GameServerUpdate] UpdateServerDataAndRefresh: not ready\n" );
 		return;
 	}
+	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerDataAndRefresh: ready\n" );
 	m_flNextGameServerDataUpdate = 0.0;
 	IServer* pGameServer = engine->GetIServer();
 	netadr_t netAdrIP;
 	if ( pGameServer )
 	{
+		MsgGameServerUpdate( "[GameServerUpdate] UpdateServerDataAndRefresh: updated port\n" );
 		m_iServerPort = pGameServer->GetLocalUDPPort();
 		netAdrIP = pGameServer->GetPublicAddress();
 		if ( netAdrIP.IsValid() )
 		{
 			m_iServerIP = netAdrIP.GetIPHostByteOrder();
 			m_iServerPort = netAdrIP.GetPort();
+			MsgGameServerUpdate( "[GameServerUpdate] UpdateServerDataAndRefresh: updated IP & port\n" );
 		}
 	}
 	UpdateServerData();
@@ -2839,12 +2860,15 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 
 void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 {
-	const bool bNotReady = m_iServerIP == 0 || m_iServerPort == 0 || SteamGameServer_GetSteamID() <= 1;
+	const bool bNotReady = m_iServerIP == 0 || m_iServerPort == 0 || SteamGameServer()->GetSteamID().ConvertToUint64() <= 1;
+	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerData: ready conds: %d %d %lld\n", m_iServerIP, m_iServerPort, SteamGameServer()->GetSteamID().ConvertToUint64() );
 	if ( bNotReady && !bShutdown )
 	{
 		m_flNextGameServerDataUpdate = Max( m_flNextGameServerDataUpdate, CRTime::RTime32TimeCur() + 1.0);
 		return;
 	}
+
+	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerData: posting message\n");
 
 	GCSDK::CProtoBufMsg<CMsgGameServerData> msg( k_EMsgGC_GameServer_UpdateData );
 	msg.Body().set_revision( 1 );
@@ -2865,8 +2889,8 @@ void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 			.set_os( "l" );
 #endif
 
-	msg.Body().set_server_steamid( SteamGameServer_GetSteamID() );
-	msg.Body().set_secure( SteamGameServer_BSecure() );
+	msg.Body().set_server_steamid( SteamGameServer()->GetSteamID().ConvertToUint64() );
+	msg.Body().set_secure( SteamGameServer()->BSecure() );
 	msg.Body().set_dedicated( engine->IsDedicatedServer() );
 	msg.Body().set_map( bShutdown ? "" : gpGlobals->mapname.ToCStr() );
 	msg.Body().set_app_id( engine->GetAppID() );
