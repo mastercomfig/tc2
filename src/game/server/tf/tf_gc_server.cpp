@@ -2815,12 +2815,13 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 		m_bInSteamServerFrame = false;
 		return;
 	}
-	if ( m_flNextGameServerDataUpdate > 0.0 && m_flNextGameServerDataUpdate <= CRTime::RTime32TimeCur() )
+	// if this isn't an early update, then fulfill the update.
+	// we want this to act as a queue, so we don't want to fulfill too early.
+	if ( m_flNextGameServerDataUpdate > CRTime::RTime32TimeCur() )
 	{
-		// if this isn't an early update, then fulfill the update.
-		// we want this to act as a queue, so we don't want to fulfill too early.
-		m_flNextGameServerDataUpdate = 0.0;
+		return;
 	}
+	m_flNextGameServerDataUpdate = 0.0;
 	IServer* pGameServer = engine->GetIServer();
 	netadr_t netAdrIP;
 	if ( pGameServer )
