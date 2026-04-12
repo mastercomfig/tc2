@@ -2838,7 +2838,8 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 
 void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 {
-	if ( m_iServerIP == 0 && !bShutdown )
+	const bool bNotReady = m_iServerIP == 0 || m_iServerPort < 1024 || m_iServerPort > 65535 || SteamGameServer_GetSteamID() <= 1;
+	if ( bNotReady && !bShutdown )
 	{
 		m_flNextGameServerDataUpdate = Max( m_flNextGameServerDataUpdate, CRTime::RTime32TimeCur() + 1.0);
 		return;
