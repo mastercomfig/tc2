@@ -588,14 +588,15 @@ void CJiggleBones::BuildJiggleTransformations( int boneIndex, float currenttime,
 
 		data->lastBoingPos = goalBasePosition;
 
-		float speed = vel.NormalizeInPlace();
-		if ( speed < 0.00001f )
+		float speed;
+		if ( vel.IsZero() )
 		{
 			vel = Vector( 0, 0, 1.0f );
 			speed = 0.0f;
 		}
 		else
 		{
+			speed = vel.NormalizeInPlace();
 			speed /= deltaT;
 		}
 
