@@ -210,6 +210,11 @@ void HTML::OnBrowserReady( HTML_BrowserReady_t *pBrowserReady, bool bIOFailure )
 		PostURL( m_sPendingURLLoad, m_sPendingPostData, false );
 		m_sPendingURLLoad.Clear();
 	}
+
+	if ( m_SteamAPIContext.SteamHTMLSurface() )
+	{
+		m_SteamAPIContext.SteamHTMLSurface()->SetBackgroundMode( m_unBrowserHandle, !IsVisible() );
+	}
 }
 
 
@@ -636,6 +641,19 @@ void HTML::OnCursorMoved(int x,int y)
 		{
 //			input()->SetCursorOveride( dc_alias );
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: toggle background mode when visibility changes
+//-----------------------------------------------------------------------------
+void HTML::SetVisible( bool state )
+{
+	BaseClass::SetVisible( state );
+
+	if ( m_unBrowserHandle != INVALID_HTMLBROWSER && m_SteamAPIContext.SteamHTMLSurface() )
+	{
+		m_SteamAPIContext.SteamHTMLSurface()->SetBackgroundMode( m_unBrowserHandle, !state );
 	}
 }
 
@@ -1295,6 +1313,10 @@ void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 		surface()->DrawSetTextureRGBAEx( m_iHTMLTextureID, (const unsigned char *)pCallback->pBGRA, pCallback->unWide, pCallback->unTall, IMAGE_FORMAT_BGRA8888 );// BR FIXME - this call seems to shift by some number of pixels?
 		m_allocedTextureWidth = pCallback->unWide;
 		m_allocedTextureHeight = pCallback->unTall;
+	}
+	else if ( (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 )
+	{
+		surface()->DrawUpdateRegionTextureRGBA( m_iHTMLTextureID, pCallback->unUpdateX, pCallback->unUpdateY, (const unsigned char *)pCallback->pBGRA, pCallback->unUpdateWide, pCallback->unUpdateTall, IMAGE_FORMAT_BGRA8888 );
 	}
 	else
 	{

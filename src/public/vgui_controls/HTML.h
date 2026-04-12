@@ -60,6 +60,7 @@ public:
 	virtual void OnSetHTMLTitle( const char *pchTitle ) {}
 	virtual void OnLinkAtPosition( const char *pchURL ) {}
 	virtual void OnURLChanged( const char *url, const char *pchPostData, bool bIsRedirect ) {}
+	virtual void SetVisible(bool state) OVERRIDE;
 
 	virtual bool OnOpenNewTab( const char *pchURL, bool bForeground ) { return false; }
 
