@@ -2246,9 +2246,12 @@ bool CTFGameRules::GameModeUsesUpgrades( void )
 	if ( IsMannVsMachineMode() || IsBountyMode() )
 		return true;
 
+	// TODO(mcoms): no upgrades for now
+#if 0
 	static ConVarRef tf_tc2_mode( "tf_tc2_mode" );
 	if ( tf_tc2_mode.GetBool() )
 		return true;
+#endif
 
 	return false;
 }
