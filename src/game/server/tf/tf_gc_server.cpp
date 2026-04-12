@@ -2860,8 +2860,9 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 
 void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 {
-	const bool bNotReady = m_iServerIP == 0 || m_iServerPort == 0 || SteamGameServer()->GetSteamID().ConvertToUint64() <= 1;
-	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerData: ready conds: %d %d %lld\n", m_iServerIP, m_iServerPort, SteamGameServer()->GetSteamID().ConvertToUint64() );
+	const uint64 iSteamId = SteamGameServer() ? SteamGameServer()->GetSteamID().ConvertToUint64() : 0;
+	const bool bNotReady = m_iServerIP == 0 || m_iServerPort == 0 || iSteamId <= 1;
+	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerData: ready conds: %d %d %lld\n", m_iServerIP, m_iServerPort, iSteamId );
 	if ( bNotReady && !bShutdown )
 	{
 		m_flNextGameServerDataUpdate = Max( m_flNextGameServerDataUpdate, CRTime::RTime32TimeCur() + 1.0);
@@ -2889,8 +2890,8 @@ void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 			.set_os( "l" );
 #endif
 
-	msg.Body().set_server_steamid( SteamGameServer()->GetSteamID().ConvertToUint64() );
-	msg.Body().set_secure( SteamGameServer()->BSecure() );
+	msg.Body().set_server_steamid( iSteamId );
+	msg.Body().set_secure( SteamGameServer() ? SteamGameServer()->BSecure() : false );
 	msg.Body().set_dedicated( engine->IsDedicatedServer() );
 	msg.Body().set_map( bShutdown ? "" : gpGlobals->mapname.ToCStr() );
 	msg.Body().set_app_id( engine->GetAppID() );
