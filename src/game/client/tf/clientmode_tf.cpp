@@ -901,7 +901,7 @@ void ClientModeTFNormal::FireGameEvent( IGameEvent *event )
 		// Make sure they're not doing a dead ringer fake death
 		if ( ( event->GetInt( "death_flags" ) & TF_DEATH_FEIGN_DEATH ) == 0 )
 		{
-			if ( TFGameRules() && ( TFGameRules()->IsInPlay() ) && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsInTournamentMode() ) )
+			if ( g_TF_PR && TFGameRules() && ( TFGameRules()->IsInPlay() ) && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsInTournamentMode() ) )
 			{
 				int nVictimIndex = event->GetInt( "victim_entindex" );
 				int nVictimTeam = g_TF_PR->GetTeam( nVictimIndex );
