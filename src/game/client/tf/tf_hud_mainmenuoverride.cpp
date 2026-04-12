@@ -376,6 +376,10 @@ void CHudMainMenuOverride::OnTick()
 					{
 						GetGameStateManager()->QueueEvent( "closedmenu", "" );
 					}
+					else
+					{
+						GetGameStateManager()->QueueEvent( "openedmenu", "" );
+					}
 					m_pMainMenuWebUi->SetVisible( bGameUIVisible );
 				}
 			}
