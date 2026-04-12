@@ -90,6 +90,7 @@ elif [ $PLATFORM = "linux" ]; then
   FILES_REP+=(
     start_dedicated_tc2.sh
     update_dedicated.sh
+    steamcmd_update.sh
     srcds_run_64
     tc2.sh
     hl2.sh
