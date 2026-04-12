@@ -13,6 +13,7 @@
 #include "utlmap.h"
 #include "team.h"
 #include "teamplay_gamerules.h"
+#include "teamplay_round_timer.h"
 #include "team_control_point.h"
 #include "trigger_area_capture.h"
 #include "team_objectiveresource.h"
@@ -186,6 +187,10 @@ private:
 	void InputSetWinner( inputdata_t &inputdata );
 	void InputSetWinnerAndForceCaps( inputdata_t &inputdata );
 	void InputSetCapLayout( inputdata_t &inputdata );
+
+	void UpdateBaseDefenseTimer( void );
+	CHandle<CTeamRoundTimer> m_hBaseDefenseTimer;
+	bool m_bInBaseDefense[MAX_TEAMS];
 	void InputSetCapLayoutCustomPositionX( inputdata_t &inputdata );
 	void InputSetCapLayoutCustomPositionY( inputdata_t &inputdata );
 

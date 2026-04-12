@@ -97,6 +97,8 @@ void CTeamControlPointMaster::Spawn( void )
 	m_iCurrentRoundIndex = -1;
   	m_bFirstRoundAfterRestart = true;
 	m_flLastOwnershipChangeTime = -1;
+	m_hBaseDefenseTimer = NULL;
+	memset( m_bInBaseDefense, 0, sizeof( m_bInBaseDefense ) );
 
 	BaseClass::Spawn();
 
@@ -271,59 +273,83 @@ void CTeamControlPointMaster::Activate( void )
 				};
 
 				// We must set the previous points locally on the CTeamControlPoint entity, and ObjectiveResource (for HUD)
-				// Assign Red base prerequisites (Red middle points required for BLU to cap RED base)
-				if ( iRedBase != -1 )
+				for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
 				{
-					for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
-					{
-						CTeamControlPoint *pPoint = m_ControlPoints[i];
-						if ( pPoint && pPoint->GetPointIndex() == iRedBase )
-						{
-							for ( int j = 0; j < vecRedMiddle.Count() && j < MAX_PREVIOUS_POINTS; ++j )
-							{
-								g_pObjectiveResource->SetPreviousPoint( iRedBase, TF_TEAM_BLUE, j, vecRedMiddle[j] ); 
-								
-								// We need to bypass encapsulation for the tc2 override logic because m_TeamData is private and has no setter 
-								// Since this is CTeamControlPointMaster, we can't directly assign to m_TeamData inside CTeamControlPoint.
-								// So instead, we parse the "team_previouspoint_2_0" keys and pass them through KeyValue.
-								char szKey[128];
-								char szVal[128];
-								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, j );
-								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
-								pPoint->KeyValue( szKey, szVal );
-							}
-						}
-						else
-						{
-							pPoint->SetWarnOnCap( CP_WARN_NORMAL );
-							g_pObjectiveResource->SetWarnOnCap( pPoint->GetPointIndex(), CP_WARN_NORMAL );
-						}
-					}
-				}
+					CTeamControlPoint *pPoint = m_ControlPoints[i];
+					if ( !pPoint ) continue;
 
-				// Assign Blu base prerequisites (Blu middle points required for RED to cap BLU base)
-				if ( iBluBase != -1 )
-				{
-					for ( unsigned int i = 0; i < m_ControlPoints.Count(); ++i )
+					int iIndex = pPoint->GetPointIndex();
+
+					pPoint->SetWarnOnCap( CP_WARN_NORMAL );
+					g_pObjectiveResource->SetWarnOnCap( iIndex, CP_WARN_NORMAL );
+
+					// Dependencies for RED team (targets are BLU points)
+					if ( iIndex == iBluBase || pPoint->GetDefaultOwner() == TF_TEAM_BLUE )
 					{
-						CTeamControlPoint *pPoint = m_ControlPoints[i];
-						if ( pPoint && pPoint->GetPointIndex() == iBluBase )
+						int iPrevCount = 0;
+						
+						// RED must own ALL RED middle points to capture ANY BLU territory
+						for ( int j = 0; j < vecRedMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
 						{
-							for ( int j = 0; j < vecBluMiddle.Count() && j < MAX_PREVIOUS_POINTS; ++j )
+							g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, vecRedMiddle[j] );
+							
+							char szKey[128];
+							char szVal[128];
+							Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, iPrevCount );
+							Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
+							pPoint->KeyValue( szKey, szVal );
+							iPrevCount++;
+						}
+						
+						// IF it's the BLU base, RED must ALSO own ALL BLU middle points
+						if ( iIndex == iBluBase )
+						{
+							for ( int j = 0; j < vecBluMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
 							{
-								g_pObjectiveResource->SetPreviousPoint( iBluBase, TF_TEAM_RED, j, vecBluMiddle[j] );
+								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, vecBluMiddle[j] );
 								
 								char szKey[128];
 								char szVal[128];
-								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, j );
+								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, iPrevCount );
 								Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
 								pPoint->KeyValue( szKey, szVal );
+								iPrevCount++;
 							}
 						}
-						else
+					}
+
+					// Dependencies for BLU team (targets are RED points)
+					if ( iIndex == iRedBase || pPoint->GetDefaultOwner() == TF_TEAM_RED )
+					{
+						int iPrevCount = 0;
+						
+						// BLU must own ALL BLU middle points to capture ANY RED territory
+						for ( int j = 0; j < vecBluMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
 						{
-							pPoint->SetWarnOnCap( CP_WARN_NORMAL );
-							g_pObjectiveResource->SetWarnOnCap( pPoint->GetPointIndex(), CP_WARN_NORMAL );
+							g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, vecBluMiddle[j] );
+							
+							char szKey[128];
+							char szVal[128];
+							Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, iPrevCount );
+							Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
+							pPoint->KeyValue( szKey, szVal );
+							iPrevCount++;
+						}
+						
+						// IF it's the RED base, BLU must ALSO own ALL RED middle points
+						if ( iIndex == iRedBase )
+						{
+							for ( int j = 0; j < vecRedMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
+							{
+								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, vecRedMiddle[j] );
+								
+								char szKey[128];
+								char szVal[128];
+								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, iPrevCount );
+								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
+								pPoint->KeyValue( szKey, szVal );
+								iPrevCount++;
+							}
 						}
 					}
 				}
@@ -796,6 +822,9 @@ void CTeamControlPointMaster::CPMThink( void )
 	// If we call this from team_control_point, this function should never 
 	// trigger a win. but we'll leave it here just in case.
 	CheckWinConditions();
+
+	// Check if any team is pushed to base defense
+	UpdateBaseDefenseTimer();
 
 	// the next time we 'think'
 	SetContextThink( &CTeamControlPointMaster::CPMThink, gpGlobals->curtime + 0.2, CPM_THINK );
@@ -1456,6 +1485,96 @@ int CTeamControlPointMaster::CalcNumRoundsRemaining( int iTeam )
 float CTeamControlPointMaster::GetPartialCapturePointRate( void )
 {
 	return m_flPartialCapturePointsRate;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Called to update our timers for the base defense mechanic
+//-----------------------------------------------------------------------------
+void CTeamControlPointMaster::UpdateBaseDefenseTimer( void )
+{
+#if defined( TF_DLL )
+	extern ConVar tf_tc2_mode;
+	if ( !tf_tc2_mode.GetBool() )
+		return;
+
+	int iTeamInDefense = TEAM_UNASSIGNED;
+
+	for ( int iTeam = FIRST_GAME_TEAM; iTeam < GetNumberOfTeams(); iTeam++ )
+	{
+		int iNumPointsOwned = GetNumPointsOwnedByTeam( iTeam );
+		if ( iNumPointsOwned == 1 )
+		{
+			// Find the point they own
+			for ( unsigned int i = 0; i < m_ControlPoints.Count(); i++ )
+			{
+				if ( m_ControlPoints[i]->GetOwner() == iTeam && IsBaseControlPoint( m_ControlPoints[i]->GetPointIndex() ) )
+				{
+					iTeamInDefense = iTeam;
+					break;
+				}
+			}
+		}
+	}
+
+	// if no team is pushed back or multiple somehow, kill timer
+	if ( iTeamInDefense == TEAM_UNASSIGNED )
+	{
+		if ( m_hBaseDefenseTimer )
+		{
+			m_hBaseDefenseTimer->AcceptInput( "Kill", NULL, NULL, variant_t(), 0 );
+			m_hBaseDefenseTimer = NULL;
+		}
+		for ( int i = 0; i < MAX_TEAMS; i++ )
+			m_bInBaseDefense[i] = false;
+		return;
+	}
+
+	if ( !m_bInBaseDefense[iTeamInDefense] )
+	{
+		// They just got pushed back, spawn the timer
+		if ( !m_hBaseDefenseTimer )
+		{
+			m_hBaseDefenseTimer = ( CTeamRoundTimer* )CBaseEntity::Create( "team_round_timer", vec3_origin, vec3_angle );
+			if ( m_hBaseDefenseTimer )
+			{
+				m_hBaseDefenseTimer->SetName( MAKE_STRING( "zz_base_defense_timer" ) );
+				m_hBaseDefenseTimer->SetShowInHud( true );
+
+				variant_t sVariant;
+				sVariant.SetInt( 360 ); // 6 minutes
+				m_hBaseDefenseTimer->AcceptInput( "SetTime", NULL, NULL, sVariant, 0 );
+				m_hBaseDefenseTimer->AcceptInput( "Resume", NULL, NULL, variant_t(), 0 );
+
+				if ( ObjectiveResource() )
+				{
+					ObjectiveResource()->SetTimerInHUD( m_hBaseDefenseTimer );
+				}
+			}
+		}
+
+		m_bInBaseDefense[iTeamInDefense] = true;
+	}
+
+	// Wait for the timer to expire
+	if ( m_hBaseDefenseTimer && m_hBaseDefenseTimer->GetTimeRemaining() <= 0.0f )
+	{
+		// They survived! Time to award them the two middle points
+		m_hBaseDefenseTimer->AcceptInput( "Kill", NULL, NULL, variant_t(), 0 );
+		m_hBaseDefenseTimer = NULL;
+		m_bInBaseDefense[iTeamInDefense] = false;
+
+		// Find the two middle points belonging to the enemy team and set their owner to the defending team
+		int iEnemyTeam = ( iTeamInDefense == TF_TEAM_RED ) ? TF_TEAM_BLUE : TF_TEAM_RED;
+
+		for ( unsigned int i = 0; i < m_ControlPoints.Count(); i++ )
+		{
+			if ( !IsBaseControlPoint( m_ControlPoints[i]->GetPointIndex() ) && m_ControlPoints[i]->GetOwner() == iEnemyTeam && m_ControlPoints[i]->GetDefaultOwner() == iTeamInDefense )
+			{
+				m_ControlPoints[i]->ForceOwner( iTeamInDefense );
+			}
+		}
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
