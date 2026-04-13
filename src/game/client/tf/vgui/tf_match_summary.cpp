@@ -1054,7 +1054,7 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 
 	int iTimeLeft = ( TFGameRules() && TFGameRules()->GetTimeLeft() > 0 ) ? TFGameRules()->GetTimeLeft() : 0;
 
-	const bool bTieBreaker = iTimeLeft == 0 && ( TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) ) == TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLU ) ) );
+	const bool bTieBreaker = iTimeLeft == 0 && ( TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) ) == TFGameRules()->GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) ) );
 
 	m_pMatchSeriesLabel->SetVisible( true );
 	m_pMatchNextSeriesLabel->SetVisible( true );
