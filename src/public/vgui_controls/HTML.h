@@ -73,6 +73,8 @@ public:
 	bool IsScrolledToBottom();
 	bool IsScrollbarVisible();
 
+	void ForceFullTextureUpload() { m_bNeedsFullTextureUpload = true; }
+
 	// url handlers, lets you have web page links fire vgui events
 	// use to have custom web page links, eg. "steam://open/subscriptionpage"
 	// message contains "CustomURL", "url"
