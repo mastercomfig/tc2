@@ -1442,7 +1442,7 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	{
 		for ( int i = 0; i < NUM_VOTE_PANELS; i++ )
 		{
-			if ( !m_pVotePanels[ i ]->m_bVotingActive && m_pVotePanels[i]->m_nVoteIdx == nVoteIdx )
+			if ( !m_pVotePanels[ i ]->m_bVotingActive )
 			{
 				pVotePanel = m_pVotePanels[ i ];
 				break;
@@ -2232,7 +2232,7 @@ void CHudVotePanel::OnThink()
 					Q_snprintf( szCount, sizeof( szCount ), "%d", m_nVoteOptionCount[index] );
 
 					char szCountLabel[k_MAX_VOTE_NAME_LENGTH] = "";
-					Q_snprintf( szCountLabel, sizeof(szCountLabel), "Option%dCountLabel", index );
+					Q_snprintf( szCountLabel, sizeof( szCountLabel ), "Option%dCountLabel", index + 1 );
 
 					m_pVoteActive->SetControlString( szCountLabel, szCount );
 				}
