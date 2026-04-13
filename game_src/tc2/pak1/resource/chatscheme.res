@@ -218,29 +218,32 @@ Scheme
 	// describes all the fonts
 	Fonts
 	{
-
 		"Default"
 		{
+			"isproportional" "only"
 			"1"
 			{
-				"name"		"Verdana"
-				"tall"		"12"
+				"name"		"SN Pro"
+				"tall"		"12" [!$POSIX]
+				"tall"		"14" [$POSIX]
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"480 599"
 			}
 			"2"
 			{
-				"name"		"Verdana"
-				"tall"		"13"
+				"name"		"SN Pro"
+				"tall"		"13" [!$POSIX]
+				"tall"		"16" [$POSIX]
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"600 767"
 			}
 			"3"
 			{
-				"name"		"Verdana"
-				"tall"		"14"
+				"name"		"SN Pro"
+				"tall"		"14" [!$POSIX]
+				"tall"		"16" [$POSIX]
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"768 1023"
@@ -248,20 +251,20 @@ Scheme
 			}
 			"4"
 			{
-				"name"		"Verdana"
-				"tall"		"16"
+				"name"		"SN Pro"
+				"tall"		"16" [!$POSIX]
+				"tall"		"18" [$POSIX]
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"1024 1199"
 				"antialias"	"1"
 			}
-			"5"
+			"5" // Misyl: Proportional
 			{
-				"name"		"Verdana"
-				"tall"		"20"
+				"name"		"SN Pro"
+				"tall"		"8"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
-				"yres"	"1200 6000"
 				"antialias"	"1"
 			}
 		}
@@ -358,55 +361,53 @@ Scheme
 
 		"ChatFont"
 		{
+			"isproportional" "only"
 			"1"
 			{
-				"name"		"TF2 Secondary"
-				"tall"		"16"	[$WIN32]
-				"tall"		"16"	[$X360]
+				"name"		"SN Pro"
+				"tall"		"12"	[!$POSIX]
+				"tall"		"15"	[$POSIX]
 				"weight"	"700"
-				"antialias" "1"
 				"yres"		"480 599"
 				"dropshadow"	"1"
 			}
 			"2"
 			{
-				"name"		"TF2 Secondary"
-				"tall"		"16"	[$WIN32]
-				"tall"		"16"	[$X360]
+				"name"		"SN Pro"
+				"tall"		"14"	[!$POSIX]
+				"tall"		"17"	[$POSIX]
 				"weight"	"700"
-				"antialias" "1"
 				"yres"		"600 767"
 				"dropshadow"	"1"
 			}
 			"3"
 			{
-				"name"		"TF2 Secondary"
-				"tall"		"18"	[$WIN32]
-				"tall"		"18"	[$X360]
+				"name"		"SN Pro"
+				"tall"		"15"	[!$POSIX]
+				"tall"		"18"	[$POSIX]
 				"weight"	"700"
-				"antialias" "1"
 				"yres"		"768 1023"
 				"dropshadow"	"1"
 			}
 			"4"
 			{
-				"name"		"TF2 Secondary"
-				"tall"		"20"	[$WIN32]
-				"tall"		"20"	[$X360]
+				"name"		"SN Pro"
+				"tall"		"17"	[!$POSIX]
+				"tall"		"20"	[$POSIX]
 				"weight"	"700"
-				"antialias" "1"
 				"yres"		"1024 1199"
 				"dropshadow"	"1"
 			}
-			"5"
+			"5" // Misyl: Proportional
 			{
-				"name"		"TF2 Secondary"
-				"tall"		"24"	[$WIN32]
-				"tall"		"24"	[$X360]
-				"weight"	"700"
-				"antialias" "1"
-				"yres"		"1200 10000"
+				"name"		"SN Pro"
+				"tall"		"8"
+				// Misyl: Looks bad when proportional
+				// Removing the weight here.
+				"weight" "300"
+				//"weight"	"700"
 				"dropshadow"	"1"
+				"antialias" "1"
 			}
 		}
 
@@ -817,5 +818,32 @@ Scheme
 	{
 		"1"		"resource/HALFLIFE2.ttf"
 		"2"		"resource/HL2EP2.ttf"		
+		"10"		"resource/linux_fonts/DejaVuSans.ttf"
+		"11"		"resource/linux_fonts/DejaVuSans-Bold.ttf"
+		"12"		"resource/linux_fonts/DejaVuSans-BoldOblique.ttf"
+		"13"		"resource/linux_fonts/DejaVuSans-Oblique.ttf"
+		"14"		"resource/linux_fonts/LiberationSans-Regular.ttf"
+		"15"		"resource/linux_fonts/LiberationSans-Bold.ttf"
+		"16"		"resource/linux_fonts/LiberationMono-Regular.ttf"
+		"17"
+		{
+			"font" "resource/snpro-medium.ttf"
+			"name" "SN Pro"
+		}
+		"18"
+		{
+			"font" "resource/snpro-bold.ttf"
+			"name" "SN Pro"
+		}
+		"19"
+		{
+			"font" "resource/snpro-bolditalic.ttf"
+			"name" "SN Pro"
+		}
+		"20"
+		{
+			"font" "resource/snpro-mediumitalic.ttf"
+			"name" "SN Pro"
+		}
 	}
 }

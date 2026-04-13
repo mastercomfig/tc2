@@ -41,7 +41,7 @@ Scheme
 		"ListBG"			"39 36 34 255"		// background of server browser, buddy list, etc.
 	}
 	BaseSettings
-	{		
+	{
 		// scheme-specific colors
 		Border.Bright					"TFTanLightDark"	// the lit side of a control
 		Border.Dark						"TFTanLightDark"		// the dark/unlit side of a control
@@ -76,29 +76,26 @@ Scheme
 		RadioButton.TextColor		"TFTextBright"
 		RadioButton.SelectedTextColor	"TFTextBright"
 		RadioButton.ArmedTextColor	"TFTextMedium"
-		
-		Frame.TitleTextInsetX			16
-		Frame.ClientInsetX				8
-		Frame.ClientInsetY				6
-		Frame.AutoSnapRange				"0"
-		Frame.FocusTransitionEffectTime   "0.2"
-		Frame.BgColor					"Blank"
-		Frame.OutOfFocusBgColor			"Blank"
 
 		FrameSystemButton.FgColor		"Blank"
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			"replay/thumbnails/bg_images/icon_tf"
 		FrameSystemButton.DisabledIcon	"replay/thumbnails/bg_images/icon_tf_disabled"
+		Frame.TitleTextInsetX			"16"
+		Frame.ClientInsetX				"8"
+		Frame.ClientInsetY				"6"
+		Frame.AutoSnapRange				"0"
+		Frame.FocusTransitionEffectTime "0.2"
 		
+		Frame.BgColor					"Blank"
+		Frame.OutOfFocusBgColor			"Blank"
 		FrameGrip.Color1				"TFTanLight"
-		FrameGrip.Color2				"TFDarkBrown"
-		
+		FrameGrip.Color2				"TFDarkBrown"		
 		FrameTitleButton.FgColor		"TFTanBright"
-		
 		FrameTitleBar.Font				"DefaultLarge"		[!$OSX]
 		FrameTitleBar.TextColor			"TFTanBright"
 		FrameTitleBar.DisabledTextColor	"TFTanLight"
-		
+
 		FrameTitleButton.FgColor		"TFTanBright"
 		FrameTitleButton.DisabledFgColor	"TFTanLight"
 		
