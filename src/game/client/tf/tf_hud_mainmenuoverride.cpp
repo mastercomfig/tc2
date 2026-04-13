@@ -379,6 +379,7 @@ void CHudMainMenuOverride::OnTick()
 					else
 					{
 						GetGameStateManager()->QueueEvent( "openedmenu", "" );
+						m_pMainMenuWebUi->ForceFullTextureUpload();
 					}
 					m_pMainMenuWebUi->SetVisible( bGameUIVisible );
 				}

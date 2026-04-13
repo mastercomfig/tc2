@@ -1314,7 +1314,7 @@ void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 		m_allocedTextureWidth = pCallback->unWide;
 		m_allocedTextureHeight = pCallback->unTall;
 	}
-	else if ( (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 )
+	else if ( !m_bNeedsFullTextureUpload && (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 )
 	{
 		surface()->DrawUpdateRegionTextureRGBA( m_iHTMLTextureID, pCallback->unUpdateX, pCallback->unUpdateY, (const unsigned char *)pCallback->pBGRA, pCallback->unUpdateWide, pCallback->unUpdateTall, IMAGE_FORMAT_BGRA8888 );
 	}

@@ -34,6 +34,8 @@ class CInteractiveWebPanel : public EditablePanel
 
     void LoadInteractivePanel();
 
+    void ForceFullTextureUpload() { m_pHTML->ForceFullTextureUpload(); }
+
 private:
     void LoadInteractivePanel(bool bForceReload);
 
