@@ -1399,6 +1399,14 @@ int CTeamplayRoundBasedRules::GetTimeLeft( void )
 //-----------------------------------------------------------------------------
 bool CTeamplayRoundBasedRules::CheckNextLevelCvar( bool bAllowEnd /*= true*/ )
 {
+	ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+	bool bMultiSeries = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries();
+	if ( bMultiSeries )
+	{
+		// cannot force the game to be over when next level is set during multi-series.
+		return false;
+	}
+
 	if ( m_bForceMapReset )
 	{
 		if ( nextlevel.GetString() && *nextlevel.GetString() )
