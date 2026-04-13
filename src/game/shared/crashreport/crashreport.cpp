@@ -16,7 +16,7 @@
 #include "tier0/memdbgon.h"
 
 #define SENTRY_DSN_LINK "https://a037d8059c0ebd86db1a37f25cf797af@o182209.ingest.us.sentry.io/4510205029711872"
-#define SENTRY_RELEASE "tc2@1.0.44"
+#define SENTRY_RELEASE "tc2@1.1.14"
 #define SENTRY_ENVIRONMENT "prod"
 
 #if defined( _WIN32 )
