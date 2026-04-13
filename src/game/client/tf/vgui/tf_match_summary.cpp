@@ -194,6 +194,7 @@ CTFMatchSummary::CTFMatchSummary( const char *pElementName )
 	ListenForGameEvent( "client_disconnect" );
 	ListenForGameEvent( "show_match_summary" );
 	ListenForGameEvent( "hide_match_summary" );
+	ListenForGameEvent( "teamplay_round_start" );
 	ListenForGameEvent( "casual_mvp_panel" );
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
@@ -1230,7 +1231,7 @@ void CTFMatchSummary::FireGameEvent( IGameEvent *event )
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pTeamScoresPanel, "HudMatchSummary_SlideInPanels", false );
 		}
 	}
-	else if ( FStrEq( type, "hide_match_summary" ) )
+	else if ( FStrEq( type, "hide_match_summary" ) || FStrEq( type, "teamplay_round_start" ) )
 	{
 		SetVisible( false );
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
