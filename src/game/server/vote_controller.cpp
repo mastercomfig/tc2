@@ -586,7 +586,7 @@ bool CVoteController::CreateVote( int iEntIndex, const char *pszTypeString, cons
 
 				// Now the vote handling and UI
 				m_nPotentialVotes = pCurrentIssue->CountPotentialVoters();
-				m_acceptingVotesTimer.Start( sv_vote_timer_duration.GetFloat() + random->RandomFloat( -1.f, 1.f ) );
+				m_acceptingVotesTimer.Start( sv_vote_timer_duration.GetFloat() );
 
 #ifndef _DEBUG
 				// Force the vote holder to agree with a Yes/No vote

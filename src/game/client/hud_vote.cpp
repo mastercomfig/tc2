@@ -1489,7 +1489,7 @@ void CHudVote::MsgFunc_VoteStart( bf_read &msg )
 	char szParam1[k_MAX_VOTE_NAME_LENGTH] = { 0 };
 	msg.ReadString( szParam1, sizeof(szParam1) );
 
-	pVotePanel->m_bIsYesNoVote = msg.ReadByte();
+	pVotePanel->m_bIsYesNoVote = msg.ReadOneBit();
 	int iTargetEntIndex = msg.ReadByte();
 
 	pVotePanel->m_flHideTime = -1.f;
