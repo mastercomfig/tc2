@@ -223,15 +223,15 @@ Scheme
 			"isproportional" "only"
 			"1"
 			{
-				"name"		"SN Pro"
-				"tall"		"14"
+				"name"		"TF2 Secondary"
+				"tall"		"16"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"480 599"
 			}
 			"2"
 			{
-				"name"		"SN Pro"
+				"name"		"TF2 Secondary"
 				"tall"		"16"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -239,8 +239,8 @@ Scheme
 			}
 			"3"
 			{
-				"name"		"SN Pro"
-				"tall"		"16"
+				"name"		"TF2 Secondary"
+				"tall"		"18"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"768 1023"
@@ -248,8 +248,8 @@ Scheme
 			}
 			"4"
 			{
-				"name"		"SN Pro"
-				"tall"		"18"
+				"name"		"TF2 Secondary"
+				"tall"		"20"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"1024 1199"
@@ -257,8 +257,8 @@ Scheme
 			}
 			"5" // Misyl: Proportional
 			{
-				"name"		"SN Pro"
-				"tall"		"8"
+				"name"		"TF2 Secondary"
+				"tall"		"10"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"antialias"	"1"
@@ -361,8 +361,7 @@ Scheme
 			"1"
 			{
 				"name"		"SN Pro"
-				"tall"		"12"	[!$POSIX]
-				"tall"		"15"	[$POSIX]
+				"tall"		"15"
 				"weight"	"700"
 				"yres"		"480 599"
 				"dropshadow"	"1"
@@ -370,8 +369,7 @@ Scheme
 			"2"
 			{
 				"name"		"SN Pro"
-				"tall"		"14"	[!$POSIX]
-				"tall"		"17"	[$POSIX]
+				"tall"		"17"
 				"weight"	"700"
 				"yres"		"600 767"
 				"dropshadow"	"1"
@@ -379,8 +377,7 @@ Scheme
 			"3"
 			{
 				"name"		"SN Pro"
-				"tall"		"15"	[!$POSIX]
-				"tall"		"18"	[$POSIX]
+				"tall"		"18"
 				"weight"	"700"
 				"yres"		"768 1023"
 				"dropshadow"	"1"
@@ -388,8 +385,7 @@ Scheme
 			"4"
 			{
 				"name"		"SN Pro"
-				"tall"		"17"	[!$POSIX]
-				"tall"		"20"	[$POSIX]
+				"tall"		"20"
 				"weight"	"700"
 				"yres"		"1024 1199"
 				"dropshadow"	"1"
