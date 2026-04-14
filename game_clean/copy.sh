@@ -10,7 +10,7 @@ source ./shared.sh
 
 rm -rf ${CLEAN_DIR}
 rm -rf ${CLEAN_DEBUG_DIR}
-mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tc2/cfg,tc2/custom}
+mkdir -p ${CLEAN_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR,tc2/cfg,tc2/custom,tc2/resource}
 mkdir -p ${CLEAN_DEBUG_DIR}/{bin/$PLAT_DIR,tc2/bin/$PLAT_DIR}
 
 ./dlpak.sh
