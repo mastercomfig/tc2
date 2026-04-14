@@ -224,8 +224,7 @@ Scheme
 			"1"
 			{
 				"name"		"SN Pro"
-				"tall"		"12" [!$POSIX]
-				"tall"		"14" [$POSIX]
+				"tall"		"14"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"480 599"
@@ -233,8 +232,7 @@ Scheme
 			"2"
 			{
 				"name"		"SN Pro"
-				"tall"		"13" [!$POSIX]
-				"tall"		"16" [$POSIX]
+				"tall"		"16"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"600 767"
@@ -242,8 +240,7 @@ Scheme
 			"3"
 			{
 				"name"		"SN Pro"
-				"tall"		"14" [!$POSIX]
-				"tall"		"16" [$POSIX]
+				"tall"		"16"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"768 1023"
@@ -252,8 +249,7 @@ Scheme
 			"4"
 			{
 				"name"		"SN Pro"
-				"tall"		"16" [!$POSIX]
-				"tall"		"18" [$POSIX]
+				"tall"		"18"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
 				"yres"	"1024 1199"
