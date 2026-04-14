@@ -365,6 +365,7 @@ Scheme
 				"weight"	"700"
 				"yres"		"480 599"
 				"dropshadow"	"1"
+				"antialias" "1"
 			}
 			"2"
 			{
@@ -373,6 +374,7 @@ Scheme
 				"weight"	"700"
 				"yres"		"600 767"
 				"dropshadow"	"1"
+				"antialias" "1"
 			}
 			"3"
 			{
@@ -381,6 +383,7 @@ Scheme
 				"weight"	"700"
 				"yres"		"768 1023"
 				"dropshadow"	"1"
+				"antialias" "1"
 			}
 			"4"
 			{
@@ -389,11 +392,12 @@ Scheme
 				"weight"	"700"
 				"yres"		"1024 1199"
 				"dropshadow"	"1"
+				"antialias" "1"
 			}
 			"5" // Misyl: Proportional
 			{
 				"name"		"SN Pro"
-				"tall"		"8"
+				"tall"		"10"
 				// Misyl: Looks bad when proportional
 				// Removing the weight here.
 				"weight" "300"
