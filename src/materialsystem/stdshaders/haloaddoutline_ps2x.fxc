@@ -7,6 +7,7 @@ sampler TexRed : register( s1 );
 sampler TexGreen : register( s2 );
 sampler TexBlue : register( s3 );
 
+float4 g_vC0 : register( c0 ); 
 float2 g_vPixelSize : register( c4 );
 
 struct PS_INPUT
@@ -16,8 +17,7 @@ struct PS_INPUT
 
 float4 main( PS_INPUT i ) : COLOR
 {
-	// Make outline 2 pixels wide $C0_X in a vmt doesn't seem to work in staging so I can't parameterize this right now
-	float2 vOffset = 2.0f * g_vPixelSize.xy;
+	float2 vOffset = g_vC0.x * g_vPixelSize.xy;
 
 	// Take the max of 4 offset texture samples
 	float4 result;
