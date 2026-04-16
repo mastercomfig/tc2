@@ -687,7 +687,6 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 
 			// cap the amount we can add
 			int iAmountToAdd = MIN( SENTRYGUN_ADD_SHELLS, iMaxShellsPlayerCanAfford );
-			iAmountToAdd = MIN( ( m_iMaxAmmoShells - m_iAmmoShells ), iAmountToAdd );
 
 			// STAGING_ENGY
 			// Mod Ammo if shielded
@@ -695,6 +694,8 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 			{
 				iAmountToAdd *= SHIELD_NORMAL_VALUE;
 			}
+
+			iAmountToAdd = MIN( ( m_iMaxAmmoShells - m_iAmmoShells ), iAmountToAdd );
 
 			pPlayer->RemoveAmmo( iAmountToAdd * tf_sentrygun_metal_per_shell.GetInt(), TF_AMMO_METAL );
 			m_iAmmoShells += iAmountToAdd;
@@ -713,7 +714,6 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 			int iMaxRocketsPlayerCanAfford = (int)( (float)iPlayerMetal / tf_sentrygun_metal_per_rocket.GetFloat() );
 
 			int iAmountToAdd = MIN( ( SENTRYGUN_ADD_ROCKETS ), iMaxRocketsPlayerCanAfford );
-			iAmountToAdd = MIN( ( m_iMaxAmmoRockets - m_iAmmoRockets ), iAmountToAdd );
 
 			// STAGING_ENGY
 			// Mod Ammo if shielded
@@ -721,6 +721,8 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 			{
 				iAmountToAdd *= SHIELD_NORMAL_VALUE;
 			}
+
+			iAmountToAdd = MIN( ( m_iMaxAmmoRockets - m_iAmmoRockets ), iAmountToAdd );
 
 			pPlayer->RemoveAmmo( iAmountToAdd * tf_sentrygun_metal_per_rocket.GetFloat(), TF_AMMO_METAL );
 			m_iAmmoRockets += iAmountToAdd;
