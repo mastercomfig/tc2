@@ -839,7 +839,7 @@ void CTFFlameThrower::PrimaryAttack()
 		// Find eligible entities in a cone in front of us.
 		// Vector vOrigin = pOwner->Weapon_ShootPosition();
 		Vector vForward, vRight, vUp;
-		QAngle vAngles = pOwner->EyeAngles() + pOwner->GetPunchAngle();
+		QAngle vAngles = pOwner->EyeAngles() + pOwner->Weapon_PunchAngle();
 		AngleVectors( vAngles, &vForward, &vRight, &vUp );
 
 		#define NUM_TEST_VECTORS	30

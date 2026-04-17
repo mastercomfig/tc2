@@ -328,6 +328,7 @@ public:
 	const CUserCmd *GetCurrentUserCommand() const;
 
 	const QAngle& GetPunchAngle();
+	const QAngle& Weapon_PunchAngle();
 	void SetPunchAngle( const QAngle &angle );
 
 	float					GetWaterJumpTime() const;

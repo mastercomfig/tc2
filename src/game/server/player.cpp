@@ -3846,7 +3846,10 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 			}
 		}
 	}
-	
+
+	// Store pre-tick viewpunch to lerp for subtick
+	m_Local.m_vecPreTickPunchAngle = m_Local.m_vecPunchAngle;
+
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
 
@@ -8783,6 +8786,18 @@ void CBasePlayer::ModifyOrAppendPlayerCriteria( AI_CriteriaSet& set )
 const QAngle& CBasePlayer::GetPunchAngle()
 {
 	return m_Local.m_vecPunchAngle.Get();
+}
+
+const QAngle& CBasePlayer::Weapon_PunchAngle()
+{
+	QAngle vecCurPunch = GetPunchAngle();
+
+	if ( !IsInPostThink() || m_flInterpolationTime >= 1.0f )
+	{
+		return vecCurPunch;
+	}
+
+	return Lerp( m_flInterpolationTime, m_Local.m_vecPreTickPunchAngle, vecCurPunch );
 }
 
 

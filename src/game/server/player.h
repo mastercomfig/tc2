@@ -622,6 +622,7 @@ public:
 	virtual void 			ModifyOrAppendPlayerCriteria( AI_CriteriaSet& set );
 
 	const QAngle& GetPunchAngle();
+	const QAngle& Weapon_PunchAngle();
 	void SetPunchAngle( const QAngle &punchAngle );
 
 	virtual void DoMuzzleFlash();

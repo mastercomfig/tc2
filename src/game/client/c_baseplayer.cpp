@@ -2463,6 +2463,17 @@ const QAngle& C_BasePlayer::GetPunchAngle()
 	return m_Local.m_vecPunchAngle.Get();
 }
 
+const QAngle& C_BasePlayer::Weapon_PunchAngle()
+{
+	QAngle vecCurPunch = GetPunchAngle();
+
+	if ( !IsInPostThink() || m_flInterpolationTime >= 1.0f )
+	{
+		return vecCurPunch;
+	}
+
+	return Lerp( m_flInterpolationTime, m_Local.m_vecPreTickPunchAngle, vecCurPunch );
+}
 
 void C_BasePlayer::SetPunchAngle( const QAngle &angle )
 {

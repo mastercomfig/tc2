@@ -896,6 +896,9 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 #endif
 	StartCommand( player, ucmd );
 
+	float flSavedInterpolationTime = player->m_flInterpolationTime;
+	player->m_flInterpolationTime = ucmd->lerp_time;
+
 	// Set globals appropriately
 	gpGlobals->curtime		= player->m_nTickBase * TICK_INTERVAL;
 	gpGlobals->frametime	= m_bEnginePaused ? 0 : TICK_INTERVAL;
@@ -956,6 +959,10 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	}
 
 	// RUN MOVEMENT
+
+	// Store pre-tick viewpunch to lerp for subtick
+	player->m_Local.m_vecPreTickPunchAngle = player->GetPunchAngle();
+
 	if ( !pVehicle )
 	{
 		Assert( g_pGameMovement );
@@ -982,6 +989,8 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	{
 		player->m_nTickBase++;
 	}
+
+	player->m_flInterpolationTime = flSavedInterpolationTime;
 #endif
 }
 

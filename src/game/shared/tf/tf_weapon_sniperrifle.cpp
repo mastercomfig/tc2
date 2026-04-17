@@ -675,7 +675,7 @@ void CTFSniperRifle::ApplyChargeSpeedModifications( float &flBaseRef )
 	if ( pPlayer )
 	{
 		Vector vForward;
-		AngleVectors( pPlayer->EyeAngles() + pPlayer->GetPunchAngle(), &vForward );
+		AngleVectors( pPlayer->EyeAngles() + pPlayer->Weapon_PunchAngle(), &vForward );
 
 		Vector vShootPos = pPlayer->Weapon_ShootPosition();
 		trace_t tr;

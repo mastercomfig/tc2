@@ -1088,14 +1088,16 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 			C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
 			if ( pWeapon )
 			{
+				const float flPredictedTime = pPlayer->GetTimeBase();
+
 				// Check primary attack
-				if ( ( cmd->buttons & IN_ATTACK ) && pWeapon->m_flNextPrimaryAttack <= gpGlobals->curtime )
+				if ( ( cmd->buttons & IN_ATTACK ) && pWeapon->m_flNextPrimaryAttack <= flPredictedTime )
 				{
 					bIsAttackFrame = true;
 				}
 #ifndef TF_CLIENT_DLL
 				// Check secondary attack
-				else if ( ( cmd->buttons & IN_ATTACK2 ) && pWeapon->m_flNextSecondaryAttack <= gpGlobals->curtime )
+				else if ( ( cmd->buttons & IN_ATTACK2 ) && pWeapon->m_flNextSecondaryAttack <= flPredictedTime )
 				{
 					bIsAttackFrame = true;
 				}
