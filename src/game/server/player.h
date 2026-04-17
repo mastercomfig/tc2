@@ -625,6 +625,8 @@ public:
 	const QAngle& Weapon_PunchAngle();
 	void SetPunchAngle( const QAngle &punchAngle );
 
+	const QAngle& Weapon_EyeAngles();
+
 	virtual void DoMuzzleFlash();
 
 	const char *GetLastKnownPlaceName( void ) const	{ return m_szLastPlaceName; }	// return the last nav place name the player occupied

@@ -331,6 +331,8 @@ public:
 	const QAngle& Weapon_PunchAngle();
 	void SetPunchAngle( const QAngle &angle );
 
+	const QAngle& Weapon_EyeAngles();
+
 	float					GetWaterJumpTime() const;
 	void					SetWaterJumpTime( float flWaterJumpTime );
 	float					GetSwimSoundTime( void ) const;

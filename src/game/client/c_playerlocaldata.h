@@ -60,8 +60,9 @@ public:
 	// Base velocity that was passed in to server physics so 
 	//  client can predict conveyors correctly.  Server zeroes it, so we need to store here, too.
 	Vector					m_vecClientBaseVelocity;  
-	// Stored before command to subtick with the latest viewpunch
+	// Stored before command to subtick with the latest angles
 	QAngle m_vecPreTickPunchAngle;
+	QAngle m_vecPreTickEyeAngles;
 	CNetworkQAngle( m_vecPunchAngle );		// auto-decaying view angle adjustment
 	CInterpolatedVar< QAngle >	m_iv_vecPunchAngle;
 

@@ -624,7 +624,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 
 	// Dot product from the view angle to determine which bombs to detonate.
 	Vector vecPlayerForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecPlayerForward, NULL, NULL );
+	AngleVectors( pPlayer->Weapon_EyeAngles(), &vecPlayerForward, NULL, NULL );
 	vecPlayerForward.NormalizeInPlace();
 
 	// Determine the dynamic dot product threshold based on FOV

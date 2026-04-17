@@ -960,8 +960,9 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	// RUN MOVEMENT
 
-	// Store pre-tick viewpunch to lerp for subtick
+	// Store pre-tick angles to lerp for subtick
 	player->m_Local.m_vecPreTickPunchAngle = player->GetPunchAngle();
+	player->m_Local.m_vecPreTickEyeAngles = player->EyeAngles();
 
 	if ( !pVehicle )
 	{

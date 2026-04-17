@@ -43,8 +43,9 @@ public:
 		
 	Vector				m_vecOverViewpoint;			// Viewpoint overriding the real player's viewpoint
 
-	// Stored before command to subtick with the latest viewpunch
+	// Stored before command to subtick with the latest angles
 	QAngle m_vecPreTickPunchAngle;
+	QAngle m_vecPreTickEyeAngles;
 
 	// Fully ducked
 	CNetworkVar( bool, m_bDucked );

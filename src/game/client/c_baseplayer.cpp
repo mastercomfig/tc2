@@ -2472,7 +2472,11 @@ const QAngle& C_BasePlayer::Weapon_PunchAngle()
 		return vecCurPunch;
 	}
 
-	return Lerp( m_flInterpolationTime, m_Local.m_vecPreTickPunchAngle, vecCurPunch );
+	static QAngle vecReturnPunch;
+	vecReturnPunch.x = m_Local.m_vecPreTickPunchAngle.x + AngleDiff( vecCurPunch.x, m_Local.m_vecPreTickPunchAngle.x ) * m_flInterpolationTime;
+	vecReturnPunch.y = m_Local.m_vecPreTickPunchAngle.y + AngleDiff( vecCurPunch.y, m_Local.m_vecPreTickPunchAngle.y ) * m_flInterpolationTime;
+	vecReturnPunch.z = m_Local.m_vecPreTickPunchAngle.z + AngleDiff( vecCurPunch.z, m_Local.m_vecPreTickPunchAngle.z ) * m_flInterpolationTime;
+	return vecReturnPunch;
 }
 
 void C_BasePlayer::SetPunchAngle( const QAngle &angle )
@@ -2480,6 +2484,20 @@ void C_BasePlayer::SetPunchAngle( const QAngle &angle )
 	m_Local.m_vecPunchAngle = angle;
 }
 
+const QAngle& C_BasePlayer::Weapon_EyeAngles()
+{
+	if ( !IsInPostThink() || m_flInterpolationTime >= 1.0f )
+	{
+		return EyeAngles();
+	}
+
+	static QAngle vecReturn;
+	QAngle current = EyeAngles();
+	vecReturn.x = m_Local.m_vecPreTickEyeAngles.x + AngleDiff( current.x, m_Local.m_vecPreTickEyeAngles.x ) * m_flInterpolationTime;
+	vecReturn.y = m_Local.m_vecPreTickEyeAngles.y + AngleDiff( current.y, m_Local.m_vecPreTickEyeAngles.y ) * m_flInterpolationTime;
+	vecReturn.z = m_Local.m_vecPreTickEyeAngles.z + AngleDiff( current.z, m_Local.m_vecPreTickEyeAngles.z ) * m_flInterpolationTime;
+	return vecReturn;
+}
 
 float C_BasePlayer::GetWaterJumpTime() const
 {

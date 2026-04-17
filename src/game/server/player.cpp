@@ -3847,8 +3847,9 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		}
 	}
 
-	// Store pre-tick viewpunch to lerp for subtick
+	// Store pre-tick angles to lerp for subtick
 	m_Local.m_vecPreTickPunchAngle = m_Local.m_vecPunchAngle;
+	m_Local.m_vecPreTickEyeAngles = EyeAngles();
 
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
@@ -8797,7 +8798,11 @@ const QAngle& CBasePlayer::Weapon_PunchAngle()
 		return vecCurPunch;
 	}
 
-	return Lerp( m_flInterpolationTime, m_Local.m_vecPreTickPunchAngle, vecCurPunch );
+	static QAngle vecReturnPunch;
+	vecReturnPunch.x = m_Local.m_vecPreTickPunchAngle.x + AngleDiff( vecCurPunch.x, m_Local.m_vecPreTickPunchAngle.x ) * m_flInterpolationTime;
+	vecReturnPunch.y = m_Local.m_vecPreTickPunchAngle.y + AngleDiff( vecCurPunch.y, m_Local.m_vecPreTickPunchAngle.y ) * m_flInterpolationTime;
+	vecReturnPunch.z = m_Local.m_vecPreTickPunchAngle.z + AngleDiff( vecCurPunch.z, m_Local.m_vecPreTickPunchAngle.z ) * m_flInterpolationTime;
+	return vecReturnPunch;
 }
 
 
@@ -8819,6 +8824,21 @@ void CBasePlayer::SetPunchAngle( const QAngle &punchAngle )
 			}
 		}
 	}
+}
+
+const QAngle& CBasePlayer::Weapon_EyeAngles()
+{
+	if ( !IsInPostThink() || m_flInterpolationTime >= 1.0f )
+	{
+		return EyeAngles();
+	}
+
+	static QAngle vecReturn;
+	QAngle current = EyeAngles();
+	vecReturn.x = m_Local.m_vecPreTickEyeAngles.x + AngleDiff( current.x, m_Local.m_vecPreTickEyeAngles.x ) * m_flInterpolationTime;
+	vecReturn.y = m_Local.m_vecPreTickEyeAngles.y + AngleDiff( current.y, m_Local.m_vecPreTickEyeAngles.y ) * m_flInterpolationTime;
+	vecReturn.z = m_Local.m_vecPreTickEyeAngles.z + AngleDiff( current.z, m_Local.m_vecPreTickEyeAngles.z ) * m_flInterpolationTime;
+	return vecReturn;
 }
 
 //-----------------------------------------------------------------------------
