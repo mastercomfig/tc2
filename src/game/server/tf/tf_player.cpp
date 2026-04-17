@@ -21337,6 +21337,15 @@ bool CTFPlayer::SpeakConceptIfAllowed( int iConcept, const char *modifiers, char
 		m_flNextHurtSpeakTime = gpGlobals->curtime + 0.1f;
 	}
 
+	if ( iConcept == MP_CONCEPT_PLAYER_PAIN )
+	{
+		if (gpGlobals->curtime < m_flNextHurtSpeakTime)
+		{
+			return false;
+		}
+		m_flNextHurtSpeakTime = gpGlobals->curtime + 0.1f;
+	}
+
 	// Save the current concept.
 	m_iCurrentConcept = iConcept;
 
