@@ -14,7 +14,6 @@
 #include "viewpostprocess.h"
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
-#define FULL_FRAME_TEXTURE1 "_rt_FullFrameFB1"
 
 #ifdef GLOWS_ENABLE
 
@@ -22,11 +21,6 @@
 // then you can enable this and have single-pass glows for "glow when occluded" outlines.
 // ***PLEASE*** increment MATERIAL_SYSTEM_INTERFACE_VERSION when you add this!
 #define ADDED_OVERRIDE_DEPTH_FUNC 0
-
-// If you've fixed IMatRenderContext::CopyTextureToRenderTargetEx
-// (see CGlowObjectManager::RenderGlowModels below), then you can enable this and have
-// code that's a bit cleaner. Also, then you won't have to ship debug/debugfbtexture1.
-#define FIXED_COPY_TEXTURE_TO_RENDER_TARGET 0
 
 ConVar glow_outline_effect_enable( "glow_outline_effect_enable", "1", FCVAR_ARCHIVE, "Enable entity outline glow effects." );
 ConVar glow_outline_width( "glow_outline_width", "2.0f", FCVAR_CHEAT, "Width of glow outline effect in screen space." );
@@ -92,7 +86,9 @@ void CGlowObjectManager::DrawGlowAlways(int nSplitScreenSlot, CMatRenderContextP
 {
 	ShaderStencilState_t stencilState;
 	stencilState.m_bEnable = true;
-	stencilState.m_nReferenceValue = 1;
+	stencilState.m_nReferenceValue = 0x80;
+	stencilState.m_nTestMask = 0x80;
+	stencilState.m_nWriteMask = 0x80;
 	stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_ALWAYS;
 	stencilState.m_PassOp = STENCILOPERATION_REPLACE;
 	stencilState.m_FailOp = STENCILOPERATION_KEEP;
@@ -109,8 +105,8 @@ void CGlowObjectManager::DrawGlowAlways(int nSplitScreenSlot, CMatRenderContextP
 
 		Vector vGlowColor = current.m_vGlowColor * current.m_flGlowAlpha;
 		render->SetColorModulation(vGlowColor.Base()); // This only sets rgb, not alpha
-
-		current.DrawModel();
+		IMaterial* pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
+		current.DrawModel( pMatGlowColor );
 	}
 }
 
@@ -142,8 +138,8 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 		render->SetBlend(current.m_flGlowAlpha);
 		Vector vGlowColor = current.m_vGlowColor * current.m_flGlowAlpha;
 		render->SetColorModulation(&vGlowColor[0]); // This only sets rgb, not alpha
-
-		current.DrawModel();
+		IMaterial* pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
+		current.DrawModel( pMatGlowColor );
 	}
 
 	pRenderContext->OverrideDepthFunc(false, SHADER_DEPTHFUNC_NEAREROREQUAL);
@@ -152,8 +148,9 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 
 	ShaderStencilState_t stencilState;
 	stencilState.m_bEnable = true;
-	stencilState.m_nReferenceValue = 2;
-	stencilState.m_nWriteMask = 2;
+	stencilState.m_nReferenceValue = 0x80;
+	stencilState.m_nTestMask = 0x80;
+	stencilState.m_nWriteMask = 0x80;
 	stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_ALWAYS;
 	stencilState.m_PassOp = STENCILOPERATION_REPLACE;
 	stencilState.m_FailOp = STENCILOPERATION_KEEP;
@@ -171,8 +168,8 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 			auto& current = m_GlowObjectDefinitions[i];
 			if (current.IsUnused() || !current.ShouldDraw(nSplitScreenSlot) || !current.m_bRenderWhenOccluded || current.m_bRenderWhenUnoccluded)
 				continue;
-
-			current.DrawModel();
+			IMaterial* pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
+			current.DrawModel( pMatGlowColor );
 		}
 	}
 
@@ -182,13 +179,13 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 	pRenderContext->OverrideDepthEnable(false, false);
 
 	stencilState.m_bEnable = true;
-	stencilState.m_nReferenceValue = 3;
-	stencilState.m_nTestMask = 2;
-	stencilState.m_nWriteMask = 1;
+	stencilState.m_nReferenceValue = 0x80;
+	stencilState.m_nTestMask = 0x80;
+	stencilState.m_nWriteMask = 0x80;
 	stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_NOTEQUAL;
 	stencilState.m_PassOp = STENCILOPERATION_REPLACE;
 	stencilState.m_ZFailOp = STENCILOPERATION_REPLACE;
-	stencilState.m_FailOp = STENCILOPERATION_REPLACE;
+	stencilState.m_FailOp = STENCILOPERATION_KEEP;
 	stencilState.SetStencilState(pRenderContext);
 
 	// Pass 2: Draw color unconditionally, but mask out pixels from first pass using stencil
@@ -200,9 +197,17 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 			continue;
 
 		Vector vGlowColor = current.m_vGlowColor * current.m_flGlowAlpha;
+		// tonemapping accurate color
+		if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+		{
+			Vector vScale = pRenderContext->GetToneMappingScaleLinear();
+			if ( vScale.x > 0.00001f ) vGlowColor.x /= vScale.x;
+			if ( vScale.y > 0.00001f ) vGlowColor.y /= vScale.y;
+			if ( vScale.z > 0.00001f ) vGlowColor.z /= vScale.z;
+		}
 		render->SetColorModulation(vGlowColor.Base());
-
-		current.DrawModel();
+		IMaterial* pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
+		current.DrawModel( pMatGlowColor );
 	}
 #endif
 }
@@ -211,7 +216,9 @@ void CGlowObjectManager::DrawGlowVisible(int nSplitScreenSlot, CMatRenderContext
 {
 	ShaderStencilState_t stencilState;
 	stencilState.m_bEnable = true;
-	stencilState.m_nReferenceValue = 1;
+	stencilState.m_nWriteMask = 0x80;
+	stencilState.m_nTestMask = 0x80;
+	stencilState.m_nReferenceValue = 0x80;
 	stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_ALWAYS;
 	stencilState.m_PassOp = STENCILOPERATION_REPLACE;
 	stencilState.m_FailOp = STENCILOPERATION_KEEP;
@@ -228,9 +235,17 @@ void CGlowObjectManager::DrawGlowVisible(int nSplitScreenSlot, CMatRenderContext
 			continue;
 
 		Vector vGlowColor = current.m_vGlowColor * current.m_flGlowAlpha;
+		// tonemapping accurate color
+		if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+		{
+			Vector vScale = pRenderContext->GetToneMappingScaleLinear();
+			if ( vScale.x > 0.00001f ) vGlowColor.x /= vScale.x;
+			if ( vScale.y > 0.00001f ) vGlowColor.y /= vScale.y;
+			if ( vScale.z > 0.00001f ) vGlowColor.z /= vScale.z;
+		}
 		render->SetColorModulation(vGlowColor.Base()); // This only sets rgb, not alpha
-
-		current.DrawModel();
+		IMaterial* pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
+		current.DrawModel( pMatGlowColor );
 	}
 }
 
@@ -248,33 +263,45 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	render->GetColorModulation( vOrigColor.Base() );
 	const float flOrigBlend = render->GetBlend();
 
-	// Get pointer to FullFrameFB
-	ITexture *pRtFullFrameFB = NULL;
-	pRtFullFrameFB = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
-	
-	// Get pointer to FullFrameFB
-	ITexture *pRtFullFrameFB1 = NULL;
-	pRtFullFrameFB1 = materials->FindTexture( FULL_FRAME_TEXTURE1, TEXTURE_GROUP_RENDER_TARGET );
+	// avoid touching _rt_FullFrameFB which is used elsewhere
+	static ITexture* pRtGlowColor = NULL;
+	static ITexture* pRtGameSceneBackup = NULL;
+	{
+		ImageFormat format = materials->GetBackBufferFormat();
+		if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+			format = IMAGE_FORMAT_RGBA16161616F;
 
-	// Set backbuffer + hardware depth as MRT 0. We CANNOT CHANGE RENDER TARGETS after this point!!!
-	// In CShaderAPIDx8::CreateDepthTexture all depth+stencil buffers are created with the "discard"
-	// flag set to TRUE. Not sure about OpenGL, but according to
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/bb174356(v=vs.85).aspx, if you change
-	// the depth+stencil buffer away from a buffer that has discard=TRUE, the contents become garbage.
-	pRenderContext->SetRenderTargetEx(0, nullptr);
+		ITexture* pRtFullFrameFB = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
 
-	// Save current backbuffer to _rt_FullFrameFB1
-	pRenderContext->CopyRenderTargetToTexture( pRtFullFrameFB1 );
+		// we use RT_SIZE_NO_CHANGE here and the frame texture's actual size to avoid DX9 rect resize issues when copying
+		// usually there's some 0.5 padding or whatever on the hardware and the engine naively isn't aware of this, so if you do a
+		// CopyTextureToRenderTargetEx that isn't aware of the underlying issue, you'll cause a slight blur, which changes bloom
+		pRtGlowColor = materials->CreateNamedRenderTargetTextureEx(
+			"_rt_GlowColor", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
+			RT_SIZE_NO_CHANGE, format,
+			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
+		pRtGameSceneBackup = materials->CreateNamedRenderTargetTextureEx(
+			"_rt_GlowGameSceneBackup", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
+			RT_SIZE_NO_CHANGE, format,
+			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
+	}
 
-	// Clear backbuffer color and stencil, keep depth for testing
-	pRenderContext->ClearColor3ub( 0, 0, 0 );
-	pRenderContext->ClearBuffers( true, false, true );
+	// copy our scene to our backup texture
+	pRenderContext->CopyRenderTargetToTexture( pRtGameSceneBackup );
+
+	// Clear backbuffer color, including alpha, to make sure this pass is isolated
+	pRenderContext->ClearColor4ub( 0, 0, 0, 0 );
+	// do NOT clear engine stencil, keep depth for testing
+	pRenderContext->ClearBuffers( true, false, false );
 
 	// Set override material for glow color
 	IMaterial *pMatGlowColor = NULL;
 
 	pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
 	g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
+	
+	// Don't write alpha
+	pRenderContext->OverrideAlphaWriteEnable( true, false );
 
 	ShaderStencilState_t stencilState;
 	stencilState.m_bEnable = false;
@@ -318,40 +345,15 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 
 	pRenderContext->OverrideDepthEnable( false, false );
 
-	// Copy MSAA'd glow models to _rt_FullFrameFB
-	pRenderContext->CopyRenderTargetToTexture( pRtFullFrameFB );
+	// Copy out the glow models to our texture
+	pRenderContext->CopyRenderTargetToTexture( pRtGlowColor );
 
-	// Move original contents of the backbuffer from _rt_FullFrameFB1 to the backbuffer
-	{
-#if FIXED_COPY_TEXTURE_TO_RENDER_TARGET	// Coordinates don't seem to be mapped 1:1 properly, screen becomes slightly blurry
-		pRenderContext->CopyTextureToRenderTargetEx(0, pRtFullFrameFB1, nullptr);
-#else
-		pRenderContext->SetStencilEnable(false);
-
-		IMaterial* const pFullFrameFB1 = materials->FindMaterial("debug/debugfbtexture1", TEXTURE_GROUP_RENDER_TARGET);
-		pFullFrameFB1->AddRef();
-		pRenderContext->Bind(pFullFrameFB1);
-
-		const int nSrcWidth = pSetup->width;
-		const int nSrcHeight = pSetup->height;
-		int nViewportX, nViewportY, nViewportWidth, nViewportHeight;
-		pRenderContext->GetViewport(nViewportX, nViewportY, nViewportWidth, nViewportHeight);
-
-		pRenderContext->OverrideDepthEnable(true, false);
-		{
-			pRenderContext->DrawScreenSpaceRectangle(pFullFrameFB1,
-				0, 0, nViewportWidth, nViewportHeight,
-				0, 0, nSrcWidth - 1, nSrcHeight - 1,
-				pRtFullFrameFB1->GetActualWidth(), pRtFullFrameFB1->GetActualHeight());
-		}
-		pRenderContext->OverrideDepthEnable(false, false);
-
-		pFullFrameFB1->Release();
-#endif
-	}
-
+	// Re-enable writes here for when we copy our backup to the backbuffer
 	pRenderContext->OverrideColorWriteEnable( false, false );
 	pRenderContext->OverrideAlphaWriteEnable( false, false );
+
+	// Copy with proper coordinates
+	pRenderContext->CopyTextureToRenderTargetEx( 0, pRtGameSceneBackup, nullptr );
 
 	pRenderContext->PopRenderTargetAndViewport();
 }
@@ -401,6 +403,14 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		// stencil bits set in the range we care about.                                                          //
 		//=======================================================================================================//
 		IMaterial *pMatHaloAddToScreen = materials->FindMaterial( "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true );
+		
+		// We use a created _rt_GlowColor as our texture, not whatever the material is set to
+		IMaterialVar* pBaseTexVar = pMatHaloAddToScreen->FindVar( "$basetexture", NULL );
+		if ( pBaseTexVar )
+		{
+			ITexture* pRtGlowColor = materials->FindTexture( "_rt_GlowColor", TEXTURE_GROUP_RENDER_TARGET );
+			pBaseTexVar->SetTextureValue( pRtGlowColor );
+		}
 
 		// Do not fade the glows out at all (weight = 1.0)
 		IMaterialVar *pDimVar = pMatHaloAddToScreen->FindVar( "$C0_X", NULL );
@@ -410,7 +420,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		ShaderStencilState_t stencilState;
 		stencilState.m_bEnable = true;
 		stencilState.m_nWriteMask = 0x0; // We're not changing stencil
-		stencilState.m_nTestMask = 0xFF;
+		stencilState.m_nTestMask = 0x80;
 		stencilState.m_nReferenceValue = 0x0;
 		stencilState.m_CompareFunc = STENCILCOMPARISONFUNCTION_EQUAL;
 		stencilState.m_PassOp = STENCILOPERATION_KEEP;
@@ -418,8 +428,8 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		stencilState.m_ZFailOp = STENCILOPERATION_KEEP;
 		stencilState.SetStencilState( pRenderContext );
 
-		// Write to alpha
-		pRenderContext->OverrideAlphaWriteEnable( true, true );
+		// Disable alpha overwriting when drawing
+		pRenderContext->OverrideAlphaWriteEnable( true, false );
 
 		// Draw quad
 		pRenderContext->DrawScreenSpaceRectangle( pMatHaloAddToScreen, 0, 0, nViewportWidth, nViewportHeight,
@@ -427,14 +437,18 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 			pRtQuarterSize1->GetActualWidth(),
 			pRtQuarterSize1->GetActualHeight() );
 
+		// Re-enable state
+		pRenderContext->OverrideAlphaWriteEnable( false, false );
+
 		stencilStateDisable.SetStencilState( pRenderContext );
 	}
 }
 
-void CGlowObjectManager::GlowObjectDefinition_t::DrawModel()
+void CGlowObjectManager::GlowObjectDefinition_t::DrawModel( IMaterial* pMatGlowColor )
 {
 	if ( m_hEntity.Get() )
 	{
+		g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
 		m_hEntity->DrawModel( STUDIO_RENDER );
 		C_BaseEntity *pAttachment = m_hEntity->FirstMoveChild();
 
@@ -442,6 +456,7 @@ void CGlowObjectManager::GlowObjectDefinition_t::DrawModel()
 		{
 			if ( !g_GlowObjectManager.HasGlowEffect( pAttachment ) && pAttachment->ShouldDraw() && pAttachment->CanGlow() )
 			{
+				g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
 				pAttachment->DrawModel( STUDIO_RENDER );
 			}
 			pAttachment = pAttachment->NextMovePeer();

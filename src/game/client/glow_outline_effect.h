@@ -136,7 +136,7 @@ private:
 		}
 
 		bool IsUnused() const { return m_nNextFreeSlot != GlowObjectDefinition_t::ENTRY_IN_USE; }
-		void DrawModel();
+		void DrawModel( IMaterial* pMatGlowColor );
 
 		EHANDLE m_hEntity;
 		Vector m_vGlowColor;

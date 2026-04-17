@@ -28,7 +28,8 @@ float4 main( PS_INPUT i ) : COLOR
 
 	// Store max color component in alpha for alpha blend of one/invSrcAlpha
 	float flLuminance = max( result.r, max( result.g, result.b ) );
-	result.a = flLuminance;
+	// ensure luminance within normal float bounds
+	result.a = saturate( flLuminance );
 
 	return result.rgba;
 }
