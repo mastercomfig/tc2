@@ -560,18 +560,17 @@ void UTIL_RemoveImmediate( CBaseEntity *oldObj )
 // Index is 1 based
 CBasePlayer	*UTIL_PlayerByIndex( int playerIndex )
 {
-	CBasePlayer *pPlayer = NULL;
-
 	if ( playerIndex > 0 && playerIndex <= gpGlobals->maxClients )
 	{
-		edict_t *pPlayerEdict = INDEXENT( playerIndex );
-		if ( pPlayerEdict && !pPlayerEdict->IsFree() )
+		IHandleEntity *pHandleEntity = gEntList.LookupEntityByNetworkIndex( playerIndex );
+		if ( pHandleEntity )
 		{
-			pPlayer = (CBasePlayer*)GetContainingEntity( pPlayerEdict );
+			CBaseEntity *pEnt = static_cast<IServerUnknown*>( pHandleEntity )->GetBaseEntity();
+			return static_cast<CBasePlayer *>( pEnt );
 		}
 	}
 	
-	return pPlayer;
+	return NULL;
 }
 
 //
