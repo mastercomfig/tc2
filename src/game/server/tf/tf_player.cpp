@@ -17324,7 +17324,7 @@ void CTFPlayer::Weapon_HandleAnimEvent( animevent_t *pEvent )
 //-----------------------------------------------------------------------------
 void CTFPlayer::Weapon_Drop( CBaseCombatWeapon *pWeapon, const Vector *pvecTarget , const Vector *pVelocity ) 
 {
-
+	m_Shared.m_bLoadoutSlotCacheDirty = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -22079,6 +22079,8 @@ void CTFPlayer::SaveLastWeaponSlot( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::RemoveAllWeapons()
 {
+	m_Shared.m_bLoadoutSlotCacheDirty = true;
+
 	// Base class RemoveAllWeapons() doesn't remove them properly.
 	// (doesn't call unequip, or remove immediately. Results in incorrect provision
 	//  state for players over round restarts, because players have 2x weapon entities)
@@ -22111,6 +22113,7 @@ void CTFPlayer::RemoveAllWeapons()
 //-----------------------------------------------------------------------------
 void CTFPlayer::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 {
+	m_Shared.m_bLoadoutSlotCacheDirty = true;
 	BaseClass::Weapon_Equip( pWeapon );
 
 	// Drop the flag if we're no longer supposed to be able to carry it
@@ -22120,6 +22123,24 @@ void CTFPlayer::Weapon_Equip( CBaseCombatWeapon *pWeapon )
 	{
 		DropFlag();
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::EquipWearable( CEconWearable *pItem )
+{
+	m_Shared.m_bLoadoutSlotCacheDirty = true;
+	BaseClass::EquipWearable( pItem );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayer::RemoveWearable( CEconWearable *pItem )
+{
+	m_Shared.m_bLoadoutSlotCacheDirty = true;
+	BaseClass::RemoveWearable( pItem );
 }
 
 //-----------------------------------------------------------------------------

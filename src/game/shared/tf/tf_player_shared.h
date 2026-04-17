@@ -752,6 +752,10 @@ public:
 	void SetDefaultItemChargeMeters( void );
 #endif // GAME_DLL
 
+public:
+	bool m_bLoadoutSlotCacheDirty;
+	CBaseHandle m_hItemForLoadoutSlot[CLASS_LOADOUT_POSITION_COUNT];
+
 private:
 	CNetworkVarEmbedded( localplayerscoring_t,	m_ScoreData );
 	CNetworkVarEmbedded( localplayerscoring_t,	m_RoundScoreData );

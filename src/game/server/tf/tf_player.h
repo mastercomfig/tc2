@@ -227,6 +227,8 @@ public:
 	bool				IsActiveTFWeapon( CEconItemDefinition *weaponHandle ) const;
 	virtual void		RemoveAllWeapons();
 	virtual void		Weapon_Equip( CBaseCombatWeapon *pWeapon ) OVERRIDE;			// Adds weapon to player
+	virtual void		EquipWearable( CEconWearable *pItem ) OVERRIDE;
+	virtual void		RemoveWearable( CEconWearable *pItem ) OVERRIDE;
 
 	void				SaveMe( void );
 

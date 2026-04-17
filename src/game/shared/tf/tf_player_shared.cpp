@@ -832,6 +832,11 @@ CTFPlayerShared::CTFPlayerShared()
 
 	m_nPlayerState.Set( TF_STATE_WELCOME );
 	m_bJumping = false;
+	m_bLoadoutSlotCacheDirty = true;
+	for ( int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++ )
+	{
+		m_hItemForLoadoutSlot[i] = NULL;
+	}
 	m_iAirDash = 0;
 	m_nAirDucked = 0;
 	m_flDuckTimer = 0.0f;
@@ -12273,7 +12278,7 @@ CTFWearable *CTFPlayer::GetEquippedWearableForLoadoutSlot( int iLoadoutSlot )
 
 	for ( int i = 0; i < GetNumWearables(); ++i )
 	{
-		CTFWearable *pWearableItem = dynamic_cast< CTFWearable * >( GetWearable( i ) );
+		CTFWearable *pWearableItem = static_cast< CTFWearable * >( GetWearable( i ) );
 		if ( !pWearableItem )
 			continue;
 
@@ -12288,7 +12293,13 @@ CTFWearable *CTFPlayer::GetEquippedWearableForLoadoutSlot( int iLoadoutSlot )
 		if ( !pItemDef )
 			continue;
 
-		if ( pItemDef->GetLoadoutSlot(iClass) == iLoadoutSlot )
+		int iSlot = pItemDef->GetLoadoutSlot( iClass );
+		if ( iSlot == -1 && pItemDef->GetDefinitionIndex() != 0 )
+		{
+			iSlot = pItemDef->GetLoadoutSlot( TF_CLASS_UNDEFINED );
+		}
+
+		if ( iSlot == iLoadoutSlot )
 			return pWearableItem;
 	}
 	return NULL;
@@ -12297,23 +12308,55 @@ CTFWearable *CTFPlayer::GetEquippedWearableForLoadoutSlot( int iLoadoutSlot )
 //-----------------------------------------------------------------------------
 CBaseEntity *CTFPlayer::GetEntityForLoadoutSlot( int iLoadoutSlot, bool bForceCheckWearable /*= false*/ )
 {
-	CBaseEntity *pEntity = NULL;
-	if ( IsWearableSlot( iLoadoutSlot ) || bForceCheckWearable )
-	{
-		// Search Wearables first otherwise search Weapons as a fall back
-		pEntity = GetEquippedWearableForLoadoutSlot( iLoadoutSlot );
-		if ( pEntity )
-		{
-			return pEntity;
-		}
-	}
+	if ( iLoadoutSlot < 0 || iLoadoutSlot >= CLASS_LOADOUT_POSITION_COUNT )
+		return NULL;
 
-	int iClass = GetPlayerClass()->GetClassIndex();
-	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	if ( m_Shared.m_bLoadoutSlotCacheDirty )
 	{
-		if ( GetWeapon(i) )
+		for ( int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++ )
 		{
-			CEconItemView *pEconItemView = GetWeapon(i)->GetAttributeContainer()->GetItem();
+			m_Shared.m_hItemForLoadoutSlot[i] = NULL;
+		}
+
+		int iClass = GetPlayerClass()->GetClassIndex();
+
+		// Populate Weapons first
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			if ( GetWeapon(i) )
+			{
+				CEconItemView *pEconItemView = GetWeapon(i)->GetAttributeContainer()->GetItem();
+				if ( !pEconItemView )
+					continue;
+
+				CTFItemDefinition *pItemDef = pEconItemView->GetStaticData();
+				if ( !pItemDef )
+					continue;
+
+				int iSlot = pItemDef->GetLoadoutSlot( iClass );
+				if ( iSlot == -1 && pItemDef->GetDefinitionIndex() != 0 )
+				{
+					iSlot = pItemDef->GetLoadoutSlot( TF_CLASS_UNDEFINED );
+				}
+
+				if ( iSlot >= 0 && iSlot < CLASS_LOADOUT_POSITION_COUNT )
+				{
+					m_Shared.m_hItemForLoadoutSlot[iSlot] = GetWeapon(i);
+				}
+			}
+		}
+
+		// Populate Wearables
+		for ( int i = 0; i < GetNumWearables(); ++i )
+		{
+			CTFWearable *pWearableItem = static_cast< CTFWearable * >( GetWearable( i ) );
+			if ( !pWearableItem )
+				continue;
+
+			if ( !pWearableItem->GetAttributeContainer() )
+				continue;
+
+			CEconItemView *pEconItemView = pWearableItem->GetAttributeContainer()->GetItem();
 			if ( !pEconItemView )
 				continue;
 
@@ -12321,11 +12364,22 @@ CBaseEntity *CTFPlayer::GetEntityForLoadoutSlot( int iLoadoutSlot, bool bForceCh
 			if ( !pItemDef )
 				continue;
 
-			if ( pItemDef->GetLoadoutSlot( iClass ) == iLoadoutSlot )
-				return GetWeapon(i);
+			int iSlot = pItemDef->GetLoadoutSlot( iClass );
+			if ( iSlot == -1 && pItemDef->GetDefinitionIndex() != 0 )
+			{
+				iSlot = pItemDef->GetLoadoutSlot( TF_CLASS_UNDEFINED );
+			}
+
+			if ( iSlot >= 0 && iSlot < CLASS_LOADOUT_POSITION_COUNT )
+			{
+				m_Shared.m_hItemForLoadoutSlot[iSlot] = pWearableItem;
+			}
 		}
+
+		m_Shared.m_bLoadoutSlotCacheDirty = false;
 	}
-	return NULL;
+
+	return CBaseEntity::Instance( m_Shared.m_hItemForLoadoutSlot[iLoadoutSlot] );
 }
 
 #ifdef CLIENT_DLL

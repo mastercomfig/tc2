@@ -434,7 +434,7 @@ bool CEconItemView::operator==( const CEconItemView &other ) const
 GameItemDefinition_t *CEconItemView::GetStaticData( void ) const
 { 
 	CEconItemDefinition	 *pRet		= GetItemSchema()->GetItemDefinition( m_iItemDefinitionIndex );
-	GameItemDefinition_t *pTypedRet = dynamic_cast<GameItemDefinition_t *>( pRet );
+	GameItemDefinition_t *pTypedRet = static_cast<GameItemDefinition_t *>( pRet );
 
 	AssertMsg( pRet == pTypedRet, "Item definition of inappropriate type." );
 
