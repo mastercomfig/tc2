@@ -229,7 +229,7 @@ public:
 public:
 	virtual void		DisplayHintTo( C_BasePlayer *pPlayer );
 
-	virtual void		GetGlowEffectColor( float *r, float *g, float *b );
+	virtual void		GetGlowEffectColor( float *r, float *g, float *b, float *a );
 
 	bool				IsMapPlaced( void ){ return m_bWasMapPlaced; }
 

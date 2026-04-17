@@ -260,11 +260,11 @@ void CTFGrenadePipebombProjectile::OnDataChanged(DataUpdateType_t updateType)
 		{
 			if ( GetTeamNumber() == TF_TEAM_RED )
 			{
-				m_pGlowEffect = new CGlowObject( this, Vector( 150, 0, 0 ), 1.0, true );
+				m_pGlowEffect = new CGlowObject( this, Vector( 150, 0, 0 ), 1.0, true, m_bDefensiveBomb );
 			}
 			else
 			{
-				m_pGlowEffect = new CGlowObject( this, Vector( 0, 0, 150 ), 1.0, true );
+				m_pGlowEffect = new CGlowObject( this, Vector( 0, 0, 150 ), 1.0, true, m_bDefensiveBomb );
 			}
 		}
 

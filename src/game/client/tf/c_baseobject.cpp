@@ -848,17 +848,19 @@ void C_BaseObject::DisplayHintTo( C_BasePlayer *pPlayer )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void C_BaseObject::GetGlowEffectColor( float *r, float *g, float *b )
+void C_BaseObject::GetGlowEffectColor( float *r, float *g, float *b, float *a )
 {
 	if ( TFGameRules() )
 	{
 		TFGameRules()->GetTeamGlowColor( GetTeamNumber(), *r, *g, *b );
+		*a = 1.0f;
 	}
 	else
 	{
 		*r = 0.76f;
 		*g = 0.76f;
 		*b = 0.76f;
+		*a = 1.0f;
 	}
 }
 

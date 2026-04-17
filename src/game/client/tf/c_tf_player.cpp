@@ -11876,22 +11876,31 @@ void C_TFPlayer::UpdateGlowEffect( void )
 
 	BaseClass::UpdateGlowEffect();
 
+	if ( ( GetGlowSources() & CLIENTSIDE_GLOW_HEALER ) || ( GetGlowSources() & CLIENTSIDE_GLOW_SAVEME ) )
+	{
+		SetGlowRenderFlags( true, true );
+	}
+	else
+	{
+		SetGlowRenderFlags( true, false );
+	}
+
 	// create a new effect if we have a coach
 	if ( m_hCoach && m_hCoach->IsLocalPlayer() && m_hCoach->m_bIsCoaching )
 	{
-		float r, g, b;
-		GetGlowEffectColor( &r, &g, &b );
+		float r, g, b, a = 1.0f;
+		GetGlowEffectColor( &r, &g, &b, &a );
 
-		m_pStudentGlowEffect = new CGlowObject( this, Vector( r, g, b ), 1.0, true );
+		m_pStudentGlowEffect = new CGlowObject( this, Vector( r, g, b ), a, true, true );
 	}
 
 	// create a power up effect if needed
 	if ( ShouldShowPowerupGlowEffect() )
 	{
-		float r, g, b;
-		GetPowerupGlowEffectColor( &r, &g, &b );
+		float r, g, b, a = 1.0f;
+		GetPowerupGlowEffectColor( &r, &g, &b, &a );
 
-		m_pPowerupGlowEffect = new CGlowObject( this, Vector( r, g, b ), 1.0, true );
+		m_pPowerupGlowEffect = new CGlowObject( this, Vector( r, g, b ), a, true, true );
 	}
 }
 
@@ -11920,26 +11929,30 @@ void C_TFPlayer::UpdateGlowColor( void )
 	CGlowObject* pGlowObject = GetGlowObject();
 	if ( pGlowObject )
 	{
-		float r, g, b;
-		GetGlowEffectColor( &r, &g, &b );
+		float r, g, b, a = 1.0f;
+		GetGlowEffectColor( &r, &g, &b, &a );
 
 		pGlowObject->SetColor( Vector( r, g, b ) );
+		pGlowObject->SetAlpha( a );
 	}
 
 	if ( m_pPowerupGlowEffect )
 	{
-		float r, g, b;
-		GetPowerupGlowEffectColor( &r, &g, &b );
+		float r, g, b, a = 1.0f;
+		GetPowerupGlowEffectColor( &r, &g, &b, &a );
 
 		m_pPowerupGlowEffect->SetColor( Vector( r, g, b ) );
+		m_pPowerupGlowEffect->SetAlpha( a );
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b )
+void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b, float *a )
 {
+	*a = 1.0f;
+
 #ifdef TF_CREEP_MODE
 	if ( TFGameRules() && TFGameRules()->IsCreepWaveMode() )
 	{
@@ -12070,7 +12083,7 @@ bool C_TFPlayer::ShouldShowPowerupGlowEffect()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void C_TFPlayer::GetPowerupGlowEffectColor( float *r, float *g, float *b )
+void C_TFPlayer::GetPowerupGlowEffectColor( float *r, float *g, float *b, float *a )
 {
 	C_TFPlayer *pLocalPlayer = GetLocalTFPlayer();
 	// no need to add extra logics here. we already know that other players are glowing from SUPERNOVA
@@ -12079,10 +12092,11 @@ void C_TFPlayer::GetPowerupGlowEffectColor( float *r, float *g, float *b )
 		*r = 255;
 		*g = 255;
 		*b = 0;
+		*a = 1.0f;
 	}
 	else
 	{
-		GetGlowEffectColor( r, g, b );
+		GetGlowEffectColor( r, g, b, a );
 	}
 }
 

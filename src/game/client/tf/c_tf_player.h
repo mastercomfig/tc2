@@ -339,7 +339,7 @@ public:
 	void			SetTauntCameraTargets( float back, float up );
 
 	// TF-specific color values for GlowEffect
-	virtual void	GetGlowEffectColor( float *r, float *g, float *b );
+	virtual void	GetGlowEffectColor( float *r, float *g, float *b, float *a );
 	void UpdateGlowColor( void );
 
 	virtual const Vector&	GetRenderOrigin( void );
@@ -545,7 +545,7 @@ private:
 	bool ComputeCompetitiveVisibility(void);
 
 	bool ShouldShowPowerupGlowEffect();
-	void GetPowerupGlowEffectColor( float *r, float *g, float *b );
+	void GetPowerupGlowEffectColor( float *r, float *g, float *b, float *a );
 
 	void HandleTaunting( void );
 	void TauntCamInterpolation( void );

@@ -453,7 +453,7 @@ void CTFDroppedWeapon::UpdateGlowEffect( void )
 	if ( m_bShouldGlowForLocalPlayer )
 	{
 		Vector color = Vector( 0.745f, 0.773f, 0.157f );
-		m_pGlowEffect = new CGlowObject( this, color, 1.0, true );
+		m_pGlowEffect = new CGlowObject( this, color, 1.0, true, true );
 	}
 }
 

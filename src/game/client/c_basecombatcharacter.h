@@ -100,7 +100,7 @@ public:
 
 #ifdef GLOWS_ENABLE
 	CGlowObject			*GetGlowObject( void ){ return m_pGlowEffect; }
-	virtual void		GetGlowEffectColor( float *r, float *g, float *b );
+	virtual void		GetGlowEffectColor( float *r, float *g, float *b, float *a );
 //	void				EnableGlowEffect( float r, float g, float b );
 
 	void				SetClientSideGlowEnabled( bool bEnabled, int iSourceFlag = CLIENTSIDE_GLOW_ANONYMOUS );
@@ -116,6 +116,14 @@ protected:
 #ifdef GLOWS_ENABLE	
 	virtual void		UpdateGlowEffect( void );
 	virtual void		DestroyGlowEffect( void );
+	int                 GetGlowSources( void ) const { return m_iClientSideGlowSources; }
+	void                SetGlowRenderFlags( bool bRenderWhenOccluded, bool bRenderWhenUnoccluded )
+	{
+		if ( m_pGlowEffect )
+		{
+			m_pGlowEffect->SetRenderFlags( bRenderWhenOccluded, bRenderWhenUnoccluded );
+		}
+	}
 #endif // GLOWS_ENABLE
 
 	int			m_bloodColor;			// color of blood particles

@@ -57,7 +57,7 @@ void C_CurrencyPack::UpdateGlowEffect( void )
 		DestroyGlowEffect();
 	}
 
-	// create a new effect if we have a cart
+	// create a new effect if we have some money
 	if ( m_bShouldGlowForLocalPlayer )
 	{
 		Vector color = m_bDistributed ? Vector( 150, 0, 0 ) : Vector( 0, 150, 0 );
