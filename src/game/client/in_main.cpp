@@ -1086,7 +1086,7 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 			bool bIsAttackFrame = false;
 
 			C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
-			if (pWeapon)
+			if ( pWeapon )
 			{
 				// Check primary attack
 				if ( ( cmd->buttons & IN_ATTACK ) && pWeapon->m_flNextPrimaryAttack <= gpGlobals->curtime )
@@ -1108,7 +1108,7 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 			}
 
 
-			if (bIsAttackFrame)
+			if ( bIsAttackFrame )
 			{
 				// TODO: store off sampled data
 				pPlayer->m_flInterpolationTime = flInterpTime;

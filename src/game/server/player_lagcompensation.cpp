@@ -410,7 +410,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	}
 
 	// check bounds [0,sv_maxunlag]
-	correct = clamp(correct, 0.0f, sv_maxunlag.GetFloat());
+	correct = clamp( correct, 0.0f, sv_maxunlag.GetFloat() );
 
 	// calculate view interpolation latency
 	// this used to be bound by sv_maxunlag.
@@ -420,7 +420,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 	float flLerpTime = player->m_fLerpTime;
 	if ( cmd )
 	{
-		flLerpTime += Clamp(cmd->lerp_time, 0.0f, 1.0f) * TICK_INTERVAL;
+		flLerpTime += ( 1.0f - Clamp( cmd->lerp_time, 0.0f, 1.0f ) ) * TICK_INTERVAL;
 	}
 
 	// add view interpolation latency see C_BaseEntity::GetInterpolationAmount()
@@ -435,7 +435,7 @@ void CLagCompensationManager::StartLagCompensation( CBasePlayer *player, CUserCm
 		bForceServer = false;
 
 		// correct tick sent by player
-		flTargetTime = TICKS_TO_TIME(cmd->tick_count) - flLerpTime;
+		flTargetTime = TICKS_TO_TIME( cmd->tick_count ) - flLerpTime;
 
 		// calc difference between tick sent by player and our latency based tick
 		deltaTime = correct - (gpGlobals->curtime - flTargetTime);

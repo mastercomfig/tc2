@@ -10859,19 +10859,27 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 					bool bIsHeadshot = false;
 					if ( nDamageType & DMG_USE_HITLOCATIONS && trace.m_pEnt && OnOpposingTFTeams( GetTeamNumber(), trace.m_pEnt->GetTeamNumber() ) )
 					{
-						if (trace.hitgroup == HITGROUP_HEAD)
+						if ( trace.hitgroup == HITGROUP_HEAD )
 						{
 							bIsHeadshot = true;
+							if ( trace.m_pEnt->IsPlayer() )
+							{
+								CTFPlayer *pTarget = ToTFPlayer( trace.m_pEnt );
+								if ( pTarget && pTarget->m_Shared.InCond( TF_COND_DISGUISED ) )
+								{
+									bIsHeadshot = false;
+								}
+							}
 						}
 					}
 
 					// force a tracer for the shooter if it's a headshot.
-					if (!ShouldDrawThisPlayer() && bIsHeadshot && pWpn && WeaponID_IsSniperRifle(pWpn->GetWeaponID()))
+					if ( !ShouldDrawThisPlayer() && bIsHeadshot && pWpn && WeaponID_IsSniperRifle(pWpn->GetWeaponID() ) )
 					{
-						pszTracerEffect = VarArgs("bullet_pistol_tracer01_%s", GetTeamNumber() == TF_TEAM_RED ? "red" : "blue");
-						if ( m_Shared.InCond(TF_COND_AIMING) )
+						pszTracerEffect = VarArgs( "bullet_pistol_tracer01_%s", GetTeamNumber() == TF_TEAM_RED ? "red" : "blue" );
+						if ( m_Shared.InCond( TF_COND_AIMING ) )
 						{
-							GetHorriblyHackedRailgunPosition(trace.startpos, &vecStart);
+							GetHorriblyHackedRailgunPosition( trace.startpos, &vecStart );
 						}
 					}
 
