@@ -12,6 +12,10 @@
 #include "materialsystem/itexture.h"
 #include "view_shared.h"
 #include "viewpostprocess.h"
+#include "cdll_client_int.h"
+
+static ITexture* s_pRtGlowColor = NULL;
+static ITexture* s_pRtGameSceneBackup = NULL;
 
 #define FULL_FRAME_TEXTURE "_rt_FullFrameFB"
 
@@ -264,8 +268,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	const float flOrigBlend = render->GetBlend();
 
 	// avoid touching _rt_FullFrameFB which is used elsewhere
-	static ITexture* pRtGlowColor = NULL;
-	static ITexture* pRtGameSceneBackup = NULL;
+	if ( !s_pRtGlowColor || !s_pRtGameSceneBackup )
 	{
 		ImageFormat format = materials->GetBackBufferFormat();
 		if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
@@ -273,21 +276,28 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 
 		ITexture* pRtFullFrameFB = materials->FindTexture( FULL_FRAME_TEXTURE, TEXTURE_GROUP_RENDER_TARGET );
 
+		materials->BeginRenderTargetAllocation();
+
 		// we use RT_SIZE_NO_CHANGE here and the frame texture's actual size to avoid DX9 rect resize issues when copying
 		// usually there's some 0.5 padding or whatever on the hardware and the engine naively isn't aware of this, so if you do a
 		// CopyTextureToRenderTargetEx that isn't aware of the underlying issue, you'll cause a slight blur, which changes bloom
-		pRtGlowColor = materials->CreateNamedRenderTargetTextureEx(
+		s_pRtGlowColor = materials->CreateNamedRenderTargetTextureEx2(
 			"_rt_GlowColor", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
 			RT_SIZE_NO_CHANGE, format,
 			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
-		pRtGameSceneBackup = materials->CreateNamedRenderTargetTextureEx(
+		s_pRtGameSceneBackup = materials->CreateNamedRenderTargetTextureEx2(
 			"_rt_GlowGameSceneBackup", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
 			RT_SIZE_NO_CHANGE, format,
 			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
+
+		s_pRtGlowColor->AddRef();
+		s_pRtGameSceneBackup->AddRef();
+
+		materials->EndRenderTargetAllocation();
 	}
 
 	// copy our scene to our backup texture
-	pRenderContext->CopyRenderTargetToTexture( pRtGameSceneBackup );
+	pRenderContext->CopyRenderTargetToTexture( s_pRtGameSceneBackup );
 
 	// Clear backbuffer color, including alpha, to make sure this pass is isolated
 	pRenderContext->ClearColor4ub( 0, 0, 0, 0 );
@@ -298,7 +308,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	IMaterial *pMatGlowColor = NULL;
 
 	pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
-	g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
+	modelrender->ForcedMaterialOverride( pMatGlowColor );
 	
 	// Don't write alpha
 	pRenderContext->OverrideAlphaWriteEnable( true, false );
@@ -335,7 +345,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	}
 
 	// Restore modulation color and blend
-	g_pStudioRender->ForcedMaterialOverride( NULL );
+	modelrender->ForcedMaterialOverride( NULL );
 	render->SetColorModulation( vOrigColor.Base() );
 	render->SetBlend( flOrigBlend );
 	
@@ -346,14 +356,14 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	pRenderContext->OverrideDepthEnable( false, false );
 
 	// Copy out the glow models to our texture
-	pRenderContext->CopyRenderTargetToTexture( pRtGlowColor );
+	pRenderContext->CopyRenderTargetToTexture( s_pRtGlowColor );
 
 	// Re-enable writes here for when we copy our backup to the backbuffer
 	pRenderContext->OverrideColorWriteEnable( false, false );
 	pRenderContext->OverrideAlphaWriteEnable( false, false );
 
 	// Copy with proper coordinates
-	pRenderContext->CopyTextureToRenderTargetEx( 0, pRtGameSceneBackup, nullptr );
+	pRenderContext->CopyTextureToRenderTargetEx( 0, s_pRtGameSceneBackup, nullptr );
 
 	pRenderContext->PopRenderTargetAndViewport();
 }
@@ -406,10 +416,9 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		
 		// We use a created _rt_GlowColor as our texture, not whatever the material is set to
 		IMaterialVar* pBaseTexVar = pMatHaloAddToScreen->FindVar( "$basetexture", NULL );
-		if ( pBaseTexVar )
+		if ( pBaseTexVar && s_pRtGlowColor )
 		{
-			ITexture* pRtGlowColor = materials->FindTexture( "_rt_GlowColor", TEXTURE_GROUP_RENDER_TARGET );
-			pBaseTexVar->SetTextureValue( pRtGlowColor );
+			pBaseTexVar->SetTextureValue( s_pRtGlowColor );
 		}
 
 		// Do not fade the glows out at all (weight = 1.0)
@@ -448,7 +457,7 @@ void CGlowObjectManager::GlowObjectDefinition_t::DrawModel( IMaterial* pMatGlowC
 {
 	if ( m_hEntity.Get() )
 	{
-		g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
+		modelrender->ForcedMaterialOverride( pMatGlowColor );
 		m_hEntity->DrawModel( STUDIO_RENDER );
 		C_BaseEntity *pAttachment = m_hEntity->FirstMoveChild();
 
@@ -456,7 +465,7 @@ void CGlowObjectManager::GlowObjectDefinition_t::DrawModel( IMaterial* pMatGlowC
 		{
 			if ( !g_GlowObjectManager.HasGlowEffect( pAttachment ) && pAttachment->ShouldDraw() && pAttachment->CanGlow() )
 			{
-				g_pStudioRender->ForcedMaterialOverride( pMatGlowColor );
+				modelrender->ForcedMaterialOverride( pMatGlowColor );
 				pAttachment->DrawModel( STUDIO_RENDER );
 			}
 			pAttachment = pAttachment->NextMovePeer();
