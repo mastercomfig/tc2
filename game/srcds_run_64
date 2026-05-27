@@ -316,6 +316,7 @@ updatemod() {
 	if test -n "$AUTO_UPDATE"; then
 		echo "Updating server."
 		echo "----------------------------"
+		eval "./steamcmd_update.sh"
 		eval "./update_dedicated.sh"
 		echo "----------------------------"
 	fi
