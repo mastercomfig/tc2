@@ -26,6 +26,6 @@ elif [[ "$OSTYPE" == "msys"* ]]; then
   DLL_EXT=".dll"
   EXE_EXT=".exe"
 else
-  echo "OS is not supported! Exiting."
+  echo "OS ${OSTYPE} is not supported! Exiting."
   exit 1
 fi
