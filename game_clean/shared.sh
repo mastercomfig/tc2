@@ -20,7 +20,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   PLAT_DIR="linux64"
   DLL_EXT=".so"
   EXE_EXT=""
-elif [[ "$OSTYPE" == "msys"* ]]; then
+elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* || "$OSTYPE" == "mingw"* ]]; then
   PLATFORM="win"
   PLAT_DIR="x64"
   DLL_EXT=".dll"
