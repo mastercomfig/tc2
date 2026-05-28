@@ -92,7 +92,7 @@ Scheme
 		FrameGrip.Color1				"TFTanLight"
 		FrameGrip.Color2				"TFDarkBrown"		
 		FrameTitleButton.FgColor		"TFTanBright"
-		FrameTitleBar.Font				"DefaultLarge"		[!$OSX]
+		FrameTitleBar.Font				"DefaultLarge"
 		FrameTitleBar.TextColor			"TFTanBright"
 		FrameTitleBar.DisabledTextColor	"TFTanLight"
 
@@ -112,8 +112,8 @@ Scheme
 		ListPanel.SelectedBgColor			"SelectionBG"
 		ListPanel.SelectedOutOfFocusBgColor	"SelectionBG2"
 		
-		MainMenu.TextColor			"TanLight"			[!$OSX]
-		MainMenu.ArmedTextColor		"117 107 94 255"	[!$OSX]
+		MainMenu.TextColor			"TanLight"
+		MainMenu.ArmedTextColor		"117 107 94 255"
 		MainMenu.Inset				"32"
 		
 		Menu.TextInset					"6"
@@ -161,6 +161,10 @@ Scheme
 	
 	Borders
 	{
+		BaseBorder		CustomBaseBorder
+		ButtonBorder	CustomButtonBorder
+		PropertySheetBorder	CustomPropertySheetBorder
+
 		FrameBorder
 		{
 			"bordertype"			"scalable_image"
@@ -173,7 +177,7 @@ Scheme
 			"draw_corner_height" 	"4"
 		}
 		
-		BaseBorder
+		CustomBaseBorder
 		{
 			"inset" "0 0 0 0"
 			Left
@@ -213,7 +217,7 @@ Scheme
 			}
 		}
 		
-		PropertySheetBorder
+		CustomPropertySheetBorder
 		{
 			"inset" "0 0 0 0"
 			Left
@@ -333,7 +337,7 @@ Scheme
 			}
 		}
 		
-		ButtonBorder
+		CustomButtonBorder
 		{
 			"inset" "0 0 0 0"
 			Left
@@ -538,21 +542,13 @@ Scheme
 	{
 		"MainMenuFont"
 		{
-			"1"	[!$OSX]
+			"1"
 			{
 				"name"		"TF2 Build"
 				"tall"		"18"
 				"weight"	"500"
 				"additive"	"0"
 				"antialias" "1"
-			}
-		}
-		
-		"MenuLarge"
-		{
-			"1"	[$X360]
-			{
-				"tall_hidef"		"24"
 			}
 		}
 
@@ -573,8 +569,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$OSX]
-				"name"		"Verdana" [$OSX]
+				"name"		"Tahoma"
 				"tall"		"16" [!$LINUX]
 				"tall"		"18" [$LINUX]
 				"weight"	"500"
@@ -599,8 +594,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"Tahoma" [!$OSX]
-				"name"		"Verdana" [$OSX]
+				"name"		"Tahoma"
 				"tall"		"12" [!$POSIX]
 				"tall"		"15" [$POSIX]
 				"weight"	"0"
@@ -705,42 +699,36 @@ Scheme
 		}
 		
 				
-		AchievementItemTitle	[!$OSX]
+		AchievementItemTitle
 		{
 			"1"
 			{
-				"name"		"Arial" [!$OSX]
-				"name"		"Verdana Bold" [$OSX]
+				"name"		"Arial"
 				"weight"		"1500"
-				"tall"			"16" [!$OSX]
-				"tall"			"18" [$OSX]
+				"tall"			"16"
 				"antialias"		"1"
 			}
 		}
 		
-		AchievementItemTitleLarge	[!$OSX]
+		AchievementItemTitleLarge
 		{
 			"1"
 			{
-				"name"		"Arial" [!$OSX]
-				"name"		"Verdana Bold" [$OSX]
+				"name"		"Arial"
 				"weight"		"1500"
-				"tall"			"18" [!$OSX]
-				"tall"			"19" [$OSX]
+				"tall"			"18"
 				"antialias"		"1"
 			}
 		}
 		
-		AchievementItemDescription	[!$OSX]
+		AchievementItemDescription
 		{
 			"1"
 			{
-				"name"		"Arial" [!$OSX]
-				"name"		"Verdana" [$OSX]
+				"name"		"Arial"
 				"weight"		"1000"
-				"tall"			"14" [!$OSX]
-				"tall"			"12" [$OSX]
-				"antialias"		"1" [!$OSX]
+				"tall"			"14"
+				"antialias"		"1"
 			}
 		}
 
@@ -748,7 +736,15 @@ Scheme
 	
 	CustomFontFiles
 	{
-		"6" 
+		"4"		"resource/linux_fonts/DejaVuSans.ttf"
+		"5"		"resource/linux_fonts/DejaVuSans-Bold.ttf"
+		"6"		"resource/linux_fonts/DejaVuSans-BoldOblique.ttf"
+		"7"		"resource/linux_fonts/DejaVuSans-Oblique.ttf"
+		"8"		"resource/linux_fonts/LiberationSans-Regular.ttf"
+		"9"		"resource/linux_fonts/LiberationSans-Bold.ttf"
+		"10"	"resource/linux_fonts/LiberationMono-Regular.ttf"
+		"11"	"resource/linux_fonts/FiraSans-Regular.ttf"
+		"12" 
 		{
 			"font" "resource/TF2Build.ttf"
 			"name" "TF2 Build"
@@ -809,13 +805,5 @@ Scheme
 				"range" "0x0000 0x0451"
 			}	
 		}
-		"10"		"resource/linux_fonts/DejaVuSans.ttf"
-		"11"		"resource/linux_fonts/DejaVuSans-Bold.ttf"
-		"12"		"resource/linux_fonts/DejaVuSans-BoldOblique.ttf"
-		"13"		"resource/linux_fonts/DejaVuSans-Oblique.ttf"
-		"14"		"resource/linux_fonts/LiberationSans-Regular.ttf"
-		"15"		"resource/linux_fonts/LiberationSans-Bold.ttf"
-		"16"		"resource/linux_fonts/LiberationMono-Regular.ttf"
-		"17"		"resource/linux_fonts/FiraSans-Regular.ttf"
 	}
 }
