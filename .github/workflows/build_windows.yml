@@ -7,7 +7,7 @@ on:
 # https://github.com/SoopMod/source-sdk-tf-soop/commit/d244e93b5888074e53e1f2f6daba3f14383b575e
 jobs:
   build_win:
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     env:
       VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
       VCPKG_DEFAULT_TRIPLET: x64-windows
