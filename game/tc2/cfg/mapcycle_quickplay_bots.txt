@@ -34,7 +34,6 @@ pl_coal_event
 ctf_doublecross_snowy
 cp_altitude
 pl_chilly
-cp_frostwatch
 ctf_frosty
 pl_frostcliff
 pl_rumford_event
