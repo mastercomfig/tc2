@@ -284,11 +284,11 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 		s_pRtGlowColor = materials->CreateNamedRenderTargetTextureEx2(
 			"_rt_GlowColor", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
 			RT_SIZE_NO_CHANGE, format,
-			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
+			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, CREATERENDERTARGETFLAGS_HDR );
 		s_pRtGameSceneBackup = materials->CreateNamedRenderTargetTextureEx2(
 			"_rt_GlowGameSceneBackup", pRtFullFrameFB->GetActualWidth(), pRtFullFrameFB->GetActualHeight(),
 			RT_SIZE_NO_CHANGE, format,
-			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, 0 );
+			MATERIAL_RT_DEPTH_NONE, TEXTUREFLAGS_CLAMPS | TEXTUREFLAGS_CLAMPT, CREATERENDERTARGETFLAGS_HDR );
 
 		s_pRtGlowColor->AddRef();
 		s_pRtGameSceneBackup->AddRef();
