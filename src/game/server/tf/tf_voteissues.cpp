@@ -358,12 +358,28 @@ bool CKickIssue::RequestCallVote( int iEntIndex, const char *pszDetails, vote_cr
 				return true;
 	}
 	
-#ifndef _DEBUG
-	// Don't kick players on other teams
-	if ( g_pPlayerResource->GetTeam( pTFVoteCaller->entindex() ) != g_pPlayerResource->GetTeam( m_hPlayerTarget->entindex() ) )
+	if ( GTFGCClientSystem()->GetLiveMatch() )
 	{
-		nFailCode = VOTE_FAILED_TEAM_CANT_CALL;
-		return false;
+		const int iVoteCallerTeam = g_pPlayerResource->GetTeam( pTFVoteCaller->entindex() );
+		CSteamID  steamIdTarget;
+		m_hPlayerTarget->GetSteamID( &steamIdTarget );
+		CMatchInfo::PlayerMatchData_t* pMatchPlayer = GTFGCClientSystem()->GetLiveMatchPlayer( steamIdTarget );
+		const int iVoteTargetTeam = pMatchPlayer ? TFGameRules()->GetGameTeamForGCTeam( pMatchPlayer->eGCTeam ) : g_pPlayerResource->GetTeam( m_hPlayerTarget->entindex() );
+		if ( iVoteCallerTeam != iVoteTargetTeam )
+		{
+			nFailCode = VOTE_FAILED_TEAM_CANT_CALL;
+			return false;
+		}
+	}
+#ifndef _DEBUG
+	else
+	{
+		// Don't kick players on other teams
+		if ( g_pPlayerResource->GetTeam( pTFVoteCaller->entindex() ) != g_pPlayerResource->GetTeam( m_hPlayerTarget->entindex() ) )
+		{
+			nFailCode = VOTE_FAILED_TEAM_CANT_CALL;
+			return false;
+		}
 	}
 #endif // !_DEBUG
 

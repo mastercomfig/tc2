@@ -2049,6 +2049,12 @@ bool CTFGCServerSystem::CanKickPlayer( CTFPlayer *pVoterPlayer, CTFPlayer *pTarg
 {
 	Assert( pVoterPlayer->GetTeamVoteController() == pTargetPlayer->GetTeamVoteController() );
 
+	if ( pVoterPlayer->GetTeamNumber() >= FIRST_GAME_TEAM && pTargetPlayer->GetTeamNumber() == TEAM_UNASSIGNED )
+	{
+		// skip team vote controller check if kicking unassigned -- we already check for matching teams for this case in CKickIssue::RequestCallVote
+		return true;
+	}
+
 	if ( pVoterPlayer->GetTeamVoteController() != pTargetPlayer->GetTeamVoteController() )
 	{
 		MMLog( "[TF Vote GC] Disallowing player to kick target due to having differing team vote controllers.\n" );
