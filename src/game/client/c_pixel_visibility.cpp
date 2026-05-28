@@ -25,22 +25,6 @@ ConVar r_dopixelvisibility( "r_dopixelvisibility", "1" );
 ConVar r_drawpixelvisibility( "r_drawpixelvisibility", "0", 0, "Show the occlusion proxies", PixelvisDrawChanged );
 ConVar r_pixelvisibility_spew( "r_pixelvisibility_spew", "0" );
 
-#ifdef OSX
-	// GLMgr will set this one to "1" if it senses the new post-10.6.4 driver (m_hasPerfPackage1)
-	ConVar gl_can_query_fast( "gl_can_query_fast", "0" );
-	
-	static bool	HasFastQueries( void )
-	{
-		return gl_can_query_fast.GetBool();
-	}
-#else
-	// non OSX path
-	static bool	HasFastQueries( void )
-	{
-		return true;
-	}
-#endif
-
 extern ConVar building_cubemaps;
 
 #ifndef _X360
@@ -520,11 +504,10 @@ CPixelVisibilitySystem::CPixelVisibilitySystem() : CAutoGameSystem( "CPixelVisib
 // Level init, shutdown
 void CPixelVisibilitySystem::LevelInitPreEntity()
 {
-	bool fastqueries = HasFastQueries();
 	// printf("\n ** fast queries: %s **", fastqueries?"true":"false" );
 	
-	m_hwCanTestGlows = r_dopixelvisibility.GetBool() && fastqueries && engine->GetDXSupportLevel() >= 80;
-	if ( m_hwCanTestGlows )
+	m_hwCanTestGlows = engine->GetDXSupportLevel() >= 80;
+	if ( PixelVisibility_IsAvailable() )
 	{
 		CMatRenderContextPtr pRenderContext( materials );
 
@@ -564,7 +547,7 @@ void CPixelVisibilitySystem::LevelShutdownPostEntity()
 
 float CPixelVisibilitySystem::GetFractionVisible( const pixelvis_queryparams_t &params, pixelvis_handle_t *queryHandle )
 {
-	if ( !m_hwCanTestGlows || building_cubemaps.GetBool() )
+	if ( !PixelVisibility_IsAvailable() || building_cubemaps.GetBool() )
 	{
 		return GlowSightDistance( params.position, true ) > 0 ? 1.0f : 0.0f;
 	}
@@ -836,8 +819,7 @@ float PixelVisibility_FractionVisible( const pixelvis_queryparams_t &params, pix
 
 bool PixelVisibility_IsAvailable()
 {
-	bool fastqueries = HasFastQueries();
-	return r_dopixelvisibility.GetBool() && fastqueries && g_PixelVisibilitySystem.SupportsOcclusion();
+	return r_dopixelvisibility.GetBool() && g_PixelVisibilitySystem.SupportsOcclusion();
 }
 
 //this originally called a class function of CPixelVisibiltySystem to keep the work clean, but that function needed friend access to CPixelVisibilityQuery 
