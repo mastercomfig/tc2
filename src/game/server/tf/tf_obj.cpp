@@ -1623,7 +1623,7 @@ void CBaseObject::FinishedBuilding( void )
 //-----------------------------------------------------------------------------
 void CBaseObject::SetHealth( float flHealth )
 {
-	if ( m_bCarryDeploy && (flHealth>m_iHealthOnPickup) )
+	if ( m_bCarryDeploy && ( flHealth > m_iHealthOnPickup ) )
 	{
 		// If we are re-deploying after being carried we shouldn't gain more health than we had
 		// on pickup until the deploy process is finished.
@@ -1633,8 +1633,8 @@ void CBaseObject::SetHealth( float flHealth )
 	bool changed = m_flHealth != flHealth;
 
 	m_flHealth = flHealth;
-	m_iHealth = Floor2Int(m_flHealth);
-
+	// make sure we only go to 0 health if we are actually dead
+	m_iHealth = flHealth > 0.0f && flHealth < 1.0f ? Ceil2Int( flHealth ) : Floor2Int( m_flHealth );
 
 	/*
 	// If we a pose parameter, set the pose parameter to reflect our health
@@ -1942,16 +1942,14 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 		flDamage *= obj_child_damage_factor.GetFloat();
 	}
 
-	if (obj_damage_factor.GetFloat())
+	if ( obj_damage_factor.GetFloat() )
 	{
 		flDamage *= obj_damage_factor.GetFloat();
 	}
-
 	
 	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
 	if ( pWeapon )
 	{
-
 		// Apply attributes that increase damage vs buildings
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flDamage, mult_dmg_vs_buildings );
 		CTFPlayer *pAttacker = ToTFPlayer( info.GetAttacker() );
@@ -1990,7 +1988,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 
 	bool bFriendlyObjectsAttached = false;
 	int iNumObjects = pBPInterface->GetNumObjectsOnMe();
-	for ( int iPoint=0;iPoint<iNumObjects;iPoint++ )
+	for ( int iPoint=0; iPoint<iNumObjects; iPoint++ )
 	{
 		CBaseObject *pObject = GetBuildPointObject( iPoint );
 
@@ -2004,39 +2002,50 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	}
 
 	// Round damage like players
-	flDamage = (int) ( flDamage + 0.5f );
+	flDamage = Ceil2Int( flDamage );
 
-	auto IsDamageFatal = []( const float flHealth, const float flDamage ) -> bool
+	// safety: include the "culling" of our health as part of the damage, because in actuality, we are dealing this much
+	const float flHealthLeft = m_flHealth - flDamage;
+	if ( flHealthLeft > 0.0f && flHealthLeft < 1.0f )
 	{
-		return ( ( flHealth - flDamage ) < 1 );
+		flDamage += flHealthLeft;
+	}
+
+	auto IsDamageFatal = [&]() -> bool
+	{
+		return ( ( m_flHealth - flDamage ) < 1 );
 	};
 
 	// Only track actual damage - not overkill
-	m_AchievementData.AddDamageEventToHistory( info.GetAttacker(), ( IsDamageFatal( m_flHealth, flDamage ) ) ? m_flHealth : flDamage );
+	m_AchievementData.AddDamageEventToHistory( info.GetAttacker(), ( IsDamageFatal() ) ? m_flHealth : flDamage );
+
+	bool bWillDieButCant = bFriendlyObjectsAttached && IsDamageFatal();
+	if ( bWillDieButCant )
+	{
+		// Soak up the damage it would take to drop us to 1 health
+		float flChildDamage = flDamage - ( m_flHealth - 1 );
+		flDamage -= flChildDamage;
+
+		// Pass leftover damage
+		if ( flChildDamage > 0.0f )
+		{
+			const bool bFinished = PassDamageOntoChildren( info, &flChildDamage );
+			// we reserved this much damage for the child objects, but it got left over, so add it back
+			flDamage += flChildDamage;
+			if ( bFinished )
+			{
+				return flDamage;
+			}
+		}
+	}
 
 	// if we cannot die
-	if ( m_bCannotDie && IsDamageFatal( m_flHealth, flDamage ) )
+	if ( m_bCannotDie && IsDamageFatal() )
 	{
 		flDamage = m_flHealth - 1;
 	}
 
-	// If I have objects on me, I can't be destroyed until they're gone. Ditto if I can't be killed.
-	bool bWillDieButCant = ( bFriendlyObjectsAttached ) && IsDamageFatal( m_flHealth, flDamage );
-	if ( bWillDieButCant )
-	{
-		// Soak up the damage it would take to drop us to 1 health
-		flDamage = flDamage - m_flHealth;
-		SetHealth( 1 );
-
-		// Pass leftover damage 
-		if ( flDamage )
-		{
-			if ( PassDamageOntoChildren( info, &flDamage ) )
-				return flDamage;
-		}
-	}
-
-	if ( flDamage )
+	if ( flDamage > 0.0f )
 	{
 		m_iLifetimeDamage += Floor2Int( MIN( flDamage, m_flHealth ) );
 		if ( m_iLifetimeDamage > tf_obj_damage_tank_achievement_amount.GetInt() && GetBuilder() )
@@ -2045,7 +2054,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 		}
 
 		// Recheck our death possibility, because our objects may have all been blown off us by now
-		bWillDieButCant = ( bFriendlyObjectsAttached ) && IsDamageFatal( m_flHealth, flDamage );
+		bWillDieButCant = ( bFriendlyObjectsAttached ) && IsDamageFatal();
 		if ( !bWillDieButCant )
 		{
 			// Reduce health
@@ -2074,7 +2083,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	}
 
 	const char* szInflictor = "unknown";
-	if( info.GetInflictor() )
+	if ( info.GetInflictor() )
 		szInflictor = (char*)info.GetInflictor()->GetClassname();
 
 	ReportDamage( szInflictor, GetClassname(), flDamage, GetHealth(), GetMaxHealth() );
@@ -2083,8 +2092,10 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	if ( event )
 	{
 		event->SetInt( "entindex", entindex() );
-		event->SetInt( "health", Max( 0, (int)GetHealth() ) );
-		event->SetInt( "damageamount", flDamage );
+		// our integer health handles what we should display to the user from the float value, don't reinterpret GetHealth
+		event->SetInt( "health", Max( 0, m_iHealth.Get() ) );
+		// we added the "culling damage" to our actual damage, but this will always be fractional. we can floor back down to get our reportable damage again.
+		event->SetInt( "damageamount", Floor2Int( flDamage ) );
 		event->SetBool( "crit", ( info.GetDamageType() & DMG_CRITICAL ) ? true : false );
 
 		CTFPlayer *pTFAttacker = ToTFPlayer( info.GetAttacker() );
