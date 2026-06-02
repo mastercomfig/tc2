@@ -234,15 +234,24 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 		}
 #endif
 	}
-#ifdef POSIX
-	// dedicated is required on posix servers
-	else if ( pSteamApps->BIsAppInstalled( k_unTF2AppId ) )
-#else
-	// only search for MP if we didn't find dedicated (or we weren't looking)
-	if ( unLength == 0 && pSteamApps->BIsAppInstalled( k_unTF2AppId ) )
-#endif
+
+	if ( pSteamApps->BIsAppInstalled( k_unTF2AppId ) )
 	{
-		unLength = pSteamApps->GetAppInstallDir( k_unTF2AppId, pszBuf, nBufSize );
+#ifdef POSIX
+		// dedicated app is required on posix servers, so we only check if TF2 is installed, but we keep relying on the dedicated install dir
+		if ( !bDedicated )
+#else
+		// Only overwrite app install dir with TF2 if we haven't already found dedicated, or we're not looking for dedicated (which in either case, will cause length to be 0)
+		if ( unLength == 0 )
+#endif
+		{
+			unLength = pSteamApps->GetAppInstallDir( k_unTF2AppId, pszBuf, nBufSize );
+		}
+	}
+	else
+	{
+		// If we didn't find TF2, then fail.
+		unLength = 0;
 	}
 
 	if ( !bDedicated )
@@ -254,11 +263,18 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 	{
 		if ( bDedicated )
 		{
-			MessageBox( 0, "Source SDK 2013 Dedicated Server (244310) must be installed to launch this mod.", "Launcher Error", MB_OK );
+#ifdef _WIN32
+			// On Windows, we prompt for Multiplayer since we can use it and less chance for duplication for a user that may want it in the future (since they don't already have it).
+			MessageBox( 0, "Team Fortress 2 (440) and Source SDK 2013 Multiplayer (243750) must be installed to launch this mod.", "Launcher Error", MB_OK );
+#else
+			// On Posix, there's no choice but the dedicated server app.
+			MessageBox( 0, "Team Fortress 2 (440) and Source SDK 2013 Dedicated Server (244310) must be installed to launch this mod.", "Launcher Error", MB_OK );
+#endif
 		}
 		else
 		{
-			MessageBox( 0, "Source SDK 2013 Multiplayer (243750) must be installed to launch this mod.", "Launcher Error", MB_OK );
+			// If it's not dedicated, then we only require TF2.
+			MessageBox( 0, "Team Fortress 2 (440) must be installed to launch this mod.", "Launcher Error", MB_OK );
 		}
 		if ( bDedicated )
 		{
