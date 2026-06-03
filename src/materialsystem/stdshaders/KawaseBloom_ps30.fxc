@@ -1,0 +1,29 @@
+#include "common_ps_fxc.h"
+
+sampler BaseTextureSampler : register( s0 );
+
+struct PS_INPUT
+{
+	float4 projPos					: POSITION;	
+	float2 baseTexCoord				: TEXCOORD0;
+};
+
+// c0.x = distance (e.g. 0, 1, 2, 3...)
+// c0.y = 1.0 / target_width
+// c0.z = 1.0 / target_height
+float4 blur_params : register( c0 );
+
+float4 main( PS_INPUT i ) : COLOR
+{
+    float2 uv = i.baseTexCoord;
+    float2 offset = float2( (blur_params.x + 0.5f) * blur_params.y, (blur_params.x + 0.5f) * blur_params.z );
+
+    float4 color = tex2D(BaseTextureSampler, uv + float2(-offset.x, -offset.y));
+    color += tex2D(BaseTextureSampler, uv + float2(offset.x, -offset.y));
+    color += tex2D(BaseTextureSampler, uv + float2(-offset.x, offset.y));
+    color += tex2D(BaseTextureSampler, uv + float2(offset.x, offset.y));
+    color *= 0.25f;
+    color *= blur_params.w;
+
+    return color;
+}

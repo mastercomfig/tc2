@@ -40,6 +40,7 @@
 #include "materialsystem/imaterialsystemstub.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
 #include "materialsystem/imaterialsystemhardwareconfig.h"
+#include "materialsystem/materialsystem_config.h"
 #include "c_soundscape.h"
 #include "engine/ivdebugoverlay.h"
 #include "vguicenterprint.h"
@@ -368,6 +369,69 @@ const bool IsGamepadUI()
 	return true;
 }
 #endif
+
+//-----------------------------------------------------------------------------
+
+struct CHardwareConfig_Internal_t
+{
+	struct HardwareCaps_t : MaterialAdapterInfo_t
+	{
+		uint8     gap[0x28];
+		int       m_NumPixelShaderConstants;
+		int       m_NumBooleanPixelShaderConstants;
+		int       m_NumIntegerPixelShaderConstants;
+		int       m_NumVertexShaderConstants;
+		int       m_NumBooleanVertexShaderConstants;
+		int       m_NumIntegerVertexShaderConstants;
+		int       m_TextureMemorySize;
+		uint8     gap2[0x14];
+		HDRType_t m_HDRType;
+		uint8     gap3[0x60];
+		HDRType_t m_MaxHDRType;
+	};
+
+#ifndef WIN64
+	// offset to this, typeinfo
+	uint8 gap[0x10];
+#endif
+
+	uint8 gap2[8];
+
+	HardwareCaps_t m_ActualCaps;
+	HardwareCaps_t m_Caps;
+	HardwareCaps_t m_UnOverriddenCaps;
+};
+
+static void ApplyShaderConstantHack()
+{
+	CHardwareConfig_Internal_t* pInternalConfig = reinterpret_cast<CHardwareConfig_Internal_t*>( g_pMaterialSystemHardwareConfig );
+
+	// Set our video config to enable usage of pixel shader constant registers beyond c31.
+	pInternalConfig->m_ActualCaps.m_NumPixelShaderConstants = 224;
+	pInternalConfig->m_Caps.m_NumPixelShaderConstants = 224;
+	pInternalConfig->m_UnOverriddenCaps.m_NumPixelShaderConstants = 224;
+
+	pInternalConfig->m_ActualCaps.m_MaxHDRType = HDR_TYPE_FLOAT;
+	pInternalConfig->m_Caps.m_MaxHDRType = HDR_TYPE_FLOAT;
+	pInternalConfig->m_UnOverriddenCaps.m_MaxHDRType = HDR_TYPE_FLOAT;
+
+	static ConVarRef mat_hdr_level( "mat_hdr_level" );
+	mat_hdr_level.SetValue( "3" );
+
+	engine->ClientCmd_Unrestricted( "mat_reset_rendertargets" );
+
+	static ConVarRef r_unloadlightmaps( "r_unloadlightmaps" );
+	r_unloadlightmaps.SetValue( 1 );
+
+	MaterialSystem_Config_t config = materials->GetCurrentConfigForVideoCard();
+	config.m_nReserved++;
+	materials->OverrideConfig( config, true );
+	r_unloadlightmaps.SetValue( 0 );
+
+	engine->ClientCmd_Unrestricted( "mat_reloadallmaterials" );
+}
+
+//-----------------------------------------------------------------------------
 
 
 //-----------------------------------------------------------------------------
@@ -1057,6 +1121,8 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	IGameSystem::Add( PerfVisualBenchmark() );
 	IGameSystem::Add( MumbleSystem() );
 	IGameSystem::Add( SteamShareSystem() );
+
+	ApplyShaderConstantHack();
 
 	#if defined( TF_CLIENT_DLL )
 	IGameSystem::Add( CustomTextureToolCacheGameSystem() );

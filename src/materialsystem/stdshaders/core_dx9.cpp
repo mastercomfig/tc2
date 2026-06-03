@@ -124,7 +124,7 @@ BEGIN_VS_SHADER( Core_DX90,
 
 			// source render target that contains the image that we are warping.
 			pShaderShadow->EnableTexture( SHADER_SAMPLER2, true );
-			if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_INTEGER )
+			if( g_pHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
 			{
 				pShaderShadow->EnableSRGBRead( SHADER_SAMPLER2, true );
 			}
@@ -135,7 +135,7 @@ BEGIN_VS_SHADER( Core_DX90,
 			{
 				// envmap
 				pShaderShadow->EnableTexture( SHADER_SAMPLER4, true );
-				if( g_pHardwareConfig->GetHDRType() == HDR_TYPE_INTEGER )
+				if( g_pHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
 				{
 					pShaderShadow->EnableSRGBRead( SHADER_SAMPLER4, true );
 				}

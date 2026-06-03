@@ -13,6 +13,6 @@ struct PS_INPUT
 float4 main( PS_INPUT i ) : COLOR
 {
 	float4 fbSample = tex2D( FBSampler, i.texCoord ) * float4(cLightScale.xyz, 1);
-
+	fbSample.rgb = AgX_Punchy(fbSample.rgb);
 	return FinalOutput( fbSample, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
 }

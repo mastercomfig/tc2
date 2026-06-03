@@ -216,6 +216,15 @@ BEGIN_VS_SHADER( ShatteredGlass,
 
 			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 			pShaderAPI->BindStandardTexture( SHADER_SAMPLER1, TEXTURE_LIGHTMAP );
+			int nLightmapWidth, nLightmapHeight;
+			pShaderAPI->GetLightmapDimensions( &nLightmapWidth, &nLightmapHeight );
+			float lightmapSize[4] = {
+				static_cast<float>(nLightmapWidth),
+				static_cast<float>(nLightmapHeight),
+				1.0f / static_cast<float>(nLightmapWidth),
+				1.0f / static_cast<float>(nLightmapHeight)
+			};
+			pShaderAPI->SetPixelShaderConstant( 13, lightmapSize );
 			BindTexture( SHADER_SAMPLER3, DETAIL );
 
 			if( bHasEnvmap )

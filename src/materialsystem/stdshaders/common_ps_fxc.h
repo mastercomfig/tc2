@@ -318,6 +318,59 @@ float DepthToDestAlpha( const float flProjZ )
 }
 
 
+// AgX Tonemapping - Punchy Look
+float3 AgX_Punchy(float3 val)
+{
+	// Add pre-exposure bias to legacy linear tonemap
+	val *= 1.15f;
+
+    // Color space conversion matrices
+    const float3x3 agx_mat = float3x3(
+        0.842479062253094, 0.0423282422610123, 0.115192695485894,
+        0.0423282422610123, 0.878468636469772,  0.0792031212692164,
+        0.0423282422610123, 0.0792031212692164, 0.878468636469772
+    );
+
+    const float3x3 agx_mat_inv = float3x3(
+        1.19683005118476,   -0.0528968517574562, -0.143933199427304,
+       -0.0528968517574562,  1.15190312990417,   -0.0990062781467167,
+       -0.0528968517574562, -0.0990062781467167,  1.15190312990417
+    );
+
+    // Convert to AgX working space
+    val = mul(agx_mat, val);
+
+    // Clamp and apply Log2 encoding
+    const float MinEv = -12.47393f;
+    const float MaxEv = 4.026069f;
+    val = max(val, 1e-10f); // prevent log2(0)
+    val = log2(val);
+    val = saturate((val - MinEv) / (MaxEv - MinEv));
+
+    // Apply AgX curve
+    float3 x2 = val * val;
+    float3 x4 = x2 * x2;
+    val = 15.5f * x4 * x2 - 40.14f * x4 * val + 31.96f * x4 - 6.868f * x2 * val + 0.4298f * x2 + 0.1191f * val - 0.00232f;
+
+    // Convert back to linear RGB
+    val = mul(agx_mat_inv, val);
+
+	// tonemap gain
+	val *= 1.35f;
+
+    // Punchy Look adjustments
+    // Power (1.35)
+    val = pow(max(val, 0.0f), 1.35f);
+
+    // Saturation (1.4)
+    float lum = dot(val, float3(0.2126f, 0.7152f, 0.0722f));
+    val = lerp(float3(lum, lum, lum), val, 1.4f);
+
+    return saturate(val);
+}
+
+
+
 float4 FinalOutput( const float4 vShaderColor, float pixelFogFactor, const int iPIXELFOGTYPE, const int iTONEMAP_SCALE_TYPE, const bool bWriteDepthToDestAlpha = false, const float flProjZ = 1.0f )
 {
 	float4 result;

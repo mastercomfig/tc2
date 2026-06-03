@@ -867,6 +867,17 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		}
 
 		float envmapContrast = params[info.m_nEnvmapContrast]->GetFloatValue();
+
+		int nLightmapWidth, nLightmapHeight;
+		pShaderAPI->GetLightmapDimensions( &nLightmapWidth, &nLightmapHeight );
+		float lightmapSize[4] = {
+			static_cast<float>(nLightmapWidth),
+			static_cast<float>(nLightmapHeight),
+			1.0f / static_cast<float>(nLightmapWidth),
+			1.0f / static_cast<float>(nLightmapHeight)
+		};
+		pShaderAPI->SetPixelShaderConstant( 36, lightmapSize );
+
 		DECLARE_DYNAMIC_PIXEL_SHADER( lightmappedgeneric_ps30 );
 		SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATH,  bPixelShaderFastPath || pContextData->m_bPixelShaderForceFastPathBecauseOutline );
  		SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATHENVMAPCONTRAST,  bPixelShaderFastPath && envmapContrast == 1.0f );

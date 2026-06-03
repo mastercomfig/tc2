@@ -100,6 +100,8 @@ const float3 g_FlashlightPos				: register( c14 );
 const float4x4 g_FlashlightWorldToTexture	: register( c15 ); // through c18
 const float4 g_ShadowTweaks					: register( c19 );
 
+const float4 g_LightmapSize					: register( c36 );
+
 
 sampler BaseTextureSampler		: register( s0 );
 sampler LightmapSampler			: register( s1 );
@@ -225,14 +227,14 @@ HALF4 main( PS_INPUT i ) : COLOR
 		ComputeBumpedLightmapCoordinates( i.lightmapTexCoord1And2, i.lightmapTexCoord3.xy,
 			bumpCoord1, bumpCoord2, bumpCoord3 );
 		
-		lightmapColor1 = LightMapSample( LightmapSampler, bumpCoord1 );
-		lightmapColor2 = LightMapSample( LightmapSampler, bumpCoord2 );
-		lightmapColor3 = LightMapSample( LightmapSampler, bumpCoord3 );
+		lightmapColor1 = LightMapSample( LightmapSampler, bumpCoord1, g_LightmapSize );
+		lightmapColor2 = LightMapSample( LightmapSampler, bumpCoord2, g_LightmapSize );
+		lightmapColor3 = LightMapSample( LightmapSampler, bumpCoord3, g_LightmapSize );
 	}
 	else
 	{
 		HALF2 bumpCoord1 = ComputeLightmapCoordinates( i.lightmapTexCoord1And2, i.lightmapTexCoord3.xy );
-		lightmapColor1 = LightMapSample( LightmapSampler, bumpCoord1 );
+		lightmapColor1 = LightMapSample( LightmapSampler, bumpCoord1, g_LightmapSize );
 	}
 #endif
 
@@ -517,7 +519,43 @@ HALF4 main( PS_INPUT i ) : COLOR
 		fresnel = pow( fresnel, 5.0 );
 		fresnel = fresnel * g_OneMinusFresnelReflection + g_FresnelReflection;
 		
+#if defined(SHADER_MODEL_PS_3_0)
+		float4 envmapOriginAndMagic = texCUBElod( EnvmapSampler, float4(1.0f, 0.0f, 0.0f, 15.0f) );
+		if (envmapOriginAndMagic.a > 10000.0f)
+		{
+			float3 envmapOrigin = envmapOriginAndMagic.rgb;
+			
+			// Pass 1: sample depth at LOD 0 for full-res depth data.
+			// Lower mips have depth averaged toward the mean distance, which gives wrong
+			// parallax correction. Always use the sharpest depth mip.
+			float depth1 = texCUBElod( EnvmapSampler, float4(reflectVect, 0.0f) ).a;
+			float3 hitPos1 = envmapOrigin + normalize(reflectVect) * depth1;
+			float3 reflectVect1 = hitPos1 - i.worldPos_projPosZ.xyz;
+			
+			// Pass 2: refine from corrected hit position
+			float depth2 = texCUBElod( EnvmapSampler, float4(reflectVect1, 0.0f) ).a;
+			float3 hitPos2 = envmapOrigin + normalize(reflectVect1) * depth2;
+			
+			// Use corrected reflection vector (normalized for texCUBE)
+			reflectVect = hitPos2 - i.worldPos_projPosZ.xyz;
+		}
+#endif
+
+		// Roughness-based mip selection: specularFactor=1 -> mirror (LOD 0),
+		// specularFactor=0 -> fully diffuse (highest LOD = most blurred mip).
+		// Maps specularFactor [0,1] -> LOD [maxMip, 0] using the atlas size from g_LightmapSize.
+		// A 32x32 cubemap has 5 mips (LODs 0-5). Typical roughness perceptual range:
+		//   specularFactor ~ sqrt(gloss), so LOD = maxMip * (1 - sqrt(specularFactor)).
+		// We use a simple linear mapping with a reasonable max LOD of 5 (fits 32x32+).
+#if defined(SHADER_MODEL_PS_3_0)
+		{
+			float roughnessMip = ( 1.0f - specularFactor ) * 5.0f;
+			specularLighting = ENV_MAP_SCALE * texCUBElod( EnvmapSampler, float4(reflectVect, roughnessMip) );
+		}
+#else
 		specularLighting = ENV_MAP_SCALE * texCUBE( EnvmapSampler, reflectVect );
+#endif
+
 		specularLighting *= specularFactor;
 								   
 		specularLighting *= g_EnvmapTint;

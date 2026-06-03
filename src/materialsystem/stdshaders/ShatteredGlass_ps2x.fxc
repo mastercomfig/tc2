@@ -24,6 +24,8 @@ const HALF3 g_OverbrightFactor				: register( c6 );
 
 const HALF4 g_FogParams						: register( c12 );
 
+const float4 g_LightmapSize					: register( c13 );
+
 // CENTROID: TEXCOORD2
 	    
 sampler BaseTextureSampler	: register( s0 );
@@ -57,7 +59,7 @@ float4 main( PS_INPUT i ) : COLOR
 	HALF4 detailColor = tex2D( DetailSampler, i.detailTexCoord );
 
 	HALF2 lightmapCoordinates = i.lightmapTexCoord;
-	HALF3 lightmapColor = LightMapSample( LightmapSampler, lightmapCoordinates );
+	HALF3 lightmapColor = LightMapSample( LightmapSampler, lightmapCoordinates, g_LightmapSize );
 
 	HALF3 specularFactor = 1.0f;
 	if( bEnvmapMask )

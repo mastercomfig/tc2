@@ -313,8 +313,10 @@ void ApplyPostProcessingPasses(PostProcessingPass *pass_list, // table of effect
 PostProcessingPass HDRFinal_Float[] =
 {
 	PPP_PROCESS_SRCTEXTURE( "dev/downsample", "_rt_FullFrameFB", "_rt_SmallFB0" ),
-	PPP_PROCESS_SRCTEXTURE( "dev/blurfilterx", "_rt_SmallFB0", "_rt_SmallFB1" ),
- 	PPP_PROCESS_SRCTEXTURE( "dev/blurfiltery", "_rt_SmallFB1", "_rt_SmallFB0" ),
+	PPP_PROCESS_SRCTEXTURE( "dev/kawase_bloom_1", "_rt_SmallFB0", "_rt_SmallFB1" ),
+ 	PPP_PROCESS_SRCTEXTURE( "dev/kawase_bloom_2", "_rt_SmallFB1", "_rt_SmallFB0" ),
+ 	PPP_PROCESS_SRCTEXTURE( "dev/kawase_bloom_3", "_rt_SmallFB0", "_rt_SmallFB1" ),
+ 	PPP_PROCESS_SRCTEXTURE( "dev/kawase_bloom_4", "_rt_SmallFB1", "_rt_SmallFB0" ),
  	PPP_PROCESS_SRCTEXTURE("dev/floattoscreen_combine","_rt_FullFrameFB",NULL),
 	PPP_END
 };
@@ -1358,7 +1360,7 @@ IMaterial * CEnginePostMaterialProxy::SetupEnginePostMaterial(	const Vector4D & 
 
 	SetupEnginePostMaterialAA( bPerformSoftwareAA, flAAStrength );
 
-	if ( bPerformSoftwareAA || bPerformColCorrect )
+	if ( true || bPerformSoftwareAA || bPerformColCorrect )
 	{
 		SetupEnginePostMaterialTextureTransform( fullViewportBloomUVs, fullViewportFBUVs, destTexSize );
 		return materials->FindMaterial( "dev/engine_post", TEXTURE_GROUP_OTHER, true);
@@ -1536,8 +1538,14 @@ static void Generate8BitBloomTexture( IMatRenderContext *pRenderContext, float f
 		IMaterial *downsample_mat = materials->FindMaterial( "dev/downsample_non_hdr", TEXTURE_GROUP_OTHER, true);
 	#endif
 
-	IMaterial *xblur_mat = materials->FindMaterial( "dev/blurfilterx_nohdr", TEXTURE_GROUP_OTHER, true );
-	IMaterial *yblur_mat = materials->FindMaterial( "dev/blurfiltery_nohdr", TEXTURE_GROUP_OTHER, true );
+	static CMaterialReference kawase1;
+	if ( !kawase1 ) kawase1.Init( "dev/kawase_bloom_1", TEXTURE_GROUP_OTHER );
+	static CMaterialReference kawase2;
+	if ( !kawase2 ) kawase2.Init( "dev/kawase_bloom_2", TEXTURE_GROUP_OTHER );
+	static CMaterialReference kawase3;
+	if ( !kawase3 ) kawase3.Init( "dev/kawase_bloom_3", TEXTURE_GROUP_OTHER );
+	static CMaterialReference kawase4;
+	if ( !kawase4 ) kawase4.Init( "dev/kawase_bloom_4", TEXTURE_GROUP_OTHER );
 	ITexture *dest_rt0 = materials->FindTexture( "_rt_SmallFB0", TEXTURE_GROUP_RENDER_TARGET );
 	ITexture *dest_rt1 = materials->FindTexture( "_rt_SmallFB1", TEXTURE_GROUP_RENDER_TARGET );
 
@@ -1564,25 +1572,32 @@ static void Generate8BitBloomTexture( IMatRenderContext *pRenderContext, float f
 		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "QuarterSizeFB" );
 	}
 
-	// Gaussian blur x rt0 to rt1
+	// Kawase pass 1 (rt0 to rt1)
 	SetRenderTargetAndViewPort( dest_rt1 );
-	pRenderContext->DrawScreenSpaceRectangle(	xblur_mat, 0, 0, nSrcWidth/4, nSrcHeight/4,
+	pRenderContext->DrawScreenSpaceRectangle(	kawase1, 0, 0, nSrcWidth/4, nSrcHeight/4,
 												0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
 												nSrcWidth/4, nSrcHeight/4 );
-	if ( IsX360() )
-	{
-		pRenderContext->CopyRenderTargetToTextureEx( dest_rt1, 0, NULL, NULL );
-	}
-	else if ( g_bDumpRenderTargets )
-	{
-		DumpTGAofRenderTarget( nSrcWidth/4, nSrcHeight/4, "BlurX" );
-	}
 
-	// Gaussian blur y rt1 to rt0
+	// Kawase pass 2 (rt1 to rt0)
 	SetRenderTargetAndViewPort( dest_rt0 );
-	IMaterialVar *pBloomAmountVar = yblur_mat->FindVar( "$bloomamount", NULL );
-	pBloomAmountVar->SetFloatValue( flBloomScale );
-	pRenderContext->DrawScreenSpaceRectangle(	yblur_mat, 0, 0, nSrcWidth / 4, nSrcHeight / 4,
+	pRenderContext->DrawScreenSpaceRectangle(	kawase2, 0, 0, nSrcWidth/4, nSrcHeight/4,
+												0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
+												nSrcWidth/4, nSrcHeight/4 );
+
+	// Kawase pass 3 (rt0 to rt1)
+	SetRenderTargetAndViewPort( dest_rt1 );
+	pRenderContext->DrawScreenSpaceRectangle(	kawase3, 0, 0, nSrcWidth/4, nSrcHeight/4,
+												0, 0, nSrcWidth/4-1, nSrcHeight/4-1,
+												nSrcWidth/4, nSrcHeight/4 );
+
+	// Kawase pass 4 (rt1 to rt0)
+	SetRenderTargetAndViewPort( dest_rt0 );
+	IMaterialVar *pBloomAmountVar = kawase4->FindVar( "$bloomamount", NULL );
+	if ( pBloomAmountVar )
+	{
+		pBloomAmountVar->SetFloatValue( flBloomScale );
+	}
+	pRenderContext->DrawScreenSpaceRectangle(	kawase4, 0, 0, nSrcWidth / 4, nSrcHeight / 4,
 												0, 0, nSrcWidth / 4 - 1, nSrcHeight / 4 - 1,
 												nSrcWidth / 4, nSrcHeight / 4 );
 	if ( IsX360() )
@@ -2209,7 +2224,11 @@ static ConVar r_queued_post_processing( "r_queued_post_processing", "0" );
 
 // How much to dice up the screen during post-processing on 360
 // This has really marginal effects, but 4x1 does seem vaguely better for post-processing
+#ifdef _X360
 static ConVar mat_postprocess_x( "mat_postprocess_x", "4" );
+#else
+static ConVar mat_postprocess_x( "mat_postprocess_x", "1" );
+#endif
 static ConVar mat_postprocess_y( "mat_postprocess_y", "1" );
 
 void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, bool bPostVGui )
@@ -2329,7 +2348,6 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 			bool  bPerformBloom			= !bPostVGui && ( flBloomScale > 0.0f ) && ( engine->GetDXSupportLevel() >= 90 );
 			bool  bPerformColCorrect	= !bPostVGui && 
 										  ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 90) &&
-										  ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_FLOAT ) &&
 										  g_pColorCorrectionMgr->HasNonZeroColorCorrectionWeights() &&
 										  mat_colorcorrection.GetInt();
 			bool  bSplitScreenHDR		= mat_show_ab_hdr.GetInt();

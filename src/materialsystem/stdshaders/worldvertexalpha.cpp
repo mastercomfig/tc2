@@ -8,7 +8,7 @@
 
 #include "BaseVSShader.h"
 
-#include "WorldVertexAlpha.inc"
+#include "WorldVertexAlpha_vs30.inc"
 #include "WorldVertexAlpha_ps30.inc"
 
 BEGIN_VS_SHADER( WorldVertexAlpha, 
@@ -30,10 +30,6 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 
 	SHADER_FALLBACK
 	{
-//		if( g_pHardwareConfig->GetDXSupportLevel() < 90 || g_pHardwareConfig->GetHDRType() == HDR_TYPE_NONE )
-		{
-			return "WorldVertexAlpha_DX8";
-		}
 		return 0;
 	}
 
@@ -41,6 +37,7 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 	{
 		if( g_pHardwareConfig->SupportsVertexAndPixelShaders() && !UsingEditor( params ) )
 		{
+#if 0
 			if( g_pHardwareConfig->GetDXSupportLevel() < 90 )
 			{
 				// NOTE: This is the DX8, Non-Hammer version.
@@ -83,6 +80,7 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 				Draw();
 			}
 			else
+#endif
 			{
 				// DX 9 version with HDR support
 
@@ -109,8 +107,8 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					pShaderShadow->EnableBlendingSeparateAlpha( true );
 					pShaderShadow->BlendFuncSeparateAlpha( SHADER_BLEND_ZERO, SHADER_BLEND_SRC_ALPHA );
 
-					worldvertexalpha_Static_Index vshIndex;
-					pShaderShadow->SetVertexShader( "WorldVertexAlpha", vshIndex.GetIndex() );
+					DECLARE_STATIC_VERTEX_SHADER( worldvertexalpha_vs30 );
+					SET_STATIC_VERTEX_SHADER( worldvertexalpha_vs30 );
 
 					DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 					SET_STATIC_PIXEL_SHADER_COMBO( PASS, 0 );
@@ -125,9 +123,9 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					BindTexture( SHADER_SAMPLER0, BASETEXTURE );
 					pShaderAPI->BindStandardTexture( SHADER_SAMPLER1, TEXTURE_LIGHTMAP );
 
-					worldvertexalpha_Dynamic_Index vshIndex;
-					vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-					pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
+					DECLARE_DYNAMIC_VERTEX_SHADER( worldvertexalpha_vs30 );
+					SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+					SET_DYNAMIC_VERTEX_SHADER( worldvertexalpha_vs30 );
 
 					DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 					SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
@@ -158,8 +156,8 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					pShaderShadow->EnableBlendingSeparateAlpha( true );
 					pShaderShadow->BlendFuncSeparateAlpha( SHADER_BLEND_ONE, SHADER_BLEND_ONE );
 
-					worldvertexalpha_Static_Index vshIndex;
-					pShaderShadow->SetVertexShader( "WorldVertexAlpha", vshIndex.GetIndex() );
+					DECLARE_STATIC_VERTEX_SHADER( worldvertexalpha_vs30 );
+					SET_STATIC_VERTEX_SHADER( worldvertexalpha_vs30 );
 
 					DECLARE_STATIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 					SET_STATIC_PIXEL_SHADER_COMBO( PASS, 1 );
@@ -174,9 +172,9 @@ BEGIN_VS_SHADER( WorldVertexAlpha,
 					BindTexture( SHADER_SAMPLER0, BASETEXTURE );
 					pShaderAPI->BindStandardTexture( SHADER_SAMPLER1, TEXTURE_LIGHTMAP );
 
-					worldvertexalpha_Dynamic_Index vshIndex;
-					vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-					pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
+					DECLARE_DYNAMIC_VERTEX_SHADER( worldvertexalpha_vs30 );
+					SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
+					SET_DYNAMIC_VERTEX_SHADER( worldvertexalpha_vs30 );
 
 					DECLARE_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );
 					SET_DYNAMIC_PIXEL_SHADER( worldvertexalpha_ps30 );

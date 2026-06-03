@@ -9,9 +9,6 @@
 #include "mathlib/vmatrix.h"
 #include "eyes_dx8_dx9_helper.h"
 #include "cpp_shader_constant_register_map.h"
-#include "Eyes.inc"
-#include "eyes_flashlight_vs11.inc"
-#include "eyes_flashlight_ps11.inc"
 
 #ifdef STDSHADER_DX9_DLL_EXPORT
 #include "eyes_vs30.inc"
@@ -294,11 +291,7 @@ static void DrawUsingVertexShader( bool bDX9, CBaseVSShader *pShader, IMaterialV
 		else
 #endif
 		{
-			eyes_Static_Index vshIndex;
-			vshIndex.SetHALF_LAMBERT( IS_FLAG_SET( MATERIAL_VAR_HALFLAMBERT ) );
-			pShaderShadow->SetVertexShader( "Eyes", vshIndex.GetIndex() );
-
-			pShaderShadow->SetPixelShader( "Eyes_Overbright2" );
+			Assert( 0 );
 		}
 
 		pShader->FogToFogColor();
@@ -375,11 +368,7 @@ static void DrawUsingVertexShader( bool bDX9, CBaseVSShader *pShader, IMaterialV
 		else
 #endif
 		{
-			eyes_Dynamic_Index vshIndex;
-			vshIndex.SetDOWATERFOG( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
-			vshIndex.SetSKINNING( pShaderAPI->GetCurrentNumBones() > 0 );
-			vshIndex.SetLIGHT_COMBO( pShaderAPI->GetCurrentLightCombo() );
-			pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
+			Assert( 0 );
 		}
 	}
 	pShader->Draw();

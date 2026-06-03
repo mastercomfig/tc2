@@ -154,81 +154,81 @@ void GetBaseTextureAndNormal( sampler base, sampler base2, sampler bump, bool bB
 // ( https://github.com/godotengine/godot/pull/89919 )
 // Licensed under MIT.
 
-float w0(float a) {
-	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
-}
-
-float w1(float a) {
-	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
-}
-
-float w2(float a) {
-	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
-}
-
-float w3(float a) {
-	return (1.0 / 6.0) * (a * a * a);
-}
-
-// g0 and g1 are the two amplitude functions
-float g0(float a) {
-	return w0(a) + w1(a);
-}
-
-float g1(float a) {
-	return w2(a) + w3(a);
-}
-
-// h0 and h1 are the two offset functions
-float h0(float a) {
-	return -1.0 + w1(a) / (w0(a) + w1(a));
-}
-
-float h1(float a) {
-	return 1.0 + w3(a) / (w2(a) + w3(a));
+float4 BSplineCubicWeights( float a )
+{
+	float a2 = a * a;
+	float a3 = a2 * a;
+	return float4(
+		-a3 + 3.0f*a2 - 3.0f*a + 1.0f,
+		 3.0f*a3 - 6.0f*a2 + 4.0f,
+		-3.0f*a3 + 3.0f*a2 + 3.0f*a + 1.0f,
+		 a3
+	) * ( 1.0f / 6.0f );
 }
 
 #ifndef BICUBIC_LIGHTMAP
 #define BICUBIC_LIGHTMAP 0
 #endif
 
-float3 LightMapSample( sampler LightmapSampler, float2 vTexCoord )
+float3 LightMapSample( sampler LightmapSampler, float2 vTexCoord, float4 texSize )
 {
 #	if ( !defined( _X360 ) || !defined( USE_32BIT_LIGHTMAPS_ON_360 ) )
 	{
 #if BICUBIC_LIGHTMAP
-		float flLightmapPageWidth = 1024;
-		float flLightmapPageHeight = 512;
+        const float2 vTextureSize = float2( texSize.x, texSize.y );
+        const float2 vTexelSize = float2( 1.0f, 1.0f ) / vTextureSize;
 
-		const float2 vTextureSize = float2( flLightmapPageWidth, flLightmapPageHeight );
-		const float2 vTexelSize = float2( 1.0f, 1.0f ) / vTextureSize;
+        float2 tc = vTexCoord.xy * vTextureSize - float2( 0.5f, 0.5f );
+        float2 center_tc = floor( tc + 0.5f );
+        float2 fuv = tc - center_tc;
 
-		vTexCoord.xy = vTexCoord.xy * vTextureSize + float2( 0.5f, 0.5f );
+        float3 wx;
+        wx.x = 0.5f * ( 0.5f - fuv.x ) * ( 0.5f - fuv.x );
+        wx.y = 0.75f - fuv.x * fuv.x;
+        wx.z = 0.5f * ( 0.5f + fuv.x ) * ( 0.5f + fuv.x );
 
-		float2 iuv = floor( vTexCoord.xy );
-		float2 fuv = frac( vTexCoord.xy );
+        float3 wy;
+        wy.x = 0.5f * ( 0.5f - fuv.y ) * ( 0.5f - fuv.y );
+        wy.y = 0.75f - fuv.y * fuv.y;
+        wy.z = 0.5f * ( 0.5f + fuv.y ) * ( 0.5f + fuv.y );
 
-		float g0x = g0( fuv.x );
-		float g1x = g1( fuv.x );
-		float h0x = h0( fuv.x );
-		float h1x = h1( fuv.x );
-		float h0y = h0( fuv.y );
-		float h1y = h1( fuv.y );
+        float2 zero = float2( 0.0f, 0.0f );
 
-		float2 p0 = ( float2( iuv.x + h0x, iuv.y + h0y ) - float2( 0.5f, 0.5f ) ) * vTexelSize;
-		float2 p1 = ( float2( iuv.x + h1x, iuv.y + h0y ) - float2( 0.5f, 0.5f ) ) * vTexelSize;
-		float2 p2 = ( float2( iuv.x + h0x, iuv.y + h1y ) - float2( 0.5f, 0.5f ) ) * vTexelSize;
-		float2 p3 = ( float2( iuv.x + h1x, iuv.y + h1y ) - float2( 0.5f, 0.5f ) ) * vTexelSize;
+        float3 center = tex2D( LightmapSampler, vTexCoord.xy, zero, zero ).rgb;
 
-		float3 sample = 
-			( g0( fuv.y ) * ( g0x * tex2D( LightmapSampler, p0 ) + g1x * tex2D( LightmapSampler, p1 ) ) ) +
-			( g1( fuv.y ) * ( g0x * tex2D( LightmapSampler, p2 ) + g1x * tex2D( LightmapSampler, p3 ) ) );
+        float3 result = 0.0f;
+        float sumW = 0.0f;
+        float edge_sharpness = 200.0f;
+
+        // 9-tap Bilateral Quadratic B-spline Kernel
+        [unroll]
+        for ( int y = 0; y < 3; y++ )
+        {
+            [unroll]
+            for ( int x = 0; x < 3; x++ )
+            {
+                float2 sampleUV = ( center_tc + float2( x - 1.0f, y - 1.0f ) + float2( 0.5f, 0.5f ) ) * vTexelSize;
+                float3 sampleColor = tex2D( LightmapSampler, sampleUV, zero, zero ).rgb;
+                
+                float w_spatial = wx[x] * wy[y];
+                
+                // Bilateral Range weight
+                float3 diff = sampleColor - center;
+                float w_range = 1.0f / ( 1.0f + dot( diff, diff ) * edge_sharpness );
+                
+                float weight = w_spatial * w_range;
+                result += sampleColor * weight;
+                sumW += weight;
+            }
+        }
+
+        // Calculate how much weight was "lost" due to bilateral rejection.
+        float center_weight = saturate( 1.0f - sumW );
+        return result + center * center_weight;
 #else
-		float3 sample = tex2D( LightmapSampler, vTexCoord );
+        return tex2D( LightmapSampler, vTexCoord ).rgb;
 #endif
-
-		return sample;
-	}
+    }
 #	else
 	{
 #		if 0 //1 for cheap sampling, 0 for accurate scaling from the individual samples

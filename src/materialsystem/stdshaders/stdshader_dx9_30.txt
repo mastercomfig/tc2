@@ -288,8 +288,11 @@ windowimposter_vs20.fxc
 worldtwotextureblend_ps2x.fxc
 
 WorldVertexAlpha_ps2x.fxc
+WorldVertexAlpha_vs20.fxc
 
 WorldVertexTransition_ps2x.fxc
 WorldVertexTransition_vs20.fxc
 
 writez_vs20.fxc
+
+KawaseBloom_ps30.fxc

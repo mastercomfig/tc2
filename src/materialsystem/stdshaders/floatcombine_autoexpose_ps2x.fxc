@@ -41,5 +41,6 @@ float4 main( PS_INPUT i ) : COLOR
 
 	float4 c_out=(fbSample)+settings.z*pow(lum,settings2.x)*bloom;
 	c_out.xyz*=tmscale;
+	c_out.xyz = AgX_Punchy(c_out.xyz);
 	return FinalOutput( c_out, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
 }

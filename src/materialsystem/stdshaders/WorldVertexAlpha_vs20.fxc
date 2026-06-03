@@ -1,0 +1,52 @@
+//	DYNAMIC: "DOWATERFOG"			"0..1"
+
+#include "common_vs_fxc.h"
+
+static const int g_FogType = DOWATERFOG;
+
+struct VS_INPUT
+{
+	float4 vPos			: POSITION;
+	float2 vTexCoord0	: TEXCOORD0;
+	float2 vTexCoord1	: TEXCOORD1;
+};
+
+struct VS_OUTPUT
+{
+	float4 projPos					: POSITION;
+#if !defined( _X360 )
+	float  fog						: FOG;
+#endif
+	float2 baseCoord				: TEXCOORD0;
+	float2 lightmapCoord			: TEXCOORD1;
+	float4 worldPos_projPosZ		: TEXCOORD7;	// Necessary for pixel fog
+};
+
+VS_OUTPUT main( const VS_INPUT v )
+{
+	VS_OUTPUT o = ( VS_OUTPUT )0;
+
+	float3 worldPos;
+	worldPos = mul( v.vPos, cModel[0] );
+
+	float4 vProjPos = mul( float4( worldPos, 1 ), cViewProj );
+	o.projPos = vProjPos;
+
+	// garymcthack - only need world Z for fog
+	vProjPos.z = dot( float4( worldPos, 1 ), cViewProjZ );
+
+	o.worldPos_projPosZ = float4( worldPos.xyz, vProjPos.z );
+
+	o.fog = CalcFog( worldPos, vProjPos, g_FogType );
+
+	//------------------------------------------------------------------------------
+	// Texture coordinates
+	//------------------------------------------------------------------------------
+	// base texcoords
+	o.baseCoord = v.vTexCoord0;
+
+	// lightmap texcoords
+	o.lightmapCoord = v.vTexCoord1;
+
+	return o;
+}

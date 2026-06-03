@@ -20,7 +20,8 @@
 #ifdef STDSHADER_DX9_DLL_EXPORT
 #include "flashlight_ps30.inc"
 #endif
-#include "vertexlitgeneric_flashlight_vs11.inc"
+/// TODO(mcoms): flashlight
+//#include "vertexlitgeneric_flashlight_vs11.inc"
 #endif // GAME_SHADER_DLL
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -777,7 +778,7 @@ float CBaseVSShader::GetAmbientLightCubeLuminance( )
 void CBaseVSShader::SetHWMorphVertexShaderState( int nDimConst, int nSubrectConst, VertexTextureSampler_t morphSampler )
 {
 #ifndef _X360
-	if ( !s_pShaderAPI->IsHWMorphingEnabled() )
+	if ( !g_pHardwareConfig->HasFastVertexTextures() || !s_pShaderAPI->IsHWMorphingEnabled() )
 		return;
 
 	int nMorphWidth, nMorphHeight;
@@ -973,6 +974,8 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 			}
 			pShaderShadow->VertexShaderVertexFormat( flags, numTexCoords, 0, 0 );
 		}
+		// TODO(mcoms): flashlight
+#if 0
 		else
 		{
 			vertexlitgeneric_flashlight_vs11_Static_Index vshIndex;
@@ -983,6 +986,7 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 			int numTexCoords = 1;
 			pShaderShadow->VertexShaderVertexFormat( flags, numTexCoords, 0, vars.m_bBump ? 4 : 0 );
 		}
+#endif
 
 		int nBumpMapVariant = 0;
 		if ( vars.m_bBump )
@@ -1096,6 +1100,8 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 				pShaderAPI->SetPixelShaderConstant( 0, vDetailConstants, 1 );
 			}
 		}
+		// TODO(mcoms): flashlight
+#if 0
 		else
 		{
 			vertexlitgeneric_flashlight_vs11_Dynamic_Index vshIndex;
@@ -1113,6 +1119,7 @@ void CBaseVSShader::DrawFlashlight_dx90( IMaterialVar** params, IShaderDynamicAP
 				pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, lighting.Base() );
 			}
 		}
+#endif
 
 		pShaderAPI->SetPixelShaderFogParams( PSREG_FOG_PARAMS );
 

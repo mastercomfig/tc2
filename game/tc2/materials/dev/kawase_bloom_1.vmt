@@ -1,0 +1,7 @@
+"KawaseBloom"
+{
+	"$basetexture" "_rt_SmallFB0"
+	"$distance" "0"
+	"$ignorez" 1
+	"%noToolTexture" 1
+}
