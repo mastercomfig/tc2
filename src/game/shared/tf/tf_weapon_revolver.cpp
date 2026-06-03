@@ -4,6 +4,7 @@
 //=============================================================================
 #include "cbase.h"
 #include "tf_weapon_revolver.h"
+#include "tf_gamerules.h"
 #include "tf_fx_shared.h"
 #include "datamap.h"
 #include "tf_weaponbase_gun.h"
@@ -57,6 +58,41 @@ CTFRevolver::CTFRevolver()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFRevolver::CanHeadshot(void) const
+{
+	static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_revolver.GetBool() )
+	{
+		// L'Etranger can't headshot
+		int iAddCloakOnHit = 0;
+		CALL_ATTRIB_HOOK_INT( iAddCloakOnHit, add_cloak_on_hit );
+		if ( iAddCloakOnHit != 0 )
+			return false;
+		// Diamondback can't headshot
+		int iSapperCrits = 0;
+		CALL_ATTRIB_HOOK_INT( iSapperCrits, sapper_kills_collect_crits	);
+		if ( iSapperCrits != 0 )
+			return false;
+		// All Revolvers can headshot
+		return true;
+	}
+	
+	int iMode = 0;
+	CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode );
+	return (iMode == 1);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+int CTFRevolver::GetMaxRevengeCrits(void)
+{
+	return TFGameRules()->IsBetaActive() ? 10 : BaseClass::GetMaxRevengeCrits();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 {
 	// The the owning local player.
@@ -73,15 +109,17 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#if defined(MCOMS_BALANCE_PACK)
-	// L'Etranger can always attack
-	int iAddCloakOnHit = 0;
-	CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-	if (iAddCloakOnHit != 0)
+	static ConVarRef tf_beta_letranger( "tf_beta_letranger" );
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && tf_beta_letranger.GetBool() )
 	{
-		bCanAttackWhileCloaked = true;
+		// L'Etranger can always attack
+		int iAddCloakOnHit = 0;
+		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
+		if (iAddCloakOnHit != 0)
+		{
+			bCanAttackWhileCloaked = true;
+		}
 	}
-#endif
 
 	if ( !bCanAttackWhileCloaked && pPlayer->m_Shared.IsFeignDeathReady() )
 		return false; // Can't reload if our feign death arm is up.
@@ -96,15 +134,17 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 int	CTFRevolver::GetDamageType( void ) const
 {
 	float flHeadshotCooldown = 1.0f;
-#if defined(MCOMS_BALANCE_PACK)
-	int iMode = 0;
-	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
-	const bool bAlwaysAccurate = (iMode == 1);
-	if (bAlwaysAccurate)
+	static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_revolver.GetBool() )
 	{
-		flHeadshotCooldown = 0.6f;
+		int iMode = 0;
+		CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
+		const bool bIsAmbassador = (iMode == 1);
+		if ( bIsAmbassador )
+		{
+			flHeadshotCooldown = 0.6f;
+		}
 	}
-#endif
 	if ( CanHeadshot() && (gpGlobals->curtime - m_flLastAccuracyCheck > flHeadshotCooldown ) )
 	{
 		int iDamageType = BaseClass::GetDamageType() | DMG_USE_HITLOCATIONS;
@@ -126,11 +166,10 @@ bool CTFRevolver::CanFireCriticalShot( bool bIsHeadshot, CBaseEntity *pTarget /*
 	if ( pPlayer && pPlayer->m_Shared.IsCritBoosted() )
 		return true;
 
-#if !defined(MCOMS_BALANCE_PACK)
 	// Magic.
-	if ( pTarget && ( pPlayer->GetAbsOrigin() - pTarget->GetAbsOrigin() ).Length2DSqr() > Square( 1200.f ) )
+	static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+	if ( ( !TFGameRules() || !TFGameRules()->IsBetaActive() || !tf_beta_revolver.GetBool() ) && pTarget && ( pPlayer->GetAbsOrigin() - pTarget->GetAbsOrigin() ).Length2DSqr() > Square( 1200.f ) )
 		return false;
-#endif
 
 	// can only fire a crit shot if this is a headshot, unless we're critboosted
 	if ( !bIsHeadshot )
@@ -185,8 +224,8 @@ void CTFRevolver::PrimaryAttack( void )
 	m_flLastAccuracyCheck = gpGlobals->curtime;
 
 
-#if !defined(MCOMS_BALANCE_PACK)
-	if ( SapperKillsCollectCrits() )
+	 static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+	if ( ( !TFGameRules()->IsBetaActive() || !tf_beta_diamondback.GetBool() ) && SapperKillsCollectCrits() )
 	{
 		// Do this after the attack, so that we know if we are doing custom damage
 		CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
@@ -199,7 +238,6 @@ void CTFRevolver::PrimaryAttack( void )
 			}
 		}
 	}
-#endif
 #ifdef GAME_DLL
 	// Lower bonus for each attack
 	int iExtraDamageOnHitPenalty = 0;
@@ -219,24 +257,24 @@ float CTFRevolver::GetWeaponSpread( void )
 {
 	float fSpread = BaseClass::GetWeaponSpread();
 
-#if defined(MCOMS_BALANCE_PACK)
 	int iMode = 0;
-	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
-	const bool bCanHeadshot = (iMode == 1);
-#else
-	const bool bCanHeadshot = CanHeadshot();
-#endif
+	CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode );
+	const bool bIsAmbassador = (iMode == 1);
 
-	if ( bCanHeadshot )
+	if ( bIsAmbassador )
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		// Always accurate
-		fSpread = 0.0f;
-#else
-		// We are highly accurate for our first shot.
-		float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
-		fSpread = RemapValClamped( flTimeSinceCheck, 1.0f, 0.5f, 0.f, fSpread );
-#endif
+		static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+		if ( TFGameRules()->IsBetaActive() && tf_beta_revolver.GetBool() )
+		{
+			// Always accurate
+			fSpread = 0.0f;
+		}
+		else
+		{
+			// We are highly accurate for our first shot.
+			float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
+			fSpread = RemapValClamped( flTimeSinceCheck, 1.0f, 0.5f, 0.f, fSpread );
+		}
 	}
 
 	//DevMsg( "Spread: base %3.5f mod: %3.5f\n", BaseClass::GetWeaponSpread(), fSpread );
@@ -260,29 +298,36 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 	{
 		const bool bCanHeadShot = CanHeadshot();
 		float flHeadShotCooldown = 1.0f;
-		
-#if defined(MCOMS_BALANCE_PACK_SPREAD_CHANGES)
-		constexpr float flShotTimeCooldown = 1.0f / 0.4f;
-		const float flTimeBetweenShots = m_pWeaponInfo->GetWeaponData(m_iWeaponMode).m_flTimeFireDelay;
-		float flAccuracyCooldown = clamp(flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );
-#else
-		const float flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
-#endif
+
+		float flAccuracyCooldown;
+		const float flTimeBetweenShots = m_pWeaponInfo->GetWeaponData( m_iWeaponMode ).m_flTimeFireDelay;
+		if ( TFGameRules()->IsBetaActive() )
+		{
+			constexpr float flShotTimeCooldown = 1.0f / 0.4f;
+			flAccuracyCooldown = Clamp( flTimeBetweenShots * flShotTimeCooldown, 0.25f, 1.25f );
+		}
+		else
+		{
+			const float flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
+		}
+
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
 		float flTimeSinceCheck = curtime - m_flLastAccuracyCheck;
 		float flMaxSize = 2.5f;
 		// when is it fully accurate?
-#if defined(MCOMS_BALANCE_PACK)
-		int iMode = 0;
-		CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
-		const bool bAlwaysAccurate = (iMode == 1);
-		if (bAlwaysAccurate)
+		static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+		if ( TFGameRules()->IsBetaActive() && tf_beta_revolver.GetBool() )
 		{
-			flAccuracyCooldown = flTimeBetweenShots * 0.4f;
-			flHeadShotCooldown = flTimeBetweenShots;
-			flMaxSize = 1.25f;
+			int iMode = 0;
+			CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode );
+			const bool bIsAmbassador = ( iMode == 1 );
+			if ( bIsAmbassador )
+			{
+				flAccuracyCooldown = flTimeBetweenShots * 0.4f;
+				flHeadShotCooldown = flTimeBetweenShots;
+				flMaxSize = 1.25f;
+			}
 		}
-#endif
 
 		if ( bCanHeadShot )
 		{
@@ -341,17 +386,21 @@ int CTFRevolver::GetCount( void )
 //-----------------------------------------------------------------------------
 const char* CTFRevolver::GetEffectLabelText( void )
 {
-#if defined(MCOMS_BALANCE_PACK)
-	return "#TF_BONUS";
-#else
-	int iExtraDamageOnHit = 0;
-	CALL_ATTRIB_HOOK_INT( iExtraDamageOnHit, extra_damage_on_hit );
-	if ( iExtraDamageOnHit )
+	static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_diamondback.GetBool() )
 	{
 		return "#TF_BONUS";
 	}
-	return "#TF_CRITS";
-#endif
+	else
+	{
+		int iExtraDamageOnHit = 0;
+		CALL_ATTRIB_HOOK_INT( iExtraDamageOnHit, extra_damage_on_hit );
+		if ( iExtraDamageOnHit )
+		{
+			return "#TF_BONUS";
+		}
+		return "#TF_CRITS";
+	}
 }
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -362,15 +411,14 @@ bool CTFRevolver::Holster( CBaseCombatWeapon *pSwitchingTo )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !defined(MCOMS_BALANCE_PACK)
-		if ( SapperKillsCollectCrits() )
+		static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+		if ( ( !TFGameRules()->IsBetaActive() || !tf_beta_diamondback.GetBool() ) && SapperKillsCollectCrits() )
 		{	
 			if ( pOwner->m_Shared.GetRevengeCrits() )
 			{
 				pOwner->m_Shared.RemoveCond( TF_COND_CRITBOOSTED_SELF );
 			}
 		}
-#endif
 
 		if ( HasLastShotCritical() )
 		{
@@ -391,15 +439,14 @@ bool CTFRevolver::Deploy( void )
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( pOwner )
 	{
-#if !defined(MCOMS_BALANCE_PACK)
-		if ( SapperKillsCollectCrits() )
+		static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+		if ( ( !TFGameRules()->IsBetaActive() || !tf_beta_diamondback.GetBool() ) && SapperKillsCollectCrits() )
 		{
 			if ( pOwner->m_Shared.GetRevengeCrits() )
 			{
 				pOwner->m_Shared.AddCond( TF_COND_CRITBOOSTED_SELF );
 			}
 		}
-#endif
 
 		if ( HasLastShotCritical() )
 		{
@@ -453,24 +500,25 @@ float CTFRevolver::GetProjectileDamage( void )
 		flDamageMod *= 0.5f;
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
-	int iMode = 0;
-	CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode);
-	const bool bPrecise = (iMode == 1);
-	if (bPrecise)
+	static ConVarRef tf_beta_revolver( "tf_beta_revolver" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_revolver.GetBool() )
 	{
-		float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
-		flDamageMod *= RemapValClamped(flTimeSinceCheck, 1.25f, 0.8f, 1.0f, 0.75f);
+		int iMode = 0;
+		CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode );
+		const bool bIsAmbassador = ( iMode == 1 );
+		if ( bIsAmbassador )
+		{
+			float flTimeSinceCheck = gpGlobals->curtime - m_flLastAccuracyCheck;
+			flDamageMod *= RemapValClamped( flTimeSinceCheck, 1.25f, 0.8f, 1.0f, 0.75f );
+		}
 	}
-#endif
 
-#if defined(MCOMS_BALANCE_PACK)
-	if (SapperKillsCollectCrits())
+	static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_diamondback.GetBool() && SapperKillsCollectCrits() )
 	{
 		// low initial damage
 		flDamageMod *= 0.47f;
 	}
-#endif
 
 	return BaseClass::GetProjectileDamage() * flDamageMod;
 }

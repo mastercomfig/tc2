@@ -1081,11 +1081,7 @@ void CTFGameMovement::AirDash( void )
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pTFPlayer, flJumpMod, mod_jump_height );
 	// Weapon-restricted version
 	CTFWeaponBase *pWpn = m_pTFPlayer->GetActiveTFWeapon();
-#if defined(MCOMS_BALANCE_PACK)
-	if ( pWpn && GAMEMOVEMENT_NONSUB_CURTIME >= pWpn->GetLastReadyTime() )
-#else
-	if ( pWpn )
-#endif
+	if ( pWpn && ( !TFGameRules()->IsBetaActive() || GAMEMOVEMENT_NONSUB_CURTIME >= pWpn->GetLastReadyTime() ) )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
@@ -1102,12 +1098,14 @@ void CTFGameMovement::AirDash( void )
 		{
 			m_pTFPlayer->m_Shared.SetScoutHypeMeter( Max( flHype - iHypeResetsOnJump, 0.0f ) );
 		}
-#if defined(MCOMS_BALANCE_PACK)
-		if (pSodaPopper)
+		static ConVarRef tf_beta_sodapopper( "tf_beta_sodapopper" );
+		if ( TFGameRules()->IsBetaActive() && tf_beta_sodapopper.GetBool() )
 		{
-			pSodaPopper->FinishReload();
+			if ( pSodaPopper )
+			{
+				pSodaPopper->FinishReload();
+			}
 		}
-#endif
 		// UNDONE: this is handled by condition think now
 #if 0
 		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->m_Shared.GetScoutHypeMeter() <= 0.0f )
@@ -1417,35 +1415,33 @@ bool CTFGameMovement::CheckJumpButton()
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pTFPlayer, flJumpMod, mod_jump_height );
 	// Weapon-restricted version
 	CTFWeaponBase *pWpn = m_pTFPlayer->GetActiveTFWeapon();
-#if defined(MCOMS_BALANCE_PACK)
-	if ( pWpn && GAMEMOVEMENT_NONSUB_CURTIME >= pWpn->GetLastReadyTime() )
-#else
-	if ( pWpn )
-#endif
+	if ( pWpn && ( !TFGameRules()->IsBetaActive() || GAMEMOVEMENT_NONSUB_CURTIME >= pWpn->GetLastReadyTime() ) )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWpn, flJumpMod, mod_jump_height_from_weapon );
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
-	if (pWpn && pWpn->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC)
+	static ConVarRef tf_beta_syringegun( "tf_beta_syringegun" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_syringegun.GetBool() )
 	{
-		bool bShouldBoost = false;
-		float flClassResourceLevelMod = 1.0f;
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(m_pTFPlayer->GetActiveTFWeapon(), flClassResourceLevelMod, mult_player_movespeed_resource_level);
-		if (flClassResourceLevelMod != 1.0f)
+		if ( pWpn && pWpn->GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC )
 		{
-			bShouldBoost = true;
-		}
-		if (bShouldBoost)
-		{
-			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
-			if (pMedigun)
+			bool bShouldBoost = false;
+			float flClassResourceLevelMod = 1.0f;
+			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pTFPlayer->GetActiveTFWeapon(), flClassResourceLevelMod, mult_player_movespeed_resource_level );
+			if ( flClassResourceLevelMod != 1.0f )
 			{
-				flJumpMod *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.2f);
+				bShouldBoost = true;
+			}
+			if ( bShouldBoost )
+			{
+				CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>( m_pTFPlayer->Weapon_OwnsThisID( TF_WEAPON_MEDIGUN ) );
+				if ( pMedigun )
+				{
+					flJumpMod *= RemapValClamped( pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.2f );
+				}
 			}
 		}
 	}
-#endif
 /*
 #ifdef STAGING_ONLY
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_SPACE_GRAVITY ) )
@@ -3215,13 +3211,15 @@ void CTFGameMovement::SetGroundEntity( trace_t *pm )
 		m_pTFPlayer->m_Shared.SetAirDash( 0 );
 		m_pTFPlayer->m_Shared.SetAirDucked( 0 );
 
-#if defined(MCOMS_BALANCE_PACK)
-		// upon landing on the ground, remove the soda popper buff.
-		if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->Weapon_OwnsThisID(TF_WEAPON_SODA_POPPER) )
+		static ConVarRef tf_beta_sodapopper( "tf_beta_sodapopper" );
+		if ( TFGameRules()->IsBetaActive() && tf_beta_sodapopper.GetBool() )
 		{
-			m_pTFPlayer->m_Shared.StopScoutHypeDrain();
+			// upon landing on the ground, remove the soda popper buff.
+			if ( m_pTFPlayer->m_Shared.IsHypeBuffed() && m_pTFPlayer->Weapon_OwnsThisID( TF_WEAPON_SODA_POPPER ) )
+			{
+				m_pTFPlayer->m_Shared.StopScoutHypeDrain();
+			}
 		}
-#endif
 
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_GRAPPLINGHOOK_SAFEFALL ) )
 		{

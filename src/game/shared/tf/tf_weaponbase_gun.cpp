@@ -973,22 +973,24 @@ float CTFWeaponBaseGun::GetProjectileDamage( void )
 		}
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
-	// Medic Uber
-	if (GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC && pPlayer)
+	static ConVarRef tf_beta_syringegun( "tf_beta_syringegun" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_syringegun.GetBool() )
 	{
-		int iModHealthOnHit = 0;
-		CALL_ATTRIB_HOOK_INT(iModHealthOnHit, add_onhit_addhealth);
-		if (iModHealthOnHit)
+		// Medic Uber
+		if (GetWeaponID() == TF_WEAPON_SYRINGEGUN_MEDIC && pPlayer)
 		{
-			CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
-			if (pMedigun)
+			int iModHealthOnHit = 0;
+			CALL_ATTRIB_HOOK_INT(iModHealthOnHit, add_onhit_addhealth);
+			if (iModHealthOnHit)
 			{
-				flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.7f);
+				CWeaponMedigun* pMedigun = dynamic_cast<CWeaponMedigun*>(pPlayer->Weapon_OwnsThisID(TF_WEAPON_MEDIGUN));
+				if (pMedigun)
+				{
+					flDamage *= RemapValClamped(pMedigun->GetChargeLevel(), 0.f, 1.f, 1.f, 1.7f);
+				}
 			}
 		}
 	}
-#endif
 
 	if ( GetWeaponProjectileType() == TF_PROJECTILE_BULLET )
 	{

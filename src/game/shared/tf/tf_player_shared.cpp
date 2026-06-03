@@ -137,14 +137,14 @@ ConVar tf_halloween_kart_boost_duration( "tf_halloween_kart_boost_duration", "1.
 
 ConVar tf_scout_air_dash_count( "tf_scout_air_dash_count", "1", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
-#if defined(MCOMS_BALANCE_PACK)
-#define DEFAULT_SPY_INVIS_TIME "0.7"
-#else
 #define DEFAULT_SPY_INVIS_TIME "1.0"
-#endif
+
+ConVar tf_beta_spy_decloak( "tf_beta_spy_decloak", "0", FCVAR_REPLICATED );
 
 ConVar tf_spy_invis_time( "tf_spy_invis_time", DEFAULT_SPY_INVIS_TIME, FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
 ConVar tf_spy_invis_unstealth_time( "tf_spy_invis_unstealth_time", "2.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Transition time in and out of spy invisibility", true, 0.1, true, 5.0 );
+
+#define TF_SPY_INVIS_TIME ( TFGameRules()->IsBetaActive() && tf_beta_spy_decloak.GetBool() ? 0.7f : tf_spy_invis_time.GetFloat() )
 
 ConVar tf_spy_max_cloaked_speed( "tf_spy_max_cloaked_speed", "999", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );	// no cap
 ConVar tf_whip_speed_increase( "tf_whip_speed_increase", "105", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );
@@ -198,14 +198,11 @@ ConVar tf_useparticletracers( "tf_useparticletracers", "1", FCVAR_DEVELOPMENTONL
 ConVar tf_spy_cloak_consume_rate( "tf_spy_cloak_consume_rate", "10.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to use per second while cloaked, from 100 max )" );	// 10 seconds of invis
 ConVar tf_spy_cloak_regen_rate( "tf_spy_cloak_regen_rate", "3.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "cloak to regen per second, up to 100 max" );		// 30 seconds to full charge
 
-#if defined(MCOMS_BALANCE_PACK)
-#define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "1.4"
-#else
 #define DEFAULT_SPY_CLOAK_NO_ATTACK_TIME "2.0"
-#endif
 
 ConVar tf_spy_cloak_no_attack_time( "tf_spy_cloak_no_attack_time", DEFAULT_SPY_CLOAK_NO_ATTACK_TIME, FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "time after uncloaking that the spy is prohibited from attacking" );
 
+#define TF_SPY_CLOAK_NO_ATTACK_TIME ( TFGameRules()->IsBetaActive() && tf_beta_spy_decloak.GetBool() ? 1.4f : tf_spy_cloak_no_attack_time.GetFloat() )
 
 ConVar tf_tournament_hide_domination_icons( "tf_tournament_hide_domination_icons", "0", FCVAR_REPLICATED, "Tournament mode server convar that forces clients to not display the domination icons above players dominating them." );
 ConVar tf_damage_disablespread( "tf_damage_disablespread", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Toggles the random damage spread applied to all player damage." );
@@ -751,11 +748,9 @@ bool CTFPlayer::IsAllowedToTaunt( void )
 	if ( ShouldStopTaunting() )
 		return false;
 
-#if !defined(MCOMS_BALANCE_PACK)
 	// Check to see if we are on the ground.
-	if ( GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
+	if ( !TFGameRules()->IsBetaActive() && GetGroundEntity() == NULL && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 		return false;
-#endif
 
 	CTFWeaponBase *pActiveWeapon = m_Shared.GetActiveTFWeapon();
 	if ( pActiveWeapon )
@@ -2766,11 +2761,9 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			float flReduction = 2;	 // ( flReduction + 1 ) x faster reduction
 			FOR_EACH_VEC( m_PlayerBleeds, i )
 			{
-#if defined(MCOMS_BALANCE_PACK)
 				// sniper rifle bleeds cannot be healed away.
-				if ( m_PlayerBleeds[i].hBleedingWeapon && WeaponID_IsSniperRifle(m_PlayerBleeds[i].hBleedingWeapon->GetWeaponID()) )
+				if ( TFGameRules()->IsBetaActive() && m_PlayerBleeds[i].hBleedingWeapon && WeaponID_IsSniperRifle( m_PlayerBleeds[i].hBleedingWeapon->GetWeaponID() ) )
 					continue;
-#endif
 				m_PlayerBleeds[i].flBleedingRemoveTime -= flReduction * gpGlobals->frametime;
 			}
 		}
@@ -3171,16 +3164,17 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 
 				int iKillType = bleed.nDmgType;
 
-#if defined(MCOMS_BALANCE_PACK)
-				const bool bIsHeadTrauma = bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID());
-				if (bIsHeadTrauma && m_pOuter->GetHealth() <= bleed.nBleedDmg)
+				if ( TFGameRules()->IsBetaActive() )
 				{
-					// try decapitation.
-					iKillType = TF_DMG_CUSTOM_HEADSHOT_DECAPITATION;
-					// crit sound?
-					bleed.hBleedingWeapon->WeaponSound(BURST, 0.0f, true);
+					const bool bIsHeadTrauma = bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID());
+					if (bIsHeadTrauma && m_pOuter->GetHealth() <= bleed.nBleedDmg)
+					{
+						// try decapitation.
+						iKillType = TF_DMG_CUSTOM_HEADSHOT_DECAPITATION;
+						// crit sound?
+						bleed.hBleedingWeapon->WeaponSound(BURST, 0.0f, true);
+					}
 				}
-#endif
 
 				CTakeDamageInfo info( bleed.hBleedingAttacker, bleed.hBleedingAttacker, bleed.hBleedingWeapon, bleed.nBleedDmg, DMG_SLASH, iKillType );
 				m_pOuter->TakeDamage( info );
@@ -3198,60 +3192,62 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		}
 	}
 
-#if defined(MCOMS_BALANCE_PACK)
-	const int iJetCount = m_StuckJets.Count();
-	if ( iJetCount )
+	static ConVarRef tf_beta_diamondback( "tf_beta_diamondback" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_diamondback.GetBool() )
 	{
-		constexpr float JetBaseDamage = 15.0f;
-		constexpr float JetStackingIncrement = 0.05f;
-		const float Dmg = JetBaseDamage + JetBaseDamage * (iJetCount * JetStackingIncrement);
-		constexpr float BaseRadius = 146.0f * 3.0f / 7.0f;
-		const float Radius = BaseRadius * iJetCount;
-		FOR_EACH_VEC_BACK(m_StuckJets, i)
+		const int iJetCount = m_StuckJets.Count();
+		if ( iJetCount )
 		{
-			microjets_struct_t& jet = m_StuckJets[i];
-			if (TFGameRules() && TFGameRules()->IsTruceActive() && jet.hAttacker && jet.hAttacker->IsTruceValidForEnt())
+			constexpr float JetBaseDamage = 15.0f;
+			constexpr float JetStackingIncrement = 0.05f;
+			const float Dmg = JetBaseDamage + JetBaseDamage * (iJetCount * JetStackingIncrement);
+			constexpr float BaseRadius = 146.0f * 3.0f / 7.0f;
+			const float Radius = BaseRadius * iJetCount;
+			FOR_EACH_VEC_BACK(m_StuckJets, i)
 			{
-				m_StuckJets.FastRemove(i);
-			}
-			else if ((gpGlobals->curtime >= jet.m_flJetTime))
-			{
-				Vector explosion = m_pOuter->WorldSpaceCenter();
-
-				int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
-
-				CTakeDamageInfo info(jet.hAttacker, jet.hAttacker, jet.hWeapon, vec3_origin, explosion, Dmg, dmgType, 0, &explosion);
-				CTFRadiusDamageInfo radiusinfo(&info, explosion, Radius);
-				TFGameRules()->RadiusDamage(radiusinfo);
-
-				if (Radius >= 100.0f)
-				{
-					CPVSFilter filter(explosion);
-					TE_TFExplosion(filter, 0.0f, explosion, Vector(0, 0, 1), TF_WEAPON_GRENADE_PIPEBOMB, kInvalidEHandleExplosion, -1, SPECIAL1, INVALID_STRING_INDEX);
-				}
-
-				if (jet.iExplosionCount <= jet.iCurrentExplosion)
+				microjets_struct_t& jet = m_StuckJets[i];
+				if (TFGameRules() && TFGameRules()->IsTruceActive() && jet.hAttacker && jet.hAttacker->IsTruceValidForEnt())
 				{
 					m_StuckJets.FastRemove(i);
-					continue;
 				}
-
-				float flJetTime = TF_BASE_STUCK_JET_TIME / (1 << jet.iCurrentExplosion);
-				if (flJetTime < 0.075f)
+				else if ((gpGlobals->curtime >= jet.m_flJetTime))
 				{
-					flJetTime = 0.075f;
-				}
-				jet.m_flJetTime = gpGlobals->curtime + flJetTime; // ex. 0.5 / (1 ^ (2 * 1)) = 0.25
-				jet.iCurrentExplosion += 1;
+					Vector explosion = m_pOuter->WorldSpaceCenter();
 
-				// It's very possible we died from the take damage, which clears all our conditions
-				// and nukes m_StuckJets.  If that happens, bust out of this loop.
-				if (m_StuckJets.Count() == 0)
-					break;
+					int dmgType = DMG_BLAST | DMG_HALF_FALLOFF;
+
+					CTakeDamageInfo info(jet.hAttacker, jet.hAttacker, jet.hWeapon, vec3_origin, explosion, Dmg, dmgType, 0, &explosion);
+					CTFRadiusDamageInfo radiusinfo(&info, explosion, Radius);
+					TFGameRules()->RadiusDamage(radiusinfo);
+
+					if (Radius >= 100.0f)
+					{
+						CPVSFilter filter(explosion);
+						TE_TFExplosion(filter, 0.0f, explosion, Vector(0, 0, 1), TF_WEAPON_GRENADE_PIPEBOMB, kInvalidEHandleExplosion, -1, SPECIAL1, INVALID_STRING_INDEX);
+					}
+
+					if (jet.iExplosionCount <= jet.iCurrentExplosion)
+					{
+						m_StuckJets.FastRemove(i);
+						continue;
+					}
+
+					float flJetTime = TF_BASE_STUCK_JET_TIME / (1 << jet.iCurrentExplosion);
+					if (flJetTime < 0.075f)
+					{
+						flJetTime = 0.075f;
+					}
+					jet.m_flJetTime = gpGlobals->curtime + flJetTime; // ex. 0.5 / (1 ^ (2 * 1)) = 0.25
+					jet.iCurrentExplosion += 1;
+
+					// It's very possible we died from the take damage, which clears all our conditions
+					// and nukes m_StuckJets.  If that happens, bust out of this loop.
+					if (m_StuckJets.Count() == 0)
+						break;
+				}
 			}
 		}
 	}
-#endif
 
 	{
 		m_flSpyTranqBuffDuration = 0;
@@ -7027,11 +7023,7 @@ void CTFPlayerShared::MakeBleed( CTFPlayer *pPlayer, CTFWeaponBase *pWeapon, flo
 	if ( !pPlayer && !pWeapon )
 		return;
 
-#if defined(MCOMS_BALANCE_PACK)
-	const bool bIsHeadTrauma = pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID());
-#else
-	const bool bIsHeadTrauma = false;
-#endif
+	const bool bIsHeadTrauma = ( TFGameRules() && TFGameRules()->IsBetaActive() ) ? (pWeapon && WeaponID_IsSniperRifle(pWeapon->GetWeaponID())) : false;
 	const float flExpireTime = gpGlobals->curtime + flBleedingTime;
 
 	// See if this weapon has already applied a bleed and extend the time
@@ -7242,7 +7234,7 @@ void CTFPlayerShared::OnAddStealthed( void )
 	{
 		if ( !InCond( TF_COND_FEIGN_DEATH ) && !InCond( TF_COND_STEALTHED_USER_BUFF ) )
 		{
-			float flInvisTime = tf_spy_invis_time.GetFloat();
+			float flInvisTime = TF_SPY_INVIS_TIME;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pOuter, flInvisTime, mult_cloak_rate );
 			m_flInvisChangeCompleteTime = gpGlobals->curtime + flInvisTime;
 		}
@@ -8226,7 +8218,7 @@ void CTFPlayerShared::FadeInvis( float fAdditionalRateScale )
 	else if ( ( nExpiringCondition != TF_COND_STEALTHED_USER_BUFF ) && !InCond( TF_COND_STEALTHED_USER_BUFF_FADING ) )
 	{
 		// next attack in some time
-		m_flStealthNoAttackExpire = gpGlobals->curtime + (tf_spy_cloak_no_attack_time.GetFloat() * flDecloakRateScale * fAdditionalRateScale);
+		m_flStealthNoAttackExpire = gpGlobals->curtime + (TF_SPY_CLOAK_NO_ATTACK_TIME * flDecloakRateScale * fAdditionalRateScale);
 	}
 
 	m_flInvisChangeCompleteTime = gpGlobals->curtime + flInvisFadeTime;
@@ -11369,20 +11361,23 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 					bool bCharge = ( pMedigun->GetMedigunType() == MEDIGUN_QUICKFIX && pHealTarget->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) );
 
 					const float flHealTargetMaxSpeed = ( bCharge ) ? tf_max_charge_speed.GetFloat() : pHealTarget->TeamFortress_CalculateMaxSpeed( true );
-#if defined(MCOMS_BALANCE_PACK)
-					const float flFlatHealSpeedBonus = maxfbspeed + flFlatHealSpeedAdd;
-					if (flHealTargetMaxSpeed > flFlatHealSpeedBonus)
+					if ( TFGameRules()->IsBetaActive() )
 					{
-						maxfbspeed = flHealTargetMaxSpeed;
+						const float flFlatHealSpeedBonus = maxfbspeed + flFlatHealSpeedAdd;
+						if (flHealTargetMaxSpeed > flFlatHealSpeedBonus)
+						{
+							maxfbspeed = flHealTargetMaxSpeed;
+						}
+						else
+						{
+							// boost to at least this flat heal speed bonus.
+							maxfbspeed = flFlatHealSpeedBonus;
+						}
 					}
 					else
 					{
-						// boost to at least this flat heal speed bonus.
-						maxfbspeed = flFlatHealSpeedBonus;
+						maxfbspeed = Max(maxfbspeed, flHealTargetMaxSpeed);
 					}
-#else
-					maxfbspeed = Max(maxfbspeed, flHealTargetMaxSpeed);
-#endif
 				}
 			}
 		}
@@ -11400,8 +11395,7 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			}
 		}
 	}
-#if !defined(TF2_OG) && defined(MCOMS_BALANCE_PACK)
-	else
+	else if ( TFGameRules()->IsBetaActive() )
 	{
 		// Not Medic
 		if ( m_Shared.m_nNumHealers > 0 )
@@ -11415,7 +11409,6 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			}
 		}
 	}
-#endif
 
 	float flClassResourceLevelMod = 1.f;
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flClassResourceLevelMod, mult_player_movespeed_resource_level );
@@ -11946,24 +11939,27 @@ void CTFPlayerShared::HealthKitPickupEffects( int iHealthGiven /*= 0*/ )
 	// and sutures
 	if ( InCond( TF_COND_BLEEDING ) )
 	{
-#if defined(MCOMS_BALANCE_PACK)
 #ifdef GAME_DLL
-		FOR_EACH_VEC_BACK(m_PlayerBleeds, i)
+		if (( TFGameRules() && TFGameRules()->IsBetaActive() ))
 		{
-			// sniper rifles apply a critical head trauma bleed which cannot be removed. health kit will heal us, but won't completely patch us up.
-			const bleed_struct_t& bleed = m_PlayerBleeds[i];
-			if (bleed.hBleedingWeapon && WeaponID_IsSniperRifle(bleed.hBleedingWeapon->GetWeaponID()))
-				continue;
+			FOR_EACH_VEC_BACK(m_PlayerBleeds, i)
+			{
+				// sniper rifles apply a critical head trauma bleed which cannot be removed. health kit will heal us, but won't completely patch us up.
+				const bleed_struct_t& bleed = m_PlayerBleeds[i];
+				if ( bleed.hBleedingWeapon && WeaponID_IsSniperRifle( bleed.hBleedingWeapon->GetWeaponID() ) )
+					continue;
 
-			m_PlayerBleeds.FastRemove(i);
+				m_PlayerBleeds.FastRemove(i);
+			}
+			if ( !m_PlayerBleeds.Count() )
+			{
+				RemoveCond(TF_COND_BLEEDING);
+			}
 		}
-		if ( !m_PlayerBleeds.Count() )
+		else
 		{
 			RemoveCond(TF_COND_BLEEDING);
 		}
-#endif
-#else
-		RemoveCond(TF_COND_BLEEDING);
 #endif
 	}
 	// and cures plague
@@ -12693,30 +12689,34 @@ bool CTFPlayer::CanAttack( int iCanAttackFlags )
 	}
 
 	bool bCanAttackWhileCloaked = false;
-#if defined(MCOMS_BALANCE_PACK)
-	// L'Etranger can always attack while cloaked
-	int iAddCloakOnHit = 0;
-	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveWeapon(), iAddCloakOnHit, add_cloak_on_hit);
-	if (iAddCloakOnHit != 0)
+	static ConVarRef tf_beta_letranger( "tf_beta_letranger" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_letranger.GetBool() )
 	{
-		bCanAttackWhileCloaked = true;
+		// L'Etranger can always attack while cloaked
+		int iAddCloakOnHit = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetActiveWeapon(), iAddCloakOnHit, add_cloak_on_hit);
+		if (iAddCloakOnHit != 0)
+		{
+			bCanAttackWhileCloaked = true;
+		}
 	}
-#endif
 
 	// the main spy cloak buff overrides the general user buff, we cannot benefit from it otherwise.
 	const bool bIsCloaked = m_Shared.InCond( TF_COND_STEALTHED );
 	const bool bCloakUserBuff = m_Shared.InCond( TF_COND_STEALTHED_USER_BUFF ) && !bIsCloaked;
 	// we can attack when decloaking if we're under the cloak user buff status, or if generally cloak allows for this while decloaking.
-	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > tf_spy_cloak_no_attack_time.GetFloat() || bCloakUserBuff;
+	const bool bCanAttackWhenDecloaking = tf_spy_invis_unstealth_time.GetFloat() > TF_SPY_CLOAK_NO_ATTACK_TIME || bCloakUserBuff;
 	float flCurTime = gpGlobals->curtime;
-#if defined(MCOMS_BALANCE_PACK) && 0
-	// Can use the knife earlier in decloak than gun and sapper
-	// TODO: maybe let sapper do this too?
-	if (GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_KNIFE)
+	static ConVarRef tf_beta_knife_early_decloak( "tf_beta_knife_early_decloak" );
+	if ( TFGameRules()->IsBetaActive() && tf_beta_knife_early_decloak.GetBool() )
 	{
-		flCurTime += 0.5f;
+		// Can use the knife earlier in decloak than gun and sapper
+		// TODO: maybe let sapper do this too?
+		if ( GetActiveTFWeapon() && GetActiveTFWeapon()->GetWeaponID() == TF_WEAPON_KNIFE )
+		{
+			flCurTime += 0.5f;
+		}
 	}
-#endif
 	// either the cloak no attack time has expired, or we're under the cloak user buff which allows us to attack whenever.
 	const bool bCanAttackStealthTime = m_Shared.GetStealthNoAttackExpireTime() <= flCurTime || bCloakUserBuff;
 	// if we can attack when decloaking, then just check the stealth no attack condition, otherwise, we also need to make sure we are not cloaked anymore.
@@ -13377,14 +13377,18 @@ bool CTFPlayer::CanAirDash( void ) const
 
 	if ( m_Shared.InCond( TF_COND_SODAPOPPER_HYPE ) )
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		return m_Shared.GetScoutHypeMeter() > 0.0f;
-#else
-		if ( m_Shared.GetAirDash() < 5 )
-			return true;
+		static ConVarRef tf_beta_sodapopper( "tf_beta_sodapopper" );
+		if ( TFGameRules()->IsBetaActive() && tf_beta_sodapopper.GetBool() )
+		{
+			return m_Shared.GetScoutHypeMeter() > 0.0f;
+		}
 		else
- 			return false;
-#endif
+		{
+			if ( m_Shared.GetAirDash() < 5 )
+				return true;
+			else
+				return false;
+		}
 	}
 
 	CTFWeaponBase *pTFActiveWeapon = GetActiveTFWeapon();
@@ -13632,9 +13636,7 @@ bool CTFPlayer::CanMoveDuringTaunt()
 
 	if ( m_Shared.InCond( TF_COND_TAUNTING ) || m_Shared.InCond( TF_COND_HALLOWEEN_THRILLER ) )
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		return true;
-#endif
+		if ( TFGameRules()->IsBetaActive() ) return true;
 #ifdef GAME_DLL
 		if ( tf_allow_sliding_taunt.GetBool() )
 		{
@@ -14590,19 +14592,12 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 	if ( bIsLocalPlayer )
 	{
-#if defined(MCOMS_BALANCE_PACK)
-		const float flMinHypeBeforeStop = tf_consume_min.GetFloat();
-#else
-		constexpr float flMinHypeBeforeStop = 0.0f;
-#endif
+		const float flMinHypeBeforeStop = ( TFGameRules() && TFGameRules()->IsBetaActive() ) ? tf_consume_min.GetFloat() : 0.0f;
 		if ( IsHypeBuffed() && m_flHypeMeter > flMinHypeBeforeStop )
 		{
-#if defined(MCOMS_BALANCE_PACK)
-			const float flConsumeRate = tf_consume_base_rate.GetFloat();
-			m_fHypeConsumeRate += (tf_consume_sec_rate.GetFloat() + tf_consume_ter_rate.GetFloat() * m_fHypeConsumeRate) * gpGlobals->frametime;
-#else
-			constexpr float flConsumeRate = 1.0f;
-#endif
+			const float flConsumeRate = ( TFGameRules() && TFGameRules()->IsBetaActive() ) ? tf_consume_base_rate.GetFloat() : 1.0f;
+			if ( TFGameRules()->IsBetaActive() )
+				m_fHypeConsumeRate += (tf_consume_sec_rate.GetFloat() + tf_consume_ter_rate.GetFloat() * m_fHypeConsumeRate) * gpGlobals->frametime;
 			m_flHypeMeter -= gpGlobals->frametime * ( m_fHypeConsumeRate * flConsumeRate );
 
 			if ( m_flHypeMeter <= flMinHypeBeforeStop )
@@ -14657,10 +14652,8 @@ void CTFPlayerShared::UpdateEnergyDrinkMeter( void )
 
 void CTFPlayerShared::SetScoutHypeMeter( float val )
 {
-#if !defined(MCOMS_BALANCE_PACK)
-	if ( IsHypeBuffed() )
+	if ( !TFGameRules()->IsBetaActive() && IsHypeBuffed() )
 		return;
-#endif
 	const float flMax = IsHypeBuffed() ? 99.0f : 100.0f;
 
 	m_flHypeMeter = Min( val, flMax );

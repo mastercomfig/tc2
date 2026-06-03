@@ -756,9 +756,9 @@ void CTFWeaponBaseGrenadeProj::VPhysicsUpdate( IPhysicsObject *pPhysics )
 	bool bHitEnemy = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetEnemyTeam( GetTeamNumber() );
 	bool bHitFriendly = tr.m_pEnt && tr.m_pEnt->GetTeamNumber() == GetTeamNumber() && CanCollideWithTeammates();
 
-#if defined(MCOMS_BALANCE_PACK_CYLINDERS)
+#if 0
 	// radius bbox filter
-	if ( tr.m_pEnt && tr.m_pEnt->IsPlayer() )
+	if ( TFGameRules()->IsBetaActive() && tr.m_pEnt && tr.m_pEnt->IsPlayer() )
 	{
 		const float flDistSq = ( tr.m_pEnt->WorldSpaceCenter() - tr.endpos ).Length2DSqr();
 		const float flRadius = tr.m_pEnt->WorldAlignSize().x * 0.5f * 1.2f; // not the full box radius

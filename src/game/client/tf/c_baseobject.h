@@ -184,15 +184,7 @@ public:
 	// Build points
 	CUtlVector<BuildPoint_t>	m_BuildPoints;
 
-	bool				ShouldBeActiveWhileCarried() const
-	{
-#ifdef MCOMS_BALANCE_PACK
-		// Dispenser active while carried
-		return m_iObjectType == OBJ_DISPENSER;
-#else
-		return false;
-#endif
-	}
+	bool				ShouldBeActiveWhileCarried() const;
 	bool				IsDisabled( void ) { return m_bDisabled || m_bCarried && !ShouldBeActiveWhileCarried(); }
 
 	// Shared placement

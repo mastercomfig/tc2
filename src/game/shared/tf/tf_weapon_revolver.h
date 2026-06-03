@@ -46,31 +46,11 @@ public:
 
 	virtual bool	DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 
-#if defined(MCOMS_BALANCE_PACK)
-	bool			CanHeadshot(void) const
-	{
-		// L'Etranger can't headshot
-		int iAddCloakOnHit = 0;
-		CALL_ATTRIB_HOOK_INT(iAddCloakOnHit, add_cloak_on_hit);
-		if (iAddCloakOnHit != 0)
-			return false;
-		// Diamondback can't headshot
-		int iSapperCrits = 0;
-		CALL_ATTRIB_HOOK_INT(iSapperCrits, sapper_kills_collect_crits);
-		if (iSapperCrits != 0)
-			return false;
-		// All Revolvers can headshot
-		return true;
-	};
-#else
-	bool			CanHeadshot(void) const { int iMode = 0; CALL_ATTRIB_HOOK_INT(iMode, set_weapon_mode); return (iMode == 1); };
-#endif
+	bool			CanHeadshot(void) const;
 
 	bool			SapperKillsCollectCrits( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, sapper_kills_collect_crits ); return (iMode == 1); };
 
-#if defined(MCOMS_BALANCE_PACK)
-	virtual int GetMaxRevengeCrits(void) OVERRIDE { return 10; }
-#endif
+	virtual int GetMaxRevengeCrits(void) OVERRIDE;
 
 	virtual bool		Holster( CBaseCombatWeapon *pSwitchingTo = NULL );
 	virtual bool		Deploy( void );

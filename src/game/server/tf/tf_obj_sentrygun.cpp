@@ -1381,6 +1381,7 @@ bool CObjectSentrygun::FireRocket()
 			int iDamage = 100;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( GetOwner(), iDamage, mult_engy_sentry_damage );
 			pProjectile->SetDamage( iDamage );
+			pProjectile->SetPlayerControlled( m_bPlayerControlled );
 		}
 
 		float flRocketTime = 3;
@@ -2110,11 +2111,7 @@ int CObjectSentrygun::OnTakeDamage( const CTakeDamageInfo &info )
 	// UNDONE(mcoms): bringing sapper resistance back
 #if !defined(TF2_OG) || 1
 	// Check to see if we are being sapped.
-#if defined(MCOMS_BALANCE_PACK)
-	if ( !iAttackIgnoresResists && HasSapper() )
-#else
-	if ( HasSapper() )
-#endif
+	if ( ( TFGameRules()->IsBetaActive() ? !iAttackIgnoresResists : true ) && HasSapper() )
 	{
 		// Get the sapper owner.
 		CBaseObject *pSapper = GetObjectOfTypeOnMe( OBJ_ATTACHMENT_SAPPER );
@@ -2537,5 +2534,17 @@ void CTFProjectile_SentryRocket::Spawn()
 	UTIL_SetSize( this, vec3_origin, vec3_origin );
 
 	ResetSequence( LookupSequence("idle") );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFProjectile_SentryRocket::CanCollideWithTeammates() const
+{
+	if ( m_bPlayerControlled || !TFGameRules()->IsBetaActive() )
+	{
+		return BaseClass::CanCollideWithTeammates();
+	}
+	return false;
 }
 

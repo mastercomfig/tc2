@@ -100,15 +100,11 @@ PRECACHE_WEAPON_REGISTER( tf_projectile_stun_ball );
 #define TF_WEAPON_STUNBALL_MODEL			"models/weapons/w_models/w_baseball.mdl"
 
 #if defined( GAME_DLL )
-#if defined(MCOMS_BALANCE_PACK)
-ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "1.0", FCVAR_DEVELOPMENTONLY );
-ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_DEVELOPMENTONLY );
-ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "20", FCVAR_DEVELOPMENTONLY );
-#else
 ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "6.0", FCVAR_DEVELOPMENTONLY );
 ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_DEVELOPMENTONLY );
 ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "15", FCVAR_DEVELOPMENTONLY );
-#endif
+#define TF_SCOUT_STUNBALL_BASE_DURATION ( ( TFGameRules()->IsBetaActive() ) ? 1.0f : tf_scout_stunball_base_duration.GetFloat() )
+#define SV_PROJ_STUNBALL_DAMAGE ( ( TFGameRules()->IsBetaActive() ) ? 20.0f : sv_proj_stunball_damage.GetFloat() )
 #endif
 // -- TFStunBall
 
@@ -809,11 +805,7 @@ void CTFStunBall::Explode( trace_t *pTrace, int bitsDamageType )
 // Purpose: Stun the person we smashed into.
 //-----------------------------------------------------------------------------
 #define FLIGHT_TIME_TO_MAX_STUN_OLD	1.0f
-#if defined(MCOMS_BALANCE_PACK)
-#define FLIGHT_TIME_TO_MAX_STUN	(0.8f * 0.35f) // halving the distance of a moonshot.
-#else
-#define FLIGHT_TIME_TO_MAX_STUN	0.8f
-#endif
+#define FLIGHT_TIME_TO_MAX_STUN	( TFGameRules()->IsBetaActive() ? ( 0.8f * 0.35f ) : 0.8f )
 void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 {
 	if ( !pOther || !pOther->IsPlayer() )
@@ -860,22 +852,19 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	const bool bMax = flLifeTimeRatio >= 1.f;
 	int iStunFlags = ( bMax ) ? TF_STUN_SPECIAL_SOUND | TF_STUN_MOVEMENT : TF_STUN_SOUND | TF_STUN_MOVEMENT;
 	float flStunAmount = 0.5f;
-#if defined(MCOMS_BALANCE_PACK)
-	float flStunDuration = tf_scout_stunball_base_duration.GetFloat() + SimpleSplineRemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 2.0f );
-#else
-	float flStunDuration = Max( 2.f, tf_scout_stunball_base_duration.GetFloat() * flLifeTimeRatio );
-#endif
+	float flStunDuration = ( TFGameRules()->IsBetaActive() ) ? ( TF_SCOUT_STUNBALL_BASE_DURATION + SimpleSplineRemapValClamped( flLifeTimeRatio, 0.1f, 0.99f, 0.0f, 2.0f ) ) : Max( 2.f, TF_SCOUT_STUNBALL_BASE_DURATION * flLifeTimeRatio );
 	if ( bMax )
 	{
 		flStunDuration += 1.0f;
-#if defined(MCOMS_BALANCE_PACK)
-		// give ball back to owner on moonshot
-		// we check for critical so we don't chain gives, leave it as leapfrog. similar to old cleaver combo but weaker.
-		if ( !IsCritical() )
+		if ( TFGameRules()->IsBetaActive() )
 		{
-			GiveBall(pOwner, true);
+			// give ball back to owner on moonshot
+			// we check for critical so we don't chain gives, leave it as leapfrog. similar to old cleaver combo but weaker.
+			if ( !IsCritical() )
+			{
+				GiveBall(pOwner, true);
+			}
 		}
-#endif
 	}
 	if ( bMax || IsCritical() )
 	{
@@ -958,7 +947,7 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 //-----------------------------------------------------------------------------
 float CTFStunBall::GetDamage( void )
 {
-	return sv_proj_stunball_damage.GetFloat();
+	return SV_PROJ_STUNBALL_DAMAGE;
 }
 
 //-----------------------------------------------------------------------------
@@ -1379,11 +1368,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	if ( pPlayer->m_Shared.IsInvulnerable() || pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_WEARINGOFF ) )
 		return;
 
-#if defined(MCOMS_BALANCE_PACK)
-	float flBleedTime = 2.0f;
-#else
-	float flBleedTime = 5.0f;
-#endif
+	float flBleedTime = ( TFGameRules() && TFGameRules()->IsBetaActive() ) ? 2.0f : 5.0f;
 	bool bIsLongRangeHit = false;
 
 	// long distance hit is always a crit
@@ -1398,9 +1383,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 
 	// just do the bleed effect directly since the bleed
 	// attribute comes from the inflictor, which is the bat.
-#if defined(MCOMS_BALANCE_PACK)
-	if ( !bIsCriticalHit )
-#endif
+	if ( !( TFGameRules() && TFGameRules()->IsBetaActive() ) || !bIsCriticalHit )
 	{
 		// we do aoe bleed on crit, so don't do anything here
 		pPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
@@ -1418,11 +1401,7 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	info.SetAttacker( GetThrower() );
 	info.SetInflictor( this ); 
 	info.SetWeapon( pInflictor );
-#if defined(MCOMS_BALANCE_PACK)
-	info.SetDamage( 5.0f );
-#else
-	info.SetDamage( GetDamage() );
-#endif
+	info.SetDamage( ( TFGameRules() && TFGameRules()->IsBetaActive() ) ? 5.0f : GetDamage() );
 	info.SetDamageCustom( TF_DMG_CUSTOM_BASEBALL );
 	info.SetDamageForce( GetDamageForce() );
 	info.SetDamagePosition( GetAbsOrigin() );
@@ -1570,42 +1549,43 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	// Explosion damage is some fraction of our base damage
 	const float flExplodeDamage = 6.0f;
 
-#if defined(MCOMS_BALANCE_PACK)
-	const float flBleedTime = 4.0f;
-
-	if ( IsCritical() )
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() )
 	{
-		bitsDamageType |= DMG_CRITICAL;
+		const float flBleedTime = 4.0f;
 
-		// Do AoE bleed
-		CBaseEntity* pObjects[MAX_PLAYERS_ARRAY_SAFE];
-		int nCount = UTIL_EntitiesInSphere( pObjects, ARRAYSIZE( pObjects ), vecOrigin, DEFAULT_ORNAMENT_EXPLODE_RADIUS, FL_CLIENT );
-		for ( int i = 0; i < nCount; i++ )
+		if ( IsCritical() )
 		{
-			if ( !pObjects[i] )
-				continue;
+			bitsDamageType |= DMG_CRITICAL;
 
-			if ( !pObjects[i]->IsAlive() )
-				continue;
+			// Do AoE bleed
+			CBaseEntity* pObjects[MAX_PLAYERS_ARRAY_SAFE];
+			int nCount = UTIL_EntitiesInSphere( pObjects, ARRAYSIZE( pObjects ), vecOrigin, DEFAULT_ORNAMENT_EXPLODE_RADIUS, FL_CLIENT );
+			for ( int i = 0; i < nCount; i++ )
+			{
+				if ( !pObjects[i] )
+					continue;
 
-			if ( pOwner->InSameTeam(pObjects[i]) )
-				continue;
+				if ( !pObjects[i]->IsAlive() )
+					continue;
 
-			CTFPlayer* pTFPlayer = static_cast<CTFPlayer*>( pObjects[i] );
-			if ( !pTFPlayer )
-				continue;
+				if ( pOwner->InSameTeam(pObjects[i]) )
+					continue;
 
-			if ( pTFPlayer->m_Shared.InCond(TF_COND_PHASE) || pTFPlayer->m_Shared.InCond(TF_COND_PASSTIME_INTERCEPTION) )
-				continue;
+				CTFPlayer* pTFPlayer = static_cast<CTFPlayer*>( pObjects[i] );
+				if ( !pTFPlayer )
+					continue;
 
-			if ( pTFPlayer->m_Shared.IsInvulnerable() )
-				continue;
+				if ( pTFPlayer->m_Shared.InCond(TF_COND_PHASE) || pTFPlayer->m_Shared.InCond(TF_COND_PASSTIME_INTERCEPTION) )
+					continue;
 
-			// DoT
-			pTFPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
+				if ( pTFPlayer->m_Shared.IsInvulnerable() )
+					continue;
+
+				// DoT
+				pTFPlayer->m_Shared.MakeBleed( pOwner, (CTFBat_Giftwrap *)GetOriginalLauncher(), flBleedTime );
+			}
 		}
 	}
-#endif
 
 	// Do radius damage
  	Vector vecBlastForce(0.0f, 0.0f, 0.0f);

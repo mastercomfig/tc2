@@ -106,6 +106,8 @@ ConVar tf_obj_ground_clearance( "tf_obj_ground_clearance", "32", FCVAR_CHEAT | F
 
 ConVar tf_obj_damage_tank_achievement_amount( "tf_obj_damage_tank_achievement_amount", "2000", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
+ConVar tf_beta_obj_dispenser_carry( "tf_beta_obj_dispenser_carry", "0", FCVAR_REPLICATED, "Whether dispensers can be carried as active (beta)." );
+
 extern short g_sModelIndexFireball;
 extern ConVar tf_cheapobjects;
 
@@ -3904,4 +3906,14 @@ int CBaseObject::GetMaxHealthForCurrentLevel( void )
 	}
 
 	return iMaxHealth;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CBaseObject::ShouldBeActiveWhileCarried() const
+{
+	if ( TFGameRules()->IsBetaActive() && tf_beta_obj_dispenser_carry.GetBool() )
+		return m_iObjectType == OBJ_DISPENSER;
+	return false;
 }

@@ -501,8 +501,9 @@ void CTFSodaPopper::ItemBusyFrame( void )
 //-----------------------------------------------------------------------------
 void CTFSodaPopper::SecondaryAttack()
 {
-#if !defined(MCOMS_BALANCE_PACK)
-	// does nothing anymore
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+		return;
+
 	CTFPlayer *pPlayer = GetTFPlayerOwner( );
 	if ( !pPlayer || pPlayer->m_Shared.IsHypeBuffed() )
 		return;
@@ -511,20 +512,23 @@ void CTFSodaPopper::SecondaryAttack()
 	{
 		pPlayer->m_Shared.AddCond( TF_COND_SODAPOPPER_HYPE );
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
 float CTFSodaPopper::GetReloadSpeedScale() const
 {
-#if defined(MCOMS_BALANCE_PACK)
-	// reload upon airdash
-	CTFPlayer* pPlayer = GetTFPlayerOwner();
-	if (!pPlayer)
-		return BaseClass::GetReloadSpeedScale();
+	// MCOMS_BALANCE_PACK
+#if 0
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+	{
+		// reload upon airdash
+		CTFPlayer* pPlayer = GetTFPlayerOwner();
+		if (!pPlayer)
+			return BaseClass::GetReloadSpeedScale();
 
-	if ( pPlayer->m_Shared.IsAirDashing() && pPlayer->m_Shared.IsHypeBuffed() )
-		return 0.1f;
+		if ( pPlayer->m_Shared.IsAirDashing() && pPlayer->m_Shared.IsHypeBuffed() )
+			return 0.1f;
+	}
 #endif
 
 	return BaseClass::GetReloadSpeedScale();

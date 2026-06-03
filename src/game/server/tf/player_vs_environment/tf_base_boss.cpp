@@ -525,7 +525,7 @@ int CTFBaseBoss::OnTakeDamage_Alive( const CTakeDamageInfo &rawInfo )
 		gameeventmanager->FireEvent( event );
 	}
 
-	//int iPrevHealth = GetHealth();
+	int iPrevHealth = GetHealth();
 
 	int result = BaseClass::OnTakeDamage_Alive( info );
 
@@ -579,14 +579,15 @@ int CTFBaseBoss::OnTakeDamage_Alive( const CTakeDamageInfo &rawInfo )
 
 		CTF_GameStats.Event_BossDamage( pAttacker, info.GetDamage() );
 
-#if defined(MCOMS_BALANCE_PACK) && 0
-		// TODO(mcoms): do we want building types to provide crit chance?
-		// Give crit chance from damage
-		if ( rawInfo.GetAttacker() != this )
+		if ( TFGameRules()->IsBetaActive() )
 		{
-			pAttacker->RecordDamageEvent( info, GetHealth() <= 0, iPrevHealth );
+			// TODO(mcoms): do we want building types to provide crit chance?
+			// Give crit chance from damage
+			if ( rawInfo.GetAttacker() != this )
+			{
+				pAttacker->RecordDamageEvent( info, GetHealth() <= 0, iPrevHealth );
+			}
 		}
-#endif
 	}
 
 	return result;

@@ -130,7 +130,7 @@ Activity CTFPistol_ScoutPrimary::TranslateViewmodelHandActivityInternal(Activity
 	switch (iActivity)
 	{
 	case ACT_VM_IDLE:
-		if (m_bReadyToPush)
+		if ( m_bReadyToPush )
 		{
 			m_bReadyToPush = false;
 			Push();
@@ -202,12 +202,7 @@ void CTFPistol_ScoutPrimary::Push( void )
 		{
 			Vector vecToVictim = pVictim->GetAbsOrigin() - pOwner->GetAbsOrigin();
 			VectorNormalize( vecToVictim );
-#if defined(MCOMS_BALANCE_PACK)
-			Vector vecVel = pOwner->GetAbsVelocity();
-			pVictim->ApplyGenericPushbackImpulse( vecToVictim * 400.f + vecVel, pOwner);
-#else
-			pVictim->ApplyGenericPushbackImpulse( vecToVictim * 400.f, pOwner );
-#endif
+			pVictim->ApplyGenericPushbackImpulse( vecToVictim * 400.f + ( TFGameRules()->IsBetaActive() ? pOwner->GetAbsVelocity() : vec3_origin ), pOwner );
 			float flDamage = 1.f;
 			CTakeDamageInfo info( pVictim, pOwner, this, flDamage, DMG_MELEE | DMG_NEVERGIB | DMG_CLUB, TF_DMG_CUSTOM_NONE );
 			CalculateMeleeDamageForce( &info, vecForward, GetAbsOrigin() + vecForward * flDist, 1.f / flDamage * 80.f );
@@ -241,20 +236,20 @@ void CTFPistol_ScoutPrimary::ItemPostFrame()
 {
 	if ( m_flPushTime > -1.f && gpGlobals->curtime > m_flPushTime )
 	{
-#if !defined(MCOMS_BALANCE_PACK)
+#if !defined( MCOMS_BALANCE_PACK )
 		Push();
 #endif
 		m_flPushTime = -1.f;
-#if defined(MCOMS_BALANCE_PACK)
+#if defined( MCOMS_BALANCE_PACK )
 		m_bReadyToPush = true;
+#endif
 	}
 
-	if (m_bReadyToPush)
+	if ( m_bReadyToPush )
 	{
 		// keep delaying
 		m_flNextPrimaryAttack = gpGlobals->curtime + 0.6f;
 		m_flNextSecondaryAttack = gpGlobals->curtime + 1.5f;
-#endif
 	}
 
 	BaseClass::ItemPostFrame();

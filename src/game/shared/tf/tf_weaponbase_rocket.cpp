@@ -407,9 +407,9 @@ CTFBaseRocket *CTFBaseRocket::Create( CBaseEntity *pLauncher, const char *pszCla
 			flLaunchSpeed = 3000.f;
 		}
 
-#if defined(MCOMS_BALANCE_PACK)
+#if 0
 		// Airstrike gets launch speed bonus
-		if ( pTFOwner && pTFOwner->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
+		if ( TFGameRules()->IsBetaActive() && pTFOwner && pTFOwner->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
 		{
 			// Using this attr to key in the AirStrike
 			float flRocketJumpAttackBonus = 1.0f;
@@ -467,9 +467,9 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 
 bool CTFBaseRocket::ShouldIgnoreTrace(trace_t* pTrace)
 {
-#if defined(MCOMS_BALANCE_PACK_CYLINDERS)
+#if 0
 	// radius bbox filter
-	if (pTrace->m_pEnt && pTrace->m_pEnt->IsPlayer())
+	if ( TFGameRules()->IsBetaActive() && pTrace->m_pEnt && pTrace->m_pEnt->IsPlayer())
 	{
 		const float flDistSq = (pTrace->m_pEnt->WorldSpaceCenter() - pTrace->endpos).Length2DSqr();
 		const float flRadius = pTrace->m_pEnt->WorldAlignSize().x * 0.5f * 1.2f; // not the full box radius

@@ -77,6 +77,8 @@ END_RECV_TABLE()
 
 ConVar cl_obj_test_building_damage( "cl_obj_test_building_damage", "-1", FCVAR_CHEAT, "debug building damage", true, -1, true, BUILDING_DAMAGE_LEVEL_CRITICAL );
 
+ConVar tf_beta_obj_dispenser_carry( "tf_beta_obj_dispenser_carry", "0", FCVAR_REPLICATED, "Whether dispensers can be carried as active (beta)." );
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -1115,6 +1117,17 @@ void C_BaseObject::SetInvisibilityLevel( float flValue )
 {
 	m_flPrevInvisibilityPercent = m_flInvisibilityPercent;
 	m_flInvisibilityPercent = clamp( flValue, 0.f, 1.f );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool C_BaseObject::ShouldBeActiveWhileCarried() const
+{
+	if ( TFGameRules()->IsBetaActive() && tf_beta_obj_dispenser_carry.GetBool() )
+		return m_iObjectType == OBJ_DISPENSER;
+	return false;
+	
 }
 
 //-----------------------------------------------------------------------------

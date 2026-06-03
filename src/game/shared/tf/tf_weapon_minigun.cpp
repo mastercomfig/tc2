@@ -33,22 +33,11 @@
 
 #define MAX_BARREL_SPIN_VELOCITY	20
 
-#if defined(MCOMS_BALANCE_PACK)
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.9f"
-#else
-#define DEFAULT_TF_MINIGUN_SPINUP_TIME "0.75f"
-#endif
-ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", DEFAULT_TF_MINIGUN_SPINUP_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
+ConVar tf_minigun_spinup_time("tf_minigun_spinup_time", "0.75f", FCVAR_REPLICATED | FCVAR_HIDDEN);
+#define TF_MINIGUN_SPINUP_TIME ( TFGameRules()->IsBetaActive() ? 0.9f : tf_minigun_spinup_time.GetFloat() )
 
-#define TF_MINIGUN_SPINUP_TIME tf_minigun_spinup_time.GetFloat()
-
-#if defined(MCOMS_BALANCE_PACK)
-#define DEFAULT_TF_MINIGUN_PENALTY_TIME "0"
-#else
-#define DEFAULT_TF_MINIGUN_PENALTY_TIME "1"
-#endif
-ConVar tf_minigun_penalty_time("tf_minigun_penalty_time", DEFAULT_TF_MINIGUN_PENALTY_TIME, FCVAR_REPLICATED | FCVAR_HIDDEN);
-#define TF_MINIGUN_PENALTY_PERIOD tf_minigun_penalty_time.GetFloat()
+ConVar tf_minigun_penalty_time("tf_minigun_penalty_time", "1", FCVAR_REPLICATED | FCVAR_HIDDEN);
+#define TF_MINIGUN_PENALTY_PERIOD ( TFGameRules()->IsBetaActive() ? 0.0f : tf_minigun_penalty_time.GetFloat() )
 
 //=============================================================================
 //

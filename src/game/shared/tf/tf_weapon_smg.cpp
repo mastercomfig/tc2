@@ -4,6 +4,7 @@
 //=============================================================================
 #include "cbase.h"
 #include "tf_weapon_smg.h"
+#include "tf_gamerules.h"
 
 static const float DAMAGE_TO_FILL_MINICRIT_METER = 100.0f;
 
@@ -62,6 +63,20 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_charged_smg );
 //=============================================================================
 //
 // Weapon SMG functions.
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFSMG::CanHeadshot( void ) const
+{
+	static ConVarRef tf_beta_smg( "tf_beta_smg" );
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && tf_beta_smg.GetBool() )
+		return true;
+		
+	int iMode = 0;
+	CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode );
+	return ( iMode == 1 );
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 

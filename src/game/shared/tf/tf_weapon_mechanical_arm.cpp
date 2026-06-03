@@ -46,13 +46,10 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_mechanical_arm );
 const float tf_mecharm_orb_size = 100.f;
 const float tf_mecharm_orb_speed = 700.f;
 const int tf_mecharm_orb_cost = 65;
-#if defined(MCOMS_BALANCE_PACK)
-const int tf_mecharm_orb_zap_targets = 4;
-const int tf_mecharm_orb_zap_damage = 20;
-#else
 const int tf_mecharm_orb_zap_targets = 2;
 const int tf_mecharm_orb_zap_damage = 15;
-#endif
+#define TF_MECHARM_ORB_ZAP_TARGETS ( TFGameRules()->IsBetaActive() ? 4 : tf_mecharm_orb_zap_targets)
+#define TF_MECHARM_ORB_ZAP_DAMAGE ( TFGameRules()->IsBetaActive() ? 20 : tf_mecharm_orb_zap_damage)
 const float tf_mecharm_orb_lifetime = 1.2f;
 
 
@@ -742,7 +739,7 @@ void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap, bool bCanHi
 	info.SetAttacker( pTFOwner );
 	info.SetInflictor( this );
 	info.SetWeapon( GetLauncher() );
-	info.SetDamage( tf_mecharm_orb_zap_damage );
+	info.SetDamage( TF_MECHARM_ORB_ZAP_DAMAGE );
 	info.SetDamageCustom( TF_DMG_CUSTOM_PLASMA );
 	info.SetDamagePosition( GetAbsOrigin() );
 	info.SetDamageType( DMG_SHOCK );
@@ -868,16 +865,19 @@ void CTFProjectile_MechanicalArmOrb::CheckForProjectiles( void )
 			}
 			else
 			{
-#if defined(MCOMS_BALANCE_PACK)
-				pProjectile->SetDamage(pProjectile->GetDamage() * 0.65f);
-				CTFGrenadePipebombProjectile* pGrenade = dynamic_cast<CTFGrenadePipebombProjectile*>(pProjectile);
-				if (pGrenade)
+				if ( TFGameRules()->IsBetaActive() )
 				{
-					pGrenade->SetFullDamage(pGrenade->m_flFullDamage * 0.65f);
+					pProjectile->SetDamage(pProjectile->GetDamage() * 0.65f);
+					CTFGrenadePipebombProjectile* pGrenade = dynamic_cast<CTFGrenadePipebombProjectile*>(pProjectile);
+					if (pGrenade)
+					{
+						pGrenade->SetFullDamage(pGrenade->m_flFullDamage * 0.65f);
+					}
 				}
-#else
-				pProjectile->Destroy( true, false );
-#endif
+				else
+				{
+					pProjectile->Destroy( true, false );
+				}
 			}
 
 			if ( pTFOwner )
@@ -901,7 +901,7 @@ void CTFProjectile_MechanicalArmOrb::OrbThink( void )
 {
 	if ( gpGlobals->curtime >= m_flOrbNextAttackTime )
 	{
-		CheckForPlayers( tf_mecharm_orb_zap_targets, false );
+		CheckForPlayers( TF_MECHARM_ORB_ZAP_TARGETS, false );
 	}
 
 	CheckForProjectiles();

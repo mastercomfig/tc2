@@ -86,6 +86,8 @@ PRECACHE_REGISTER( obj_teleporter );
 
 ConVar tf_teleporter_fov_start( "tf_teleporter_fov_start", "120", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Starting FOV for teleporter zoom.", true, 1, false, 0 );
 ConVar tf_teleporter_fov_time( "tf_teleporter_fov_time", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "How quickly to restore FOV after teleport.", true, 0.0, false, 0 );
+ConVar tf_beta_teleporter_autoupgrade( "tf_beta_teleporter_autoupgrade", "0", FCVAR_NONE, "Enable auto-upgrade for teleporters (beta)." );
+ConVar tf_beta_teleporter_cooldown( "tf_beta_teleporter_cooldown", "1", FCVAR_NONE, "Enable cooldown for teleporters (beta)." );
 
 LINK_ENTITY_TO_CLASS( obj_teleporter, CObjectTeleporter );
 
@@ -1054,29 +1056,30 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 
 void CObjectTeleporter::TeleporterUpgradeThink()
 {
-#ifdef MCOMS_BALANCE_PACK
-	if (IsCarried())
-		return;
-
-	if (m_iUpgradeLevel < 10)
+	if ( TFGameRules()->IsBetaActive() && tf_beta_teleporter_autoupgrade.GetBool() )
 	{
-		static ConVarRef tf_obj_upgrade_per_hit("tf_obj_upgrade_per_hit");
-		int iAmountToAdd = tf_obj_upgrade_per_hit.GetInt() * 2;
+		if (IsCarried())
+			return;
 
-		if (iAmountToAdd > (m_iUpgradeMetalRequired - m_iUpgradeMetal))
-			iAmountToAdd = (m_iUpgradeMetalRequired - m_iUpgradeMetal);
-
-		m_iUpgradeMetal += iAmountToAdd;
-
-		if (m_iUpgradeMetal >= m_iUpgradeMetalRequired)
+		if (m_iUpgradeLevel < 10)
 		{
-			StartUpgrading();
-			m_iUpgradeMetal = 0;
-		}
-	}
+			static ConVarRef tf_obj_upgrade_per_hit("tf_obj_upgrade_per_hit");
+			int iAmountToAdd = tf_obj_upgrade_per_hit.GetInt() * 2;
 
-	SetContextThink(&CObjectTeleporter::TeleporterUpgradeThink, gpGlobals->curtime + 5.0f, TELEPORTER_UPGRADE_THINK_CONTEXT);
-#endif
+			if (iAmountToAdd > (m_iUpgradeMetalRequired - m_iUpgradeMetal))
+				iAmountToAdd = (m_iUpgradeMetalRequired - m_iUpgradeMetal);
+
+			m_iUpgradeMetal += iAmountToAdd;
+
+			if (m_iUpgradeMetal >= m_iUpgradeMetalRequired)
+			{
+				StartUpgrading();
+				m_iUpgradeMetal = 0;
+			}
+		}
+
+		SetContextThink(&CObjectTeleporter::TeleporterUpgradeThink, gpGlobals->curtime + 5.0f, TELEPORTER_UPGRADE_THINK_CONTEXT);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1154,26 +1157,26 @@ void CObjectTeleporter::TeleporterThink( void )
 			{
 				m_flCurrentRechargeDuration *= pow(0.9f, iUpgradeLevel - iBaseUpgradeLevel);
 			}
-#ifdef MCOMS_BALANCE_PACK
-			if (m_flTeleportCooldownTime <= gpGlobals->curtime)
+			float flTeleportCooldownPenalty = 0.0f;
+			if ( TFGameRules()->IsBetaActive() && tf_beta_teleporter_cooldown.GetBool() )
 			{
-				m_iTeleportCooldownUsers = 0;
+				if ( m_flTeleportCooldownTime <= gpGlobals->curtime )
+				{
+					m_iTeleportCooldownUsers = 0;
+				}
+				m_iTeleportCooldownUsers++;
+				// 0.5 second penalty on recharge for multiple teleports
+				flTeleportCooldownPenalty = m_iTeleportCooldownUsers * 0.5f;
+				// half a respawn wave
+				m_flTeleportCooldownTime = gpGlobals->curtime + 5.0f;
 			}
-			m_iTeleportCooldownUsers++;
-			// 0.5 second penalty on recharge for multiple teleports
-			float flTeleportCooldownPenalty = m_iTeleportCooldownUsers * 0.5f;
-			// half a respawn wave
-			m_flTeleportCooldownTime = gpGlobals->curtime + 5.0f;
-#endif
 
 			if ( !m_bWasMapPlaced )
 			{
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBuilder(), m_flCurrentRechargeDuration, mult_teleporter_recharge_rate );
 			}
 
-#ifdef MCOMS_BALANCE_PACK
 			m_flCurrentRechargeDuration += flTeleportCooldownPenalty;
-#endif
 
 			m_flRechargeTime = gpGlobals->curtime + ( BUILD_TELEPORTER_FADEOUT_TIME + BUILD_TELEPORTER_FADEIN_TIME + m_flCurrentRechargeDuration );
 		
