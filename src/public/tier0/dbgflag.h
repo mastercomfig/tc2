@@ -31,6 +31,10 @@
 #undef DBGFLAG_ASSERTDLG
 #undef DBGFLAG_STRINGS
 
+#ifndef DBGFLAG_RELEASE_NODLG
+#define DBGFLAG_RELEASE_NODLG 0
+#endif
+
 //-----------------------------------------------------------------------------
 // Default flags for debug builds
 //-----------------------------------------------------------------------------
@@ -53,10 +57,6 @@
 // Default flags for release builds
 //-----------------------------------------------------------------------------
 #else // _DEBUG
-
-#ifndef DBGFLAG_RELEASE_NODLG
-#define DBGFLAG_RELEASE_NODLG 0
-#endif
 
 #if defined( STEAM ) || DBGFLAG_RELEASE_NODLG
 #define DBGFLAG_ASSERT
