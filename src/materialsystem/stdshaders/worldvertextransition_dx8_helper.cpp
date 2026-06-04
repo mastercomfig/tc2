@@ -8,8 +8,8 @@
 #include "worldvertextransition_dx8_helper.h"
 #include "BaseVSShader.h"
 
-#include "worldvertextransition_vs30.inc"
-#include "worldvertextransition_ps30.inc"
+#include "WorldVertexTransition_vs30.inc"
+#include "WorldVertexTransition_ps30.inc"
 
 
 // memdbgon must be the last include file in a .cpp file!!!
