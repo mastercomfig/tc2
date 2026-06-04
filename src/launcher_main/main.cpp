@@ -181,7 +181,7 @@ static bool LoadSteam( const char *pRootDir )
 
 	if ( !pfnSAPIInit() )
 	{
-		MessageBox( 0, "SteamAPI_Init failed!", "Launcher Error", MB_OK );
+		MessageBox( 0, "SteamAPI_Init failed! Please make sure you have Steam running and are logged in.", "Launcher Error", MB_OK );
 		UnloadSteam();
 		return false;
 	}
@@ -241,8 +241,8 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize,
 		// dedicated app is required on posix servers, so we only check if TF2 is installed, but we keep relying on the dedicated install dir
 		if ( !bDedicated )
 #else
-		// Only overwrite app install dir with TF2 if we haven't already found dedicated, or we're not looking for dedicated (which in either case, will cause length to be 0)
-		if ( unLength == 0 )
+		// we prefer to use TF2 as the install dir if it's there, since the SDK apps might not be up to date with TF2 (not prerelease or what have you)
+		if ( 1 )
 #endif
 		{
 			unLength = pSteamApps->GetAppInstallDir( k_unTF2AppId, pszBuf, nBufSize );
