@@ -2,7 +2,7 @@
 
 #include "BaseVSShader.h"
 #include "screenspaceeffect_vs30.inc"
-#include "KawaseBloom_ps30.inc"
+#include "kawasebloom_ps30.inc"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
