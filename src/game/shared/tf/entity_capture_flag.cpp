@@ -710,6 +710,10 @@ void CCaptureFlag::UpdateOnRemove( void )
 //-----------------------------------------------------------------------------
 void CCaptureFlag::PlaySound( IRecipientFilter& filter, const char *pszString, int iTeam /*= TEAM_ANY */ )
 {
+	// don't play capture flag sounds during match summary (e.g, when flag returns on its own)
+	if ( TFGameRules()->ShowMatchSummary() )
+		return;
+	
 	// Note:  iTeam parameter is only used for rate-limiting flag sounds based on team, and does not affect
 	// who the sound is targetted at; the filter parameter is the only thing that will affect who hears this.
 
