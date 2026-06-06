@@ -1115,7 +1115,7 @@ bool CTFHudPlayerStatus::ShouldDraw( void )
 		return false;
 
 	// fix model sorting issues
-	if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
+	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 	{
 		float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
 		if ( flRestartTime > 0.f && flRestartTime <= TOURNAMENT_NOCANCEL_TIME )
