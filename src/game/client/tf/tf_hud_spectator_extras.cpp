@@ -233,11 +233,6 @@ void CTFHudSpectatorExtras::OnTick()
 			{
 				flHealth = (float)( pPlayer->GetHealth() ) / (float)( pPlayer->GetMaxHealth() );
 			}
-			// don't show buffed health for this simple bar
-			if ( flHealth > 1.0f )
-			{
-				flHealth = 1.0f;
-			}
 			m_vecEntitiesToDraw[nVecIndex].m_flHealth = flHealth;
 
  			// what color should we use?
@@ -394,7 +389,16 @@ void CTFHudSpectatorExtras::Paint()
 
 			// draw the health bar
 			vgui::surface()->DrawSetColor( m_vecEntitiesToDraw[i].m_clrGlowColor );
-			vgui::surface()->DrawFilledRect( xHealthPos, yHealthPos, xHealthPos + ( nHealthWidth * m_vecEntitiesToDraw[i].m_flHealth ), yHealthPos + nHealthHeight );
+			const float flHealth = Min( m_vecEntitiesToDraw[i].m_flHealth, 1.0f );
+			vgui::surface()->DrawFilledRect( xHealthPos, yHealthPos, xHealthPos + ( nHealthWidth * flHealth ), yHealthPos + nHealthHeight );
+
+			// draw the overheal bar
+			const float flOverheal = m_vecEntitiesToDraw[i].m_flHealth - flHealth;
+			if ( flOverheal > 0.0f )
+			{
+				vgui::surface()->DrawSetColor( Color( 191, 231, 182, 160 ) );
+				vgui::surface()->DrawFilledRect( xHealthPos, yHealthPos, xHealthPos + ( nHealthWidth * flOverheal ), yHealthPos + nHealthHeight );
+			}
 		}
 	}
 }
