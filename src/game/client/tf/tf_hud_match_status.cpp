@@ -320,6 +320,7 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	, m_pTimePanel( NULL )
 	, m_iUseMatchHUD( -1 )
 	, m_iMinmode( -1 )
+	, m_iWinLimit( -1 )
 	, m_eMatchGroupSettings( k_eTFMatchGroup_Invalid )
 {
 	Panel *pParent = g_pClientMode->GetViewport();
@@ -531,6 +532,12 @@ void CTFHudMatchStatus::OnThink()
 		bReload = true;
 	}
 
+	if ( m_iWinLimit != mp_winlimit.GetInt() )
+	{
+		m_iWinLimit = mp_winlimit.GetInt();
+		bReload = true;
+	}
+
 	ETFMatchGroup eCurrentGroup = TFGameRules()->GetCurrentMatchGroup();
 	if ( eCurrentGroup != m_eMatchGroupSettings )
 	{
@@ -619,7 +626,7 @@ void CTFHudMatchStatus::OnThink()
 			static ConVarRef tf_hud_show_servertimelimit( "tf_hud_show_servertimelimit" );
 			if ( !pTimer && mp_timelimit.GetInt() > 0 && tf_hud_show_servertimelimit.GetBool() )
 			{
-				bDisplayTimer = true;
+				bDisplayTimer = TFGameRules()->GetTimeLeft() > 0;
 			}
 		}
 

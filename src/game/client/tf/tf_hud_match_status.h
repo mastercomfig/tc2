@@ -136,6 +136,7 @@ private:
 
 	int m_iUseMatchHUD;
 	int m_iMinmode;
+	int m_iWinLimit;
 
 	float m_flMatchSummaryShowTime;
 };
