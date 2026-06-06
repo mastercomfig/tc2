@@ -121,9 +121,6 @@ CTFStreakNotice::CTFStreakNotice( const char *pName ) : CHudElement( pName ), vg
 	m_flLastMessageTime = -10.0f;
 	m_nCurrStreakCount = 0;
 	m_nCurrStreakType = (CTFPlayerShared::ETFStreak)0;
-
-	m_iconKillStreak = gHUD.GetIcon( "leaderboard_streak" );
-	m_iconDuckStreak = gHUD.GetIcon( "eotl_duck" );
 }
 
 //-----------------------------------------------------------------------------
@@ -152,6 +149,9 @@ void CTFStreakNotice::ApplySchemeSettings( IScheme *pScheme )
 
 	m_pLabel->GetPos( m_nLabelXPos, m_nLabelYPos );
 
+	m_iconKillStreak = gHUD.GetIcon( "leaderboard_streak" );
+	m_iconDuckStreak = gHUD.GetIcon( "eotl_duck" );
+
 	SetSize( XRES(640), YRES(480) );
 }
 
@@ -164,6 +164,17 @@ void CTFStreakNotice::Paint( void )
 		SetVisible( false );
 		m_nCurrStreakCount = 0;
 		return;
+	}
+
+	// kinda a hack, but we need to make sure we get this.
+	if ( !m_iconKillStreak )
+	{
+		m_iconKillStreak = gHUD.GetIcon( "leaderboard_streak" );
+	}
+
+	if ( !m_iconDuckStreak )
+	{
+		m_iconDuckStreak = gHUD.GetIcon( "eotl_duck" );
 	}
 
 	float flFadeTime = 1.5f;
@@ -183,9 +194,8 @@ void CTFStreakNotice::Paint( void )
 	// Move labels down when in spectator
 	C_TFPlayer *pPlayer = CTFPlayer::GetLocalTFPlayer();
 	CHudTexture *pIcon = ( m_nCurrStreakType == CTFPlayerShared::kTFStreak_Ducks || m_nCurrStreakType == CTFPlayerShared::kTFStreak_Duck_levelup ) ? m_iconDuckStreak : m_iconKillStreak;
-	if ( pPlayer && pIcon )
 	{
-		int nYOffset = ( pPlayer->GetObserverMode() > OBS_MODE_FREEZECAM ? YRES(40) : 0 );
+		int nYOffset = ( pPlayer && pPlayer->GetObserverMode() > OBS_MODE_FREEZECAM ? YRES(62) : YRES(22) );
 
 		int iWide, iTall;
 		m_pLabel->GetContentSize( iWide, iTall );
@@ -195,11 +205,14 @@ void CTFStreakNotice::Paint( void )
 		m_pBackground->SetSize( iWide + iTall / 2, iTall ); // add in icon width
 		m_pBackground->SetPos( XRES(315) - iWide / 2, m_nLabelYPos + nYOffset);
 
-		wchar_t szTitle[256];
-		m_pLabel->GetText( szTitle, 256 );
-		HFont hFont = GetStreakFont();
-		int iTextWide= UTIL_ComputeStringWidth( hFont, szTitle );
-		pIcon->DrawSelf( XRES(320) - (iWide / 2) + iTextWide, m_nLabelYPos + nYOffset, iTall, iTall, Color(235, 226, 202, GetAlpha() ) );
+		if ( pIcon )
+		{
+			wchar_t szTitle[256];
+			m_pLabel->GetText( szTitle, 256 );
+			HFont hFont = GetStreakFont();
+			int iTextWide = UTIL_ComputeStringWidth( hFont, szTitle );
+			pIcon->DrawSelf( XRES( 320 ) - ( iWide / 2 ) + iTextWide, m_nLabelYPos + nYOffset, iTall, iTall, Color( 235, 226, 202, GetAlpha() ) );
+		}
 	}
 
 	BaseClass::Paint();
