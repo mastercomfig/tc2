@@ -64,7 +64,6 @@ koth_boardwalk
 koth_demolition
 koth_mannhole
 koth_winter_ridge
-plr_matterhorn
 cppl_gavle
 2koth_abbey
 ctf_sidewinder
