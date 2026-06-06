@@ -396,7 +396,7 @@ void CTFHudSpectatorExtras::Paint()
 			const float flOverheal = m_vecEntitiesToDraw[i].m_flHealth - flHealth;
 			if ( flOverheal > 0.0f )
 			{
-				vgui::surface()->DrawSetColor( Color( 191, 231, 182, 160 ) );
+				vgui::surface()->DrawSetColor( Color( 191, 231, 182, 80 ) );
 				vgui::surface()->DrawFilledRect( xHealthPos, yHealthPos, xHealthPos + ( nHealthWidth * flOverheal ), yHealthPos + nHealthHeight );
 			}
 		}
