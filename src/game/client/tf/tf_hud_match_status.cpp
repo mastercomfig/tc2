@@ -1206,7 +1206,6 @@ CTFHudItemDraft::CTFHudItemDraft(const char* pElementName)
 
 	ListenForGameEvent("teamplay_round_start");
 	ListenForGameEvent("restart_timer_time");
-	ListenForGameEvent("show_match_summary");
 }
 
 //-----------------------------------------------------------------------------
@@ -1334,54 +1333,6 @@ void CTFHudItemDraft::FireGameEvent(IGameEvent* event)
 	{
 		HandleCountdown(event->GetInt("time"));
 	}
-	else if (FStrEq("show_match_summary", event->GetName()))
-	{
-		if (m_pBlueTeamPanel)
-		{
-			m_pBlueTeamPanel->SetVisible(false);
-		}
-
-		if (m_pRedTeamPanel)
-		{
-			m_pRedTeamPanel->SetVisible(false);
-		}
-
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(TFGameRules()->GetCurrentMatchGroup());
-
-		// FIX: Refresh versus doors so late-joiners do not see the wrong skin
-		int nSkin = 0;
-		int nSubModel = 0;
-		if (TFGameRules() && TFGameRules()->IsEmulatingMatch())
-		{
-			nSubModel = 1;
-			nSkin = 3;
-		}
-		if (TFGameRules() && TFGameRules()->IsEmulatingMatch() || pMatchDesc && pMatchDesc->BGetRoundDoorParameters(nSkin, nSubModel))
-		{
-			// Is VS doors model not initialized yet?
-			if (m_pMatchStartModelPanel->m_hModel == NULL)
-			{
-				m_pMatchStartModelPanel->UpdateModel();
-			}
-
-			m_pMatchStartModelPanel->SetBodyGroup("logos", nSubModel);
-			m_pMatchStartModelPanel->UpdateModel();
-			m_pMatchStartModelPanel->SetSkin(nSkin);
-		}
-
-		bool bForceDoors = TFGameRules() && TFGameRules()->IsEmulatingMatch();
-		if (bForceDoors || (pMatchDesc && pMatchDesc->BUsesPostRoundDoors()))
-		{
-			if (TFGameRules() && TFGameRules()->MapHasMatchSummaryStage() && ((bForceDoors && !pMatchDesc) || pMatchDesc->BUseMatchSummaryStage()))
-			{
-				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudMatchStatus_ShowMatchWinDoors", false);
-			}
-			else
-			{
-				g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(this, "HudMatchStatus_ShowMatchWinDoors_NoOpen", false);
-			}
-		}
-	}
 #endif
 }
 
@@ -1400,12 +1351,6 @@ bool CTFHudItemDraft::IsVisible(void)
 
 bool CTFHudItemDraft::ShouldDraw(void)
 {
-	// Force to draw during match summary so the doors show up.  This panel 
-	// will try to hide itself if you're dead, but we want to ignore that
-	// behavior and force us to draw.
-	if (TFGameRules() && TFGameRules()->ShowMatchSummary())
-		return true;
-
 	if (gViewPortInterface->GetActivePanel())
 		return false;
 

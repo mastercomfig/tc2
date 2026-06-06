@@ -532,7 +532,7 @@ void CSpectatorGUI::OnThink()
 #ifdef TF_CLIENT_DLL
 		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 		{
-			SetVisible( false );
+			ShowPanel( false );
 		}
 #endif
 	}

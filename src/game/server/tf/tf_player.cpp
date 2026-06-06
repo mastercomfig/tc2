@@ -15318,7 +15318,7 @@ void CTFPlayer::StateThinkDYING( void )
 				{
 					SetObserverMode( OBS_MODE_CHASE );
 				}
-				ShowViewPortPanel( "specgui" , ModeWantsSpectatorGUI(OBS_MODE_CHASE) );
+				ShowViewPortPanel( PANEL_SPECGUI, ModeWantsSpectatorGUI( OBS_MODE_CHASE ) );
 			}
 		}
 		else if ( bStrictMode )

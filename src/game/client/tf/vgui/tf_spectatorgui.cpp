@@ -122,6 +122,7 @@ CTFSpectatorGUI::CTFSpectatorGUI(IViewPort *pViewPort) : CSpectatorGUI(pViewPort
 
 	ListenForGameEvent( "spec_target_updated" );
 	ListenForGameEvent( "player_death" );
+	ListenForGameEvent( "hide_match_summary" );
 }
 
 //-----------------------------------------------------------------------------
@@ -949,6 +950,16 @@ void CTFSpectatorGUI::FireGameEvent( IGameEvent *event )
 			pNotification->SetLifetime( 10.0f );
 			pNotification->SetSoundFilename( "coach/coach_student_died.wav" );
 			NotificationQueue_Add( pNotification );
+		}
+	}
+	else if ( Q_strcmp( "hide_match_summary", pEventName ) == 0 )
+	{
+		// our match summary hides the panel in CSpectatorGUI::OnThink, so show it again if still relevant
+		C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		// TODO(mcoms) pLocalPlayer->ModeWantsSpectatorGUI() not shared, assume true for now
+		if ( pLocalPlayer && pLocalPlayer->GetObserverMode() != OBS_MODE_NONE )
+		{
+			ShowPanel( true );
 		}
 	}
 }

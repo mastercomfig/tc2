@@ -2264,9 +2264,9 @@ void CBasePlayer::StopObserverMode()
 
 	m_iObserverMode.Set( OBS_MODE_NONE );
 
-	ShowViewPortPanel( "specmenu", false );
-	ShowViewPortPanel( "specgui", false );
-	ShowViewPortPanel( "overview", false );
+	ShowViewPortPanel( PANEL_SPECMENU, false );
+	ShowViewPortPanel( PANEL_SPECGUI, false );
+	ShowViewPortPanel( PANEL_OVERVIEW, false );
 }
 
 bool CBasePlayer::StartObserverMode(int mode)
@@ -2299,7 +2299,7 @@ bool CBasePlayer::StartObserverMode(int mode)
 
 	if ( gpGlobals->eLoadType != MapLoad_Background )
 	{
-		ShowViewPortPanel( "specgui" , ModeWantsSpectatorGUI(mode) );
+		ShowViewPortPanel( PANEL_SPECGUI, ModeWantsSpectatorGUI(mode) );
 	}
 	
 	// Setup flags
