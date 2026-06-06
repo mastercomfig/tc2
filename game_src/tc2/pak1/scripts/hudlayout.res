@@ -534,7 +534,7 @@
 		"IconColor"		"HudWhite"
 		"LocalPlayerColor"	"HUDBlack"
 
-		"BaseBackgroundColor"	"46 43 42 150"
+		"BaseBackgroundColor"	"46 43 42 160"
 		"LocalBackgroundColor"	"245 229 196 180"
 	}
 

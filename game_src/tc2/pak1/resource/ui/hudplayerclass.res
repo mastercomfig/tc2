@@ -80,8 +80,7 @@
 	{
 		"ControlName"	"CTFImagePanel"
 		"fieldName"		"PlayerStatusClassImageBG"
-		"xpos"			"9"		[$WIN32]
-		"xpos_minmode"	"-10"		[$WIN32]
+		"xpos"			"9"
 		"ypos"			"r60"	[$WIN32]
 		"ypos_minmode"		"r40"	[$WIN32]
 		"xpos"			"41"	[$X360]
