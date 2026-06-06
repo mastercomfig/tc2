@@ -794,7 +794,7 @@ void CBaseHudChat::MsgFunc_SayText( bf_read &msg )
 		// print raw chat text
 		ChatPrintf( client, CHAT_FILTER_NONE, "%s", szString );
 
-		if ( cl_hud_chat_notification.GetBool() )
+		if ( gpGlobals->maxClients > 1 && cl_hud_chat_notification.GetBool() )
 		{
 			CLocalPlayerFilter filter;
 			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
@@ -870,7 +870,7 @@ void CBaseHudChat::MsgFunc_SayText2( bf_read &msg )
 		// TERROR: color console echo
 		// Msg( "%s\n", RemoveColorMarkup(ansiString) );
 
-		if ( cl_hud_chat_notification.GetBool() )
+		if ( gpGlobals->maxClients > 1 && cl_hud_chat_notification.GetBool() )
 		{
 			CLocalPlayerFilter filter;
 			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );

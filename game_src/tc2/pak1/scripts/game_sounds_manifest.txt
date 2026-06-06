@@ -1,5 +1,8 @@
 game_sounds_manifest
 {
+  	"precache_file"  	"scripts/game_sounds_mod.txt"
+  	//"preload_file"  	"scripts/game_sounds_player_mod.txt"
+
 	"precache_file"		"scripts/game_sounds.txt"	
 	"precache_file"  	"scripts/game_sounds_physics.txt"
 	"precache_file"  	"scripts/game_sounds_weapons.txt"
@@ -25,7 +28,4 @@ game_sounds_manifest
 	"precache_file"		"scripts/game_sounds_vo_tough_break.txt"
 
 	"precache_file"  	"scripts/game_sounds_passtime.txt"
-
-  "precache_file"  	"scripts/game_sounds_mod.txt"
-	
 }
