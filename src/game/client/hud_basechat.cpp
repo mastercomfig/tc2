@@ -793,17 +793,17 @@ void CBaseHudChat::MsgFunc_SayText( bf_read &msg )
 
 		// print raw chat text
 		ChatPrintf( client, CHAT_FILTER_NONE, "%s", szString );
+
+		if ( cl_hud_chat_notification.GetBool() )
+		{
+			CLocalPlayerFilter filter;
+			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
+		}
 	}
 	else
 	{
 		// try to lookup translated string
 		Printf( CHAT_FILTER_NONE, "%s", hudtextmessage->LookupString( szString ) );
-	}
-
-	if ( cl_hud_chat_notification.GetBool() )
-	{
-		CLocalPlayerFilter filter;
-		C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "HudChat.Message" );
 	}
 
 	// TERROR: color console echo
