@@ -495,15 +495,28 @@
 		"tall"	 "480"
 	}
 
+	"CTFStreakNotice"
+	{
+		"fieldName"		"CTFStreakNotice"
+		"xpos"			"0"
+		"ypos"			"0"
+		"zpos"			"8"
+		"wide"			"640"
+		"tall"			"480"
+		"visible"		"1"
+		"enabled"		"1"
+		"bgcolor_override"	"0 0 0 0"
+		"PaintBackgroundType"	"0" // rounded corners
+	}
+
 	HudDeathNotice
 	{
 		"fieldName" "HudDeathNotice"
 		"visible" "1"
 		"enabled" "1"
-		"xpos"	 "r640"	[$WIN32]
-		"ypos"	 "18"	[$WIN32]
-		"xpos"	 "r672"	[$X360]
-		"ypos"	 "35"	[$X360]
+		"xpos"	 "r640"
+		"ypos"	 "22"
+		"zpos"	 "8"
 		"wide"	 "628"
 		"tall"	 "468"
 
@@ -521,10 +534,8 @@
 		"IconColor"		"HudWhite"
 		"LocalPlayerColor"	"HUDBlack"
 
-		"BaseBackgroundColor"	"46 43 42 220"		[$WIN32]
-		"LocalBackgroundColor"	"245 229 196 200"	[$WIN32]
-		"BaseBackgroundColor"	"32 32 32 255"		[$X360]
-		"LocalBackgroundColor"	"0 0 0 255"		[$X360]
+		"BaseBackgroundColor"	"46 43 42 150"
+		"LocalBackgroundColor"	"245 229 196 180"
 	}
 
 	HudVehicle
@@ -1405,20 +1416,6 @@
 		"ypos"			"100"
 		"wide"			"320"
 		"tall"			"150"
-	}
-
-
-	"CTFStreakNotice"
-	{
-		"fieldName"		"CTFStreakNotice"
-		"xpos"			"0"
-		"ypos"			"0"
-		"wide"			"640"
-		"tall"			"480"
-		"visible"		"1"
-		"enabled"		"1"
-		"bgcolor_override"	"0 0 0 0"
-		"PaintBackgroundType"	"0" // rounded corners
 	}
 
 	CTFFlagCalloutPanel

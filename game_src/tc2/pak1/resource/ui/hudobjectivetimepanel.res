@@ -21,7 +21,7 @@
 		"image"			"../hud/objectives_timepanel_blue_bg"	
 		"scaleImage"		"1"	
 
-		if_match
+		if_match_min
 		{
 			"visible"	"0"
 		}
@@ -51,7 +51,7 @@
 		"color_warning"			"TimerProgress.Warning"
 		"percent_warning"		"0.75"
 
-		if_match
+		if_match_min
 		{
 			"visible"	"0"
 		}
@@ -85,7 +85,7 @@
 		"font_hidef"	"HudFontSmall"
 		"font_lodef"	"HudFontSmall"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"0"
@@ -101,8 +101,7 @@
 	{
 		"ControlName"		"CTFImagePanel"
 		"fieldName"		"WaitingForPlayersBG"
-		"xpos"			"16"	[$WIN32]
-		"xpos"			"11"	[$X360]
+		"xpos"			"16"
 		"ypos"			"31"
 		"ypos_hidef"	"-100"	//off-screen
 		"ypos_lodef"	"-100"	//off-screen
@@ -115,7 +114,7 @@
 		"image"			"../hud/objectives_timepanel_suddendeath"	
 		"scaleImage"		"1"	
 
-		if_match
+		if_match_min
 		{
 			"wide"	"0"
 		}
@@ -149,7 +148,7 @@
 		"font_hidef"	"HudFontSmall"
 		"font_lodef"	"HudFontSmall"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"0"
@@ -165,8 +164,7 @@
 	{
 		"ControlName"		"CTFImagePanel"
 		"fieldName"		"OvertimeBG"
-		"xpos"			"16"	[$WIN32]
-		"xpos"			"11"	[$X360]
+		"xpos"			"16"
 		"ypos"			"31"
 		"ypos_hidef"	"-100"	//off-screen
 		"ypos_lodef"	"-100"	//off-screen
@@ -179,7 +177,7 @@
 		"image"			"../hud/objectives_timepanel_suddendeath"	
 		"scaleImage"		"1"	
 
-		if_match
+		if_match_min
 		{
 			"wide"	"0"
 		}
@@ -213,7 +211,7 @@
 		"font_hidef"	"HudFontSmall"
 		"font_lodef"	"HudFontSmall"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"0"
@@ -229,8 +227,7 @@
 	{
 		"ControlName"		"CTFImagePanel"
 		"fieldName"		"SuddenDeathBG"
-		"xpos"			"16"	[$WIN32]
-		"xpos"			"11"	[$X360]
+		"xpos"			"16"
 		"ypos"			"31"
 		"ypos_hidef"	"-100"	//off-screen
 		"ypos_lodef"	"-100"	//off-screen
@@ -243,7 +240,7 @@
 		"image"			"../hud/objectives_timepanel_suddendeath"	
 		"scaleImage"		"1"	
 
-		if_match
+		if_match_min
 		{
 			"wide"	"0"
 		}
@@ -278,7 +275,7 @@
 		"font_hidef"	"HudFontSmall"
 		"font_lodef"	"HudFontSmall"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"0"
@@ -294,8 +291,7 @@
 	{
 		"ControlName"		"CTFImagePanel"
 		"fieldName"		"SetupBG"
-		"xpos"			"16"	[$WIN32]
-		"xpos"			"11"	[$X360]
+		"xpos"			"16"
 		"ypos"			"31"
 		"ypos_hidef"	"-100"	//off-screen
 		"ypos_lodef"	"-100"	//off-screen
@@ -308,7 +304,7 @@
 		"image"			"../hud/objectives_timepanel_suddendeath"	
 		"scaleImage"		"1"	
 
-		if_match
+		if_match_min
 		{
 			"wide"	"0"
 		}
@@ -343,7 +339,7 @@
 		"font_hidef"	"HudFontSmall"
 		"font_lodef"	"HudFontSmall"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"0"
@@ -359,8 +355,7 @@
 	{
 		"ControlName"		"CTFImagePanel"
 		"fieldName"		"ServerTimeLimitLabelBG"
-		"xpos"			"16"	[$WIN32]
-		"xpos"			"11"	[$X360]
+		"xpos"			"16"
 		"ypos"			"31"
 		"ypos_hidef"	"-100"	//off-screen
 		"ypos_lodef"	"-100"	//off-screen
@@ -373,7 +368,7 @@
 		"image"			"../hud/objectives_timepanel_suddendeath"	
 		"scaleImage"		"1"
 		
-		if_match
+		if_match_min
 		{
 			"wide"	"0"
 		}	

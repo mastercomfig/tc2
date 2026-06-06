@@ -115,7 +115,20 @@ void CRoundCounterPanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	LoadControlSettings( "resource/UI/HudRoundCounter.res" );
+	KeyValues* pConditions = new KeyValues( "conditions" );
+
+	static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+	if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+	{
+		AddSubKeyNamed( pConditions, "if_match_min" );
+	}
+
+	LoadControlSettings( "resource/UI/HudRoundCounter.res", NULL, NULL, pConditions );
+
+	if ( pConditions )
+	{
+		pConditions->deleteThis();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -295,6 +308,7 @@ CTFHudMatchStatus::CTFHudMatchStatus(const char *pElementName)
 	, BaseClass(NULL, "HudMatchStatus")
 	, m_pTimePanel( NULL )
 	, m_iUseMatchHUD( -1 )
+	, m_iMinmode( -1 )
 	, m_eMatchGroupSettings( k_eTFMatchGroup_Invalid )
 {
 	Panel *pParent = g_pClientMode->GetViewport();
@@ -387,6 +401,12 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 	{
 		pConditions = new KeyValues( "conditions" );
 		AddSubKeyNamed( pConditions, "if_match" );
+
+		static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+		if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+		{
+			AddSubKeyNamed( pConditions, "if_match_min" );
+		}
 
 		// TODO(mcoms): why does GTFGCClientSystem()->GetLiveMatchGroup() sometimes fail?
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules() ? TFGameRules()->GetCurrentMatchGroup() : GTFGCClientSystem()->GetLiveMatchGroup() );
@@ -486,9 +506,17 @@ void CTFHudMatchStatus::OnThink()
 	bool bReload = false;
 	int iUseMatchHUD = ShouldUseMatchHUD() ? 1 : 0;
 
-	if (iUseMatchHUD != m_iUseMatchHUD )
+	if ( iUseMatchHUD != m_iUseMatchHUD )
 	{
 		m_iUseMatchHUD = iUseMatchHUD;
+		bReload = true;
+	}
+
+	static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+	int iMinmode = ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() ) ? 1 : 0;
+	if ( iMinmode != m_iMinmode )
+	{
+		m_iMinmode = iMinmode;
 		bReload = true;
 	}
 
@@ -1224,7 +1252,13 @@ void CTFHudItemDraft::ApplySchemeSettings(IScheme* pScheme)
 	if (ShouldUseMatchHUD())
 	{
 		pConditions = new KeyValues("conditions");
-		AddSubKeyNamed(pConditions, "if_match");
+		AddSubKeyNamed( pConditions, "if_match" );
+
+		static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+		if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+		{
+			AddSubKeyNamed( pConditions, "if_match_min" );
+		}
 
 		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(GTFGCClientSystem()->GetLiveMatchGroup());
 		bool bHasLargeTeam = false;

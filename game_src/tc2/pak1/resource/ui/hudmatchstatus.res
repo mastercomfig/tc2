@@ -231,7 +231,7 @@
 		"tall"			"100"
 		"visible"		"1"
 		"enabled"		"1"
-	}	
+	}
 
 	"BGFrame"
 	{
@@ -247,9 +247,59 @@
 		"proportionaltoaparent"	"1"
 		"border"			"TFFatLineBorder"
 
+		if_match_min
+		{
+			"visible"		"1"
+		}
+	}
+
+	"BGFrame1"
+	{
+		"ControlName"		"EditablePanel"
+		"fieldName"			"BGFrame1"
+		"xpos"				"c-225"
+		"ypos"				"-5"
+		"zpos"				"0"
+		"wide"				"140"
+		"tall"				"28"
+		"visible"			"0"
+
+		"proportionaltoaparent"	"1"
+		"border"			"TFFatLineBorder"
+
 		if_match
 		{
 			"visible"		"1"
+		}
+
+		if_match_min
+		{
+			"visible"		"0"
+		}
+	}	
+
+	"BGFrame2"
+	{
+		"ControlName"		"EditablePanel"
+		"fieldName"			"BGFrame2"
+		"xpos"				"c86"
+		"ypos"				"-5"
+		"zpos"				"0"
+		"wide"				"140"
+		"tall"				"28"
+		"visible"			"0"
+
+		"proportionaltoaparent"	"1"
+		"border"			"TFFatLineBorder"
+
+		if_match
+		{
+			"visible"		"1"
+		}
+
+		if_match_min
+		{
+			"visible"		"0"
 		}
 	}
 
@@ -303,12 +353,11 @@
 	{
 		"ControlName"		"EditablePanel"
 		"fieldName"			"ObjectiveStatusTimePanel"
-		"xpos"				"c-55"
+		"xpos"				"c-54"
 		"xpos_hidef"		"c-150"
 		"xpos_lodef"		"c-150"
-		"ypos"				"0"	[$WIN32]
-		"ypos_minmode"		"-14"	[$WIN32]
-		"ypos"				"24"	[$X360]
+		"ypos"				"0"
+		"ypos_minmode"		"-14"
 		"zpos"				"2"
 		"wide"				"110"
 		"wide_hidef"		"300"
@@ -316,8 +365,7 @@
 		"tall"				"150"
 		"visible"			"0"
 		"enabled"			"1"
-		"delta_item_x"			"22"	[$WIN32]
-		"delta_item_x"			"115"	[$X360]
+		"delta_item_x"			"22"
 		"delta_item_start_y"	"50"
 		"delta_item_end_y"		"70"
 		"PositiveColor"			"0 255 0 255"
@@ -325,7 +373,7 @@
 		"delta_lifetime"		"1.5"
 		"delta_item_font"		"HudFontMedium"
 
-		if_match
+		if_match_min
 		{
 			"xpos"					"cs-0.5"
 			"wide"					"130"
@@ -347,7 +395,7 @@
 			"font_minmode"	"HudFontSmall"
 			"font_lodef"	"HudFontMedium"
 			"fgcolor"		"TanLight"
-			"xpos"			"23"
+			"xpos"			"22"
 			"xpos_minmode"	"39"
 			"xpos_hidef"	"114"
 			"xpos_lodef"	"114"
@@ -366,6 +414,11 @@
 			"labelText"		"0:00"
 
 			if_match
+			{
+				"xpos"			"23"
+			}
+
+			if_match_min
 			{
 				"proportionaltoparent"	"1"
 
@@ -398,12 +451,18 @@
 		"12v12_gap"	"1"
 
 		"team1_grow_dir" "west"
-		"team1_base_x"	"c-45"
+		"team1_base_x"	"c-90"
 		"team1_max_expand"	"133"
 
 		"team2_grow_dir" "east"
-		"team2_base_x"	"c47"
+		"team2_base_x"	"c91"
 		"team2_max_expand"	"133"
+
+		if_match_min
+		{
+			"team1_base_x"	"c-45"
+			"team2_base_x"	"c47"
+		}
 
 		"playerpanels_kv"
 		{

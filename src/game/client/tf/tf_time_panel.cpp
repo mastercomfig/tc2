@@ -20,7 +20,9 @@
 #include "tf_matchmaking_shared.h"
 
 using namespace vgui;
-extern ConVar tf_hud_show_servertimelimit;
+
+ConVar tf_hud_show_servertimelimit( "tf_hud_show_servertimelimit", "1", FCVAR_ARCHIVE, "Display time left before the current map ends." );
+
 extern ConVar tf_arena_round_time;
 
 void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
@@ -634,6 +636,12 @@ void CTFHudTimeStatus::ApplySchemeSettings( IScheme *pScheme )
 		{
 			pConditions = new KeyValues( "conditions" );
 			AddSubKeyNamed( pConditions, "if_match" );
+
+			static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+			if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+			{
+				AddSubKeyNamed( pConditions, "if_match_min" );
+			}
 		}
 	}
 
@@ -961,7 +969,8 @@ void CTFHudKothTimeStatus::SetVisible( bool bVisible )
 {
 	BaseClass::SetVisible( bVisible );
 
-	if ( ShouldUseMatchHUD() )
+	ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+	if ( ShouldUseMatchHUD() && cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 	{
 		UpdateActiveTeam();
 	}
@@ -998,6 +1007,12 @@ void CTFHudKothTimeStatus::ApplySchemeSettings( IScheme *pScheme )
 		{
 			pConditions = new KeyValues( "conditions" );
 			AddSubKeyNamed( pConditions, "if_match" );
+
+			static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+			if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
+			{
+				AddSubKeyNamed( pConditions, "if_match_min" );
+			}
 		}
 	}
 
@@ -1013,7 +1028,8 @@ void CTFHudKothTimeStatus::ApplySchemeSettings( IScheme *pScheme )
 //-----------------------------------------------------------------------------
 void CTFHudKothTimeStatus::UpdateActiveTeam( void )
 {
-	if ( ShouldUseMatchHUD() )
+	static ConVarRef cl_hud_minmode( "cl_hud_minmode", true );
+	if ( ShouldUseMatchHUD() && cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 	{
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pRedPanel, m_nActiveTeam == TF_TEAM_RED ? "ActiveTimerHighlight" : "ActiveTimerDim", false );
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( m_pBluePanel, m_nActiveTeam == TF_TEAM_BLUE ? "ActiveTimerHighlight" : "ActiveTimerDim", false );

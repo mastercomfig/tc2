@@ -433,6 +433,8 @@ public:
 
 	bool IsGameOver( void ){ return ( CheckTimeLimit( false ) || CheckWinLimit( false ) || CheckMaxRounds( false ) || CheckNextLevelCvar( false ) ); }
 
+	int GetTimeLeft( void );
+
 protected:
 	virtual void Think( void );
 
@@ -446,7 +448,6 @@ protected:
 	virtual bool AllowWaitingForPlayers( void ) { return true; }
 	void		 CheckRestartRound( void );
 	bool		 CheckTimeLimit( bool bAllowEnd = true );
-	int			 GetTimeLeft( void );
 	virtual	bool CheckWinLimit( bool bAllowEnd = true, int nAddValueWhenChecking = 0 );
 	bool		 CheckMaxRounds( bool bAllowEnd = true, int nAddValueWhenChecking = 0 );
 
@@ -609,6 +610,8 @@ public:
 	float GetPreroundCountdownTime( void ){ return m_flCountdownTime; }
 
 	float GetGameUnpauseTime( void ) { return m_flUnpauseCurTime; }
+
+	float GetMapResetTime( void ) { return m_flMapResetTime; }
 
 protected:
 	CNetworkVar( gamerules_roundstate_t, m_iRoundState );

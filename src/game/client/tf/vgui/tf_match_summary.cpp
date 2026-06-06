@@ -36,6 +36,8 @@
 #include "tf_ladder_data.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include <cmath>
+
 #include "tier0/memdbgon.h"
 
 void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
@@ -1069,7 +1071,13 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	g_pVGuiLocalize->ConstructString_safe( wszSeries, g_pVGuiLocalize->Find( "TF_Series_TitleCount" ), 1, wszSeriesNum );
 
 	wchar_t wszNextSeriesTime[16];
-	swprintf( wszNextSeriesTime, ARRAYSIZE( wszNextSeriesTime ), L"%d", Ceil2Int( TFGameRules()->GetStateTransitionTime() - gpGlobals->curtime ) );
+	float flEndTime = TFGameRules()->GetStateTransitionTime();
+	float endTimeIntegralPart;
+	std::modff( flEndTime, &endTimeIntegralPart );
+	float mapStartIgnoredIntegralPart;
+	float mapStartDecimalPart = std::modff( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
+	flEndTime = endTimeIntegralPart + mapStartDecimalPart;
+	swprintf( wszNextSeriesTime, ARRAYSIZE( wszNextSeriesTime ), L"%d", ( int ) ( flEndTime - gpGlobals->curtime ) );
 
 	wchar_t wszNextSeries[128];
 	g_pVGuiLocalize->ConstructString_safe( wszNextSeries, g_pVGuiLocalize->Find( "TF_Series_NextIn" ), 1, wszNextSeriesTime );

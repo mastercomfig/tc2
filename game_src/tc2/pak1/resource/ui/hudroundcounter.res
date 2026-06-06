@@ -15,7 +15,7 @@
 		"starting_width"	"20"
 		"width_per_round"	"24"
 		"indicator_start_offset"	"4"
-		"indicator_max_wide"	"30"
+		"indicator_max_wide"	"35"
 
 		"RoundIndicatorPanel_kv"
 		{
@@ -30,8 +30,8 @@
 		"RoundWinPanelRed_kv"
 		{
 			"ypos"				"-2"
-			"wide"				"17"
-			"tall"				"17"
+			"wide"				"18"
+			"tall"				"18"
 			"zpos"				"8"
 			"image"				"../hud/comp_round_counter_light_red"
 			"scaleimage"		"1"
@@ -40,8 +40,8 @@
 		"RoundWinPanelBlue_kv"
 		{
 			"ypos"				"-2"
-			"wide"				"17"
-			"tall"				"17"
+			"wide"				"18"
+			"tall"				"18"
 			"zpos"				"8"
 			"image"				"../hud/comp_round_counter_light_blue"
 			"scaleimage"		"1"
@@ -55,13 +55,20 @@
 		"xpos"			"cs-0.5"
 		"ypos"			"0"
 		"zpos"			"5"
-		"wide"			"o3.833"
-		"tall"			"35"
+		"wide"			"129"
+		"tall"			"19"
 
 		"backgroundtype"		"2"
 		"proportionaltoparent"	"1"
 			
-		"image"					"../hud/comp_round_timer"
+		"image"					"../hud/comp_round_notimer"
 		"scaleimage"			"1"
+
+		if_match_min
+		{
+			"image"					"../hud/comp_round_timer"
+			"wide"			"o3.833"
+			"tall"			"35"
+		}
 	}
 }

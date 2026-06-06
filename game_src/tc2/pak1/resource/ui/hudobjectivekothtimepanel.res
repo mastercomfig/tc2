@@ -29,7 +29,7 @@
 		"delta_lifetime"		"1.5"
 		"delta_item_font"		"HudFontMedium"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"cs-0.5"
@@ -71,7 +71,7 @@
 			"textAlignment"		"center"
 			"labelText"		"0:00"
 
-			if_match
+			if_match_min
 			{
 				"proportionaltoparent"	"1"
 
@@ -94,7 +94,7 @@
 	{
 		"ControlName"		"CTFHudTimeStatus"
 		"fieldName"			"RedTimer"
-		"xpos"				"90"
+		"xpos"				"91.5"
 		"xpos_minmode"		"70"
 		"ypos"				"0"
 		"ypos_minmode"		"-14"
@@ -111,7 +111,7 @@
 		"delta_lifetime"		"1.5"
 		"delta_item_font"		"HudFontMedium"
 
-		if_match
+		if_match_min
 		{
 			"proportionaltoparent"	"1"
 			"xpos"					"cs-0.5"
@@ -153,7 +153,7 @@
 			"textAlignment"		"center"
 			"labelText"		"0:00"
 
-			if_match
+			if_match_min
 			{
 				"proportionaltoparent"	"1"
 
@@ -169,7 +169,7 @@
 				"font_lodef"	"HudFontSmall"
 			
 			}
-		}	
+		}
 	}
 	
 	"ActiveTimerBG"

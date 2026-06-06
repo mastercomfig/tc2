@@ -135,6 +135,7 @@ private:
 	vgui::HFont					m_hPlayerListFont;
 
 	int m_iUseMatchHUD;
+	int m_iMinmode;
 
 	float m_flMatchSummaryShowTime;
 };

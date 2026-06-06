@@ -674,7 +674,7 @@ void CTFHudDeathNotice::ApplySchemeSettings( vgui::IScheme *scheme )
 	m_iconKillStreakDNeg = gHUD.GetIcon( "leaderboard_streak_dneg" );
 	m_iconDuckStreak = gHUD.GetIcon( "eotl_duck" );
 	m_iconDuckStreakDNeg = gHUD.GetIcon( "eotl_duck_dneg" );
-	m_pStreakNotice = new CTFStreakNotice( "KillStreakNotice" );
+	m_pStreakNotice = GET_HUDELEMENT( CTFStreakNotice );
 }
 
 bool CTFHudDeathNotice::IsVisible( void )
