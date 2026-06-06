@@ -24,7 +24,6 @@
 	"scriptsound"	"Hud.ProjectorScreenDown"
 	"scriptsound"	"Hud.ProjectorMovie"
 	"scriptsound"	"Hud.AchievementIncremented"
-	"scriptsound"	"HudChat.Message"
 	"scriptsound"	"TV.Tune"
 	"scriptsound"	"Bullets.DefaultNearmiss"
 	"scriptsound"	"Weapon_Sapper.Removed"

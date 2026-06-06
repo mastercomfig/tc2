@@ -127,7 +127,7 @@ event HudMatchSummary_SlideInOutPanels
 
 event CompetitiveGame_LowerChatWindow
 {
-	Animate HudChat ypos rs0.5 Accel 0 0
+	Animate HudChat ypos r125 Accel 0 0
 }
 
 //--------------------------------------------------------------------------
