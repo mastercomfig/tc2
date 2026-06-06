@@ -1114,6 +1114,16 @@ bool CTFHudPlayerStatus::ShouldDraw( void )
 	if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 		return false;
 
+	// fix model sorting issues
+	if ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() )
+	{
+		float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
+		if ( flRestartTime > 0.f && flRestartTime <= TOURNAMENT_NOCANCEL_TIME )
+		{
+			return false;
+		}
+	}
+
 	return CHudElement::ShouldDraw();
 }
 
