@@ -457,6 +457,7 @@ void CHud::Init( void )
 	if ( m_bHudTexturesLoaded )
 		return;
 
+	// TODO(mcoms): should we load hud textures before hud elements are initialized?
 	m_bHudTexturesLoaded = true;
 	CUtlDict< CHudTexture *, int >	textureList;
 
