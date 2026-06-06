@@ -6155,7 +6155,7 @@ void CTFGameRules::SetSetup( bool bSetup )
 	ManageStopwatchTimer( bSetup );
 }
 
-ConVar tf_casual_spawn_bots("tf_casual_spawn_bots", "0");
+ConVar tf_casual_spawn_bots("tf_casual_spawn_bots", "1");
 ConVar tf_comp_spawn_bots("tf_comp_spawn_bots", "1");
 
 void CTFGameRules::SpawnMatchBots( void )
@@ -6173,7 +6173,7 @@ void CTFGameRules::SpawnMatchBots( void )
 		int iBotQuota;
 		if (pMatch)
 		{
-			iBotQuota = (int)pMatch->GetCanonicalMatchSize();
+			iBotQuota = bIsCompetitive ? ( int )pMatch->GetCanonicalMatchSize() : ( int )pMatch->GetCanonicalMatchSize() * 0.6f;
 		}
 		else
 		{
