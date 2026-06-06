@@ -4282,6 +4282,7 @@ void CGameMovement::FinishUnDuckJump( trace_t &trace )
 //-----------------------------------------------------------------------------
 void CGameMovement::FinishDuck( void )
 {
+	// TODO: quantum crouch
 	if ( player->GetFlags() & FL_DUCKING )
 		return;
 

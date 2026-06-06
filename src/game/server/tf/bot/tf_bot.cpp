@@ -2157,6 +2157,10 @@ CCaptureFlag *CTFBot::GetFlagToFetch( void ) const
 				flagsVector.AddToTail( flag );
 			}
 			break;
+		// TODO(mcoms): what should we do here?
+		case TF_FLAGTYPE_RESOURCE_CONTROL: break;
+		case TF_FLAGTYPE_ROBOT_DESTRUCTION: break;
+		case TF_FLAGTYPE_PLAYER_DESTRUCTION: break;
 		}
 
 		if ( flag->IsStolen() )

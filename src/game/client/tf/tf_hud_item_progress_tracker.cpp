@@ -1455,7 +1455,10 @@ void CHudItemAttributeTracker::OnThink()
 //-----------------------------------------------------------------------------
 bool CHudItemAttributeTracker::ShouldDraw( void )
 {
+	// TODO(mcoms): quests
+#ifdef SOURCESDK
 	return false;
+#endif
 
 	if ( engine->IsPlayingDemo() )
 		return false;
