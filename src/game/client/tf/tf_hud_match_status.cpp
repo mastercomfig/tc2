@@ -724,6 +724,8 @@ void CTFHudMatchStatus::FireGameEvent( IGameEvent * event )
 	}
 	else if ( FStrEq( "hide_match_summary", event->GetName() ) )
 	{
+		// HACK: force match summary off (hud events are not ordered correctly)
+		TFGameRules()->SuchHacksAboutToHideMatchSummary();
 		// reset the HUD
 		gHUD.ResetHUD();
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( "CompetitiveGame_RestoreChatWindow", false );

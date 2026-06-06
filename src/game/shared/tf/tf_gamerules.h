@@ -834,6 +834,10 @@ bool IsCreepWaveMode( void ) const;
 
 	bool ShowMatchSummary( void ){ return m_bShowMatchSummary; }
 
+#ifdef CLIENT_DLL
+	void SuchHacksAboutToHideMatchSummary( void ) { m_bShowMatchSummary.SetDirect( false ); }
+#endif
+
 	bool HaveStopWatchWinner( void ) { return m_bStopWatchWinner; }
 
 	int GetGameTeamForGCTeam( TF_GC_TEAM nGCTeam );
