@@ -509,10 +509,9 @@ void CTFHudTimeStatus::SetExtraTimePanels()
 		m_pSuddenDeathLabel->SetVisible( bInSD );
 	}
 
+	bool bInOver = TFGameRules()->InOvertime();
 	if ( m_pOvertimeBG && m_pOvertimeLabel )
 	{
-		bool bInOver = TFGameRules()->InOvertime();
-
 		if ( TFGameRules()->IsInKothMode() )
 		{
 			if ( pTimer )
@@ -590,22 +589,81 @@ void CTFHudTimeStatus::SetExtraTimePanels()
 		}
 	}
 
-	// UNDONE: this is done in think
-#if 0
-	if ( m_pServerTimeLabel && m_pServerTimeLabelBG )
+	// this is done in OnThink if pTimer is not null. here, we take over the timer as server time.
+	if ( !pTimer && m_pServerTimeLabel && m_pServerTimeLabelBG )
 	{
+		int nServerTimeLimit = mp_timelimit.GetInt() * 60;
 		// This appears in the same space after SetUp and WaitingForPlayers is gone
-		bool bDisplayServerTimerEnabled = tf_hud_show_servertimelimit.GetInt() && !bInSetup && !bInWaitingForPlayers;
+		bool bDisplayServerTimerEnabled = tf_hud_show_servertimelimit.GetInt() &&
+			!bInSetup &&
+			!bInWaitingForPlayers &&
+			!bInOver &&
+			nServerTimeLimit;
 
-		if ( m_pServerTimeLabel->IsVisible() != bDisplayServerTimerEnabled )
-			m_pServerTimeLabel->SetVisible( bDisplayServerTimerEnabled );
+		// We don't use the extra server time label since we take over the main timer.
+		if ( m_pServerTimeLabel->IsVisible() )
+		{
+			m_pServerTimeLabel->SetVisible( false );
+		}
+		if ( m_pServerTimeLabelBG->IsVisible() )
+		{
+			m_pServerTimeLabelBG->SetVisible( false );
+		}
 
-		if ( m_pServerTimeLabelBG->IsVisible() != bDisplayServerTimerEnabled )
-			m_pServerTimeLabelBG->SetVisible( bDisplayServerTimerEnabled );
+		// Only display server timelimit when the round timer isn't showing mp_timelimit (e.g. ctf_2fort)
+		if ( bDisplayServerTimerEnabled )
+		{
+			wchar_t wzServerTimeHrsLeft[128];
+			wchar_t wzServerTimeMinLeft[128];
+			wchar_t wzServerTimeSecLeft[128];
+			wchar_t wzServerTimeLeft[128];
+
+			int iTimeLeft = 0;
+			int iHours = 0;
+			int iMinutes = 0;
+			int iSeconds = 0;
+
+			iTimeLeft = ( TFGameRules() && TFGameRules()->GetTimeLeft() > 0 ) ? TFGameRules()->GetTimeLeft() : 0;
+
+			iHours = iTimeLeft / 3600;
+			iMinutes = ( iTimeLeft % 3600 ) / 60;
+			iSeconds = ( iTimeLeft % 60 );
+
+			_snwprintf( wzServerTimeHrsLeft, ARRAYSIZE( wzServerTimeHrsLeft ), L"%i", iHours );
+			_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%02i", iMinutes );
+			_snwprintf( wzServerTimeSecLeft, ARRAYSIZE( wzServerTimeSecLeft ), L"%02i", iSeconds );
+
+			if ( m_pProgressBar && m_pProgressBar->IsVisible() )
+			{
+				if ( nServerTimeLimit == 0 )
+				{
+					m_pProgressBar->SetPercentage( 0 );
+				}
+				else
+				{
+					m_pProgressBar->SetPercentage( ( ( float )nServerTimeLimit - iTimeLeft ) / ( float )nServerTimeLimit );
+				}
+			}
+
+			if ( m_pTimeValue && m_pTimeValue->IsVisible() )
+			{
+				if ( iHours == 0 )
+				{
+					g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeftNoHours" ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft );
+					m_pTimeValue->SetText( wzServerTimeLeft );
+				}
+				else
+				{
+					g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeft" ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft );
+					m_pTimeValue->SetText( wzServerTimeLeft );
+				}
+			}
+		}
 	}
-#else
-	m_flNextThink = gpGlobals->curtime;
-#endif
+	else
+	{
+		m_flNextThink = gpGlobals->curtime;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -790,35 +848,38 @@ void CTFHudTimeStatus::OnThink()
 					{
 						g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerNoTimeLimit" ), 0);
 						SetDialogVariable( "servertimeleft", wzServerTimeLeft );
-						return;
 					}
-
-					iTimeLeft = ( TFGameRules() && TFGameRules()->GetTimeLeft() > 0 ) ? TFGameRules()->GetTimeLeft() : 0;
-
-					if ( iTimeLeft == 0 )
+					else
 					{
-						g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerChangeOnRoundEnd" ), 0);
-						SetDialogVariable( "servertimeleft", wzServerTimeLeft );
-						return;
+						iTimeLeft = ( TFGameRules() && TFGameRules()->GetTimeLeft() > 0 ) ? TFGameRules()->GetTimeLeft() : 0;
+
+						if ( iTimeLeft == 0 )
+						{
+							g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerChangeOnRoundEnd" ), 0 );
+							SetDialogVariable( "servertimeleft", wzServerTimeLeft );
+						}
+						else
+						{
+							iHours = iTimeLeft / 3600;
+							iMinutes = ( iTimeLeft % 3600 ) / 60;
+							iSeconds = ( iTimeLeft % 60 );
+
+							_snwprintf( wzServerTimeHrsLeft, ARRAYSIZE( wzServerTimeHrsLeft ), L"%i", iHours );
+							_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%02i", iMinutes );
+							_snwprintf( wzServerTimeSecLeft, ARRAYSIZE( wzServerTimeSecLeft ), L"%02i", iSeconds );
+
+							if ( iHours == 0 )
+							{
+								g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeftNoHours" ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft );
+								SetDialogVariable( "servertimeleft", wzServerTimeLeft );
+							}
+							else
+							{
+								g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeft" ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft );
+								SetDialogVariable( "servertimeleft", wzServerTimeLeft );
+							}
+						}
 					}
-
-					iHours = iTimeLeft / 3600;
-					iMinutes = (iTimeLeft % 3600) / 60;
-					iSeconds = (iTimeLeft % 60);
-
-					_snwprintf( wzServerTimeHrsLeft, ARRAYSIZE( wzServerTimeHrsLeft ), L"%i", iHours );
-					_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%02i", iMinutes );
-					_snwprintf( wzServerTimeSecLeft, ARRAYSIZE( wzServerTimeSecLeft ), L"%02i", iSeconds );
-
-					if (iHours == 0)
-					{
-						g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeftNoHours" ), 2, wzServerTimeMinLeft, wzServerTimeSecLeft);
-						SetDialogVariable( "servertimeleft", wzServerTimeLeft );
-						return;
-					}
-
-					g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerTimeLeft" ), 3, wzServerTimeHrsLeft, wzServerTimeMinLeft, wzServerTimeSecLeft);
-					SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 				}
 			}
 		}

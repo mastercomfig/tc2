@@ -64,6 +64,11 @@
 		"image"					"../hud/comp_round_notimer"
 		"scaleimage"			"1"
 
+		if_match_norounds
+		{
+			"visible"		"0"
+		}
+
 		if_match_min
 		{
 			"image"					"../hud/comp_round_timer"

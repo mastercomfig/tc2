@@ -121,6 +121,17 @@ void CRoundCounterPanel::ApplySchemeSettings(IScheme *pScheme)
 	if ( cl_hud_minmode.IsValid() && cl_hud_minmode.GetBool() )
 	{
 		AddSubKeyNamed( pConditions, "if_match_min" );
+		if ( mp_winlimit.GetInt() < 1 )
+		{
+			AddSubKeyNamed( pConditions, "if_match_min_norounds" );
+		}
+	}
+	else
+	{
+		if ( mp_winlimit.GetInt() < 1 )
+		{
+			AddSubKeyNamed( pConditions, "if_match_norounds" );
+		}
 	}
 
 	LoadControlSettings( "resource/UI/HudRoundCounter.res", NULL, NULL, pConditions );
@@ -602,6 +613,13 @@ void CTFHudMatchStatus::OnThink()
 				pTimer = dynamic_cast< CTeamRoundTimer* >( ClientEntityList().GetEnt( iActiveTimer ) );
 				bDisplayTimer = ( iActiveTimer != 0 && pTimer && !pTimer->IsDormant() );
 				m_pTimePanel->SetTimerIndex( iActiveTimer );
+			}
+
+			// if there's no timer, we still want to display match time if it's there.
+			static ConVarRef tf_hud_show_servertimelimit( "tf_hud_show_servertimelimit" );
+			if ( !pTimer && mp_timelimit.GetInt() > 0 && tf_hud_show_servertimelimit.GetBool() )
+			{
+				bDisplayTimer = true;
 			}
 		}
 

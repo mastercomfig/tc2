@@ -1348,7 +1348,7 @@ private:
 
 	CNetworkArray( int, m_nSeriesPoints, TF_TEAM_COUNT );
 	CNetworkVar( bool, m_bPlayingMultiSeriesIntermission );
-	bool m_bMatchIsPlayingOut;
+	CNetworkVar( bool, m_bMatchIsPlayingOut );
 	bool m_bStartMatchRoundImmediately;
 
 	float		m_flCTFCaptureBonusTime;

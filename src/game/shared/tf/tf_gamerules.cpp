@@ -1560,6 +1560,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	RecvPropInt( RECVINFO( m_nSeriesNum ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_nSeriesPoints ), RecvPropInt( RECVINFO( m_nSeriesPoints[0] ) ) ),
 	RecvPropBool( RECVINFO( m_bPlayingMultiSeriesIntermission ) ),
+	RecvPropBool( RECVINFO( m_bMatchIsPlayingOut ) ),
 
 	RecvPropInt( RECVINFO( m_nForceUpgrades ) ),
 	RecvPropInt( RECVINFO( m_nForceEscortPushLogic ) ),
@@ -1636,6 +1637,7 @@ BEGIN_NETWORK_TABLE_NOBASE( CTFGameRules, DT_TFGameRules )
 	SendPropInt( SENDINFO( m_nSeriesNum ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_nSeriesPoints ), SendPropInt( SENDINFO_ARRAY( m_nSeriesPoints ) ) ),
 	SendPropBool( SENDINFO( m_bPlayingMultiSeriesIntermission ) ),
+	SendPropBool( SENDINFO( m_bMatchIsPlayingOut ) ),
 
 	SendPropInt( SENDINFO( m_nForceUpgrades ) ),
 	SendPropInt( SENDINFO( m_nForceEscortPushLogic ) ),
@@ -20392,7 +20394,18 @@ int CTFGameRules::GetTimeLeft( void )
 
 	float flMapChangeTime = m_flMapResetTime + flTimeLimit;
 
-	int iTime = (int)(flMapChangeTime - gpGlobals->curtime);
+	int iTime = ( int )( flMapChangeTime - gpGlobals->curtime );
+	
+	// if we're playing a match series, then freeze the time limit while we're in match start.
+	ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+	if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
+	{
+		if ( !IsMatchPlayingOut() && GetRoundRestartTime() > 0 )
+		{
+			iTime = flTimeLimit;
+		}
+	}
+
 	if ( iTime < 0 )
 	{
 		iTime = 0;
