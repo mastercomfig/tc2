@@ -263,6 +263,7 @@ const char *GetRandomBotName( void )
 		"Rattletrap",
 		"An Enigma",
 		"Snotty",
+		"Blake Sextus",
 
 		"Abrams",
 		"Ivy",
