@@ -1061,8 +1061,8 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	m_pMatchSeriesLabel->SetVisible( true );
 	m_pMatchNextSeriesLabel->SetVisible( true );
 	m_pMatchTimeRemainingTitleLabel->SetVisible( true );
-	m_pMatchTimeRemainingTitleLabel->SetText( bTieBreaker ? "#Scoreboard_TimeLeftLabel_TieBreaker" : "#Scoreboard_TimeLeftLabel_Series" );
-	m_pMatchTimeRemainingLabel->SetVisible( !bTieBreaker );
+	m_pMatchTimeRemainingTitleLabel->SetText( bTieBreaker ? "#Scoreboard_TimeLeftLabel_TieBreaker" : ( iTimeLeft == 0 ? "TF_HUD_ServerChangeOnSeriesEnd" : "#Scoreboard_TimeLeftLabel_Series" ) );
+	m_pMatchTimeRemainingLabel->SetVisible( iTimeLeft > 0 );
 
 	wchar_t wszSeriesNum[16];
 	swprintf( wszSeriesNum, ARRAYSIZE( wszSeriesNum ), L"%d", TFGameRules()->GetSeriesCount() );
@@ -1087,10 +1087,6 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 
 	if ( iTimeLeft == 0 )
 	{
-		if ( !bTieBreaker )
-		{
-			g_pVGuiLocalize->ConstructString_safe( wzServerTimeLeft, g_pVGuiLocalize->Find( "#TF_HUD_ServerChangeOnSeriesEnd" ), 0 );
-		}
 		m_pMainStatsContainer->SetDialogVariable( "servertimeleft", wzServerTimeLeft );
 	}
 	else
