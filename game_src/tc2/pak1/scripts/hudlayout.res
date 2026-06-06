@@ -500,7 +500,6 @@
 		"fieldName"		"CTFStreakNotice"
 		"xpos"			"0"
 		"ypos"			"0"
-		"zpos"			"8"
 		"wide"			"640"
 		"tall"			"480"
 		"visible"		"1"
@@ -516,7 +515,6 @@
 		"enabled" "1"
 		"xpos"	 "r640"
 		"ypos"	 "22"
-		"zpos"	 "8"
 		"wide"	 "628"
 		"tall"	 "468"
 
