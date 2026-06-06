@@ -1177,9 +1177,9 @@ void CTeamRoundTimer::SetTimeRemaining( int iTimerSeconds )
 	if ( TeamplayRoundBasedRules()->IsGameUnderTimeLimit() )
 	{
 		float curTimeIntegralPart;
-		std::modff( flStartTime, &curTimeIntegralPart );
+		std::modf( flStartTime, &curTimeIntegralPart );
 		float mapStartIgnoredIntegralPart;
-		float mapStartDecimalPart = std::modff( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
+		float mapStartDecimalPart = std::modf( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
 		flStartTime = curTimeIntegralPart + mapStartDecimalPart;
 	}
 	m_flTimerEndTime = flStartTime + m_flTimeRemaining;
@@ -1246,9 +1246,9 @@ void CTeamRoundTimer::ResumeTimer( void )
 			if ( TeamplayRoundBasedRules()->IsGameUnderTimeLimit() )
 			{
 				float curTimeIntegralPart;
-				std::modff( flStartTime, &curTimeIntegralPart );
+				std::modf( flStartTime, &curTimeIntegralPart );
 				float mapStartIgnoredIntegralPart;
-				float mapStartDecimalPart = std::modff( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
+				float mapStartDecimalPart = std::modf( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
 				flStartTime = curTimeIntegralPart + mapStartDecimalPart;
 			}
 			m_flTimerEndTime = flStartTime + m_flTimeRemaining;			

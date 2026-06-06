@@ -1073,9 +1073,9 @@ void CTFMatchSummary::UpdateMatchTimeRemaining()
 	wchar_t wszNextSeriesTime[16];
 	float flEndTime = TFGameRules()->GetStateTransitionTime();
 	float endTimeIntegralPart;
-	std::modff( flEndTime, &endTimeIntegralPart );
+	std::modf( flEndTime, &endTimeIntegralPart );
 	float mapStartIgnoredIntegralPart;
-	float mapStartDecimalPart = std::modff( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
+	float mapStartDecimalPart = std::modf( TeamplayRoundBasedRules()->GetMapResetTime(), &mapStartIgnoredIntegralPart );
 	flEndTime = endTimeIntegralPart + mapStartDecimalPart;
 	swprintf( wszNextSeriesTime, ARRAYSIZE( wszNextSeriesTime ), L"%d", ( int ) ( flEndTime - gpGlobals->curtime ) );
 
