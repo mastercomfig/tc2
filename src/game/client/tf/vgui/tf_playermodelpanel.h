@@ -28,6 +28,8 @@ public:
 
 	void	ApplySettings( KeyValues *inResourceData );
 
+	void	SetVisible( bool state ) OVERRIDE;
+
 	void	SetToPlayerClass( int iClass, bool bForceRefresh = false, const char *pszPlayerModelOverride = NULL );
 	bool	HoldItemInSlot( int iSlot );
 	bool	HoldItem( int iItemNumber );
@@ -165,6 +167,8 @@ private:
 	void	UpdateTauntEffects( IMatRenderContext *pRenderContext, CStudioHdr *pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t *pWorldMatrix );
 	void	UpdateHeadLighting(IMatRenderContext* pRenderContext, CStudioHdr* pStudioHdr, MDLHandle_t mdlHandle, matrix3x4_t* pWorldMatrix);
 
+	void	StopSoundEvents();
+
 	int				m_iCurrentClassIndex;
 	int				m_iCurrentSlotIndex;
 	CUtlVector<CEconItemView*>	m_ItemsToCarry;		// Items that our player should be seen carrying
@@ -191,6 +195,8 @@ private:
 
 	CUtlVector< CRefCountedModelIndex > m_vecDynamicAssetsLoaded;
 	CUtlVector< CEconItemView* > m_vecItemsLoaded;
+
+	CUtlVector< int > m_SoundEvents;
 
 	struct CustomClassData_t
 	{

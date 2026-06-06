@@ -195,6 +195,16 @@ void CTFPlayerModelPanel::ApplySettings( KeyValues *inResourceData )
 	SetLightProbe(nullptr);
 }
 
+void CTFPlayerModelPanel::SetVisible( bool state )
+{
+	CBaseModelPanel::SetVisible( state );
+
+	if ( !state )
+	{
+		StopSoundEvents();
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -399,6 +409,7 @@ void CTFPlayerModelPanel::ClearScene( void )
 	m_flSceneEndTime = 0;
 	m_flLastTickTime = 0;
 	m_bLoopScene = true;
+	StopSoundEvents();
 	//memset( m_flexWeight, 0, sizeof( m_flexWeight ) );
 }
 
@@ -538,6 +549,11 @@ void CTFPlayerModelPanel::FireEvent( const char *pszEventName, const char *pszEv
 
 void CTFPlayerModelPanel::FireSoundEvent(const char* pszEventOptions)
 {
+	if ( !IsVisible() )
+	{
+		return;
+	}
+
 	soundlevel_t iSoundlevel = SNDLVL_NONE;
 
 	EmitSound_t es;
@@ -550,6 +566,7 @@ void CTFPlayerModelPanel::FireSoundEvent(const char* pszEventOptions)
 
 	C_RecipientFilter filter;
 	C_BaseEntity::EmitSound(filter, SOUND_FROM_UI_PANEL, es);
+	m_SoundEvents.AddToTail( enginesound->GetGuidForLastSoundEmitted() );
 }
 
 
@@ -1401,6 +1418,7 @@ void CTFPlayerModelPanel::SetMDL(MDLHandle_t handle, void* pProxyData)
 void CTFPlayerModelPanel::SetMDL(const char* pMDLName, void* pProxyData)
 {
 	BaseClass::SetMDL(pMDLName, pProxyData);
+	StopSoundEvents();
 }
 
 //-----------------------------------------------------------------------------
@@ -2026,6 +2044,16 @@ void CTFPlayerModelPanel::UpdateHeadLighting(
 
 	// follow the head
 	m_Lights[1].m_Desc.InitSpot(m_vHeadLightPos, Vector(1, 1, 1), vecPosition, 0.035f, 0.6981317f);
+}
+
+void CTFPlayerModelPanel::StopSoundEvents()
+{
+	// TODO(mcoms): good to do it for SetSequence too
+	FOR_EACH_VEC_BACK( m_SoundEvents, i )
+	{
+		enginesound->StopSoundByGuid( m_SoundEvents[i] );
+		m_SoundEvents.Remove( i );
+	}
 }
 
 //-----------------------------------------------------------------------------
