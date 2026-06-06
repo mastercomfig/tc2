@@ -566,7 +566,7 @@
 				"dulltext"				"0"
 				"brighttext"			"0"
 				"bgcolor_override"	   "0 0 0 0"
-				"fgcolor_override"	   "255 255 255 160"
+				"fgcolor_override"	   "191 231 182 160"
 				"proportionaltoparent"	"1"
 			}
 			"HealthIcon"
