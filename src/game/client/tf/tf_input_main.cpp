@@ -47,20 +47,6 @@ IInput *input = ( IInput * )&g_Input;
 //-----------------------------------------------------------------------------
 float CTFInput::CAM_CapYaw( float fVal ) const
 {
-	CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( !pPlayer )
-		return fVal;
-
-	if ( pPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
-	{
-		float flChargeYawCap = pPlayer->m_Shared.CalculateChargeCap();
-
-		if ( fVal > flChargeYawCap )
-			return flChargeYawCap;
-		else if ( fVal < -flChargeYawCap )
-			return -flChargeYawCap;
-	}
-
 	return fVal;
 }
 
@@ -85,23 +71,18 @@ void CTFInput::AdjustYaw( float speed, QAngle& viewangles )
 {
 	if ( !(in_strafe.state & 1) )
 	{
-		float yaw_right = speed*cl_yawspeed.GetFloat() * KeyState (&in_right);
-		float yaw_left = speed*cl_yawspeed.GetFloat() * KeyState (&in_left);
+		float flYawSpeed = cl_yawspeed.GetFloat();
 
+#if 0
 		CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 		if ( pPlayer && pPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
 		{
-			float flChargeYawCap = pPlayer->m_Shared.CalculateChargeCap();
-
-			if ( yaw_right > flChargeYawCap )
-				yaw_right = flChargeYawCap;
-			else if ( yaw_right < -flChargeYawCap )
-				yaw_right = -flChargeYawCap;
-			if ( yaw_left > flChargeYawCap )
-				yaw_left = flChargeYawCap;
-			else if ( yaw_left < -flChargeYawCap )
-				yaw_left = -flChargeYawCap;
+			flYawSpeed = 210.0f;
 		}
+#endif
+
+		float yaw_right = speed*flYawSpeed * KeyState (&in_right);
+		float yaw_left = speed*flYawSpeed * KeyState (&in_left);
 
 		viewangles[YAW] -= yaw_right;
 		viewangles[YAW] += yaw_left;
@@ -131,20 +112,22 @@ void CTFInput::AdjustYaw( float speed, QAngle& viewangles )
 //-----------------------------------------------------------------------------
 float CTFInput::JoyStickAdjustYaw( float flSpeed )
 {
+#if 0
 	// Make sure we're not strafing
 	if ( flSpeed && !(in_strafe.state & 1) )
 	{
 		CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
 		if ( pPlayer && pPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
 		{
-			float flChargeYawCap = pPlayer->m_Shared.CalculateChargeCap();
-			
-			if ( flSpeed > 0.f && flSpeed > flChargeYawCap )
-				flSpeed = flChargeYawCap;
-			else if ( flSpeed < 0.f && flSpeed < -flChargeYawCap )
-				flSpeed = -flChargeYawCap;
+			ConVarRef joy_yawsensitivity( "joy_yawsensitivity" );
+			ConVarRef cl_yawspeed( "cl_yawspeed" );
+			if ( joy_yawsensitivity.IsValid() && joy_yawsensitivity.GetFloat() != 0.0f && cl_yawspeed.IsValid() && cl_yawspeed.GetFloat() != 0.0f )
+			{
+				flSpeed = flSpeed * (1.0f / fabs(joy_yawsensitivity.GetFloat())) * (210.0f / fabs(cl_yawspeed.GetFloat()));
+			}
 		}
 	}
+#endif
 
 	return flSpeed;
 }
@@ -153,6 +136,22 @@ ConVar tf_halloween_kart_cam_follow( "tf_halloween_kart_cam_follow", "0.3f", FCV
 void CTFInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float mouse_y )
 {
 	CTFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+#if 0
+	if ( pPlayer && pPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
+	{
+		ConVarRef sensitivity( "sensitivity" );
+		ConVarRef m_yaw( "m_yaw" );
+		if ( sensitivity.IsValid() && sensitivity.GetFloat() > 0.0f && m_yaw.IsValid() && m_yaw.GetFloat() != 0.0f )
+		{
+			// Normalize mouse_x by resetting the user's mouse sensitivity and m_yaw to defaults (3.0 and 0.022).
+			// This ensures the charge steering delta in CreateMove is completely independent 
+			// of the user's normal sensitivity configs, effectively making the steering multiplier act 
+			// as its own absolute multiplier over a default baseline.
+			mouse_x = mouse_x * (3.0f / sensitivity.GetFloat()) * (0.022f / m_yaw.GetFloat());
+		}
+	}
+#endif
+
 	if ( pPlayer && pPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 	{
 		// Make the camera drift a little behind the car

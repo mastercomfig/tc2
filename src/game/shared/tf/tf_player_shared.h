@@ -541,6 +541,7 @@ public:
 	void	EndCharge( void );
 	float	CalculateChargeCap( void ) const;
 	void	SetDemomanChargeMeter( float val )  { m_flChargeMeter = Clamp( val, 0.0f, 100.0f); }
+	CNetworkVar( float, m_flChargeYaw ); // Independent movement yaw for charge turning
 	void	CalcChargeCrit( bool bForceCrit=false );
 	bool	HasDemoShieldEquipped() const;
 #ifdef CLIENT_DLL

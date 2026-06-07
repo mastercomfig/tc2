@@ -6696,6 +6696,7 @@ void C_TFPlayer::AvoidPlayers( CUserCmd *pCmd )
 }
 
 
+extern ConVar tf_demoman_charge_steering_camera_lock;
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -6805,6 +6806,22 @@ bool C_TFPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 	}
 
 	BaseClass::CreateMove( flInputSampleTime, pCmd );
+
+	if ( m_Shared.InCond( TF_COND_SHIELD_CHARGE ) && m_Shared.CalculateChargeCap() < 50.0f )
+	{
+		float flLock = tf_demoman_charge_steering_camera_lock.GetFloat();
+		if ( flLock > 0.0f )
+		{
+			float flMaxCameraAngle = RemapValClamped( flLock, 0.0f, 1.0f, 180.0f, 0.0f );
+			
+			float flCameraDelta = AngleDiff( pCmd->viewangles[YAW], m_Shared.m_flChargeYaw );
+			if ( abs( flCameraDelta ) > flMaxCameraAngle )
+			{
+				pCmd->viewangles[YAW] = AngleNormalize( m_Shared.m_flChargeYaw + ( flCameraDelta > 0 ? flMaxCameraAngle : -flMaxCameraAngle ) );
+				engine->SetViewAngles( pCmd->viewangles );
+			}
+		}
+	}
 
 	// Don't avoid players if in the middle of a high five. This prevents high-fivers from becoming separated.
 	if ( !bInTaunt || ( !m_bIsReadyToHighFive && !CTFPlayerSharedUtils::ConceptIsPartnerTaunt( m_Shared.m_iTauntConcept ) ) )

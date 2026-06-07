@@ -7,6 +7,9 @@
 
 #include "cbase.h"
 #include "player_command.h"
+
+extern ConVar tf_demoman_charge_steering_camera_lock;
+
 #include "igamemovement.h"
 #include "in_buttons.h"
 #include "ipredictionsystem.h"
@@ -80,33 +83,21 @@ void CTFPlayerMove::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 		// targe Exploit fix. Clients sending higher view angle changes then allowed
 		// Clamp their YAW Movement
-		if ( pTFPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
+		if ( pTFPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) && pTFPlayer->m_Shared.CalculateChargeCap() < 50.0f )
 		{
-			// Get the view deltas and clamp them if they are too high, give a high tolerance (lag)
-			float flCap = pTFPlayer->m_Shared.CalculateChargeCap();
-			flCap *= 2.5f;
-			QAngle qAngle = pTFPlayer->m_qPreviousChargeEyeAngle;
-			float flDiff = abs( qAngle[YAW] ) - abs( ucmd->viewangles[YAW] );
-			if ( flDiff > flCap )
+			float flLock = tf_demoman_charge_steering_camera_lock.GetFloat();
+			if ( flLock > 0.0f )
 			{
-				//float flReportedPitchDelta = qAngle[YAW] - ucmd->viewangles[YAW];
-				if ( ucmd->viewangles[YAW] > qAngle[YAW] )
+				float flMaxCameraAngle = RemapValClamped( flLock, 0.0f, 1.0f, 180.0f, 0.0f );
+				
+				float flCameraDelta = AngleDiff( ucmd->viewangles[YAW], pTFPlayer->m_Shared.m_flChargeYaw );
+				// Add a small buffer for latency/prediction discrepancy
+				if ( abs( flCameraDelta ) > flMaxCameraAngle + 5.0f )
 				{
-					ucmd->viewangles[YAW] = qAngle[YAW] + flCap;
-					pTFPlayer->SnapEyeAngles( ucmd->viewangles );
-				}
-				else // smaller values
-				{
-					ucmd->viewangles[YAW] = qAngle[YAW] - flCap;
+					ucmd->viewangles[YAW] = AngleNormalize( pTFPlayer->m_Shared.m_flChargeYaw + ( flCameraDelta > 0 ? flMaxCameraAngle : -flMaxCameraAngle ) );
 					pTFPlayer->SnapEyeAngles( ucmd->viewangles );
 				}
 			}
-			
-			pTFPlayer->m_qPreviousChargeEyeAngle = ucmd->viewangles;
-		}
-		else
-		{
-			pTFPlayer->m_qPreviousChargeEyeAngle = pTFPlayer->EyeAngles();
 		}
 	}
 

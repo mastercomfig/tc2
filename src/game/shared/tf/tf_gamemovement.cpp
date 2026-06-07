@@ -195,8 +195,46 @@ void CTFGameMovement::PlayerMove()
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_LOST_FOOTING ) )
 		{ mv->m_flClientMaxSpeed = mv->m_flMaxSpeed; }
 
+	QAngle vecOldViewAngles = mv->m_vecViewAngles;
+	
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
+	{
+		float flCap = m_pTFPlayer->m_Shared.CalculateChargeCap();
+		
+		if ( flCap < 50.0f )
+		{
+			float flDiff = AngleDiff( vecOldViewAngles[YAW], m_pTFPlayer->m_Shared.m_flChargeYaw );
+			if ( abs( flDiff ) > flCap )
+			{
+				if ( flDiff > 0.0f )
+					m_pTFPlayer->m_Shared.m_flChargeYaw = AngleNormalize( m_pTFPlayer->m_Shared.m_flChargeYaw + flCap );
+				else
+					m_pTFPlayer->m_Shared.m_flChargeYaw = AngleNormalize( m_pTFPlayer->m_Shared.m_flChargeYaw - flCap );
+			}
+			else
+			{
+				m_pTFPlayer->m_Shared.m_flChargeYaw = vecOldViewAngles[YAW];
+			}
+
+			mv->m_vecViewAngles[YAW] = m_pTFPlayer->m_Shared.m_flChargeYaw;
+		}
+		else
+		{
+			m_pTFPlayer->m_Shared.m_flChargeYaw = vecOldViewAngles[YAW];
+		}
+	}
+	else
+	{
+		m_pTFPlayer->m_Shared.m_flChargeYaw = vecOldViewAngles[YAW];
+	}
+
 	// call base class to do movement
 	BaseClass::PlayerMove();
+	
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_SHIELD_CHARGE ) )
+	{
+		mv->m_vecViewAngles = vecOldViewAngles;
+	}
 
 	// handle player's interaction with water
 	int nNewWaterLevel = m_pTFPlayer->GetWaterLevel();

@@ -107,8 +107,6 @@
 ConVar sv_showimpacts("sv_showimpacts", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Shows client (red) and server (blue) bullet impact point");
 
 static ConVar tf_demoman_charge_frametime_scaling( "tf_demoman_charge_frametime_scaling", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "When enabled, scale yaw limiting based on client performance (frametime)." );
-static const float YAW_CAP_SCALE_MIN = 0.2f;
-static const float YAW_CAP_SCALE_MAX = 2.f;
 
 #ifdef TF2_OG
 #define DEFAULT_TF_DAMAGE_CRITMOD_DAMAGE			"1600"
@@ -213,6 +211,9 @@ ConVar tf_scout_energydrink_activation( "tf_scout_energydrink_activation", "0.0"
 
 ConVar tf_demoman_charge_regen_rate( "tf_demoman_charge_regen_rate", "8.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "" );
 ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "" );
+
+ConVar tf_demoman_charge_steering_cap( "tf_demoman_charge_steering_cap", "0.45", FCVAR_REPLICATED, "The base turn rate in degrees during charges" );
+ConVar tf_demoman_charge_steering_camera_lock( "tf_demoman_charge_steering_camera_lock", "0.8", FCVAR_REPLICATED, "0.0: Free camera, 1.0: Camera locked to charge direction" );
 
 // STAGING_SPY
 ConVar tf_feign_death_duration( "tf_feign_death_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death buffs last." );
@@ -437,7 +438,8 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	RecvPropFloat( RECVINFO( m_flHypeMeter) ),
 
 	// Demoman
-	RecvPropFloat( RECVINFO( m_flChargeMeter) ),
+	RecvPropFloat( RECVINFO( m_flChargeMeter ) ),
+	RecvPropFloat( RECVINFO( m_flChargeYaw ) ),
 
 	// Spy.
 	RecvPropTime( RECVINFO( m_flInvisChangeCompleteTime ) ),
@@ -495,6 +497,7 @@ BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_flEnergyDrinkMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flHypeMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flChargeMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_flChargeYaw, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bJumping, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iAirDash, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_nAirDucked, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
@@ -617,6 +620,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 
 	// Demoman
 	SendPropFloat( SENDINFO( m_flChargeMeter ), 8, SPROP_NOSCALE, 0.0, 100.0 ),
+	SendPropFloat( SENDINFO( m_flChargeYaw ), 0, SPROP_NOSCALE | SPROP_CHANGES_OFTEN ),
 
 	// Spy
 	SendPropTime( SENDINFO( m_flInvisChangeCompleteTime ) ),
@@ -6316,17 +6320,9 @@ void CTFPlayerShared::EndCharge()
 //-----------------------------------------------------------------------------
 float CTFPlayerShared::CalculateChargeCap( void ) const
 {
-	float flCap = 0.45f;
+	float flCap = tf_demoman_charge_steering_cap.GetFloat();
 
 	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( m_pOuter, flCap, charge_turn_control );
-
-	// Scale yaw cap based on frametime to prevent differences in turn effectiveness due to variable framerate (between clients mainly)
-	if ( tf_demoman_charge_frametime_scaling.GetBool() )
-	{
-		// There's probably something better to use here as a baseline, instead of TICK_INTERVAL
-		float flMod = RemapValClamped( gpGlobals->frametime, ( TICK_INTERVAL * YAW_CAP_SCALE_MIN ), ( TICK_INTERVAL * YAW_CAP_SCALE_MAX ), 0.25f, 2.f );
-		flCap *= flMod;
-	}
 
 	return flCap;
 }
