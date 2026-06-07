@@ -9,6 +9,8 @@
 #include "decals.h"
 #include "tf_weapon_grenade_pipebomb.h"
 
+#include "tf_gamerules.h"
+
 // Client specific.
 #ifdef CLIENT_DLL
 #include "prediction.h"
@@ -17,7 +19,7 @@
 #else
 #include "tf_player.h"
 #include "tf_fx.h"
-#include "tf_gamerules.h"
+#include "tf_gamestats.h"
 #endif
 
 //=============================================================================
@@ -216,27 +218,141 @@ void CTFStickBomb::Precache( void )
 	PrecacheModel( TF_WEAPON_STICKBOMB_BROKEN_MODEL );
 }
 
+void CTFStickBomb::PrimaryAttack()
+{
+	// Get the current player.
+	CTFPlayer *pPlayer = GetTFPlayerOwner();
+	if ( !pPlayer )
+		return;
+
+	if ( !CanAttack() )
+	{
+		m_flNextPrimaryAttack = MAX(m_flNextPrimaryAttack, gpGlobals->curtime);
+		return;
+	}
+
+	// Set the weapon usage mode - primary, secondary.
+	m_iWeaponMode = TF_WEAPON_PRIMARY_MODE;
+	m_bConnected = false;
+
+	// Note: For beta caber, we do NOT call pPlayer->EndClassSpecialSkill() here!
+	// It will be deferred to Smack() if we actually hit an enemy.
+	if ( !TFGameRules() || !TFGameRules()->IsBetaActive() )
+	{
+		pPlayer->EndClassSpecialSkill();
+	}
+
+	// Swing the weapon.
+	Swing( pPlayer );
+
+	m_bCurrentAttackIsDuringDemoCharge = pPlayer->m_Shared.GetNextMeleeCrit() != MELEE_NOCRIT;
+
+	if ( pPlayer->m_Shared.GetNextMeleeCrit() == MELEE_MINICRIT )
+	{
+		m_bMiniCrit = true;
+	}
+	else
+	{
+		m_bMiniCrit = false;
+	}
+
+#if !defined( CLIENT_DLL ) 
+	pPlayer->SpeakWeaponFire();
+	CTF_GameStats.Event_PlayerFiredWeapon( pPlayer, IsCurrentAttackACrit() );
+
+	if ( pPlayer->m_Shared.IsStealthed() && ShouldRemoveInvisibilityOnPrimaryAttack() )
+	{
+		pPlayer->RemoveInvisibility();
+	}
+#endif
+
+	pPlayer->m_Shared.OnAttack();
+}
+
 void CTFStickBomb::Smack( void )
 {
 	CTFWeaponBaseMelee::Smack();
 
 	// Stick bombs detonate once, on impact.
-	if ( m_iDetonated == 0 && ConnectedHit() )
+	if ( m_iDetonated == 0 )
 	{
-		m_iDetonated = 1;
-		m_bBroken = true;
-		SwitchBodyGroups();
+		CTFPlayer *pTFPlayer = ToTFPlayer( GetOwner() );
+		if ( !pTFPlayer )
+			return;
+
+		bool bHitEnemy = false;
+		bool bIsBeta = TFGameRules() && TFGameRules()->IsBetaActive();
+		bool bConnectedHit = ConnectedHit();
+
+		if ( !bConnectedHit && !bIsBeta )
+			return;
+
+		trace_t trace;
+		DoSwingTrace( trace );
+		Vector explosion = trace.endpos;
+
+		bool bDirectHitEnemy = false;
+		if ( trace.m_pEnt && trace.m_pEnt->IsAlive() && trace.m_pEnt != pTFPlayer )
+		{
+			if ( trace.m_pEnt->GetTeamNumber() != pTFPlayer->GetTeamNumber() && trace.m_pEnt->GetTeamNumber() >= TF_TEAM_RED )
+			{
+#ifdef GAME_DLL
+				if ( trace.m_pEnt->m_takedamage != DAMAGE_NO )
+				{
+					bDirectHitEnemy = true;
+				}
+#else
+				bDirectHitEnemy = true;
+#endif
+			}
+		}
+
+		if ( bDirectHitEnemy )
+		{
+			explosion = pTFPlayer->WorldSpaceCenter();
+		}
+
+		float flRadius = bIsBeta ? 146.0f : 100.0f;
+		CALL_ATTRIB_HOOK_FLOAT( flRadius, mult_explosion_radius );
+
+		CBaseEntity *pEntity = NULL;
+		for ( CEntitySphereQuery sphere( explosion, flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+		{
+			if ( !pEntity || !pEntity->IsAlive() || pEntity == pTFPlayer )
+				continue;
+#ifdef GAME_DLL
+			if ( pEntity->m_takedamage == DAMAGE_NO )
+				continue;
+#endif
+			if ( pEntity->GetTeamNumber() != pTFPlayer->GetTeamNumber() && pEntity->GetTeamNumber() >= TF_TEAM_RED )
+			{
+				Vector vecPos;
+				pEntity->CollisionProp()->CalcNearestPoint( explosion, &vecPos );
+				if ( (explosion - vecPos).LengthSqr() <= flRadius * flRadius )
+				{
+					bHitEnemy = true;
+					break;
+				}
+			}
+		}
+
+		if ( bHitEnemy || !bIsBeta )
+		{
+			m_iDetonated = 1;
+			m_bBroken = true;
+			SwitchBodyGroups();
+			// End charge here if beta active (since we skipped it in PrimaryAttack)
+			if ( bIsBeta )
+			{
+				pTFPlayer->EndClassSpecialSkill();
+			}
+		}
 
 #ifdef GAME_DLL
-		CTFPlayer *pTFPlayer = ToTFPlayer( GetOwner() );
-		if ( pTFPlayer )
 		{
 			Vector vecForward; 
 			AngleVectors( pTFPlayer->EyeAngles(), &vecForward );
 			Vector vecSwingStart = pTFPlayer->WorldSpaceCenter();
-			//Vector vecSwingEnd = vecSwingStart + vecForward * GetSwingRange();
-
-			Vector explosion = vecSwingStart;
 
 			CPVSFilter filter( explosion );
 			
@@ -255,7 +371,7 @@ void CTFStickBomb::Smack( void )
 			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
 			// TODO(mcoms): use DMG_MELEE? (Fixed the Ullapool Caber's explosion not being counted as melee damage (for kill_refills_meter))
-			int dmgType = TFGameRules()->IsBetaActive() ? (DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF) : DMG_BLAST | DMG_HALF_FALLOFF;
+			int dmgType = bIsBeta ? (DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF) : DMG_BLAST | DMG_HALF_FALLOFF;
 			const bool bIsCrit = IsCurrentAttackACrit();
 			if (bIsCrit)
 				dmgType |= DMG_CRITICAL;
@@ -268,33 +384,69 @@ void CTFStickBomb::Smack( void )
 			}
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
-			float flRadius = TFGameRules()->IsBetaActive() ? 146.0f : 100.0f;
-			CALL_ATTRIB_HOOK_FLOAT( flRadius, mult_explosion_radius );
 
-			CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius );
+			CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius, bIsBeta ? pTFPlayer : NULL );
 
 			TFGameRules()->RadiusDamage( radiusinfo );
 
-			if (TFGameRules()->IsBetaActive())
+			if ( bIsBeta )
 			{
-				// at position
-				Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-				float timer1 = RandomFloat(0.6f, 0.8f);
-				CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
-				// at swing direction
-				Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-				vel2 += vecForward * 50.0f;
-				float timer2 = RandomFloat(0.6f, 0.8f);
-				CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
-				// at velocity
-				Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
-				vel3 += pTFPlayer->GetAbsVelocity();
-				float timer3 = RandomFloat(0.6f, 0.8f);
-				CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
-				// random
-				Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
-				float timer4 = RandomFloat(0.6f, 0.8f);
-				CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
+				// Always handle self damage manually for beta caber so we can restore physics force to the user
+				Vector vecPos;
+				pTFPlayer->CollisionProp()->CalcNearestPoint( explosion, &vecPos );
+				float flDist = (explosion - vecPos).Length();
+				float flDamageToSelf = info.GetDamage();
+				float flFalloff = 0.5f;
+
+				if ( flDist > 0 && flRadius > 0 )
+				{
+					flDamageToSelf -= flDamageToSelf * flFalloff * (flDist / flRadius);
+				}
+
+				if ( flDamageToSelf > 0 )
+				{
+					if ( bHitEnemy )
+					{
+						flDamageToSelf *= 25.0f;
+					}
+					else
+					{
+						flDamageToSelf *= 0.75f;
+					}
+					int selfDmgType = (dmgType & ~(DMG_CRITICAL)) & ~(DMG_PREVENT_PHYSICS_FORCE);
+					CTakeDamageInfo selfInfo( pTFPlayer, pTFPlayer, this, flDamageToSelf, selfDmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION );
+					selfInfo.SetDamagePosition( explosion );
+					pTFPlayer->TakeDamage( selfInfo );
+				}
+
+				if ( bHitEnemy )
+				{
+					// at position
+					Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+					float timer1 = RandomFloat(0.6f, 0.8f);
+					CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
+					// at swing direction
+					Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+					vel2 += vecForward * 50.0f;
+					float timer2 = RandomFloat(0.6f, 0.8f);
+					CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
+					// at velocity
+					Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
+					vel3 += pTFPlayer->GetAbsVelocity();
+					float timer3 = RandomFloat(0.6f, 0.8f);
+					CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
+					// random
+					Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
+					float timer4 = RandomFloat(0.6f, 0.8f);
+					CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
+				}
+			}
+
+			if ( !pTFPlayer->IsAlive() && bIsBeta )
+			{
+				float flNormalDuration = TFGameRules()->GetNextRespawnWave( pTFPlayer->GetTeamNumber(), pTFPlayer ) - gpGlobals->curtime;
+				float flNewDuration = MAX( 2.0f, flNormalDuration - 5.0f );
+				pTFPlayer->SetRespawnOverride( flNewDuration, NULL_STRING );
 			}
 		}
 #endif
