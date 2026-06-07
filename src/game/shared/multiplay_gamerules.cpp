@@ -1699,6 +1699,46 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 			return true;
 		}
+		else if ( FStrEq( pcmd, "voice_concept" ) )
+		{
+			if ( args.ArgC() < 2 )
+				return true;
+
+			CBaseMultiplayerPlayer *pMultiPlayerPlayer = dynamic_cast< CBaseMultiplayerPlayer * >( pPlayer );
+			if ( pMultiPlayerPlayer && pMultiPlayerPlayer->ShouldRunRateLimitedCommand( "voicemenu" ) )
+			{
+				const char *pszConcept = args[1];
+				int iConcept = GetMPConceptIndexFromString( pszConcept );
+				
+				if ( iConcept != MP_CONCEPT_NONE )
+				{
+					// Validate against whitelist in m_VoiceCommandMenus
+					bool bAllowed = false;
+					for ( int m = 0; m < m_VoiceCommandMenus.Count() && !bAllowed; m++ )
+					{
+						for ( int i = 0; i < m_VoiceCommandMenus[m].Count(); i++ )
+						{
+							if ( m_VoiceCommandMenus[m][i].m_iConcept == iConcept )
+							{
+								bAllowed = true;
+								break;
+							}
+						}
+					}
+
+					if ( bAllowed )
+					{
+						pMultiPlayerPlayer->SpeakConceptIfAllowed( iConcept );
+					}
+					else
+					{
+						Warning( "Player %s attempted to use restricted voice concept %s\n", pPlayer->GetPlayerName(), pszConcept );
+					}
+				}
+			}
+
+			return true;
+		}
 
 		return BaseClass::ClientCommand( pEdict, args );
 	}

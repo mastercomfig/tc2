@@ -1,0 +1,234 @@
+"RadialMenus"
+{
+	"Menu1"
+	{
+		"gamemode" "pass"
+		"1"
+		{
+			"label" "#Voice_Menu_Medic"
+			"command" "+helpme"
+		}
+		"2"
+		{
+			"label" "#Voice_Menu_Thanks"
+			"command" "voicemenu 0 1"
+		}
+		"3"
+		{
+			"label" "#Voice_Menu_Go"
+			"command" "voicemenu 0 2"
+		}
+		"4"
+		{
+			"label" "#Voice_Menu_MoveUp"
+			"command" "voicemenu 0 3"
+		}
+		"5"
+		{
+			"label" "#Voice_Menu_Left"
+			"command" "voicemenu 0 4"
+		}
+		"6"
+		{
+			"label" "#Voice_Menu_Right"
+			"command" "voicemenu 0 5"
+		}
+		"7"
+		{
+			"label" "#Voice_Menu_Yes"
+			"command" "voicemenu 0 6"
+		}
+		"8"
+		{
+			"label" "#Voice_Menu_No"
+			"command" "voicemenu 0 7"
+		}
+		"8"
+		{
+			"label" "#Voice_Menu_AskForBall"
+			"command" "voicemenu 0 7"
+		}
+	}
+
+	"Menu1"
+	{
+		"1"
+		{
+			"label" "#Voice_Menu_Medic"
+			"command" "+helpme"
+		}
+		"2"
+		{
+			"label" "#Voice_Menu_Thanks"
+			"command" "voicemenu 0 1"
+		}
+		"3"
+		{
+			"label" "#Voice_Menu_Go"
+			"command" "voicemenu 0 2"
+		}
+		"4"
+		{
+			"label" "#Voice_Menu_MoveUp"
+			"command" "voicemenu 0 3"
+		}
+		"5"
+		{
+			"label" "#Voice_Menu_Left"
+			"command" "voicemenu 0 4"
+		}
+		"6"
+		{
+			"label" "#Voice_Menu_Right"
+			"command" "voicemenu 0 5"
+		}
+		"7"
+		{
+			"label" "#Voice_Menu_Yes"
+			"command" "voicemenu 0 6"
+		}
+		"8"
+		{
+			"label" "#Voice_Menu_No"
+			"command" "voicemenu 0 7"
+		}
+	}
+	
+	"Menu2"
+	{
+		"class" "medic"
+		"1"
+		{
+			"label" "#Voice_Menu_Incoming"
+			"command" "voicemenu 1 0"
+		}
+		"2"
+		{
+			"label" "#Voice_Menu_CloakedSpy"
+			"command" "voicemenu 1 1"
+		}
+		"3"
+		{
+			"label" "#Voice_Menu_SentryAhead"
+			"command" "voicemenu 1 2"
+		}
+		"4"
+		{
+			"label" "#Voice_Menu_TeleporterHere"
+			"command" "voicemenu 1 3"
+		}
+		"5"
+		{
+			"label" "#Voice_Menu_DispenserHere"
+			"command" "voicemenu 1 4"
+		}
+		"6"
+		{
+			"label" "#Voice_Menu_SentryHere"
+			"command" "voicemenu 1 5"
+		}
+		"7"
+		{
+			"label" "#Voice_Menu_ActivateCharge"
+			"command" "voicemenu 1 6"
+		}
+		"8"
+		{
+			"label" "ÜberCharge Ready"
+			"command" "voicemenu 1 7"
+		}
+		"9"
+		{
+			"label" "Need Ammo"
+			"command" "say_team I need ammo!"
+		}
+	}
+	
+	"Menu2"
+	{
+		"1"
+		{
+			"label" "#Voice_Menu_Incoming"
+			"command" "voicemenu 1 0"
+		}
+		"2"
+		{
+			"label" "#Voice_Menu_CloakedSpy"
+			"command" "voicemenu 1 1"
+		}
+		"3"
+		{
+			"label" "#Voice_Menu_SentryAhead"
+			"command" "voicemenu 1 2"
+		}
+		"4"
+		{
+			"label" "#Voice_Menu_TeleporterHere"
+			"command" "voicemenu 1 3"
+		}
+		"5"
+		{
+			"label" "#Voice_Menu_DispenserHere"
+			"command" "voicemenu 1 4"
+		}
+		"6"
+		{
+			"label" "#Voice_Menu_SentryHere"
+			"command" "voicemenu 1 5"
+		}
+		"7"
+		{
+			"label" "#Voice_Menu_ActivateCharge"
+			"command" "voicemenu 1 6"
+		}
+		"9"
+		{
+			"label" "Need Ammo"
+			"command" "say_team I need ammo!"
+		}
+	}
+
+	"Menu3"
+	{
+		"1"
+		{
+			"label" "#Voice_Menu_Help"
+			"command" "voicemenu 2 0"
+		}
+		"2"
+		{
+			"label" "#Voice_Menu_BattleCry"
+			"command" "voicemenu 2 1"
+		}
+		"3"
+		{
+			"label" "#Voice_Menu_Cheers"
+			"command" "voicemenu 2 2"
+		}
+		"4"
+		{
+			"label" "#Voice_Menu_Jeers"
+			"command" "voicemenu 2 3"
+		}
+		"5"
+		{
+			"label" "#Voice_Menu_Positive"
+			"command" "voicemenu 2 4"
+		}
+		"6"
+		{
+			"label" "#Voice_Menu_Negative"
+			"command" "voicemenu 2 5"
+		}
+		"7"
+		{
+			"label" "#Voice_Menu_NiceShot"
+			"command" "voicemenu 2 6"
+		}
+		"8"
+		{
+			"label" "#Voice_Menu_GoodJob"
+			"command" "voicemenu 2 7"
+		}
+	}
+}

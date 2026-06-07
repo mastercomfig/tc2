@@ -2750,6 +2750,9 @@ void CHudMainMenuOverride::PerformKeyRebindings( void )
 	REMAP_COMMAND( taunt, +taunt );
 	REMAP_COMMAND( use_action_slot_item, +use_action_slot_item );
 	REMAP_COMMAND( use_action_slot_item_server, +use_action_slot_item_server );
+	REMAP_COMMAND( voice_menu_1, +voice_menu_1 );
+	REMAP_COMMAND( voice_menu_2, +voice_menu_2 );
+	REMAP_COMMAND( voice_menu_3, +voice_menu_3 );
 }
 
 //-----------------------------------------------------------------------------

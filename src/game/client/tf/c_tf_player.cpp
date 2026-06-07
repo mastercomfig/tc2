@@ -6244,7 +6244,7 @@ void C_TFPlayer::ClientThink()
 		//
 	    if ( m_afButtonPressed & IN_ATTACK3 )
 	    {
-		    engine->ClientCmd("voicemenu 1 8");
+		    engine->ClientCmd("voicemenu 0 8");
 	    }
 	}
 }

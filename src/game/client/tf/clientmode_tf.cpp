@@ -57,6 +57,7 @@
 #include "econ_item_description.h"
 #include "c_tf_playerresource.h"
 #include "c_team.h"
+#include "tf_hud_menu_voice_selection.h"
 #include "tf_hud_menu_eureka_teleport.h"
 #include "tf_hud_menu_taunt_selection.h"
 #include "tf_hud_inspectpanel.h"
@@ -1611,6 +1612,31 @@ void ClientModeTFNormal::PostRenderVGui()
 //-----------------------------------------------------------------------------
 bool ClientModeTFNormal::CreateMove( float flInputSampleTime, CUserCmd *cmd )
 {
+	CHudMenuVoiceSelection *pVoiceMenu = GetVoiceMenu();
+	if ( pVoiceMenu )
+	{
+		pVoiceMenu->ProcessQueuedCommands();
+
+		if ( pVoiceMenu->IsMenuOpen() )
+		{
+			if ( pVoiceMenu->ShouldLockMouse() )
+			{
+				pVoiceMenu->UpdateLockState();
+				
+				// Accumulate mouse movement to determine selection
+				pVoiceMenu->AccumulateMouseDelta( cmd->mousedx, cmd->mousedy );
+				
+				// Freeze the view by zeroing out the mouse deltas
+				cmd->mousedx = 0;
+				cmd->mousedy = 0;
+				
+				// Also enforce the original view angles in case other things try to move it
+				VectorCopy( pVoiceMenu->GetInitialViewAngles(), cmd->viewangles );
+				engine->SetViewAngles( pVoiceMenu->GetInitialViewAngles() );
+			}
+		}
+	}
+
 	return BaseClass::CreateMove( flInputSampleTime, cmd );
 }
 
@@ -1709,6 +1735,15 @@ int	ClientModeTFNormal::HudElementKeyInput( int down, ButtonCode_t keynum, const
 	if ( m_pEurekaTeleportMenu )
 	{
 		if ( !m_pEurekaTeleportMenu->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
+		{
+			return 0;
+		}
+	}
+
+	CHudMenuVoiceSelection *pVoiceMenu = GetVoiceMenu();
+	if ( pVoiceMenu && pVoiceMenu->IsMenuOpen() )
+	{
+		if ( !pVoiceMenu->HudElementKeyInput( down, keynum, pszCurrentBinding ) )
 		{
 			return 0;
 		}
