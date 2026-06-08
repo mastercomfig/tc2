@@ -1316,7 +1316,7 @@ const char *FormatSeconds( int seconds )
 	}
 	else
 	{
-		Q_snprintf( string, sizeof(string), "%02i:%02i", minutes, seconds );
+		Q_snprintf( string, sizeof(string), "%i:%02i", minutes, seconds );
 	}
 
 	return string;

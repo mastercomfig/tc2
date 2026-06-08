@@ -2148,7 +2148,14 @@ void CTFClientScoreBoardDialog::UpdateServerTimeLeft()
 	iSeconds = ( iTimeLeft % 60 );
 
 	_snwprintf( wzServerTimeHrsLeft, ARRAYSIZE( wzServerTimeHrsLeft ), L"%i", iHours );
-	_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%02i", iMinutes );
+	if ( iHours == 0 )
+	{
+		_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%i", iMinutes );
+	}
+	else
+	{
+		_snwprintf( wzServerTimeMinLeft, ARRAYSIZE( wzServerTimeMinLeft ), L"%02i", iMinutes );
+	}
 	_snwprintf( wzServerTimeSecLeft, ARRAYSIZE( wzServerTimeSecLeft ), L"%02i", iSeconds );
 
 	if ( m_pServerTimeLeftValue && m_pServerTimeLeftValue->IsVisible() && ( m_pFontTimeLeftNumbers != vgui::INVALID_FONT ) )
