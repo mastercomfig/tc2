@@ -1632,7 +1632,8 @@ bool ClientModeTFNormal::CreateMove( float flInputSampleTime, CUserCmd *cmd )
 				
 				// Also enforce the original view angles in case other things try to move it
 				VectorCopy( pVoiceMenu->GetInitialViewAngles(), cmd->viewangles );
-				engine->SetViewAngles( pVoiceMenu->GetInitialViewAngles() );
+				QAngle initial = pVoiceMenu->GetInitialViewAngles();
+				engine->SetViewAngles( initial );
 			}
 		}
 	}
