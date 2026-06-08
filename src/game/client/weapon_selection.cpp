@@ -9,6 +9,7 @@
 #include "hud_macros.h"
 #include "history_resource.h"
 #include "menu.h"
+#include "tf_hud_menu_voice_selection.h"
 #include "in_buttons.h"
 #include <KeyValues.h>
 #include "filesystem.h"
@@ -414,6 +415,15 @@ bool CBaseHudWeaponSelection::IsHudMenuTakingInput()
 //-----------------------------------------------------------------------------
 bool CBaseHudWeaponSelection::HandleHudMenuInput( int iSlot )
 {
+#if defined( TF_CLIENT_DLL )
+	CHudMenuVoiceSelection* pMenu = ( CHudMenuVoiceSelection* )gHUD.FindElement( "CHudMenuVoiceSelection" );
+	if ( pMenu && pMenu->IsMenuOpen() )
+	{
+		pMenu->SelectVoiceCommand( iSlot );
+		return true;
+	}
+#endif
+	
 	CHudMenu *pHudMenu = GET_HUDELEMENT( CHudMenu );
 	if ( !pHudMenu || !pHudMenu->IsMenuOpen() )
 		return false;

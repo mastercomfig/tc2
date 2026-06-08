@@ -51,9 +51,9 @@ public:
 	void	ProcessQueuedCommands();
 	
 	void	AccumulateMouseDelta( float dx, float dy );
+	void	SelectVoiceCommand( int iItem );
 
 private:
-	void	SelectVoiceCommand( int iItem );
 	void	UpdateSelectionFromMouse();
 
 private:

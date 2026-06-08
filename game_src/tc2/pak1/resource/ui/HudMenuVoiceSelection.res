@@ -7,6 +7,7 @@
 		"enabled"		"1"
 		"xpos"			"c-200"
 		"ypos"			"c-200"
+		"zpos"			"8"
 		"wide"			"400"
 		"tall"			"400"
 		"PaintBackgroundType"	"0"

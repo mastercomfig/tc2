@@ -18,9 +18,14 @@
 #include "multiplay_gamerules.h"
 #include "c_baseplayer.h"
 #include "filesystem.h"
+#include "tf_gc_client.h"
+#include "hud_basechat.h"
+#include "hud_chat.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+extern ConVar tf_voice_command_suspension_mode;
 
 ConVar tf_radial_voicemenu_concise( "tf_radial_voicemenu_concise", "0", FCVAR_ARCHIVE, "If 1, splits the radial voice menu into 4-slot sub-menus." );
 ConVar tf_radial_voicemenu_hold_delay( "tf_radial_voicemenu_hold_delay", "0.2", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Seconds to wait while holding before locking the mouse for the radial menu" );
@@ -91,6 +96,11 @@ bool CHudMenuVoiceSelection::ShouldDraw( void )
 
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if ( !pPlayer || !pPlayer->IsAlive() || pPlayer->IsObserver() )
+	{
+		return false;
+	}
+
+	if ( GTFGCClientSystem() && GTFGCClientSystem()->BHaveChatSuspensionInCurrentMatch() && tf_voice_command_suspension_mode.GetInt() == 1 )
 	{
 		return false;
 	}
@@ -416,6 +426,25 @@ void CHudMenuVoiceSelection::OpenMenu( int iMenuIndex, bool bMouseLock )
 	{
 		SetVisible( false );
 		m_iCurrentMenu = -1;
+		return;
+	}
+
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if ( !pPlayer || !pPlayer->IsAlive() || pPlayer->IsObserver() )
+	{
+		return;
+	}
+
+	if ( GTFGCClientSystem() && GTFGCClientSystem()->BHaveChatSuspensionInCurrentMatch() && tf_voice_command_suspension_mode.GetInt() == 1 )
+	{
+		CBaseHudChat* pHUDChat = ( CBaseHudChat* )GET_HUDELEMENT( CHudChat );
+		if ( pHUDChat )
+		{
+			char szLocalized[100];
+			g_pVGuiLocalize->ConvertUnicodeToANSI( g_pVGuiLocalize->Find( "#TF_Voice_Unavailable" ), szLocalized, sizeof( szLocalized ) );
+			pHUDChat->ChatPrintf( 0, CHAT_FILTER_NONE, "%s ", szLocalized );
+		}
+
 		return;
 	}
 
