@@ -14,7 +14,7 @@ jobs:
     steps:
       # checkout the github actions / workflow
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             .github
@@ -57,10 +57,11 @@ jobs:
 
       # Replace changed files with those from the current ref.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           clean: false
           token: ${{ secrets.REPO_TOKEN }}
+          submodules: recursive
 
       - name: Add msbuild
         uses: microsoft/setup-msbuild@v1.0.2
