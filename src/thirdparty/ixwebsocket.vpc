@@ -5,7 +5,8 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;.\ixwebsocket;.\openssl\include"
+		$AdditionalIncludeDirectories	"$BASE;.\ixwebsocket"
+		$AdditionalIncludeDirectories	"$BASE;.\openssl\include" [$WINDOWS]
 		$PreprocessorDefinitions		"$BASE;IXWEBSOCKET_USE_TLS;IXWEBSOCKET_USE_OPEN_SSL"
 		$DisableSpecificWarnings		"$BASE;4530" [$WINDOWS] // C++ exception handler used
 	}
