@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose:		Player for HL1.
+// Purpose:		Player for TF.
 //
 // $NoKeywords: $
 //=============================================================================
@@ -1116,6 +1116,7 @@ CTFPlayer::CTFPlayer()
 
 	m_bHudClassAutoKill = false;
 	m_bMedigunAutoHeal = false;
+	m_bLegacyChargeSteering = false;
 
 	m_vecLastDeathPosition = Vector( FLT_MAX, FLT_MAX, FLT_MAX );
 
@@ -4032,7 +4033,8 @@ void CTFPlayer::Spawn()
 	// Check the make sure we have our inventory each time we spawn
 	UpdateInventory( false );
 
-#ifndef NO_STEAM
+	// TODO(mcoms): do we need this?
+#if !defined( NO_STEAM ) && !defined( SOURCESDK )
 	if( m_Shared.IsLoadoutUnavailable() )
 	{
 		VerifySOCache();

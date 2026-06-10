@@ -38,6 +38,8 @@
 #include "iserver.h"
 #include "hltvdirector.h"
 #include "team.h"
+#include "comtress_gc_websocket.h"
+#include "agones_sdk.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -54,7 +56,7 @@ static const char* GetWebBaseUrl()
 		return "https://beta.teamfortress.com/";
 	case k_EUniversePublic:
 	default:
-		return "https://www.teamfortress.com/";
+		return "https://api.teamcomtress.com/";
 	}
 }
 
@@ -2498,6 +2500,7 @@ void CTFGCServerSystem::FireGameEvent( IGameEvent *event )
 				m_iServerIP = netAdrFakeIP.GetIPHostByteOrder();
 				m_iServerPort = netAdrFakeIP.GetPort();
 				MsgGameServerUpdate( "[GameServerUpdate] server_spawn: updated IP & port %d %d\n", m_iServerIP, m_iServerPort );
+				Agones::SDK()->SetLabel( "fake_ip", CFmtStr("%s:%d", netAdrFakeIP.ToString(), m_iServerPort).Get() );
 			}
 		}
 
@@ -2866,7 +2869,8 @@ void CTFGCServerSystem::UpdateServerDataAndRefresh()
 
 void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 {
-	const uint64 iSteamId = SteamGameServer() ? SteamGameServer()->GetSteamID().ConvertToUint64() : 0;
+	CSteamID const* pSteamID = engine->GetGameServerSteamID();
+	const uint64 iSteamId = pSteamID ? pSteamID->ConvertToUint64() : 0;
 	const bool bNotReady = m_iServerIP == 0 || m_iServerPort == 0 || iSteamId <= 1;
 	MsgGameServerUpdate( "[GameServerUpdate] UpdateServerData: ready conds: %d %d %lld\n", m_iServerIP, m_iServerPort, iSteamId );
 	if ( bNotReady && !bShutdown )
@@ -4346,7 +4350,7 @@ ConVar tf_mm_trusted( "tf_mm_trusted", "0", FCVAR_NOTIFY | FCVAR_HIDDEN,
 void CTFGCServerSystem::WebapiEquipmentState_t::Backoff()
 {
 	if ( m_nBackoffSec == 0 )
-		m_nBackoffSec = 20;
+		m_nBackoffSec = GetUniverse() == k_EUniversePublic ? 1 : 20;
 	else
 		m_nBackoffSec = ( m_nBackoffSec * 12 + 9 ) / 10; // exponential backoff @ 1.2x factor, round up
 

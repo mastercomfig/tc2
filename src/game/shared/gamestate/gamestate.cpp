@@ -35,6 +35,8 @@
 #include "materialsystem/materialsystem_config.h"
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
+#include "IGameUIFuncs.h"
+#include "inputsystem/iinputsystem.h"
 
 static CGameStateManager s_GameStateManager;
 CGameStateManager* GetGameStateManager() { return &s_GameStateManager; }
@@ -213,6 +215,9 @@ public:
 				// TODO: sessions
 				AUTO_LOCK( m_clientsMutex )
 				int64_t* userdata = static_cast<int64_t*>( conn.userdata() );
+				if ( !userdata )
+					return;
+
 				std::size_t size = m_connectedClients.size();
 				int64_t clientId = *userdata;
 				if ( m_iPrivilegedClientId == clientId )
@@ -230,6 +235,8 @@ public:
 					}
 				}
 				delete userdata;
+				conn.userdata( nullptr );
+				
 				if ( status_code == 1002 )
 				{
 					DebuggerBreakIfDebugging();
@@ -795,6 +802,28 @@ bool CGameStateManager::Init()
 		}
 
 		return std::make_pair( true, std::string( "0 Failed to start request" ) );
+	}));
+
+	RegisterMethod("getbinds", std::function([](const std::string& params, int64_t iRpcId)
+	{
+		crow::json::wvalue resp;
+		if (gameuifuncs && g_pInputSystem)
+		{
+			for (int i = 0; i < BUTTON_CODE_LAST; i++)
+			{
+				ButtonCode_t code = (ButtonCode_t)i;
+				const char* pszBinding = gameuifuncs->GetBindingForButtonCode(code);
+				if (pszBinding && pszBinding[0])
+				{
+					const char* pszKeyName = g_pInputSystem->ButtonCodeToString(code);
+					if (pszKeyName && pszKeyName[0])
+					{
+						resp[pszKeyName] = pszBinding;
+					}
+				}
+			}
+		}
+		return std::make_pair(true, resp.dump());
 	}));
 
 	return true;

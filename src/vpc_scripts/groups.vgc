@@ -25,6 +25,7 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
+	"ixwebsocket"
 }
 
 $Group "shaders"
@@ -60,6 +61,7 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
+	"ixwebsocket"
 
 	// You probably don't want to override all shaders by default.
 	// This is just an example mainly! Pick and choose what you want from this project. :D
@@ -71,5 +73,6 @@ $Group "dedicated"
 	"mathlib"
 	"server"
 	"tier1"
+	"ixwebsocket"
 }
 

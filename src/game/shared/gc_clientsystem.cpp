@@ -4,6 +4,10 @@
 //
 //=============================================================================
 #include "cbase.h"
+#include "vgui_controls/Controls.h"
+#include "fmtstr.h"
+#include "igameevents.h"
+#include "comtress_gc_websocket.h"
 #include "gc_clientsystem.h"
 #include "econ_item_system.h"
 #include "econ_item_inventory.h"
@@ -11,12 +15,21 @@
 #ifdef GAME_DLL
 #include "tf_wartracker.h"
 #endif
-//#include "gcsdk/msgprotobuf.h"
+#ifdef CLIENT_DLL
+#include "clientsteamcontext.h"
+#include "steam/isteamuser.h"
+#else
+#include "steam/steam_api.h"
+#include "enginecallback.h"
+#endif
 #include "gcsdk/webapi_response.h"
 
 #ifdef TF_CLIENT_DLL
 #include "secure_command_line.h"
 #endif
+
+// memdbgon must be the last include file in a .cpp file!!!
+#include "tier0/memdbgon.h"
 
 //
 // TODO: NO_STEAM support!
@@ -127,7 +140,7 @@ bool CGCClientSystem::BSendMessage( const GCSDK::CGCMsgBase& msg )
 //-----------------------------------------------------------------------------
 bool CGCClientSystem::BSendMessage( const GCSDK::CProtoBufMsgBase& msg )									
 { 
-	return m_GCClient.BSendMessage( msg ); 
+	return m_GCClient.BSendMessage( msg );
 }
 
 #ifdef GAME_DLL
@@ -211,11 +224,6 @@ private:
 //-----------------------------------------------------------------------------
 bool CGCClientSystem::BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg, ComtressCallback_t callback )
 {
-#ifdef GAME_DLL
-	// not supporting listen server for now
-	if ( !engine->IsDedicatedServer() )
-		return false;
-
 	if ( !GetSteamHTTP() )
 		return false;
 
@@ -230,11 +238,55 @@ bool CGCClientSystem::BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg, 
 	jsonReq.SetStatusCode( k_EHTTPStatusCode200OK );
 	GCSDK::CWebAPIValues* pRoot = jsonReq.CreateRootValue( "body" );
 	jsonReq.SetJSONAnonymousRootNode( true );
-	const char* szToken = sv_private_token.GetString();
-	if ( szToken && szToken[0] != '\0' )
+
+#ifdef CLIENT_DLL
+	if ( steamapicontext && steamapicontext->SteamUser() && steamapicontext->SteamUser()->BLoggedOn() )
 	{
-		pRoot->SetChildStringValue( "token", szToken );
+		uint8 ticket[1024];
+		uint32 ticketLen = 0;
+		if ( steamapicontext->SteamUser()->GetAuthSessionTicket( ticket, sizeof(ticket), &ticketLen, nullptr ) )
+		{
+			char hexTicket[2049];
+			Q_memset( hexTicket, 0, sizeof(hexTicket) );
+			for ( uint32 i = 0; i < ticketLen; i++ )
+			{
+				V_snprintf( &hexTicket[i*2], 3, "%02x", ticket[i] );
+			}
+			GetSteamHTTP()->SetHTTPRequestHeaderValue( hRequest, "Authorization", (CUtlString( "Steam " ) + hexTicket).Get() );
+			pRoot->SetChildStringValue( "ticket", hexTicket );
+		}
 	}
+#else
+	if ( !engine->IsDedicatedServer() )
+	{
+		if ( steamapicontext && steamapicontext->SteamUser() && steamapicontext->SteamUser()->BLoggedOn() )
+		{
+			uint8 ticket[1024];
+			uint32 ticketLen = 0;
+			if ( steamapicontext->SteamUser()->GetAuthSessionTicket( ticket, sizeof(ticket), &ticketLen, nullptr ) )
+			{
+				char hexTicket[2049];
+				Q_memset( hexTicket, 0, sizeof(hexTicket) );
+				for ( uint32 i = 0; i < ticketLen; i++ )
+				{
+					V_snprintf( &hexTicket[i*2], 3, "%02x", ticket[i] );
+				}
+				GetSteamHTTP()->SetHTTPRequestHeaderValue( hRequest, "Authorization", (CUtlString( "Steam " ) + hexTicket).Get() );
+				pRoot->SetChildStringValue( "ticket", hexTicket );
+			}
+		}
+	}
+	else
+	{
+		const char* szToken = sv_private_token.GetString();
+		if ( szToken && szToken[0] != '\0' )
+		{
+			GetSteamHTTP()->SetHTTPRequestHeaderValue( hRequest, "Authorization", (CUtlString( "Token " ) + szToken).Get() );
+			pRoot->SetChildStringValue( "token", szToken );
+		}
+	}
+#endif
+
 	pRoot->SetChildUInt32Value( "msg", msg.GetEMsg() );
 
 	auto        msgBody = msg.GetGenericBody();
@@ -269,10 +321,6 @@ bool CGCClientSystem::BSendMessageComtress( const GCSDK::CProtoBufMsgBase& msg, 
 	pRequest->m_CallbackCompleted.Set( callResult, pRequest, &CComtressRequest::OnComtressMsgResponseReceived );
 
 	return true;
-#else
-	// todo(mcoms): client
-	return false;
-#endif
 }
 
 
@@ -417,14 +465,18 @@ void CGCClientSystem::Update( float frametime )
 {
 	ThinkConnection();
 	if ( m_bInittedGC )
+	{
 		m_GCClient.BMainLoop( k_nThousand, (uint64)( frametime * 1000000.0f ) );
+	}
 }
 #else
 void CGCClientSystem::PreClientUpdate()	
 { 
 	ThinkConnection();
 	if ( m_bInittedGC )
+	{
 		m_GCClient.BMainLoop( k_nThousand, ( uint64 )( gpGlobals->frametime * 1000000.0f ) ); 	
+	}
 }
 #endif
 

@@ -62,9 +62,10 @@ $Configuration
 
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\game\shared;$SRCDIR\utils\common;$SRCDIR\game\shared\econ;$SRCDIR\game\server\NextBot"
+		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\game\shared;$SRCDIR\utils\common;$SRCDIR\game\shared\econ;$SRCDIR\game\server\NextBot;$SRCDIR\thirdparty\ixwebsocket"
 		$PreprocessorDefinitions		"$BASE;GAME_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;sprintf=use_Q_snprintf_instead_of_sprintf;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead"
 		$PreprocessorDefinitions		"$BASE;INCLUDED_STEAM2_USERID_STRUCTS" 
+		$PreprocessorDefinitions		"$BASE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING"
 		$PreprocessorDefinitions		"$BASE;SWDS" [$DEDICATED]
 		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WINDOWS||$X360]
 		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
@@ -73,6 +74,7 @@ $Configuration
 		// misyl: We should eliminate these someday.
 		$DisableSpecificWarnings		"$BASE;4267" [$WIN64] // warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 		$DisableSpecificWarnings		"$BASE;4101" [$WINDOWS] // warning C4101: 'topColor': unreferenced local variable
+		$DisableSpecificWarnings		"$BASE;4530" [$WINDOWS] // warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
 	}
 
 	$Linker
@@ -102,6 +104,8 @@ $Project
 		$File	"$SRCDIR\game\shared\achievements_hlx.cpp"
 		$File	"$SRCDIR\game\shared\activitylist.cpp"
 		$File	"$SRCDIR\game\shared\activitylist.h"
+		$File	"$SRCDIR\game\shared\agones_sdk.cpp"
+		$File	"$SRCDIR\game\shared\agones_sdk.h"
 		$File	"ai_activity.cpp"
 		$File	"$SRCDIR\game\shared\ai_activity.h"
 		$File	"ai_baseactor.cpp"
@@ -399,6 +403,8 @@ $Project
 		$File	"game_ui.cpp"
 		$File	"gameinterface.cpp"
 		$File	"gameinterface.h"
+		$File	"$SRCDIR\game\shared\comtress_gc_websocket.cpp"
+		$File	"$SRCDIR\game\shared\comtress_gc_websocket.h"
 		$File	"$SRCDIR\game\shared\gamemovement.cpp"
 		$File	"$SRCDIR\game\shared\gamemovement.h"
 		$File	"$SRCDIR\game\shared\gamerules.cpp"
@@ -1046,6 +1052,7 @@ $Project
 		$Lib	particles
 		$Lib	tier2
 		$Lib	tier3
+		$Lib	ixwebsocket
 
 		$ImpLibexternal steam_api	[!$WIN64]
 		$ImpLibexternal steam_api64	[$WIN64]

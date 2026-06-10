@@ -4,3 +4,6 @@
 [submodule "src/thirdparty/Crow"]
 	path = src/thirdparty/Crow
 	url = https://github.com/CrowCpp/Crow.git
+[submodule "src/thirdparty/ixwebsocket"]
+	path = src/thirdparty/ixwebsocket
+	url = https://github.com/machinezone/IXWebSocket.git

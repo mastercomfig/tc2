@@ -155,3 +155,8 @@ $Project "vvis_launcher"
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WINDOWS]
 }
 
+$Project "ixwebsocket"
+{
+	"thirdparty\ixwebsocket.vpc"
+}
+

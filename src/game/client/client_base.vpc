@@ -55,9 +55,10 @@ $Configuration
 
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\;$BASE;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\shared;.\game_controls;$SRCDIR\thirdparty\sixensesdk\include"
+		$AdditionalIncludeDirectories	".\;$BASE;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\shared;.\game_controls;$SRCDIR\thirdparty\sixensesdk\include;$SRCDIR\thirdparty\ixwebsocket"
 		$PreprocessorDefinitions		"$BASE;NO_STRING_T;CLIENT_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead" 
 		$PreprocessorDefinitions		"$BASE;INCLUDED_STEAM2_USERID_STRUCTS" 
+		$PreprocessorDefinitions		"$BASE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING"
 		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WIN32]
 		$PreprocessorDefinitions		"$BASE;USE_WEBM_FOR_REPLAY;" [$LINUXALL]
 		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
@@ -67,6 +68,7 @@ $Configuration
 		// misyl: We should eliminate these someday.
 		$DisableSpecificWarnings		"$BASE;4267" [$WIN64] // warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
 		$DisableSpecificWarnings		"$BASE;4101" [$WINDOWS] // warning C4101: 'topColor': unreferenced local variable
+		$DisableSpecificWarnings		"$BASE;4530" [$WINDOWS] // warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc
 	}
 
 	$Linker
@@ -321,6 +323,7 @@ $Project
 		$File	"commentary_modelviewer.cpp"
 		$File	"commentary_modelviewer.h"
 		$File	"$SRCDIR\game\shared\collisionproperty.cpp"
+		$File	"$SRCDIR\game\shared\comtress_gc_websocket.cpp"
 		$File	"$SRCDIR\game\shared\death_pose.cpp"
 		$File	"$SRCDIR\game\shared\debugoverlay_shared.cpp"
 		$File	"$SRCDIR\game\shared\decals.cpp"
@@ -1273,6 +1276,7 @@ $Project
 		$Lib		tier3
 		$Lib		vgui_controls
 		$Lib		vtf
+		$Lib		ixwebsocket
 
 		$ImpLibexternal steam_api	[!$WIN64]
 		$ImpLibexternal steam_api64	[$WIN64]

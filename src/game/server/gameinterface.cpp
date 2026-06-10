@@ -68,6 +68,7 @@
 #include "tier0/icommandline.h"
 #include "datacache/imdlcache.h"
 #include "engine/iserverplugin.h"
+#include "agones_sdk.h"
 #ifdef _WIN32
 #include "ienginevgui.h"
 #endif
@@ -637,7 +638,13 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 
 	// init the cvar list first in case inits want to reference them
 	InitializeCvars();
-	
+
+	if ( engine->IsDedicatedServer() )
+	{
+		// Initialize Agones SDK
+		Agones::SDK()->Init();
+	}
+
 	// Initialize the particle system
 	if ( !g_pParticleSystemMgr->Init( g_pParticleSystemQuery ) )
 	{
@@ -780,6 +787,11 @@ void CServerGameDLL::DLLShutdown( void )
 	DisconnectTier2Libraries();
 	ConVar_Unregister();
 	DisconnectTier1Libraries();
+	
+	if ( engine->IsDedicatedServer() )
+	{
+		Agones::SDK()->Shutdown();
+	}
 }
 
 bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
@@ -1130,6 +1142,25 @@ void CServerGameDLL::ServerActivate( edict_t *pEdictList, int edictCount, int cl
 #ifdef NEXT_BOT
 	TheNextBots().OnMapLoaded();
 #endif
+
+	if ( engine->IsDedicatedServer() )
+	{
+#ifdef POSIX
+		// If we are asked to checkpoint, drop a file for our CRIU script
+		if ( CommandLine()->FindParm( "-criu_checkpoint_wait" ) )
+		{
+			FILE *fp = fopen( "/tmp/criu_ready", "w" );
+			if ( fp )
+			{
+				fputs( "ready", fp );
+				fclose( fp );
+			}
+		}
+#endif
+
+		// Tell Kubernetes/Agones that we are ready to accept players and matches
+		Agones::SDK()->Ready();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1181,6 +1212,17 @@ void CServerGameDLL::GameFrame( bool simulating )
 	// Don't run frames until fully restored
 	if ( g_InRestore )
 		return;
+
+	if ( engine->IsDedicatedServer() )
+	{
+		// Send Agones health pings every 2 seconds to keep K8s pod alive
+		static float s_flLastAgonesHealthTime = 0.0f;
+		if ( gpGlobals->curtime > s_flLastAgonesHealthTime + 2.0f )
+		{
+			s_flLastAgonesHealthTime = gpGlobals->curtime;
+			Agones::SDK()->Health();
+		}
+	}
 
 	if ( CBaseEntity::IsSimulatingOnAlternateTicks() )
 	{

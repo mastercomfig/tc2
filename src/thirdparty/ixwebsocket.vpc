@@ -1,0 +1,61 @@
+$Macro SRCDIR		".."
+$Include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;.\ixwebsocket;.\openssl\include"
+		$PreprocessorDefinitions		"$BASE;IXWEBSOCKET_USE_TLS;IXWEBSOCKET_USE_OPEN_SSL"
+		$DisableSpecificWarnings		"$BASE;4530" [$WINDOWS] // C++ exception handler used
+	}
+}
+
+$Project "ixwebsocket"
+{
+	$Folder	"Source Files"
+	{
+		$File	"ixwebsocket\ixwebsocket\IXBench.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXCancellationRequest.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXConnectionState.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXDNSLookup.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXExponentialBackoff.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXGetFreePort.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXGzipCodec.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXHttp.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXHttpClient.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXHttpServer.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXNetSystem.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSelectInterrupt.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSelectInterruptEvent.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSelectInterruptFactory.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSelectInterruptPipe.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSetThreadName.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocket.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocketConnect.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocketFactory.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocketOpenSSL.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocketServer.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXSocketTLSOptions.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXStrCaseCompare.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXUdpSocket.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXUrlParser.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXUserAgent.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXUuid.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocket.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketCloseConstants.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketHandshake.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketHttpHeaders.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketPerMessageDeflate.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketPerMessageDeflateCodec.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketPerMessageDeflateOptions.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketProxyServer.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketServer.cpp"
+		$File	"ixwebsocket\ixwebsocket\IXWebSocketTransport.cpp"
+	}
+
+	$Folder "Header Files"
+	{
+		$File	"ixwebsocket\ixwebsocket\IXWebSocket.h"
+	}
+}

@@ -48,3 +48,11 @@ $Project
 	}
 }
 
+$Configuration
+{
+	$Linker
+	{
+		$AdditionalOptions					"$BASE /ignore:4099"
+	}
+}
+

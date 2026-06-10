@@ -14,6 +14,9 @@
 #include "shareddefs.h"
 #include "filesystem.h"
 #include "econ_item_description.h"				// only for CSteamAccountIDAttributeCollector
+#if defined( TF_DLL )
+#include "tf_gc_api.h"
+#endif
 
 #ifdef CLIENT_DLL
 #include <igameevents.h>
@@ -187,6 +190,9 @@ void CInventoryManager::SteamRequestInventory( CPlayerInventory *pInventory, CSt
 //-----------------------------------------------------------------------------
 void CInventoryManager::GameServerSteamAPIActivated()
 {
+#if defined(TF_DLL)
+	GameCoordinator_NotifyGameState();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -775,6 +781,8 @@ void CInventoryManager::Update( float frametime )
 //-----------------------------------------------------------------------------
 void CInventoryManager::UpdateInventoryEquippedState( CPlayerInventory *pInventory, uint64 ulItemID, equipped_class_t unClass, equipped_slot_t unSlot )
 {
+	// TODO(mcoms): do we need this?
+#ifndef SOURCESDK
 	// passing in INVALID_ITEM_ID means "unequip from this slot"
 	if ( ulItemID != INVALID_ITEM_ID )
 	{
@@ -795,6 +803,7 @@ void CInventoryManager::UpdateInventoryEquippedState( CPlayerInventory *pInvento
 	msg.Body().set_new_class( unClass );
 	msg.Body().set_new_slot( unSlot );
 	GCClientSystem()->BSendMessage( msg );
+#endif
 }
 
 //-----------------------------------------------------------------------------
