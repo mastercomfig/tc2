@@ -81,6 +81,7 @@ $Configuration
 	{
 		$AdditionalDependencies			"$BASE winmm.lib" [$WINDOWS]
 		$SystemLibraries                                                        "iconv" [$OSXALL]
+		$SystemLibraries				"ssl;crypto" [$LINUXALL]
 	}
 }
 
