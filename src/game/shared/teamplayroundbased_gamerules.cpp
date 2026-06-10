@@ -2172,7 +2172,7 @@ void CTeamplayRoundBasedRules::State_Enter_TEAM_WIN( void )
 				if ( pTeam->GetRole() == TEAM_ROLE_DEFENDERS )
 				{
 					TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ) );
-					Msg( "[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason );
+					Msg( "[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason.Get() );
 				}
 			}
 
@@ -2288,7 +2288,7 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 					if ( GetWinningTeam() != TEAM_UNASSIGNED && !TFGameRules()->MatchmakingShouldUseStopwatchMode() )
 					{
 						TFGameRules()->AddSeriesPoint( TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ) );
-						Msg("[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason );
+						Msg( "[MULTI-SERIES DEBUG] Added series point to %d for winning (%d)\n", TFGameRules()->GetGCTeamForGameTeam( GetWinningTeam() ), m_iWinReason.Get() );
 					}
 					// Are we done with the entire match?
 					// The match is done if the time limit is reached, AND the series points are not tied.
