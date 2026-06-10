@@ -206,9 +206,9 @@ public:
 					CMsgProtoBufHeader hdr;
 					hdr.ParseFromArray( pNetPacket->PubData() + 2 * sizeof(uint32_t), headerLen );
 
-					GCSDK::JobMsgInfo_t info( eMsg & ~GCSDK::k_EMsgProtoBufFlag, hdr.job_id_source(), hdr.job_id_target(), GCSDK::k_EServerTypeInvalid );
+					GCSDK::JobMsgInfo_t info( eMsg & ~GCSDK::k_EMsgProtoBufFlag, hdr.job_id_source(), hdr.job_id_target(), GCSDK::k_EServerTypeGCClient );
 					
-					GCClientSystem()->GetGCClient()->GetJobMgr().BRouteMsgToJob( NULL, pMsgNetPacket.Get(), info );
+					GCClientSystem()->GetGCClient()->GetJobMgr().BRouteMsgToJob( GCClientSystem()->GetGCClient(), pMsgNetPacket.Get(), info );
 				}
 				else
 				{
