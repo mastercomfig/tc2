@@ -86,6 +86,7 @@ protected:
 	int		m_iCachedDeflect;
 	Vector m_vecSpawnLoc;
 	Vector m_vecPredLoc;
+	Vector m_vecClientOffset;
 	bool m_bPredicting;
 	CNetworkHandle( CBaseEntity, m_hLauncher );
 

@@ -235,6 +235,21 @@ void CTFBaseRocket::PostDataUpdate( DataUpdateType_t type )
 		// Add a sample 1 second back.
 		const float flLerp = GetClientInterpAmount();
 		Vector vCurOrigin = GetLocalOrigin();
+		
+		m_vecClientOffset.Init();
+		CTFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		if ( pLocalPlayer && pLocalPlayer == GetOwnerEntity() && pLocalPlayer->InFirstPersonView() )
+		{
+			CBaseCombatWeapon *pLauncher = dynamic_cast<CBaseCombatWeapon*>( GetLauncher() );
+			if ( pLauncher && pLauncher->UsesCenterFireProjectile() )
+			{
+				Vector vForward = m_vInitialVelocity->Normalized();
+				// Offset forward so the rocket doesn't spawn right up in the face
+				m_vecClientOffset = vForward * 20.0f;
+				vCurOrigin += m_vecClientOffset;
+			}
+		}
+
 		interpolator.AddToHead(flChangeTime - flLerp, &vCurOrigin, false);
 
 		m_vecSpawnLoc = vCurOrigin;
@@ -283,6 +298,15 @@ void CTFBaseRocket::ClientPredictThink()
 	{
 		m_bPredicting = false;
 		return;
+	}
+
+	if ( !m_vecClientOffset.IsZero() )
+	{
+		float flDecay = gpGlobals->frametime * 10.0f;
+		if ( flDecay > 1.0f ) flDecay = 1.0f;
+		Vector vecDecay = m_vecClientOffset * flDecay;
+		m_vecClientOffset -= vecDecay;
+		m_vecPredLoc -= vecDecay;
 	}
 
 	// sucky position function for now
