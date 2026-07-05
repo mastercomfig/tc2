@@ -300,44 +300,74 @@ void CreateBotName( int iTeam, int iClassIndex, CTFBot::DifficultyType skill, ch
 	const char *pFriendlyOrEnemyTitle = "";
 
 	// @note (Tom Bui): it is okay to get localized name in training, since we should be on a listen server
-	if ( TFGameRules()->IsInTraining() && g_pVGuiLocalize )
+	if ( TFGameRules()->IsInTraining() )
 	{
-		// get the friendly/enemy title
-		const char *pBotTitle = NULL;
-		if ( iTeam != TEAM_UNASSIGNED )
+		if ( g_pVGuiLocalize )
 		{
-			int iHumanTeam = TFGameRules()->GetAssignedHumanTeam();
-			if ( iHumanTeam != TEAM_ANY )
+			// get the friendly/enemy title
+			const char *pBotTitle = NULL;
+			if ( iTeam != TEAM_UNASSIGNED )
 			{
-				if ( iHumanTeam == iTeam )
+				int iHumanTeam = TFGameRules()->GetAssignedHumanTeam();
+				if ( iHumanTeam != TEAM_ANY )
 				{
-					pBotTitle = "#TF_Bot_Title_Friendly";
-				}
-				else
-				{
-					pBotTitle = "#TF_Bot_Title_Enemy";
+					if ( iHumanTeam == iTeam )
+					{
+						pBotTitle = "#TF_Bot_Title_Friendly";
+					}
+					else
+					{
+						pBotTitle = "#TF_Bot_Title_Enemy";
+					}
 				}
 			}
-		}
-		wchar_t *pLocalizedTitle = pBotTitle ? g_pVGuiLocalize->Find( pBotTitle ) : NULL;
-		if ( pLocalizedTitle )
-		{
-			g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedTitle, szEnemyOrFriendlyString, sizeof( szEnemyOrFriendlyString ) );
-			pFriendlyOrEnemyTitle = szEnemyOrFriendlyString;
-		}
+			wchar_t *pLocalizedTitle = pBotTitle ? g_pVGuiLocalize->Find( pBotTitle ) : NULL;
+			if ( pLocalizedTitle )
+			{
+				g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedTitle, szEnemyOrFriendlyString, sizeof( szEnemyOrFriendlyString ) );
+				pFriendlyOrEnemyTitle = szEnemyOrFriendlyString;
+			}
 
-		// get the class name
-		wchar_t *pLocalizedName = NULL;
-		if ( iClassIndex >= TF_FIRST_NORMAL_CLASS && iClassIndex < TF_LAST_NORMAL_CLASS )
-		{
-			pLocalizedName = g_pVGuiLocalize->Find( g_aPlayerClassNames[ iClassIndex ] );
+			// get the class name
+			wchar_t *pLocalizedName = NULL;
+			if ( iClassIndex >= TF_FIRST_NORMAL_CLASS && iClassIndex < TF_LAST_NORMAL_CLASS )
+			{
+				pLocalizedName = g_pVGuiLocalize->Find( g_aPlayerClassNames[ iClassIndex ] );
+			}
+			else
+			{
+				pLocalizedName = g_pVGuiLocalize->Find( "#TF_Bot_Generic_ClassName" );
+			}
+			g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedName, szBotNameBuffer, sizeof( szBotNameBuffer ) );
+			pBotName = szBotNameBuffer;
 		}
 		else
 		{
-			pLocalizedName = g_pVGuiLocalize->Find( "#TF_Bot_Generic_ClassName" );
+			// Dedicated server fallback
+			if ( iTeam != TEAM_UNASSIGNED )
+			{
+				int iHumanTeam = TFGameRules()->GetAssignedHumanTeam();
+				if ( iHumanTeam != TEAM_ANY )
+				{
+					if ( iHumanTeam == iTeam )
+					{
+						pFriendlyOrEnemyTitle = "Friendly ";
+					}
+					else
+					{
+						pFriendlyOrEnemyTitle = "Enemy ";
+					}
+				}
+			}
+			if ( iClassIndex >= TF_FIRST_NORMAL_CLASS && iClassIndex < TF_LAST_NORMAL_CLASS )
+			{
+				pBotName = g_aPlayerClassNames_NonLocalized[ iClassIndex ];
+			}
+			else
+			{
+				pBotName = "Bot";
+			}
 		}
-		g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedName, szBotNameBuffer, sizeof( szBotNameBuffer ) );
-		pBotName = szBotNameBuffer;
 	}
 	else
 	{

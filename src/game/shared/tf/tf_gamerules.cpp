@@ -892,11 +892,11 @@ ConVar tf_autobalance_xp_bonus( "tf_autobalance_xp_bonus", "500", FCVAR_REPLICAT
 
 ConVar tf_competitive_item_draft("tf_competitive_item_draft", "0", FCVAR_REPLICATED);
 
+ConVar mp_humans_must_join_team( "mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
+
 #ifdef GAME_DLL
 
 static const float g_flStrangeEventBatchProcessInterval = 30.0f;
-
-ConVar mp_humans_must_join_team("mp_humans_must_join_team", "any", FCVAR_REPLICATED, "Restricts human players to a single team {any, blue, red, spectator}" );
 
 void cc_tf_medieval_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
@@ -4524,6 +4524,31 @@ CTFGameRules::EUserNextMapVote CTFGameRules::GetWinningVote( int (&nVotes)[ EUse
 		return eWinningVote;
 	}	
 }
+
+
+//-----------------------------------------------------------------------------
+// Purpose: Restrict team human players can join
+//-----------------------------------------------------------------------------
+int CTFGameRules::GetAssignedHumanTeam( void )
+{
+	if ( FStrEq( "blue", mp_humans_must_join_team.GetString() ) )
+	{
+		return TF_TEAM_BLUE;
+	}
+	else if ( FStrEq( "red", mp_humans_must_join_team.GetString() ) )
+	{
+		return TF_TEAM_RED;
+	}
+	else if ( FStrEq( "spectator", mp_humans_must_join_team.GetString() ) )
+	{
+		return TEAM_SPECTATOR;
+	}
+	else
+	{
+		return TEAM_ANY;
+	}
+}
+
 
 #ifdef GAME_DLL
 void CTFGameRules::KickPlayersNewMatchIDRequestFailed()
@@ -18773,29 +18798,6 @@ void CTFGameRules::PowerupTeamImbalance( int nTeam )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Restrict team human players can join
-//-----------------------------------------------------------------------------
-int CTFGameRules::GetAssignedHumanTeam( void )
-{
-	if ( FStrEq( "blue", mp_humans_must_join_team.GetString() ) )
-	{
-		return TF_TEAM_BLUE;
-	}
-	else if ( FStrEq( "red", mp_humans_must_join_team.GetString() ) )
-	{
-		return TF_TEAM_RED;
-	}
-	else if ( FStrEq( "spectator", mp_humans_must_join_team.GetString() ) )
-	{
-		return TEAM_SPECTATOR;
-	}
-	else
-	{
-		return TEAM_ANY;
-	}
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -21804,15 +21806,15 @@ void CTrainingModeLogic::OnPlayerSpawned( CTFPlayer* pPlayer )
 	int iClass = pPlayer->GetPlayerClass()->GetClassIndex();
 	switch ( iClass )
 	{
-	case TF_CLASS_SCOUT:		m_outputOnPlayerSpawnAsScout.FireOutput( this, this ); break;
-	case TF_CLASS_SNIPER:		m_outputOnPlayerSpawnAsSniper.FireOutput( this, this ); break;
-	case TF_CLASS_SOLDIER:		m_outputOnPlayerSpawnAsSoldier.FireOutput( this, this ); break;
-	case TF_CLASS_DEMOMAN:		m_outputOnPlayerSpawnAsDemoman.FireOutput( this, this ); break;
-	case TF_CLASS_MEDIC:		m_outputOnPlayerSpawnAsMedic.FireOutput( this, this ); break;
-	case TF_CLASS_HEAVYWEAPONS:	m_outputOnPlayerSpawnAsHeavy.FireOutput( this, this ); break;
-	case TF_CLASS_PYRO:			m_outputOnPlayerSpawnAsPyro.FireOutput( this, this ); break;
-	case TF_CLASS_SPY:			m_outputOnPlayerSpawnAsSpy.FireOutput( this, this ); break;
-	case TF_CLASS_ENGINEER:		m_outputOnPlayerSpawnAsEngineer.FireOutput( this, this ); break;
+	case TF_CLASS_SCOUT:		m_outputOnPlayerSpawnAsScout.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_SNIPER:		m_outputOnPlayerSpawnAsSniper.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_SOLDIER:		m_outputOnPlayerSpawnAsSoldier.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_DEMOMAN:		m_outputOnPlayerSpawnAsDemoman.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_MEDIC:		m_outputOnPlayerSpawnAsMedic.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_HEAVYWEAPONS:	m_outputOnPlayerSpawnAsHeavy.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_PYRO:			m_outputOnPlayerSpawnAsPyro.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_SPY:			m_outputOnPlayerSpawnAsSpy.FireOutput( pPlayer, this ); break;
+	case TF_CLASS_ENGINEER:		m_outputOnPlayerSpawnAsEngineer.FireOutput( pPlayer, this ); break;
 	}
 }
 
@@ -21835,11 +21837,11 @@ void CTrainingModeLogic::OnPlayerSwitchedWeapons( CTFPlayer *pPlayer )
 	}
 	switch ( pWeapon->GetTFWpnData().m_iWeaponType )
 	{
-	case TF_WPN_TYPE_PRIMARY:	m_outputOnPlayerSwappedToWeaponSlotPrimary.FireOutput( this, this ); break;
-	case TF_WPN_TYPE_SECONDARY:	m_outputOnPlayerSwappedToWeaponSlotSecondary.FireOutput( this, this ); break;
-	case TF_WPN_TYPE_MELEE:		m_outputOnPlayerSwappedToWeaponSlotMelee.FireOutput( this, this ); break;
-	case TF_WPN_TYPE_BUILDING:	m_outputOnPlayerSwappedToWeaponSlotBuilding.FireOutput( this, this ); break;
-	case TF_WPN_TYPE_PDA:		m_outputOnPlayerSwappedToWeaponSlotPDA.FireOutput( this, this ); break;
+	case TF_WPN_TYPE_PRIMARY:	m_outputOnPlayerSwappedToWeaponSlotPrimary.FireOutput( pPlayer, this ); break;
+	case TF_WPN_TYPE_SECONDARY:	m_outputOnPlayerSwappedToWeaponSlotSecondary.FireOutput( pPlayer, this ); break;
+	case TF_WPN_TYPE_MELEE:		m_outputOnPlayerSwappedToWeaponSlotMelee.FireOutput( pPlayer, this ); break;
+	case TF_WPN_TYPE_BUILDING:	m_outputOnPlayerSwappedToWeaponSlotBuilding.FireOutput( pPlayer, this ); break;
+	case TF_WPN_TYPE_PDA:		m_outputOnPlayerSwappedToWeaponSlotPDA.FireOutput( pPlayer, this ); break;
 	}
 }
 
@@ -21940,18 +21942,7 @@ void CTrainingModeLogic::InputShowTrainingObjective( inputdata_t &inputdata )
 	if ( !TFGameRules()->IsInTraining() )
 		return;
   
-	//First try to find the unicode string to send over.
-	wchar_t *strPtr = NULL;
-	strPtr = g_pVGuiLocalize ? g_pVGuiLocalize->Find( inputdata.value.String() ) : NULL;
-
-	if (NULL == strPtr)
-	{
-		V_strcpy_safe(m_objText, inputdata.value.String());
-	}
-	else
-	{
-		g_pVGuiLocalize->ConvertUnicodeToANSI(strPtr, m_objText, kMaxLengthObjectiveText);
-	}
+	V_strcpy_safe( m_objText, inputdata.value.String() );
 	
 	UpdateHUDObjective();
 }
@@ -21979,11 +21970,16 @@ void CTrainingModeLogic::InputEndTraining( inputdata_t &inputdata )
 
 	m_endTrainingText = inputdata.value.StringID();
 
-	CTFPlayer* pHumanPlayer = ToTFPlayer( UTIL_GetListenServerHost() );
-	    
-	if (NULL == pHumanPlayer) return;
-	
-	int iTeam = pHumanPlayer->GetTeamNumber();
+	int iTeam = TF_TEAM_BLUE;
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+		if ( pPlayer && !pPlayer->IsFakeClient() )
+		{
+			iTeam = pPlayer->GetTeamNumber();
+			break;
+		}
+	}
 	
 	bool force_map_reset = true;
 	CTeamplayRoundBasedRules *pGameRules = dynamic_cast<CTeamplayRoundBasedRules *>( GameRules() );
@@ -22005,12 +22001,14 @@ void CTrainingModeLogic::InputPlaySoundOnPlayer( inputdata_t &inputdata )
 {
 	if ( !TFGameRules()->IsInTraining() )
 		return;
-	CTFPlayer* pHumanPlayer = ToTFPlayer( UTIL_GetListenServerHost() );
-
-	if (NULL == pHumanPlayer) 
-		return;
-
-	pHumanPlayer->EmitSound( inputdata.value.String() );
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CTFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+		if ( pPlayer && !pPlayer->IsFakeClient() )
+		{
+			pPlayer->EmitSound( inputdata.value.String() );
+		}
+	}
 }
 
 void CTrainingModeLogic::InputWaitForTimerOrKeypress( inputdata_t &inputdata )
@@ -22029,49 +22027,51 @@ void CTrainingModeLogic::InputSetNextMap( inputdata_t &inputdata )
 
 void CTrainingModeLogic::InputForcePlayerSwapToWeapon( inputdata_t &inputdata )
 {
-	CTFPlayer* pHumanPlayer = ToTFPlayer( UTIL_GetListenServerHost() );
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CTFPlayer *pHumanPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+		if ( !pHumanPlayer || pHumanPlayer->IsFakeClient() )
+			continue;
 
-	if (NULL == pHumanPlayer) 
-		return;
+		CBaseCombatWeapon *pWeapon = NULL;
 
-	CBaseCombatWeapon *pWeapon = NULL;
+		if ( FStrEq( inputdata.value.String(), "primary" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_PRIMARY );
+		}
+		else if ( FStrEq( inputdata.value.String(), "secondary" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_SECONDARY );
+		}
+		else if ( FStrEq( inputdata.value.String(), "melee" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_MELEE );
+		}
+		else if ( FStrEq( inputdata.value.String(), "grenade" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_GRENADE );
+		}
+		else if ( FStrEq( inputdata.value.String(), "building" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_BUILDING );
+		}
+		else if ( FStrEq( inputdata.value.String(), "pda" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_PDA );
+		}
+		else if ( FStrEq( inputdata.value.String(), "item1" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_ITEM1 );
+		}
+		else if ( FStrEq( inputdata.value.String(), "item2" ) )
+		{
+			pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_ITEM2 );
+		}
 
-	if ( FStrEq( inputdata.value.String(), "primary" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_PRIMARY );
-	}
-	else if ( FStrEq( inputdata.value.String(), "secondary" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_SECONDARY );
-	}
-	else if ( FStrEq( inputdata.value.String(), "melee" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_MELEE );
-	}
-	else if ( FStrEq( inputdata.value.String(), "grenade" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_GRENADE );
-	}
-	else if ( FStrEq( inputdata.value.String(), "building" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_BUILDING );
-	}
-	else if ( FStrEq( inputdata.value.String(), "pda" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_PDA );
-	}
-	else if ( FStrEq( inputdata.value.String(), "item1" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_ITEM1 );
-	}
-	else if ( FStrEq( inputdata.value.String(), "item2" ) )
-	{
-		pWeapon = pHumanPlayer->Weapon_GetSlot( TF_WPN_TYPE_ITEM2 );
-	}
-
-	if ( pWeapon )
-	{
-		pHumanPlayer->Weapon_Switch( pWeapon );
+		if ( pWeapon )
+		{
+			pHumanPlayer->Weapon_Switch( pWeapon );
+		}
 	}
 
 }
