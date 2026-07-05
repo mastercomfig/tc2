@@ -18594,30 +18594,79 @@ bool CTFGameRules::BAttemptMapVoteRollingMatch()
 //-----------------------------------------------------------------------------
 bool CTFGameRules::BIsManagedMatchEndImminent( void )
 {
-/*
 	if ( IsCompetitiveMode() )
 	{
+		bool bPotentiallyTheFinalRound = ( CheckWinLimit( false, 1 ) || CheckMaxRounds( false, 1 ) );
+		CTeamControlPointMaster *pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+		bool bPlayingMiniRounds = pMaster ? g_hControlPointMasters[0]->PlayingMiniRounds() : false;
+		if ( bPlayingMiniRounds && bPotentiallyTheFinalRound )
+		{
+			int nRoundsRemaining;
+			if ( pMaster->ShouldPlayAllControlPointRounds() )
+			{
+				nRoundsRemaining = pMaster->NumPlayableControlPointRounds();
+			}
+			else
+			{
+				int iWinningTeam = TEAM_UNASSIGNED;
+				if ( State_Get() == GR_STATE_TEAM_WIN || IsGameOver() )
+				{
+					iWinningTeam = m_iWinningTeam;
+				}
+				if ( iWinningTeam == TEAM_UNASSIGNED )
+				{
+					int nRoundsRemainingRed = pMaster->CalcNumRoundsRemaining( TF_TEAM_RED );
+					int nRoundsRemainingBlue = pMaster->CalcNumRoundsRemaining( TF_TEAM_BLUE );
+					if ( nRoundsRemainingRed < nRoundsRemainingBlue )
+					{
+						nRoundsRemaining = nRoundsRemainingRed;
+					}
+					else
+					{
+						nRoundsRemaining = nRoundsRemainingBlue;
+					}
+				}
+				else
+				{
+					nRoundsRemaining = pMaster->CalcNumRoundsRemaining( iWinningTeam );
+				}
+			}
+			bPotentiallyTheFinalRound = nRoundsRemaining == 0;
+		}
+		if ( !TFGameRules()->IsPlayingMultiSeriesIntermission() )
+		{
+			if ( ShowMatchSummary() )
+			{
+				return true;
+			}
+
+			if ( IsGameOver() )
+			{
+				return true;
+			}
+
+			if ( State_Get() == GR_STATE_TEAM_WIN )
+			{
+				if ( bPotentiallyTheFinalRound )
+				{
+					return true;
+				}
+			}
+		}
+
 		if ( State_Get() == GR_STATE_RND_RUNNING )
 		{
-			bool bPotentiallyTheFinalRound = ( CheckWinLimit( false, 1 ) || CheckMaxRounds( false, 1 ) );
 			if ( bPotentiallyTheFinalRound )
 			{
-				bool bPlayingMiniRounds = ( g_hControlPointMasters.Count() && g_hControlPointMasters[0] && g_hControlPointMasters[0]->PlayingMiniRounds() );
-
 				switch( m_nGameType )
 				{
 				case TF_GAMETYPE_ESCORT:
 				{
 					if ( HasMultipleTrains() )
 					{
-
-
 					}
 					else
 					{
-
-
-
 					}
 				}
 					break;
@@ -18629,7 +18678,7 @@ bool CTFGameRules::BIsManagedMatchEndImminent( void )
 					{
 						for ( int iTeam = TF_TEAM_RED; iTeam < TF_TEAM_COUNT; iTeam++ )
 						{
-							C_TFTeam *pTeam = GetGlobalTFTeam( iTeam );
+							CTFTeam *pTeam = GetGlobalTFTeam( iTeam );
 							if ( pTeam )
 							{
 								if ( ( tf_flag_caps_per_round.GetInt() - pTeam->GetFlagCaptures() ) <= 1 )
@@ -18651,7 +18700,7 @@ bool CTFGameRules::BIsManagedMatchEndImminent( void )
 				}
 			}
 		}
-	}*/
+	}
 
 	return false;
 }
