@@ -2451,14 +2451,15 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
 
 				float flPostMatchPeriod = ( pMatchDesc || TFGameRules()->IsEmulatingMatch() ) ? GetPostMatchPeriod() : 10.0f;
-				if ( TFGameRules()->IsPlayingMultiSeriesIntermission() )
+				const bool bMultiSeriesIntermission = TFGameRules()->IsPlayingMultiSeriesIntermission();
+				if ( bMultiSeriesIntermission )
 				{
 					flPostMatchPeriod = 8.0f;
 				}
 
 				bool bWillLeaveMap = false;
 				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
-				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
+				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() && !bMultiSeriesIntermission )
 				{
 					bWillLeaveMap = true;
 				}
