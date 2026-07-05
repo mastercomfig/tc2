@@ -209,8 +209,8 @@ ConVar tf_scout_energydrink_regen_rate( "tf_scout_energydrink_regen_rate", "3.3"
 ConVar tf_scout_energydrink_consume_rate( "tf_scout_energydrink_consume_rate", "12.5", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "energy drink to use per second while boosted, from 100 max" );
 ConVar tf_scout_energydrink_activation( "tf_scout_energydrink_activation", "0.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "how long it takes for the energy buff to become active" );
 
-ConVar tf_demoman_charge_regen_rate( "tf_demoman_charge_regen_rate", "8.3", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "" );
-ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "" );
+ConVar tf_demoman_charge_regen_rate( "tf_demoman_charge_regen_rate", "8.3", FCVAR_REPLICATED, "" );
+ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVAR_REPLICATED, "" );
 
 ConVar tf_demoman_charge_steering_cap( "tf_demoman_charge_steering_cap", "0.45", FCVAR_REPLICATED, "The base turn rate in degrees during charges" );
 ConVar tf_demoman_charge_steering_camera_lock( "tf_demoman_charge_steering_camera_lock", "0.8", FCVAR_REPLICATED, "0.0: Free camera, 1.0: Camera locked to charge direction" );
