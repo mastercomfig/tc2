@@ -71,6 +71,15 @@ public:
 	  {
 	  }
 
+	  // TODO(mcoms): CheckCLInterpChanged optimization
+#if 0
+	  virtual void SetValue( const char* value )
+	  {
+		  ConVar_ServerBounded::SetValue( value );
+		  C_BaseEntity::CheckCLInterpChanged();
+	  }
+#endif
+
 	  virtual float GetFloat() const
 	  {
 		  static const ConVar *pMin = g_pCVar->FindVar( "sv_client_min_interp_ratio" );
