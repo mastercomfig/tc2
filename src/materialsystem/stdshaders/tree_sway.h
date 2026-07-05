@@ -39,7 +39,7 @@
 		float flSwayScaleHeight = saturate( ( vPositionOS.z - g_flHeight * g_flStartHeight ) /
 											( ( 1.0 - g_flStartHeight ) * g_flHeight ) );
 
-		float flSwayScaleRadius = saturate( length( ( vPositionOS.xy ) - g_flRadius * g_flStartRadius ) /
+		float flSwayScaleRadius = saturate( ( length( vPositionOS.xy ) - g_flRadius * g_flStartRadius ) /
 											( ( 1.0 - g_flStartRadius ) * g_flRadius ) );
 
 		// Used to turn off branch sway and scrumble below the minimum sway height
