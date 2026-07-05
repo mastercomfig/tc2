@@ -38,6 +38,8 @@
 #include "iserver.h"
 #include "hltvdirector.h"
 #include "team.h"
+#include "util_shared.h"
+#include "workshop/maps_workshop.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2900,7 +2902,9 @@ void CTFGCServerSystem::UpdateServerData( bool bShutdown )
 	msg.Body().set_server_steamid( iSteamId );
 	msg.Body().set_secure( SteamGameServer() ? SteamGameServer()->BSecure() : false );
 	msg.Body().set_dedicated( engine->IsDedicatedServer() );
-	msg.Body().set_map( bShutdown ? "" : gpGlobals->mapname.ToCStr() );
+	char szMapName[256];
+	msg.Body().set_map( bShutdown ? "" : GetCleanMapName( gpGlobals->mapname.ToCStr(), szMapName ) );
+
 	msg.Body().set_app_id( engine->GetAppID() );
 	msg.Body().set_gamedir( "tc2" );
 	static ConVarRef sv_region( "sv_region" );
