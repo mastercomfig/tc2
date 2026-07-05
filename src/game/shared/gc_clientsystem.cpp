@@ -11,6 +11,7 @@
 #include "gc_clientsystem.h"
 #include "econ_item_system.h"
 #include "econ_item_inventory.h"
+#include "gcsystemmsgs.pb.h"
 #include "quest_objective_manager.h"
 #ifdef GAME_DLL
 #include "tf_wartracker.h"
@@ -499,11 +500,26 @@ void CGCClientSystem::ThinkConnection()
 			// Re-init logon
 			m_bLoggedOn = true;
 
-			m_timeLastSendHello = -999.9;
+			m_timeLastSendHello = Plat_FloatTime() + 2.0f;
 			SetupGC();
 		}
 
+		if ( !BConnectedtoGC() )
+		{
+			if ( Plat_FloatTime() - m_timeLastSendHello >= k_flClientHelloRetry )
+			{
+				m_timeLastSendHello = Plat_FloatTime();
 
+#ifdef CLIENT_DLL
+				GCSDK::CProtoBufMsg<CMsgClientHello> msg( k_EMsgGCClientHello );
+				msg.Body().set_version( engine->GetClientVersion() );
+#else
+				GCSDK::CProtoBufMsg<CMsgServerHello> msg( k_EMsgGCServerHello );
+				msg.Body().set_version( engine->GetServerVersion() );
+#endif
+				//BSendMessage( msg );
+			}
+		}
 	}
 	else
 	{
