@@ -49,7 +49,7 @@ const float4 cDetailTexCoordTransform[2]	:  register( SHADER_SPECIFIC_CONST_4 );
 const float4x4 g_FlashlightWorldToTexture :  register( SHADER_SPECIFIC_CONST_6 ); // 6, 7, 8, 9
 #endif
 
-#ifdef FAST_VERTEX_TEXTURES
+#if defined( FAST_VERTEX_TEXTURES ) && MORPHING
 // NOTE: cMorphTargetTextureDim.xy = target dimensions,
 //		 cMorphTargetTextureDim.z = 4tuples/morph
 const float3 cMorphTargetTextureDim			: register( SHADER_SPECIFIC_CONST_10 );
