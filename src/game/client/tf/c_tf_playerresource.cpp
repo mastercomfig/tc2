@@ -12,6 +12,7 @@
 #include "tf_gamerules.h"
 #include "tf_gc_client.h"
 #include "tf_lobby_server.h"
+#include <vgui/ILocalize.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -335,4 +336,73 @@ void C_TF_PlayerResource::ResetPlayerScoreStats( int playerIndex /*= -1*/ )
 		m_aPlayerScoreStats[playerIndex].m_iPrevCurrencyCollected = 0;
 		m_aPlayerScoreStats[playerIndex].m_iPrevBonusPoints = 0;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char *C_TF_PlayerResource::GetPlayerName( int iIndex )
+{
+	const char *pBaseName = BaseClass::GetPlayerName( iIndex );
+
+	if ( TFGameRules() && TFGameRules()->IsInTraining() && g_pVGuiLocalize )
+	{
+		player_info_t pi;
+		if ( engine->GetPlayerInfo( iIndex, &pi ) && pi.fakeplayer )
+		{
+			static char s_szBotNames[MAX_PLAYERS_ARRAY_SAFE][MAX_PLAYER_NAME_LENGTH];
+
+			int iTeam = GetTeam( iIndex );
+			int iClassIndex = GetPlayerClass( iIndex );
+
+			const char *pBotTitle = NULL;
+			if ( iTeam != TEAM_UNASSIGNED )
+			{
+				C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+				int iHumanTeam = pLocalPlayer ? pLocalPlayer->GetTeamNumber() : TFGameRules()->GetAssignedHumanTeam();
+				if ( iHumanTeam != TEAM_ANY )
+				{
+					if ( iHumanTeam == iTeam )
+					{
+						pBotTitle = "#TF_Bot_Title_Friendly";
+					}
+					else
+					{
+						pBotTitle = "#TF_Bot_Title_Enemy";
+					}
+				}
+			}
+
+			char szFriendlyOrEnemy[64] = "";
+			if ( pBotTitle )
+			{
+				wchar_t *pLocalizedTitle = g_pVGuiLocalize->Find( pBotTitle );
+				if ( pLocalizedTitle )
+				{
+					g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedTitle, szFriendlyOrEnemy, sizeof( szFriendlyOrEnemy ) );
+				}
+			}
+
+			char szClassName[64] = "";
+			wchar_t *pLocalizedName = NULL;
+			if ( iClassIndex >= TF_FIRST_NORMAL_CLASS && iClassIndex < TF_LAST_NORMAL_CLASS )
+			{
+				pLocalizedName = g_pVGuiLocalize->Find( g_aPlayerClassNames[ iClassIndex ] );
+			}
+			else
+			{
+				pLocalizedName = g_pVGuiLocalize->Find( "#TF_Bot_Generic_ClassName" );
+			}
+			if ( pLocalizedName )
+			{
+				g_pVGuiLocalize->ConvertUnicodeToANSI( pLocalizedName, szClassName, sizeof( szClassName ) );
+			}
+
+			CFmtStr name( "%s%s", szFriendlyOrEnemy, szClassName );
+			Q_strncpy( s_szBotNames[iIndex], name.Access(), MAX_PLAYER_NAME_LENGTH );
+			return s_szBotNames[iIndex];
+		}
+	}
+
+	return pBaseName;
 }

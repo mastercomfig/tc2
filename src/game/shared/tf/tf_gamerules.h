@@ -394,6 +394,8 @@ public:
 
 	virtual bool	PointsMayBeCaptured( void ) OVERRIDE;
 
+	int GetAssignedHumanTeam( void );
+
 #ifdef GAME_DLL
 public:
 	virtual void	Precache( void );
@@ -437,7 +439,6 @@ public:
 
 	void			TeamPlayerCountChanged( CTFTeam *pTeam );
 	void			PowerupTeamImbalance( int nTeam );
-	int				GetAssignedHumanTeam( void );
 	virtual void	HandleSwitchTeams( void );
 	virtual void	HandleScrambleTeams( void );
 	virtual void	HandleTeamShuffle( void );

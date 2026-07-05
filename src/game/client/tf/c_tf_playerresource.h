@@ -25,6 +25,7 @@ public:
 	virtual ~C_TF_PlayerResource();
 
 	virtual int	GetTeam( int index ) OVERRIDE;
+	virtual const char *GetPlayerName( int iIndex ) OVERRIDE;
 
 	int	GetTotalScore( int iIndex ) { return GetArrayValue( iIndex, m_iTotalScore, 0 ); }
 	int GetMaxHealth( int iIndex )   { return GetArrayValue( iIndex, m_iMaxHealth, TF_HEALTH_UNDEFINED ); }
