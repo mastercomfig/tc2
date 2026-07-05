@@ -116,7 +116,7 @@ jobs:
 
       - name: Push to Itch
         id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           PATH="${PATH}:${HOME}/.bin"
           ./game_clean/push.sh
@@ -140,7 +140,7 @@ jobs:
 
       - name: Push Permalink Rel
         id: perma-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           Remove-Item -Recurse -Force .\game_dist_debug
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
@@ -150,7 +150,7 @@ jobs:
 
       - name: Push Release
         id: create-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           ./game_clean/tag.sh
           rm game-win.zip

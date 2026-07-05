@@ -59,7 +59,7 @@ jobs:
 
       - name: Push to Itch
         id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: ./game_clean/push.sh
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -80,7 +80,7 @@ jobs:
 
       - name: Push Permalink Rel
         id: perma-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           rm -rf game_dist_debug
           (cd game_dist && 7z a -r ../game-linux.zip '*')
@@ -91,7 +91,7 @@ jobs:
 
       - name: Push Release
         id: create-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && github.ref == 'refs/heads/tc2-mod' }}
+        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           ./game_clean/tag.sh
           rm game-linux.zip
