@@ -826,6 +826,11 @@ bool CGameStateManager::Init()
 		return std::make_pair(true, resp.dump());
 	}));
 
+	RegisterMethod( "getversion", std::function( []( const std::string& params, int64_t iRpcId ) {
+		std::string str = engine->GetProductVersionString();
+		return std::make_pair( true, str );
+	} ) );
+
 	return true;
 }
 
