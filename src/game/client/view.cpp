@@ -84,6 +84,7 @@ extern ConVar sensitivity;
 #endif
 
 ConVar zoom_sensitivity_ratio( "zoom_sensitivity_ratio", "1.0", FCVAR_ARCHIVE, "Additional mouse sensitivity scale factor applied when FOV is zoomed in." );
+ConVar zoom_sensitivity_scaling( "zoom_sensitivity_scaling", "1", FCVAR_ARCHIVE, "FOV zoom scaling algorithm to use: 1 - accurate scaling 0 - legacy scaling" );
 
 CViewRender g_DefaultViewRender;
 IViewRender *view = NULL;	// set in cldll_client_init.cpp if no mod creates their own
@@ -541,12 +542,25 @@ void CViewRender::OnRenderStart()
 				//  by a separate compensating factor
 				if ( iDefaultFOV == 0 )
 				{
-					Assert(0); // would divide by zero, something is broken with iDefatulFOV
+					Assert(0); // would divide by zero, something is broken with iDefaultFOV
 					iDefaultFOV = 1;
 				}
-				gHUD.m_flFOVSensitivityAdjust = 
-					((float)localFOV / (float)iDefaultFOV) * // linear fov downscale
-					zoom_sensitivity_ratio.GetFloat(); // sensitivity scale factor
+				
+				float flScale;
+				if ( zoom_sensitivity_scaling.GetBool() )
+				{
+					const float flHalfDefaultFOV = static_cast<float>( iDefaultFOV ) * 0.5f;
+					const float flHalfLocalFOV = static_cast<float>( localFOV ) * 0.5f;
+					const float flTanHalfDefaultFOV = tanf( DEG2RAD( flHalfDefaultFOV ) );
+					const float flTanHalfLocalFOV = tanf( DEG2RAD( flHalfLocalFOV ) );
+					flScale = flTanHalfLocalFOV / flTanHalfDefaultFOV; // actually correct scaling
+				}
+				else
+				{
+					flScale = static_cast<float>( localFOV ) / static_cast<float>( iDefaultFOV ); // "linear" scaling
+				}
+
+				gHUD.m_flFOVSensitivityAdjust = flScale * zoom_sensitivity_ratio.GetFloat(); // sensitivity scale factor
 #ifndef _XBOX
 				gHUD.m_flMouseSensitivity = gHUD.m_flFOVSensitivityAdjust * sensitivity.GetFloat(); // regular sensitivity
 #endif
@@ -728,12 +742,12 @@ void CViewRender::SetUpViews()
 	float flFOVOffset = fDefaultFov - viewEye.fov;
 
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
-	float ViewmodelFOVZoomFactor = 1.0f;
+	float flViewmodelFOVZoomFactor = 1.0f;
 	if ( flFOVOffset != 0.0f )
 	{
-		ViewmodelFOVZoomFactor = tan(viewEye.fov * M_PI / 360.0f) / tan(fDefaultFov * M_PI / 360.0f);
+		flViewmodelFOVZoomFactor = tanf( DEG2RAD( viewEye.fov * 0.5f ) ) / tanf( DEG2RAD( fDefaultFov * 0.5f ) );
 	}
-	viewEye.fovViewmodel = g_pClientMode->GetViewModelFOV() * ViewmodelFOVZoomFactor;
+	viewEye.fovViewmodel = g_pClientMode->GetViewModelFOV() * flViewmodelFOVZoomFactor;
 
 	if ( UseVR() )
 	{
