@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "*"
+      - "release/*"
 
 jobs:
   build_linux:
