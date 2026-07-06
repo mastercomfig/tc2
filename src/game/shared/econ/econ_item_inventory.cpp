@@ -775,6 +775,8 @@ void CInventoryManager::Update( float frametime )
 //-----------------------------------------------------------------------------
 void CInventoryManager::UpdateInventoryEquippedState( CPlayerInventory *pInventory, uint64 ulItemID, equipped_class_t unClass, equipped_slot_t unSlot )
 {
+	// TODO(mcoms): do we need this?
+#ifndef SOURCESDK
 	// passing in INVALID_ITEM_ID means "unequip from this slot"
 	if ( ulItemID != INVALID_ITEM_ID )
 	{
@@ -795,6 +797,7 @@ void CInventoryManager::UpdateInventoryEquippedState( CPlayerInventory *pInvento
 	msg.Body().set_new_class( unClass );
 	msg.Body().set_new_slot( unSlot );
 	GCClientSystem()->BSendMessage( msg );
+#endif
 }
 
 //-----------------------------------------------------------------------------

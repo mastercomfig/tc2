@@ -795,6 +795,8 @@ ConVar tf_match_emulation( "tf_match_emulation", "0", FCVAR_REPLICATED | FCVAR_H
 ConVar tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch", "0", FCVAR_REPLICATED | FCVAR_HIDDEN );
 ConVar tf_match_emulation_randommap( "tf_match_emulation_randommap", "1", FCVAR_REPLICATED | FCVAR_HIDDEN );
 
+ConVar tf_test_mode( "tf_test_mode", "0", FCVAR_REPLICATED );
+
 ConVar tf_tournament_prematch_warmup("tf_tournament_prematch_warmup", "1", FCVAR_REPLICATED);
 
 ConVar tf_allow_pause_in_match( "tf_allow_pause_in_match", "1", FCVAR_REPLICATED );
@@ -5827,6 +5829,7 @@ void CTFGameRules::HandleTeamScoreModify( int iTeam, int iScore )
 //-----------------------------------------------------------------------------
 void CTFGameRules::MarkStopWatchTime( void )
 {
+	// TODO(mcoms): make sure we only mark once per point
 	if ( IsInStopWatch() == true )
 	{
 		if ( GetStopWatchTimer() )
@@ -6177,7 +6180,7 @@ void CTFGameRules::SpawnMatchBots( void )
 		}
 		else
 		{
-			iBotQuota = bIsCompetitive ? 12 : 24;
+			iBotQuota = bIsCompetitive ? 12 : 24 * 0.6f;
 		}
 		tf_bot_quota.SetValue( iBotQuota );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
@@ -11837,6 +11840,9 @@ void CTFGameRules::ClientSettingsChanged( CBasePlayer *pPlayer )
 
 	// keep track of their tf_medigun_autoheal value
 	pTFPlayer->SetMedigunAutoHeal( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf_medigun_autoheal" ) ) > 0 );
+
+	// keep track of their tf_demoman_charge_steering_legacy value
+	pTFPlayer->SetLegacyChargeSteering( Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "tf_demoman_charge_steering_legacy" ) ) > 0 );
 
 	// keep track of their autocallers values
 	const bool bShouldAutoCallTransmit = Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "hud_medicautocallers" ) ) > 0 && Q_atoi( engine->GetClientConVarValue( pPlayer->entindex(), "hud_medicautocallersglow" ) ) > 0;
@@ -18267,6 +18273,30 @@ void CTFGameRules::HandleTeamShuffle( void )
 		if ( iNumHumansRed == 1 || iNumHumansBlue == 1 )
 			break;
 
+		// Series score adjustment to artificially inflate nDelta if there's a big objective gap
+		int nRedSeriesScore = GetGlobalTFTeam( TF_TEAM_RED ) ? GetGlobalTFTeam( TF_TEAM_RED )->GetScore() : 0;
+		int nBlueSeriesScore = GetGlobalTFTeam( TF_TEAM_BLUE ) ? GetGlobalTFTeam( TF_TEAM_BLUE )->GetScore() : 0;
+		
+		int nSeriesDelta = abs( nRedSeriesScore - nBlueSeriesScore );
+		if ( nSeriesDelta >= 2 )
+		{
+			double flBaseScore = MAX( nTeamScoreRed, nTeamScoreBlue );
+			double flPlayerDelta = fabs( nTeamScoreRed - nTeamScoreBlue );
+			double flEvenness = 1.0 - clamp( flPlayerDelta / MAX( 1.0, flBaseScore ), 0.0, 1.0 );
+			
+			double flFullAdjustment = ( nSeriesDelta - 1 ) * 1000.0;
+			double flActualAdjustment = flFullAdjustment * flEvenness;
+			
+			if ( nRedSeriesScore > nBlueSeriesScore )
+			{
+				nTeamScoreRed += flActualAdjustment;
+			}
+			else
+			{
+				nTeamScoreBlue += flActualAdjustment;
+			}
+		}
+
 		double nDelta = fabs( nTeamScoreRed - nTeamScoreBlue );
 		// If perfectly balanced or delta is very small, break early
 		if ( nDelta <= 100.0 )
@@ -18361,6 +18391,140 @@ void CTFGameRules::HandleTeamShuffle( void )
 		// Tell people that we've shuffled
 		UTIL_ClientPrintAll( HUD_PRINTTALK, "#game_teamshuffle" );
 	}
+
+	// === Bot Difficulty Modulation ===
+	double nFinalTeamScoreRed = 0.0;
+	double nFinalTeamScoreBlue = 0.0;
+
+	extern ConVar tf_bot_difficulty;
+	int defaultDifficulty = clamp( tf_bot_difficulty.GetInt(), (int)CTFBot::EASY, (int)CTFBot::EXPERT );
+
+	FOR_EACH_VEC( vecRed, i )
+	{
+		if ( vecRed[i] )
+		{
+			if ( vecRed[i]->IsBot() )
+			{
+				CTFBot *pBot = ToTFBot( vecRed[i] );
+				if ( pBot )
+					pBot->SetDifficulty( (CTFBot::DifficultyType)defaultDifficulty );
+			}
+			nFinalTeamScoreRed += TFAutoBalance()->GetPlayerAutoBalanceScore( vecRed[i] );
+		}
+	}
+	FOR_EACH_VEC( vecBlue, i )
+	{
+		if ( vecBlue[i] )
+		{
+			if ( vecBlue[i]->IsBot() )
+			{
+				CTFBot *pBot = ToTFBot( vecBlue[i] );
+				if ( pBot )
+					pBot->SetDifficulty( (CTFBot::DifficultyType)defaultDifficulty );
+			}
+			nFinalTeamScoreBlue += TFAutoBalance()->GetPlayerAutoBalanceScore( vecBlue[i] );
+		}
+	}
+
+	// Apply series adjustment again to final scores
+	int nRedSeriesScoreFinal = GetGlobalTFTeam( TF_TEAM_RED ) ? GetGlobalTFTeam( TF_TEAM_RED )->GetScore() : 0;
+	int nBlueSeriesScoreFinal = GetGlobalTFTeam( TF_TEAM_BLUE ) ? GetGlobalTFTeam( TF_TEAM_BLUE )->GetScore() : 0;
+	int nSeriesDeltaFinal = abs( nRedSeriesScoreFinal - nBlueSeriesScoreFinal );
+	if ( nSeriesDeltaFinal >= 2 )
+	{
+		double flBaseScore = MAX( nFinalTeamScoreRed, nFinalTeamScoreBlue );
+		double flPlayerDelta = fabs( nFinalTeamScoreRed - nFinalTeamScoreBlue );
+		double flEvenness = 1.0 - clamp( flPlayerDelta / MAX( 1.0, flBaseScore ), 0.0, 1.0 );
+		
+		double flFullAdjustment = ( nSeriesDeltaFinal - 1 ) * 1000.0;
+		double flActualAdjustment = flFullAdjustment * flEvenness;
+		
+		if ( nRedSeriesScoreFinal > nBlueSeriesScoreFinal )
+		{
+			nFinalTeamScoreRed += flActualAdjustment;
+		}
+		else
+		{
+			nFinalTeamScoreBlue += flActualAdjustment;
+		}
+	}
+
+	double nFinalDelta = fabs( nFinalTeamScoreRed - nFinalTeamScoreBlue );
+	if ( nFinalDelta > 250.0 )
+	{
+		const double BOT_DIFFICULTY_SCORE_VALUE = 500.0;
+		int nTargetDifficultySwaps = (int)( nFinalDelta / BOT_DIFFICULTY_SCORE_VALUE );
+
+		if ( nTargetDifficultySwaps > 0 )
+		{
+			int nDominatingTeam = ( nFinalTeamScoreRed > nFinalTeamScoreBlue ) ? TF_TEAM_RED : TF_TEAM_BLUE;
+			CUtlVector< CTFPlayer* > &vecDominating = ( nDominatingTeam == TF_TEAM_RED ) ? vecRed : vecBlue;
+			CUtlVector< CTFPlayer* > &vecLosing = ( nDominatingTeam == TF_TEAM_RED ) ? vecBlue : vecRed;
+
+			for ( int i = 0; i < nTargetDifficultySwaps; i++ )
+			{
+				bool bMadeAdjustment = false;
+				
+				// Try to raise a losing team bot's difficulty (finding the highest difficulty bot first to create a carry curve)
+				int nHighestDiff = CTFBot::EASY - 1;
+				int nBestLosingIndex = -1;
+				FOR_EACH_VEC( vecLosing, j )
+				{
+					if ( vecLosing[j] && vecLosing[j]->IsBot() )
+					{
+						CTFBot *pBot = ToTFBot( vecLosing[j] );
+						if ( pBot && pBot->GetDifficulty() < CTFBot::EXPERT )
+						{
+							if ( pBot->GetDifficulty() > nHighestDiff )
+							{
+								nHighestDiff = pBot->GetDifficulty();
+								nBestLosingIndex = j;
+							}
+						}
+					}
+				}
+
+				if ( nBestLosingIndex != -1 )
+				{
+					CTFBot *pBot = ToTFBot( vecLosing[nBestLosingIndex] );
+					pBot->SetDifficulty( (CTFBot::DifficultyType)(pBot->GetDifficulty() + 1) );
+					bMadeAdjustment = true;
+				}
+				else
+				{
+					// Try to lower a dominating team bot's difficulty (finding the lowest difficulty bot first to create a weak link)
+					int nLowestDiff = CTFBot::EXPERT + 1;
+					int nBestDomIndex = -1;
+					FOR_EACH_VEC( vecDominating, k )
+					{
+						if ( vecDominating[k] && vecDominating[k]->IsBot() )
+						{
+							CTFBot *pBot = ToTFBot( vecDominating[k] );
+							if ( pBot && pBot->GetDifficulty() > CTFBot::EASY )
+							{
+								if ( pBot->GetDifficulty() < nLowestDiff )
+								{
+									nLowestDiff = pBot->GetDifficulty();
+									nBestDomIndex = k;
+								}
+							}
+						}
+					}
+					
+					if ( nBestDomIndex != -1 )
+					{
+						CTFBot *pBot = ToTFBot( vecDominating[nBestDomIndex] );
+						pBot->SetDifficulty( (CTFBot::DifficultyType)(pBot->GetDifficulty() - 1) );
+						bMadeAdjustment = true;
+					}
+				}
+
+				if ( !bMadeAdjustment )
+					break;
+			}
+		}
+	}
+	// === End Bot Difficulty Modulation ===
 
 	// scrambleteams_auto tracking
 	ResetTeamsRoundWinTracking();
@@ -23708,7 +23872,7 @@ bool CBonusRoundLogic::InitBonusRound( void )
 	// Generate the item on the server for now
 	//CSteamID steamID;
 	//if ( !m_hBonusWinner.Get()->GetSteamID( &steamID ) )
-	const CSteamID *steamID = engine->GetGameServerSteamID();
+	CSteamID const *steamID = engine->GetGameServerSteamID();
 	if ( !steamID || !steamID->IsValid() )
 		return false;
 

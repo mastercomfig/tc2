@@ -514,6 +514,9 @@ public:
 
 	bool GetMedigunAutoHeal( void ) { return m_bMedigunAutoHeal; }
 	void SetMedigunAutoHeal( bool bMedigunAutoHeal ) { m_bMedigunAutoHeal = bMedigunAutoHeal; }
+	
+	bool GetLegacyChargeSteering( void ) { return m_bLegacyChargeSteering; }
+	void SetLegacyChargeSteering( bool bLegacyChargeSteering ) { m_bLegacyChargeSteering = bLegacyChargeSteering; }
 	CBaseEntity		*MedicGetHealTarget( void );
 	HSCRIPT ScriptGetHealTarget() { return ToHScript( MedicGetHealTarget() ); }
 	float			MedicGetChargeLevel( CTFWeaponBase **pRetMedigun = NULL );
@@ -1326,6 +1329,7 @@ private:
 	bool				m_bSpeakingConceptAsDisguisedSpy;
 
 	bool 				m_bMedigunAutoHeal;
+	bool				m_bLegacyChargeSteering;
 	int					m_iAutoCallThreshold;
 	int					m_iZoomMode;	// 0) toggle zoom 1) does the player want to re-zoom after each shot for sniper rifles 2) hold zoom
 	bool				m_bAutoReload;

@@ -621,6 +621,9 @@ vprof
 
 game/tc2/scripts
 
+src/materialsystem/stdshaders/job_*.dat
+src/materialsystem/stdshaders/job_*.dat.res
+
 # END TC2 MOD
 
 # temp

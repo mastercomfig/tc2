@@ -74,7 +74,7 @@ static const char* GetWebBaseUrl()
 		return "https://beta.teamfortress.com/";
 	case k_EUniversePublic:
 	default:
-		return "https://www.teamfortress.com/";
+		return "https://api.teamcomtress.com/";
 	}
 }
 

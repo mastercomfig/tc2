@@ -215,6 +215,10 @@ ConVar tf_demoman_charge_drain_time( "tf_demoman_charge_drain_time", "1.5", FCVA
 ConVar tf_demoman_charge_steering_cap( "tf_demoman_charge_steering_cap", "0.45", FCVAR_REPLICATED, "The base turn rate in degrees during charges" );
 ConVar tf_demoman_charge_steering_camera_lock( "tf_demoman_charge_steering_camera_lock", "0.8", FCVAR_REPLICATED, "0.0: Free camera, 1.0: Camera locked to charge direction" );
 
+#if defined( CLIENT_DLL )
+ConVar tf_demoman_charge_steering_legacy( "tf_demoman_charge_steering_legacy", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_USERINFO, "If set to 1, re-enables the legacy feeling of physically steering the camera during a shield charge." );
+#endif
+
 // STAGING_SPY
 ConVar tf_feign_death_duration( "tf_feign_death_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death buffs last." );
 ConVar tf_feign_death_speed_duration( "tf_feign_death_speed_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death speed boost last." );
@@ -2114,8 +2118,9 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond eCond )
 		OnRemoveTaunting();
 		break;
 
-	case TF_COND_SPEED_BOOST:					OnRemoveSpeedBoost( false );		break;
-		
+	case TF_COND_SPEED_BOOST:
+		OnRemoveSpeedBoost( false );
+		break;
 
 	case TF_COND_SAPPED:
 		OnRemoveSapped();
@@ -4300,9 +4305,12 @@ void CTFPlayerShared::OnRemoveTaunting( void )
 	m_pOuter->HandleWeaponSlotAfterTaunt();
 #else
 	CSteamID steamIDForPlayer;
-	m_pOuter->GetSteamID( &steamIDForPlayer );
-
-	int nMapDonationAmount = MapInfo_GetDonationAmount( steamIDForPlayer.GetAccountID(), engine->GetLevelName() );
+	int nMapDonationAmount = 0;
+	if ( !m_pOuter->IsABot() )
+	{
+		m_pOuter->GetSteamID( &steamIDForPlayer );
+		nMapDonationAmount = MapInfo_GetDonationAmount( steamIDForPlayer.GetAccountID(), engine->GetLevelName() );
+	}
 	m_pOuter->SetFootStamps( nMapDonationAmount );
 
 	if ( m_pOuter->m_pTauntEffect )
