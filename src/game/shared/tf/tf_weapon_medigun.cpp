@@ -440,6 +440,17 @@ bool CWeaponMedigun::Holster( CBaseCombatWeapon *pSwitchingTo )
 	m_bAttacking = false;
 	m_bHolstered = true;
 
+	if ( m_bChargeRelease && GetMedigunType() == MEDIGUN_QUICKFIX && TFGameRules() && TFGameRules()->IsBetaActive() )
+	{
+		m_bChargeRelease = false;
+		m_flReleaseStartedAt = 0;
+		m_DetachedTargets.Purge();
+#ifdef GAME_DLL
+		CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
+		if ( pOwner ) pOwner->ClearPunchVictims();
+#endif
+	}
+
 #ifdef GAME_DLL
 	RecalcEffectOnTarget( ToTFPlayer( GetOwnerEntity() ), true );
 	StopHealingOwner();
@@ -1640,6 +1651,19 @@ void CWeaponMedigun::ItemPostFrame( void )
 	else
 	{
 		m_bAttack2Down = false;
+
+		if ( m_bChargeRelease && GetMedigunType() == MEDIGUN_QUICKFIX && TFGameRules() && TFGameRules()->IsBetaActive() )
+		{
+			m_bChargeRelease = false;
+			m_flReleaseStartedAt = 0;
+			m_DetachedTargets.Purge();
+
+#ifdef GAME_DLL
+			pOwner->ClearPunchVictims();
+			RecalcEffectOnTarget( pOwner );
+			StopHealingOwner();
+#endif
+		}
 	}
 
 	if( (pOwner->m_nButtons & IN_ATTACK3) && !m_bAttack3Down )
@@ -1874,9 +1898,17 @@ void CWeaponMedigun::SecondaryAttack( void )
 
 	// If using standard-uber-model-medigun, ensure they have a full charge and are not already in charge release mode
 	bool bDenyUse = GetMedigunType() != MEDIGUN_RESIST && (m_flChargeLevel < 1.0);
-	// If using the resist-medigun, they can shoot sooner
-	float flChunkSize = GetMinChargeAmount();
-	bDenyUse |= GetMedigunType() == MEDIGUN_RESIST && m_flChargeLevel < flChunkSize;
+	
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX )
+	{
+		bDenyUse = ( m_flChargeLevel <= 0.05f );
+	}
+	else
+	{
+		// If using the resist-medigun, they can shoot sooner
+		float flChunkSize = GetMinChargeAmount();
+		bDenyUse |= GetMedigunType() == MEDIGUN_RESIST && m_flChargeLevel < flChunkSize;
+	}
 
 	if ( bDenyUse || m_bChargeRelease )
 	{
@@ -1921,6 +1953,11 @@ void CWeaponMedigun::StartRelease( CTFPlayer *pTFPlayerPatient )
 	// Toggle super charge state
 	m_bChargeRelease = true;
 	m_flReleaseStartedAt = gpGlobals->curtime;
+
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX )
+	{
+		m_flChargeLevel = Max( 0.0f, m_flChargeLevel - 0.05f );
+	}
 
 #ifdef GAME_DLL
 	float flChunkSize = GetMinChargeAmount();

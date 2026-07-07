@@ -91,6 +91,9 @@ CTFPipebombLauncher::CTFPipebombLauncher()
 #ifdef CLIENT_DLL
 	m_flNextBombCheckTime = 0;
 	m_bBombThinking = false;
+	m_flDetonateFlashTime = 0.0f;
+	m_flDetonateFlashRadius = 0.0f;
+	m_bDetonateFlashColor = false;
 #endif
 }
 
@@ -501,6 +504,14 @@ bool CTFPipebombLauncher::DetonateAction()
 			return true;
 		}
 	}
+	else
+	{
+#ifdef CLIENT_DLL
+		m_flDetonateFlashTime = gpGlobals->curtime;
+		m_flDetonateFlashRadius = -1.0f; // Failure flash!
+		m_bDetonateFlashColor = false;
+#endif
+	}
 	return false;
 }
 
@@ -627,18 +638,24 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 	AngleVectors( pPlayer->Weapon_EyeAngles(), &vecPlayerForward, NULL, NULL );
 	vecPlayerForward.NormalizeInPlace();
 
-	// Determine the dynamic dot product threshold based on FOV
-	const float flScreenRadius = 0.15f; 
+	// Determine the dynamic dot product thresholds based on FOV
+	const float flInnerScreenRadius = 0.15f; 
+	const float flOuterScreenRadius = 0.30f; 
+
 	float flFOV = pPlayer->GetFOV(); 
 	float flTanHalfVert = 0.75f * tan( DEG2RAD( flFOV ) * 0.5f );
-	float flDynamicThreshold = cos( atan( flScreenRadius * flTanHalfVert ) );
+	float flInnerThreshold = cos( atan( flInnerScreenRadius * flTanHalfVert ) );
+	float flOuterThreshold = cos( atan( flOuterScreenRadius * flTanHalfVert ) );
 
 	int count = m_Pipebombs.Count();
+
+	bool bDetonatedInner = false;
+	bool bDetonatedOuter = false;
 
 	// Find the anchoring bomb
 	CTFGrenadePipebombProjectile *pAnchorBomb = NULL;
 	float flBestDist = FLT_MAX; // Start with an infinitely large distance
-	for ( int i=0; i<count; ++i )
+	for ( int i = 0; i < count; ++i )
 	{
 		CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
 		if ( !pTemp || pTemp->IsEffectActive( EF_NODRAW ) )
@@ -649,24 +666,109 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		
 		float flDot = DotProduct( vecToTarget, vecPlayerForward );
 
-		// must be inside the targeting circle
-		if ( flDot > flDynamicThreshold )
+		// must be inside the inner targeting circle
+		if ( flDot > flInnerThreshold )
 		{
-			// Prioritize bombs we are looking directly at, but still factor in distance slightly.
-			// The score is lower the better.
-			float flScore = ( 1.0f - flDot ) * 10000.0f + flDistToBomb;
-			
-			if ( flScore < flBestDist )
+			bool bArmed = ( ( gpGlobals->curtime - pTemp->m_flCreationTime ) > pTemp->GetLiveTime() );
+			if ( bArmed )
 			{
-				flBestDist = flScore;
-				pAnchorBomb = pTemp;
+				// Prioritize bombs we are looking directly at, but still factor in distance slightly.
+				// The score is lower the better.
+				float flScore = ( 1.0f - flDot ) * 10000.0f + flDistToBomb;
+				
+				if ( flScore < flBestDist )
+				{
+					flBestDist = flScore;
+					pAnchorBomb = pTemp;
+				}
+			}
+		}
+	}
+
+	// If we have an anchor bomb, find all connected bombs in the same cluster using Dijkstra's algorithm.
+	// This propagates detonation to adjacent bombs but enforces a path-distance budget to prevent bridging to separate traps.
+	CUtlVector<CTFGrenadePipebombProjectile*> clusterBombs;
+	int iAnchorIndex = -1;
+	if ( pAnchorBomb )
+	{
+		int iClusteringCount = ( count > 128 ) ? 128 : count;
+		for ( int i = 0; i < iClusteringCount; ++i )
+		{
+			if ( m_Pipebombs[i] == pAnchorBomb )
+			{
+				iAnchorIndex = i;
+				break;
+			}
+		}
+
+		if ( iAnchorIndex != -1 )
+		{
+			float flMinPathDist[128];
+			bool bVisited[128];
+			for ( int i = 0; i < iClusteringCount; ++i )
+			{
+				flMinPathDist[i] = FLT_MAX;
+				bVisited[i] = false;
+			}
+
+			flMinPathDist[iAnchorIndex] = 0.0f;
+			float flMaxBudget = pAnchorBomb->GetDamageRadius() * 2.5f;
+
+			for ( int step = 0; step < iClusteringCount; ++step )
+			{
+				// Find the unvisited node with the smallest path distance
+				int iCurrent = -1;
+				float flBestPathDist = FLT_MAX;
+				for ( int i = 0; i < iClusteringCount; ++i )
+				{
+					if ( !bVisited[i] && flMinPathDist[i] < flBestPathDist )
+					{
+						flBestPathDist = flMinPathDist[i];
+						iCurrent = i;
+					}
+				}
+
+				// If no node is reachable or we exceeded the budget, we are done
+				if ( iCurrent == -1 || flBestPathDist > flMaxBudget )
+					break;
+
+				bVisited[iCurrent] = true;
+				CTFGrenadePipebombProjectile *pCurrent = m_Pipebombs[iCurrent];
+				if ( pCurrent && !pCurrent->IsEffectActive( EF_NODRAW ) )
+				{
+					clusterBombs.AddToTail( pCurrent );
+
+					// Update distances to neighbors
+					for ( int i = 0; i < iClusteringCount; ++i )
+					{
+						if ( bVisited[i] )
+							continue;
+
+						CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
+						if ( !pTemp || pTemp->IsEffectActive( EF_NODRAW ) )
+							continue;
+
+						float flStepDist = pCurrent->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
+						
+						// Chaining check: adjacent bombs must be close enough (0.8 * damage radius of the bomb)
+						const float flMaxStep = pCurrent->GetDamageRadius() * 0.80f;
+						if ( flStepDist <= flMaxStep )
+						{
+							float flNewDist = flBestPathDist + flStepDist;
+							if ( flNewDist < flMinPathDist[i] )
+							{
+								flMinPathDist[i] = flNewDist;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
 	// detonate all valid bombs
 	bool bFailedToDetonate = true;
-	for ( int i=0; i<count; ++i )
+	for ( int i = 0; i < count; ++i )
 	{
 		CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[i];
 		if ( !pTemp )
@@ -686,19 +788,28 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		float flDistToPlayer = pPlayer->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
 		bool bShouldDetonate = false;
 
-		// Det around the anchor bomb
+		// 1. Detonate around the anchor bomb (entire connected cluster)
 		if ( pAnchorBomb )
 		{
-			float flDistToAnchor = pAnchorBomb->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
-			const float flClusterDist = pTemp->GetDamageRadius() * 0.75f;
-			if ( flDistToAnchor <= flClusterDist )
+			if ( clusterBombs.Find( pTemp ) != clusterBombs.InvalidIndex() )
 			{
 				bShouldDetonate = true;
 			}
 		}
 
-		// Sticky jumping should det too
-		if ( flDistToPlayer < pTemp->GetDamageRadius() )
+		// Calculate dot product to see if inside targeting circles
+		Vector vecToTarget = pTemp->WorldSpaceCenter() - pPlayer->EyePosition();
+		vecToTarget.NormalizeInPlace();
+		float flDot = DotProduct( vecToTarget, vecPlayerForward );
+
+		// 2. Detonate any bomb inside the outer screen radius but outside the inner screen radius
+		if ( flDot > flOuterThreshold && flDot <= flInnerThreshold )
+		{
+			bShouldDetonate = true;
+		}
+
+		// 3. Sticky jumping should detonate under player feet, but only if they are in the air
+		if ( !( pPlayer->GetFlags() & FL_ONGROUND ) && flDistToPlayer < pTemp->GetDamageRadius() )
 		{
 			bShouldDetonate = true;
 		}
@@ -718,6 +829,17 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 				if ( bArmed )
 				{
 					bFailedToDetonate = false;
+
+					// Track which region succeeded in detonating a bomb for the visual indicator
+					if ( pAnchorBomb && clusterBombs.Find( pTemp ) != clusterBombs.InvalidIndex() )
+					{
+						bDetonatedInner = true;
+					}
+					else if ( flDot > flOuterThreshold && flDot <= flInnerThreshold )
+					{
+						bDetonatedOuter = true;
+					}
+
 #ifdef GAME_DLL
 					if ( CanDestroyStickies() )
 					{
@@ -737,6 +859,32 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		}
 	}
 
+#ifdef CLIENT_DLL
+	if ( iEffect == TF_PIPEBOMB_DETONATE )
+	{
+		m_flDetonateFlashTime = gpGlobals->curtime;
+		if ( !bFailedToDetonate )
+		{
+			if ( bDetonatedInner )
+			{
+				m_flDetonateFlashRadius = flInnerScreenRadius;
+				m_bDetonateFlashColor = true;
+			}
+			else if ( bDetonatedOuter )
+			{
+				m_flDetonateFlashRadius = flOuterScreenRadius;
+				m_bDetonateFlashColor = false;
+			}
+		}
+		else
+		{
+			// Failure! Flash both boundaries in red to show targeting limits
+			m_flDetonateFlashRadius = -1.0f;
+			m_bDetonateFlashColor = false;
+		}
+	}
+#endif
+
 	return bFailedToDetonate;
 }
 
@@ -750,3 +898,63 @@ bool CTFPipebombLauncher::Reload( void )
 
 	return BaseClass::Reload();
 }
+
+#ifdef CLIENT_DLL
+void CTFPipebombLauncher::DrawCrosshair( void )
+{
+	// Draw the base crosshair first
+	BaseClass::DrawCrosshair();
+
+	// Draw the custom detonation circle if active
+	if ( m_flDetonateFlashTime > 0.0f && gpGlobals->curtime < m_flDetonateFlashTime + 0.3f )
+	{
+		CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
+		if ( pPlayer )
+		{
+			// Compute screen space center
+			int xCenter = ScreenWidth() / 2;
+			int yCenter = ScreenHeight() / 2;
+
+			// Fade out over the 0.3s duration
+			float flAge = gpGlobals->curtime - m_flDetonateFlashTime;
+			float flAlpha = 1.0f - ( flAge / 0.3f );
+			if ( flAlpha < 0.0f ) flAlpha = 0.0f;
+			if ( flAlpha > 1.0f ) flAlpha = 1.0f;
+
+			if ( m_flDetonateFlashRadius > 0.0f )
+			{
+				// Compute the screen-space radius in pixels
+				float flPixelRadius = m_flDetonateFlashRadius * ( ScreenHeight() * 0.5f );
+
+				Color clrCircle;
+				if ( m_bDetonateFlashColor )
+				{
+					// Cyan/Cyan-blue for successful inner cluster detonation
+					clrCircle = Color( 0, 255, 255, (int)( flAlpha * 128 ) );
+				}
+				else
+				{
+					// Orange-red for loose outer-radius / trimming detonation
+					clrCircle = Color( 255, 128, 0, (int)( flAlpha * 128 ) );
+				}
+
+				// Draw the circle
+				vgui::surface()->DrawSetColor( clrCircle );
+				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flPixelRadius, 64 );
+			}
+			else
+			{
+				// Fail! Draw both circles in red to show the boundaries
+				Color clrFail = Color( 220, 40, 40, (int)( flAlpha * 96 ) );
+				
+				float flInnerPixelRadius = 0.15f * ( ScreenHeight() * 0.5f );
+				float flOuterPixelRadius = 0.30f * ( ScreenHeight() * 0.5f );
+
+				vgui::surface()->DrawSetColor( clrFail );
+				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flInnerPixelRadius, 64 );
+				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flOuterPixelRadius, 64 );
+			}
+		}
+	}
+}
+#endif

@@ -57,6 +57,7 @@ C_ObjectSentrygun::C_ObjectSentrygun()
 	m_iMaxAmmoShells = SENTRYGUN_MAX_SHELLS_1;
 	m_bPlayerControlled = false;
 	m_bOldPlayerControlled = false;
+	m_bOldShouldBeActive = false;
 	m_nShieldLevel = SHIELD_NONE;
 	m_nOldShieldLevel = SHIELD_NONE;
 	m_hLaserBeamEffect = NULL;
@@ -176,6 +177,12 @@ void C_ObjectSentrygun::OnDataChanged( DataUpdateType_t updateType )
 		}
 	}
 
+	if ( ShouldBeActive() != m_bOldShouldBeActive )
+	{
+		m_bOldShouldBeActive = ShouldBeActive();
+		m_bRecreateLaserBeam = true;
+	}
+
 	if ( m_bPlayerControlled != m_bOldPlayerControlled || m_bRecreateLaserBeam )
 	{
 		if ( m_bPlayerControlled )
@@ -275,6 +282,9 @@ void C_ObjectSentrygun::OnEndDisabled( void )
 void C_ObjectSentrygun::CreateLaserBeam( void )
 {
 	if ( !m_bPlayerControlled )
+		return;
+
+	if ( !ShouldBeActive() )
 		return;
 
 	DestroyLaserBeam();

@@ -102,7 +102,7 @@ public:
 
 	virtual int		GetBaseHealth( void ) { return SENTRYGUN_MAX_HEALTH; }
 
-	void			SetShieldLevel( int nLevel, float flDuration ) { m_nShieldLevel = nLevel; m_flShieldFadeTime = gpGlobals->curtime + flDuration; }
+	void			SetShieldLevel( int nLevel, float flDuration );
 
 	virtual int		GetMaxUpgradeLevel( void ) const OVERRIDE;
 
@@ -196,6 +196,7 @@ private:
 	CNetworkVar( bool, m_bPlayerControlled );
 	CNetworkVar( uint32, m_nShieldLevel );
 	float m_flShieldFadeTime;
+	bool  m_bIsWranglered;
 
 	// PDQ Sentry
 	CNetworkVar( bool, m_bPDQSentry );

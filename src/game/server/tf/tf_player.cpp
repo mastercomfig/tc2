@@ -9491,6 +9491,15 @@ int CTFPlayer::TakeHealth( float flHealth, int bitsDamageType )
 		flHealth *= flHealingBonus;
 	}
 
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && m_Shared.InCond( TF_COND_MEGAHEAL ) )
+	{
+		// Medigun and Dispenser healing are already doubled in conditions think
+		if ( !( bitsDamageType & DMG_IGNORE_DEBUFFS ) )
+		{
+			flHealth *= 2.0f;
+		}
+	}
+
 	// Medigun healing and player/class regen use an accumulator, so they've already factored in debuffs.
 // 	if ( m_Shared.InCond( TF_COND_HEALING_DEBUFF ) && !( bitsDamageType & DMG_IGNORE_DEBUFFS ) )
 // 	{

@@ -6,7 +6,6 @@
 #include "tier0/memdbgon.h"
 
 class CSDRRconServer;
-extern CSDRRconServer g_SDRRconServer;
 
 static SpewOutputFunc_t g_pOldSpew = NULL;
 
@@ -46,16 +45,16 @@ private:
 	CBasePlayer *m_pInterceptClient;
 };
 
-CSDRRconServer g_SDRRconServer;
+static CSDRRconServer s_SDRRconServer;
 
 SpewRetval_t SDRRconSpewFunc( SpewType_t spewType, const tchar *pMsg )
 {
 	static bool bInSpew = false;
 	
-	if ( !bInSpew && g_SDRRconServer.GetInterceptClient() )
+	if ( !bInSpew && s_SDRRconServer.GetInterceptClient() )
 	{
 		bInSpew = true;
-		engine->ClientPrintf( g_SDRRconServer.GetInterceptClient()->edict(), pMsg );
+		engine->ClientPrintf( s_SDRRconServer.GetInterceptClient()->edict(), pMsg );
 		bInSpew = false;
 	}
 	
@@ -67,7 +66,7 @@ SpewRetval_t SDRRconSpewFunc( SpewType_t spewType, const tchar *pMsg )
 
 CSDRRconServer* SDRRconServer()
 {
-	return &g_SDRRconServer;
+	return &s_SDRRconServer;
 }
 
 CON_COMMAND_F( sdr_rcon_exec, "Internal SDR RCON execution", FCVAR_HIDDEN | FCVAR_DONTRECORD )

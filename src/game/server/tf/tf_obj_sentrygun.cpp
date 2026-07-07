@@ -177,6 +177,7 @@ CObjectSentrygun::CObjectSentrygun()
 	m_flNextAttack = -1.0f;
 	m_flSentryRange = SENTRY_MAX_RANGE;
 	m_nShieldLevel.Set( SHIELD_NONE );
+	m_bIsWranglered = false;
 
 	m_lastTeammateWrenchHit = NULL;
 	m_lastTeammateWrenchHitTimer.Invalidate();
@@ -298,23 +299,61 @@ void CObjectSentrygun::SentryThink( void )
 
 	switch( m_iState )
 	{
-	case SENTRY_STATE_INACTIVE:
-	case SENTRY_STATE_UPGRADING:		// Base class handles this
-		m_flNextAttack = gpGlobals->curtime - gpGlobals->interval_per_tick;
-		break;
+		case SENTRY_STATE_INACTIVE:
+		case SENTRY_STATE_UPGRADING: // Base class handles this
+		{
+			m_flNextAttack = gpGlobals->curtime - gpGlobals->interval_per_tick;
 
-	case SENTRY_STATE_SEARCHING:
-		m_flNextAttack = gpGlobals->curtime - gpGlobals->interval_per_tick;
-		SentryRotate();
-		break;
+			if ( !IsDisabled() && ( IsBuilding() || IsUpgrading() ) )
+			{
+				if ( m_bPlayerControlled )
+				{
+					m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
+				}
+				m_bPlayerControlled = false;
 
-	case SENTRY_STATE_ATTACKING:
-		Attack();
-		break;
+				CTFPlayer* pBuilder = GetBuilder();
+				if ( pBuilder )
+				{
+					CTFLaserPointer* pPointer = static_cast<CTFLaserPointer*>( pBuilder->Weapon_OwnsThisID( TF_WEAPON_LASER_POINTER ) );
+					if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
+					{
+						m_bPlayerControlled = true;
+						if ( TFGameRules()->IsBetaActive() )
+						{
+							m_nShieldLevel.Set( SHIELD_NONE );
+						}
+						else
+						{
+							m_nShieldLevel.Set( SHIELD_NORMAL );
+						}
+						m_bIsWranglered = true;
+						m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
+					}
+				}
+			}
+			
+			break;
+		}
 
-	default:
-		Assert( 0 );
-		break;
+		case SENTRY_STATE_SEARCHING:
+		{
+			m_flNextAttack = gpGlobals->curtime - gpGlobals->interval_per_tick;
+			SentryRotate();
+			break;
+		}
+
+		case SENTRY_STATE_ATTACKING:
+		{
+			Attack();
+			break;
+		}
+
+		default:
+		{
+			Assert( 0 );
+			break;
+		}
 	}
 
 	SetContextThink( &CObjectSentrygun::SentryThink, gpGlobals->curtime + SENTRY_THINK_DELAY, SENTRYGUN_CONTEXT );
@@ -331,6 +370,7 @@ void CObjectSentrygun::SentryThink( void )
 	if ( m_nShieldLevel > 0 && (gpGlobals->curtime > m_flShieldFadeTime) )
 	{
 		m_nShieldLevel.Set( SHIELD_NONE );
+		m_bIsWranglered = false;
 		m_vecGoalAngles.x = 0;
 	}
 
@@ -412,6 +452,12 @@ void CObjectSentrygun::MakeMiniBuilding( CTFPlayer* pPlayer )
 }
 
 ConVar tf_obj_sentrygun_max_level("tf_obj_sentrygun_max_level", V_STRINGIFY(OBJ_MAX_UPGRADE_LEVEL), FCVAR_REPLICATED);
+
+void CObjectSentrygun::SetShieldLevel(int nLevel, float flDuration)
+{
+	m_nShieldLevel = nLevel;
+	m_flShieldFadeTime = gpGlobals->curtime + flDuration;
+}
 
 //-----------------------------------------------------------------------------
 int CObjectSentrygun::GetMaxUpgradeLevel() const
@@ -896,7 +942,7 @@ bool CObjectSentrygun::FindTarget()
 	CTFPlayer* pBuilder = GetBuilder();
 	if ( pBuilder )
 	{
-		// FIX ME:  Temp fix until we find out why the pointer thinks its deployed after spawn
+		// FIX ME: Temp fix until we find out why the pointer thinks its deployed after spawn
 		CTFLaserPointer* pPointer = static_cast<CTFLaserPointer*>( pBuilder->Weapon_OwnsThisID( TF_WEAPON_LASER_POINTER ) );
 		if ( pPointer && pPointer->HasLaserDot() && !IsDisposableBuilding() )
 		{
@@ -911,6 +957,7 @@ bool CObjectSentrygun::FindTarget()
 			{
 				m_nShieldLevel.Set( SHIELD_NORMAL );
 			}
+			m_bIsWranglered = true;
 			m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
 
 			// If not target dummy, use laserdot, otherwise targetdummy overrides
@@ -962,7 +1009,7 @@ bool CObjectSentrygun::FindTarget()
 
 	// Don't auto track to targets while under the effects of the player shield.
 	// The shield fades 3 seconds after we disengage from player control.
-	if ( m_nShieldLevel == SHIELD_NORMAL )
+	if ( m_bIsWranglered )
 		return false;
 
 	// is there an active truce?
@@ -1755,7 +1802,7 @@ void CObjectSentrygun::SentryRotate( void )
 	{
 		// Change direction
 
-		if ( IsDisabled() || m_nShieldLevel == SHIELD_NORMAL )
+		if ( IsDisabled() || m_bIsWranglered )
 		{
 			EmitSound( "Building_Sentrygun.Disabled" );
 			m_vecGoalAngles.x = 30;
@@ -2296,6 +2343,7 @@ void CObjectSentrygun::MakeCarriedObject( CTFPlayer *pCarrier )
 	m_iOldAmmoRockets = m_iAmmoRockets;
 
 	m_nShieldLevel.Set( SHIELD_NONE );
+	m_bIsWranglered = false;
 }
 
 //-----------------------------------------------------------------------------

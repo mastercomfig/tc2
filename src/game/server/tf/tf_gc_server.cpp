@@ -77,7 +77,7 @@ const int k_InvalidState_Timeout_Without_Match = 5;
                    incrementally cleaning things up, but be careful.
 
    UpdateConnectedPlayersAndServerInfo()
-     This is the heug god function that sync's our state with the GC's state via the Lobby shared object:
+     This is the huge god function that sync's our state with the GC's state via the Lobby shared object:
      - Our actual connected players
 
      - m_pMatchInfo (via GetMatch()) - this represents our match in progress, and should generally mirror the GC, but

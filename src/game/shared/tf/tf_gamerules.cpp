@@ -19350,7 +19350,7 @@ bool CTFGameRules::PlayerMayBlockPoint( CBasePlayer *pPlayer, int iPointIndex, c
 #endif
 
 	// Invuln players can block points
-	if ( pTFPlayer->m_Shared.IsInvulnerable() || ( IsBetaActive() && pTFPlayer->m_Shared.InCond( TF_COND_MEGAHEAL ) ) )
+	if ( pTFPlayer->m_Shared.IsInvulnerable() )
 	{
 		if ( pszReason )
 		{

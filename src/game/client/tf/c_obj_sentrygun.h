@@ -134,6 +134,7 @@ private:
 
 	bool m_bPlayerControlled;
 	bool m_bOldPlayerControlled;
+	bool m_bOldShouldBeActive;
 	uint32 m_nShieldLevel;
 	uint32 m_nOldShieldLevel;
 	bool m_bOldCarried;

@@ -222,7 +222,7 @@ void CTFLaserPointer::SecondaryAttack( void )
 	if ( !pSentry )
 		return;
 
-	if ( pSentry->GetUpgradeLevel() == 3 )
+	if ( pSentry->GetUpgradeLevel() == 3 && !pSentry->IsUpgrading() )
 	{
 		pSentry->FireRocketNextFrame();
 	}

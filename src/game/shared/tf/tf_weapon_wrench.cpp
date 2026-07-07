@@ -268,7 +268,7 @@ void CTFWrench::Equip( CBaseCombatCharacter *pOwner )
 	CTFPlayer *pPlayer = ToTFPlayer( pOwner );
 	if ( pPlayer )
 	{
-		// if switching too gunslinger, blow up other sentry
+		// if switching to gunslinger, blow up other sentry
 		int iMiniSentry = 0;
 		CALL_ATTRIB_HOOK_INT( iMiniSentry, wrench_builds_minisentry );
 		if ( iMiniSentry )

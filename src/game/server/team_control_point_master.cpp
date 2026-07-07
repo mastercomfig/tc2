@@ -288,30 +288,37 @@ void CTeamControlPointMaster::Activate( void )
 					{
 						int iPrevCount = 0;
 						
-						// RED must own ALL RED middle points to capture ANY BLU territory
-						for ( int j = 0; j < vecRedMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
-						{
-							g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, vecRedMiddle[j] );
-							
-							char szKey[128];
-							char szVal[128];
-							Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, iPrevCount );
-							Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
-							pPoint->KeyValue( szKey, szVal );
-							iPrevCount++;
-						}
-						
-						// IF it's the BLU base, RED must ALSO own ALL BLU middle points
+						// IF it's the BLU base, RED must own ALL OTHER points
 						if ( iIndex == iBluBase )
 						{
-							for ( int j = 0; j < vecBluMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
+							for ( unsigned int j = 0; j < m_ControlPoints.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
 							{
-								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, vecBluMiddle[j] );
+								if ( !m_ControlPoints[j] ) continue;
+								int iOtherIndex = m_ControlPoints[j]->GetPointIndex();
+								if ( iOtherIndex != iBluBase )
+								{
+									g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, iOtherIndex );
+									
+									char szKey[128];
+									char szVal[128];
+									Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, iPrevCount );
+									Q_strncpy( szVal, STRING(GetPointName( iOtherIndex )), sizeof(szVal) );
+									pPoint->KeyValue( szKey, szVal );
+									iPrevCount++;
+								}
+							}
+						}
+						else
+						{
+							// RED must own ALL RED middle points to capture ANY BLU territory
+							for ( int j = 0; j < vecRedMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
+							{
+								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_RED, iPrevCount, vecRedMiddle[j] );
 								
 								char szKey[128];
 								char szVal[128];
 								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_RED, iPrevCount );
-								Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
+								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
 								pPoint->KeyValue( szKey, szVal );
 								iPrevCount++;
 							}
@@ -323,30 +330,37 @@ void CTeamControlPointMaster::Activate( void )
 					{
 						int iPrevCount = 0;
 						
-						// BLU must own ALL BLU middle points to capture ANY RED territory
-						for ( int j = 0; j < vecBluMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
-						{
-							g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, vecBluMiddle[j] );
-							
-							char szKey[128];
-							char szVal[128];
-							Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, iPrevCount );
-							Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
-							pPoint->KeyValue( szKey, szVal );
-							iPrevCount++;
-						}
-						
-						// IF it's the RED base, BLU must ALSO own ALL RED middle points
+						// IF it's the RED base, BLU must own ALL OTHER points
 						if ( iIndex == iRedBase )
 						{
-							for ( int j = 0; j < vecRedMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
+							for ( unsigned int j = 0; j < m_ControlPoints.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
 							{
-								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, vecRedMiddle[j] );
+								if ( !m_ControlPoints[j] ) continue;
+								int iOtherIndex = m_ControlPoints[j]->GetPointIndex();
+								if ( iOtherIndex != iRedBase )
+								{
+									g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, iOtherIndex );
+									
+									char szKey[128];
+									char szVal[128];
+									Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, iPrevCount );
+									Q_strncpy( szVal, STRING(GetPointName( iOtherIndex )), sizeof(szVal) );
+									pPoint->KeyValue( szKey, szVal );
+									iPrevCount++;
+								}
+							}
+						}
+						else
+						{
+							// BLU must own ALL BLU middle points to capture ANY RED territory
+							for ( int j = 0; j < vecBluMiddle.Count() && iPrevCount < MAX_PREVIOUS_POINTS; ++j )
+							{
+								g_pObjectiveResource->SetPreviousPoint( iIndex, TF_TEAM_BLUE, iPrevCount, vecBluMiddle[j] );
 								
 								char szKey[128];
 								char szVal[128];
 								Q_snprintf( szKey, sizeof(szKey), "team_previouspoint_%d_%d", TF_TEAM_BLUE, iPrevCount );
-								Q_strncpy( szVal, STRING(GetPointName( vecRedMiddle[j] )), sizeof(szVal) );
+								Q_strncpy( szVal, STRING(GetPointName( vecBluMiddle[j] )), sizeof(szVal) );
 								pPoint->KeyValue( szKey, szVal );
 								iPrevCount++;
 							}

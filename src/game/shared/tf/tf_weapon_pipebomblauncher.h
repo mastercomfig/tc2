@@ -90,6 +90,10 @@ public:
 
 #ifdef CLIENT_DLL
 	void		BombHighlightThink( void );
+	virtual void DrawCrosshair( void );
+	float		m_flDetonateFlashTime;
+	float		m_flDetonateFlashRadius;
+	bool		m_bDetonateFlashColor;
 #endif
 
 #ifdef GAME_DLL

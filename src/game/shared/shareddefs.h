@@ -879,7 +879,7 @@ struct EmitSound_t
 #define MAX_CONTROL_POINT_GROUPS	8
 
 // Maximum number of points that a control point may need owned to be cappable
-#define MAX_PREVIOUS_POINTS			3
+#define MAX_PREVIOUS_POINTS			7
 
 // The maximum number of teams the control point system knows how to deal with
 #define MAX_CONTROL_POINT_TEAMS		8

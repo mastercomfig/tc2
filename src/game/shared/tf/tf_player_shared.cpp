@@ -425,6 +425,7 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	RecvPropInt( RECVINFO( m_iItemFindBonus ) ),
 	RecvPropBool( RECVINFO( m_bShieldEquipped ) ),
 	RecvPropBool( RECVINFO( m_bParachuteEquipped ) ),
+	RecvPropTime( RECVINFO( m_flParachuteNextDeployTime ) ),
 	RecvPropInt( RECVINFO( m_iNextMeleeCrit ) ),
 	RecvPropInt( RECVINFO( m_iDecapitations ) ),
 	RecvPropInt( RECVINFO( m_iRevengeCrits ) ),
@@ -494,6 +495,7 @@ END_RECV_TABLE()
 BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_nPlayerState, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_nPlayerCond, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_flParachuteNextDeployTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flCloakMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flRageMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bRageDraining, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
@@ -606,6 +608,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	SendPropInt( SENDINFO( m_iItemFindBonus ) ),
 	SendPropBool( SENDINFO( m_bShieldEquipped ) ),
 	SendPropBool( SENDINFO( m_bParachuteEquipped ) ),
+	SendPropTime( SENDINFO( m_flParachuteNextDeployTime ) ),
 	SendPropInt( SENDINFO( m_iNextMeleeCrit ) ),
 	SendPropInt( SENDINFO( m_iDecapitations ), 8, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO( m_iRevengeCrits ), 7, SPROP_UNSIGNED ),
@@ -895,6 +898,7 @@ CTFPlayerShared::CTFPlayerShared()
 	m_iNextMeleeCrit = 0;
 
 	m_bParachuteEquipped = false;
+	m_flParachuteNextDeployTime = 0.0f;
 
 	m_iDecapitations = m_iOldDecapitations = 0;
 	m_iOldKillStreak = 0;
@@ -1006,6 +1010,7 @@ void CTFPlayerShared::Init( CTFPlayer *pPlayer )
 	m_iNextMeleeCrit = 0;
 
 	m_bParachuteEquipped = false;
+	m_flParachuteNextDeployTime = 0.0f;
 
 	m_iDecapitations = m_iOldDecapitations = 0;
 	m_iOldKillStreak = 0;
@@ -1047,14 +1052,31 @@ void CTFPlayerShared::Spawn( void )
 	if ( m_bCarryingObject )
 	{
 		CBaseObject* pObj = GetCarriedObject();
-		if ( pObj )
+		if ( pObj && !pObj->IsDying() && !m_pOuter->m_bSwitchedClass )
 		{
-			pObj->DetonateObject();
+			// Force switch back to haulin'!
+			CTFWeaponBuilder *pBuilder = dynamic_cast<CTFWeaponBuilder*>( m_pOuter->Weapon_OwnsThisID( TF_WEAPON_BUILDER ) );
+			if ( pBuilder )
+			{
+				m_pOuter->Weapon_Switch( pBuilder );
+			}
+		}
+		else
+		{
+			if ( pObj )
+			{
+				pObj->DetonateObject();
+			}
+
+			m_bCarryingObject = false;
+			m_hCarriedObject = NULL;
 		}
 	}
-
-	m_bCarryingObject = false;
-	m_hCarriedObject = NULL;
+	else
+	{
+		m_bCarryingObject = false;
+		m_hCarriedObject = NULL;
+	}
 
 	m_flRadiusHealCheckTime = 0;
 	m_flKingRuneBuffCheckTime = 0.f;
@@ -2560,7 +2582,14 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			// Quick-Fix uber
 			if ( InCond( TF_COND_MEGAHEAL ) )
 			{
-				flHealAmountMult = 3.0f;
+				if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+				{
+					flHealAmountMult = 2.0f;
+				}
+				else
+				{
+					flHealAmountMult = 3.0f;
+				}
 			}
 
 			flScale *= flHealAmountMult;
@@ -2572,6 +2601,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 				if ( bHealActual )
 				{
 					float flDispenserFraction = gpGlobals->frametime * m_aHealers[i].flAmount * flAttribModScale;
+					if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+					{
+						flDispenserFraction *= flHealAmountMult;
+					}
 					m_flHealFraction += flDispenserFraction;
 
 					// track how much this healer has actually done so far
@@ -13064,13 +13097,16 @@ bool CTFPlayer::TryToPickupBuilding()
 	}
 #endif
 
+	CTFWeaponBase * pWeapon = GetActiveTFWeapon();
+	if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_LASER_POINTER )
+		return false;
+
 	// Check to see if a building we own is in front of us.
 	Vector vecForward;
 	AngleVectors( EyeAngles(), &vecForward, NULL, NULL );
 
 	int iPickUpRange = TF_BUILDING_PICKUP_RANGE;
 	int iIncreasedRangeCost = 0;
-	CTFWeaponBase * pWeapon = GetActiveTFWeapon();
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iIncreasedRangeCost, building_teleporting_pickup );
 	if ( iIncreasedRangeCost != 0 )
 	{
