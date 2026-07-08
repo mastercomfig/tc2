@@ -313,6 +313,7 @@ void CWeaponMedigun::WeaponReset( void )
 	RecalcEffectOnTarget( ToTFPlayer( GetOwnerEntity() ), true );
 	m_nHealTargetClass = 0;
 	m_nChargesReleased = 0;
+	m_flQuickFixAccumulatedCharge = 0.0f;
 #endif
 
 #if defined( CLIENT_DLL )
@@ -1556,6 +1557,19 @@ void CWeaponMedigun::SubtractChargeAndUpdateDeployState( float flSubtractAmount,
 		}
 	}
 
+#ifdef GAME_DLL
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX && m_bChargeRelease )
+	{
+		m_flQuickFixAccumulatedCharge += ( m_flChargeLevel - flNewCharge );
+		if ( m_flQuickFixAccumulatedCharge >= 1.0f )
+		{
+			m_flQuickFixAccumulatedCharge -= 1.0f;
+			CTF_GameStats.Event_PlayerInvulnerable( pOwner );
+			EconEntity_OnOwnerKillEaterEvent( this, pOwner, ToTFPlayer( m_hHealingTarget ), kKillEaterEvent_UberActivated );
+		}
+	}
+#endif
+
 	m_flChargeLevel = flNewCharge;
 
 	if ( !m_flChargeLevel )
@@ -1956,7 +1970,11 @@ void CWeaponMedigun::StartRelease( CTFPlayer *pTFPlayerPatient )
 
 	if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX )
 	{
+		float flDeduct = Min( 0.05f, m_flChargeLevel );
 		m_flChargeLevel = Max( 0.0f, m_flChargeLevel - 0.05f );
+#ifdef GAME_DLL
+		m_flQuickFixAccumulatedCharge += flDeduct;
+#endif
 	}
 
 #ifdef GAME_DLL
@@ -1973,6 +1991,15 @@ void CWeaponMedigun::StartRelease( CTFPlayer *pTFPlayerPatient )
 		CPVSFilter filter( pOwner->WorldSpaceCenter() );
 		pOwner->EmitSound( filter, pOwner->entindex(), CFmtStr( "WeaponMedigun_Vaccinator.Charged_tier_0%d", nCurrentChunk ) );
 		pOwner->EmitSound( filter, pOwner->entindex(), g_MedigunEffects[MEDIGUN_CHARGE_BULLET_RESIST].pszChargeOnSound );	
+	}
+	else if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX )
+	{
+		if ( m_flQuickFixAccumulatedCharge >= 1.0f )
+		{
+			m_flQuickFixAccumulatedCharge -= 1.0f;
+			CTF_GameStats.Event_PlayerInvulnerable( pOwner );
+			EconEntity_OnOwnerKillEaterEvent( this, pOwner, ToTFPlayer( m_hHealingTarget ), kKillEaterEvent_UberActivated );
+		}
 	}
 	else
 	{

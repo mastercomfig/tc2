@@ -208,6 +208,7 @@ protected:
 	bool					m_bHealingSelf;
 	int						m_nHealTargetClass;
 	int						m_nChargesReleased;
+	float					m_flQuickFixAccumulatedCharge;
 #endif
 	float					m_flChargeLevelToPreserve;
 	float					m_flOverHealExpert;		// Upgrade
