@@ -900,60 +900,106 @@ bool CTFPipebombLauncher::Reload( void )
 }
 
 #ifdef CLIENT_DLL
+ConVar cl_scotres_ring_draw_inner( "cl_scotres_ring_draw_inner", "0", FCVAR_ARCHIVE, "Always draw the Scottish Resistance inner reticle ring (0 = only flash on detonation, 1 = always visible when holding)" );
+ConVar cl_scotres_ring_draw_outer( "cl_scotres_ring_draw_outer", "0", FCVAR_ARCHIVE, "Always draw the Scottish Resistance outer reticle ring (0 = only flash on detonation, 1 = always visible when holding)" );
+
+ConVar cl_scotres_ring_inner_r( "cl_scotres_ring_inner_r", "0", FCVAR_ARCHIVE, "Red component of the Scottish Resistance inner ring color" );
+ConVar cl_scotres_ring_inner_g( "cl_scotres_ring_inner_g", "255", FCVAR_ARCHIVE, "Green component of the Scottish Resistance inner ring color" );
+ConVar cl_scotres_ring_inner_b( "cl_scotres_ring_inner_b", "255", FCVAR_ARCHIVE, "Blue component of the Scottish Resistance inner ring color" );
+ConVar cl_scotres_ring_inner_a( "cl_scotres_ring_inner_a", "128", FCVAR_ARCHIVE, "Alpha component of the Scottish Resistance inner ring color" );
+
+ConVar cl_scotres_ring_outer_r( "cl_scotres_ring_outer_r", "255", FCVAR_ARCHIVE, "Red component of the Scottish Resistance outer ring color" );
+ConVar cl_scotres_ring_outer_g( "cl_scotres_ring_outer_g", "128", FCVAR_ARCHIVE, "Green component of the Scottish Resistance outer ring color" );
+ConVar cl_scotres_ring_outer_b( "cl_scotres_ring_outer_b", "0", FCVAR_ARCHIVE, "Blue component of the Scottish Resistance outer ring color" );
+ConVar cl_scotres_ring_outer_a( "cl_scotres_ring_outer_a", "128", FCVAR_ARCHIVE, "Alpha component of the Scottish Resistance outer ring color" );
+
+ConVar cl_scotres_ring_fail_r( "cl_scotres_ring_fail_r", "220", FCVAR_ARCHIVE, "Red component of the Scottish Resistance failure rings color" );
+ConVar cl_scotres_ring_fail_g( "cl_scotres_ring_fail_g", "40", FCVAR_ARCHIVE, "Green component of the Scottish Resistance failure rings color" );
+ConVar cl_scotres_ring_fail_b( "cl_scotres_ring_fail_b", "40", FCVAR_ARCHIVE, "Blue component of the Scottish Resistance failure rings color" );
+ConVar cl_scotres_ring_fail_a( "cl_scotres_ring_fail_a", "96", FCVAR_ARCHIVE, "Alpha component of the Scottish Resistance failure rings color" );
+
 void CTFPipebombLauncher::DrawCrosshair( void )
 {
 	// Draw the base crosshair first
 	BaseClass::DrawCrosshair();
 
-	// Draw the custom detonation circle if active
-	if ( m_flDetonateFlashTime > 0.0f && gpGlobals->curtime < m_flDetonateFlashTime + 0.3f )
+	if ( GetDetonateMode() != TF_DETONATE_MODE_DOT )
+		return;
+
+	CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
+	if ( !pPlayer )
+		return;
+
+	// Compute screen space center
+	int xCenter = ScreenWidth() / 2;
+	int yCenter = ScreenHeight() / 2;
+
+	bool bInFlash = ( m_flDetonateFlashTime > 0.0f && gpGlobals->curtime < m_flDetonateFlashTime + 0.3f );
+	bool bFlashingFailure = bInFlash && ( m_flDetonateFlashRadius < 0.0f );
+
+	// Draw both rings
+	for ( int ring = 0; ring < 2; ++ring )
 	{
-		CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
-		if ( pPlayer )
+		bool bIsInner = ( ring == 0 );
+		bool bAlwaysDraw = bIsInner ? cl_scotres_ring_draw_inner.GetBool() : cl_scotres_ring_draw_outer.GetBool();
+		bool bFlashingSuccess = bInFlash && ( m_flDetonateFlashRadius > 0.0f && ( m_bDetonateFlashColor == bIsInner ) );
+
+		if ( bAlwaysDraw || bFlashingFailure || bFlashingSuccess )
 		{
-			// Compute screen space center
-			int xCenter = ScreenWidth() / 2;
-			int yCenter = ScreenHeight() / 2;
-
-			// Fade out over the 0.3s duration
 			float flAge = gpGlobals->curtime - m_flDetonateFlashTime;
-			float flAlpha = 1.0f - ( flAge / 0.3f );
-			if ( flAlpha < 0.0f ) flAlpha = 0.0f;
-			if ( flAlpha > 1.0f ) flAlpha = 1.0f;
+			float flFlashScale = 1.0f - ( flAge / 0.3f );
+			if ( flFlashScale < 0.0f ) flFlashScale = 0.0f;
+			if ( flFlashScale > 1.0f ) flFlashScale = 1.0f;
 
-			if ( m_flDetonateFlashRadius > 0.0f )
+			Color clrRing;
+			if ( bFlashingFailure )
 			{
-				// Compute the screen-space radius in pixels
-				float flPixelRadius = m_flDetonateFlashRadius * ( ScreenHeight() * 0.5f );
-
-				Color clrCircle;
-				if ( m_bDetonateFlashColor )
+				// Failure: draw fail color
+				clrRing = Color( 
+					cl_scotres_ring_fail_r.GetInt(), 
+					cl_scotres_ring_fail_g.GetInt(), 
+					cl_scotres_ring_fail_b.GetInt(), 
+					(int)( flFlashScale * cl_scotres_ring_fail_a.GetInt() ) 
+				);
+			}
+			else if ( bFlashingSuccess )
+			{
+				// Success flash: flash bright success color
+				int nMaxAlpha = bIsInner ? cl_scotres_ring_inner_a.GetInt() : cl_scotres_ring_outer_a.GetInt();
+				int nTargetAlpha = (int)( flFlashScale * 255.0f );
+				if ( nTargetAlpha < nMaxAlpha && bAlwaysDraw )
 				{
-					// Cyan/Cyan-blue for successful inner cluster detonation
-					clrCircle = Color( 0, 255, 255, (int)( flAlpha * 128 ) );
+					nTargetAlpha = nMaxAlpha;
 				}
-				else
+				else if ( !bAlwaysDraw )
 				{
-					// Orange-red for loose outer-radius / trimming detonation
-					clrCircle = Color( 255, 128, 0, (int)( flAlpha * 128 ) );
+					nTargetAlpha = (int)( flFlashScale * nMaxAlpha );
 				}
 
-				// Draw the circle
-				vgui::surface()->DrawSetColor( clrCircle );
-				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flPixelRadius, 64 );
+				clrRing = Color(
+					bIsInner ? cl_scotres_ring_inner_r.GetInt() : cl_scotres_ring_outer_r.GetInt(),
+					bIsInner ? cl_scotres_ring_inner_g.GetInt() : cl_scotres_ring_outer_g.GetInt(),
+					bIsInner ? cl_scotres_ring_inner_b.GetInt() : cl_scotres_ring_outer_b.GetInt(),
+					nTargetAlpha
+				);
 			}
 			else
 			{
-				// Fail! Draw both circles in red to show the boundaries
-				Color clrFail = Color( 220, 40, 40, (int)( flAlpha * 96 ) );
-				
-				float flInnerPixelRadius = 0.15f * ( ScreenHeight() * 0.5f );
-				float flOuterPixelRadius = 0.30f * ( ScreenHeight() * 0.5f );
-
-				vgui::surface()->DrawSetColor( clrFail );
-				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flInnerPixelRadius, 64 );
-				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flOuterPixelRadius, 64 );
+				// Idle persistent draw
+				clrRing = Color(
+					bIsInner ? cl_scotres_ring_inner_r.GetInt() : cl_scotres_ring_outer_r.GetInt(),
+					bIsInner ? cl_scotres_ring_inner_g.GetInt() : cl_scotres_ring_outer_g.GetInt(),
+					bIsInner ? cl_scotres_ring_inner_b.GetInt() : cl_scotres_ring_outer_b.GetInt(),
+					bIsInner ? cl_scotres_ring_inner_a.GetInt() : cl_scotres_ring_outer_a.GetInt()
+				);
 			}
+
+			float flRadius = bIsInner ? 0.15f : 0.30f;
+			float flPixelRadius = flRadius * ( ScreenHeight() * 0.5f );
+
+			// Draw the circle
+			vgui::surface()->DrawSetColor( clrRing );
+			vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flPixelRadius, 64 );
 		}
 	}
 }
