@@ -2525,6 +2525,22 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 
 		float flCurDisguiseOverheal = ( GetDisguiseMaxHealth() != 0 ) ? ( (float)GetDisguiseHealth() / (float)GetDisguiseMaxHealth() ) : ( flCurOverheal );
 
+		float flMegahealBonus = 1.0f;
+		if ( TFGameRules() && TFGameRules()->IsBetaActive() && InCond( TF_COND_MEGAHEAL ) )
+		{
+			for ( int i = 0; i < m_aHealers.Count(); i++ )
+			{
+				if ( m_aHealers[i].flOverhealBonus > flMegahealBonus )
+				{
+					flMegahealBonus = m_aHealers[i].flOverhealBonus;
+				}
+			}
+			if ( flMegahealBonus <= 1.0f )
+			{
+				flMegahealBonus = 1.25f; // Fallback
+			}
+		}
+
 		float fTotalHealAmount = 0.0f;
 		for ( int i = 0; i < m_aHealers.Count(); i++ )
 		{
@@ -2557,6 +2573,15 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 			}
 
 			float flOverhealBonus = 1.f + ( m_aHealers[i].flOverhealBonus - 1.f ) * flOverhealActiveMod;
+			
+			if ( flMegahealBonus > 1.0f )
+			{
+				float flMegaOverhealBonus = 1.f + ( flMegahealBonus - 1.f ) * flOverhealActiveMod;
+				if ( flMegaOverhealBonus > flOverhealBonus )
+				{
+					flOverhealBonus = flMegaOverhealBonus;
+				}
+			}
 
 			// Don't heal over the healer's overheal bonus
 			if ( flCurOverheal >= flOverhealBonus )

@@ -9519,6 +9519,38 @@ int CTFPlayer::TakeHealth( float flHealth, int bitsDamageType )
 		float flHealthToAdd = flHealth;
 		float flMaxHealth = GetMaxHealth();
 		
+		if ( TFGameRules() && TFGameRules()->IsBetaActive() && m_Shared.InCond( TF_COND_MEGAHEAL ) )
+		{
+			float flOverhealBonus = 1.0f;
+			for ( int i = 0; i < m_Shared.m_aHealers.Count(); i++ )
+			{
+				if ( m_Shared.m_aHealers[i].flOverhealBonus > flOverhealBonus )
+				{
+					flOverhealBonus = m_Shared.m_aHealers[i].flOverhealBonus;
+				}
+			}
+
+			if ( flOverhealBonus <= 1.0f )
+			{
+				flOverhealBonus = 1.25f;
+			}
+
+			float flOverhealActiveMod = 1.f;
+			CTFWeaponBase *pActiveWeapon = GetActiveTFWeapon();
+			if ( pActiveWeapon )
+			{
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pActiveWeapon, flOverhealActiveMod, mult_patient_overheal_penalty_active );
+			}
+			
+			float flBonus = 1.f + ( flOverhealBonus - 1.f ) * flOverhealActiveMod;
+			float flBonusMaxHealth = GetMaxHealthForBuffing() * flBonus;
+			
+			if ( flBonusMaxHealth > flMaxHealth )
+			{
+				flMaxHealth = flBonusMaxHealth;
+			}
+		}
+		
 		// don't want to add more than we're allowed to have
 		if ( flHealthToAdd > flMaxHealth - m_iHealth )
 		{
