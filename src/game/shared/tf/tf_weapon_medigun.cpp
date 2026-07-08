@@ -1970,8 +1970,8 @@ void CWeaponMedigun::StartRelease( CTFPlayer *pTFPlayerPatient )
 
 	if ( TFGameRules() && TFGameRules()->IsBetaActive() && GetMedigunType() == MEDIGUN_QUICKFIX )
 	{
-		float flDeduct = Min( 0.05f, m_flChargeLevel );
-		m_flChargeLevel = Max( 0.0f, m_flChargeLevel - 0.05f );
+		float flDeduct = Min( 0.05f, m_flChargeLevel.Get() );
+		m_flChargeLevel = Max( 0.0f, m_flChargeLevel - flDeduct );
 #ifdef GAME_DLL
 		m_flQuickFixAccumulatedCharge += flDeduct;
 #endif
