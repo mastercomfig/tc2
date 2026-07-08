@@ -13,5 +13,24 @@
 "chat_say"				"Say :"
 "chat_say_team"			"Say (TEAM) :"
 "chat_say_party"		"Say (PARTY) :"
+
+"Scoreboard_ChangeOnRoundEnd"		"(Map change on round end...) Server map time left: 0:00"
+"TF_HUD_ServerChangeOnRoundEnd"		"0:00"
+
+// Settings
+"TF_classautokill"		"Auto-kill after choosing a player class"
+"Tooltip_classautokill"		"If set, then you'll immediately die whenever you change class while out in the field.\n\nIf unset, you'll change to your new class the next time you respawn or touch a resupply cabinet."
+
+"Tooltip_loadoutrespawn"	"If set, then you'll respawn immediately whenever you change your loadout while inside a respawn zone.\n\nIf unset, your loadout changes will take effect the next time you respawn or touch a resupply cabinet."
+
+"tf_dingalingaling_Default"    			"Ding"
+
+"TF_CombatTextBatching"		"Combine Combat Text Damage"
+
+// attrib
+//"Attrib_ShovelDamageBoost" "Damage dealt and resisted increases as the user becomes injured"
+
+// achievement
+"TF_SCOUT_KNOCK_INTO_TRAIN_DESC"	"Cause an environmental death using the Force-a-Nature's knockback."
 }
 }
