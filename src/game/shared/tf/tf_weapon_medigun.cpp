@@ -2665,6 +2665,10 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 		}
 
 		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		if ( !pLocalPlayer )
+			return;
+
+		const int iLocalTeam = pLocalPlayer->GetTeamNumber();
 
 		for( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
 		{
@@ -2675,19 +2679,37 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 				if ( pPlayer == pLocalPlayer )
 					continue;
 
-				if ( ( pPlayer->GetTeamNumber() == GetLocalPlayerTeam() ) ||
-					 ( pPlayer->GetPlayerClass() && ( pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY ) && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && ( pPlayer->m_Shared.GetDisguiseTeam() == GetLocalPlayerTeam() ) ) )
+				if ( ( pPlayer->GetTeamNumber() == iLocalTeam ) ||
+				     ( pPlayer->GetPlayerClass() && ( pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_SPY ) && pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && ( pPlayer->m_Shared.GetDisguiseTeam() == iLocalTeam ) ) )
 				{
 					if ( pPlayer->IsAlive() )
 					{
-						int iHealth = float( pPlayer->GetHealth() ) / float( pPlayer->GetMaxHealth() ) * 100.0f;
-						int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
+						int iCurHealth;
+						// If I'm disguised as the enemy,
+						if ( pPlayer->m_Shared.InCond( TF_COND_DISGUISED ) && pPlayer->m_Shared.GetDisguiseTeam() != pPlayer->GetTeamNumber() && !pPlayer->m_Shared.IsStealthed() )
+						{
+							// share my actual health or disguise health based on who's asking..
+							if ( iLocalTeam == pPlayer->GetTeamNumber() )
+							{
+								iCurHealth = pPlayer->GetHealth();
+							}
+							else
+							{
+								iCurHealth = pPlayer->m_Shared.GetDisguiseHealth();
+							}
+						}
+						else
+						{
+							iCurHealth = pPlayer->GetHealth();
+						}
+						float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
+						float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() );
 
 						// If it's a healthy teammate....
 						// or dead (IsAlive can be true for a tick or so)...
-						if ( iHealth <= 0 || iHealth > iHealthThreshold )
+						if ( flHealth <= 0 || flHealth > flHealthThreshold )
 						{
-							if ( iHealth <= 0 )
+							if ( flHealth <= 0 )
 							{
 								// in the process of dying, so just clear it out, we can't help them anymore.
 								pPlayer->StopSaveMeEffect( true );
@@ -2707,7 +2729,7 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 						}
 
 						// If it's a hurt teammate (not dead)....
-						if ( iHealth <= iHealthThreshold )
+						if ( flHealth > 0.0f && flHealth <= flHealthThreshold )
 						{
 							// Make sure we're not already tracking this
 							if ( m_iAutoCallers.Find( playerIndex ) != m_iAutoCallers.InvalidIndex() )

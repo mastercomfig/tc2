@@ -8542,22 +8542,34 @@ void C_TFPlayer::CreateSaveMeEffect( MedicCallerType nType /*= CALLER_TYPE_NORMA
 		return;
 
 	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pLocalPlayer )
+		return;
 
+	int iCurHealth;
 	// If I'm disguised as the enemy, play to all players
 	if ( m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() != GetTeamNumber() && !m_Shared.IsStealthed() )
 	{
-		// play to all players
+		// share my actual health or disguise health based on who's asking..
+		if ( pLocalPlayer->GetTeamNumber() == GetTeamNumber() )
+		{
+			iCurHealth = GetHealth();
+		}
+		else
+		{
+			iCurHealth = m_Shared.GetDisguiseHealth();
+		}
 	}
 	else
 	{
 		// only play to teammates
 		if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != GetTeamNumber() )
 			return;
+		iCurHealth = GetHealth();
 	}
 
 	StopSaveMeEffect();
 
-	float flHealth = float( GetHealth() ) / float( GetMaxHealth() );
+	float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
 	Vector vHealth;
 	vHealth.x = flHealth;
 	vHealth.y = flHealth;
@@ -8628,10 +8640,31 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 			if ( pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
 			{
 				const bool bAutoCaller = m_nMedicCallerType == CALLER_TYPE_AUTO;
-				int iHealth = float( GetHealth() ) / float( GetMaxHealth() ) * 100.0f;
-				int iHealthThreshold = hud_medicautocallersthreshold.GetInt();
+				int iCurHealth;
+				// If I'm disguised as the enemy, play to all players
+				if ( m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() != GetTeamNumber() && !m_Shared.IsStealthed() )
+				{
+					// share my actual health or disguise health based on who's asking..
+					if ( pLocalPlayer->GetTeamNumber() == GetTeamNumber() )
+					{
+						iCurHealth = GetHealth();
+					}
+					else
+					{
+						iCurHealth = m_Shared.GetDisguiseHealth();
+					}
+				}
+				else
+				{
+					// only play to teammates
+					if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != GetTeamNumber() )
+						return;
+					iCurHealth = GetHealth();
+				}
+				float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
+				float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() );
 				// we're below the auto caller threshold!
-				if ( iHealth <= iHealthThreshold )
+				if ( flHealth > 0.0f && flHealth <= flHealthThreshold )
 				{
 					if ( bAutoCaller )
 					{
@@ -12056,7 +12089,25 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b, float *a )
 
 	if ( bShowHealthGlow )
 	{
-		const float flHealth = (float)GetHealth() / (float)GetMaxHealth();
+		int iCurHealth;
+		// If I'm disguised as the enemy,
+		if ( m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() != GetTeamNumber() && !m_Shared.IsStealthed() )
+		{
+			// share my actual health or disguise health based on who's asking..
+			if ( pLocalPlayer->GetTeamNumber() == GetTeamNumber() )
+			{
+				iCurHealth = GetHealth();
+			}
+			else
+			{
+				iCurHealth = m_Shared.GetDisguiseHealth();
+			}
+		}
+		else
+		{
+			iCurHealth = GetHealth();
+		}
+		float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
 
 		Color healthOverheal(191, 231, 182);
 		Color healthGood(84, 191, 58);
