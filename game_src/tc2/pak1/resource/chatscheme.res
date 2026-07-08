@@ -353,7 +353,7 @@ Scheme
 			"isproportional" "only"
 			"1"
 			{
-				"name"		"SN Pro"
+				"name"		"Nunito"
 				"tall"		"15"
 				"weight"	"700"
 				"yres"		"480 599"
@@ -362,7 +362,7 @@ Scheme
 			}
 			"2"
 			{
-				"name"		"SN Pro"
+				"name"		"Nunito"
 				"tall"		"17"
 				"weight"	"700"
 				"yres"		"600 767"
@@ -371,7 +371,7 @@ Scheme
 			}
 			"3"
 			{
-				"name"		"SN Pro"
+				"name"		"Nunito"
 				"tall"		"18"
 				"weight"	"700"
 				"yres"		"768 1023"
@@ -380,8 +380,8 @@ Scheme
 			}
 			"4"
 			{
-				"name"		"SN Pro"
-				"tall"		"20"
+				"name"		"Nunito"
+				"tall"		"21"
 				"weight"	"700"
 				"yres"		"1024 1199"
 				"dropshadow"	"1"
@@ -389,7 +389,7 @@ Scheme
 			}
 			"5" // Misyl: Proportional
 			{
-				"name"		"SN Pro"
+				"name"		"Nunito"
 				"tall"		"10"
 				// Misyl: Looks bad when proportional
 				// Removing the weight here.
@@ -816,23 +816,23 @@ Scheme
 		"16"		"resource/linux_fonts/LiberationMono-Regular.ttf"
 		"17"
 		{
-			"font" "resource/snpro-medium.ttf"
-			"name" "SN Pro"
+			"font" "resource/nunito-medium.ttf"
+			"name" "Nunito"
 		}
 		"18"
 		{
-			"font" "resource/snpro-bold.ttf"
-			"name" "SN Pro"
+			"font" "resource/nunito-bold.ttf"
+			"name" "Nunito"
 		}
 		"19"
 		{
-			"font" "resource/snpro-bolditalic.ttf"
-			"name" "SN Pro"
+			"font" "resource/nunito-bolditalic.ttf"
+			"name" "Nunito"
 		}
 		"20"
 		{
-			"font" "resource/snpro-mediumitalic.ttf"
-			"name" "SN Pro"
+			"font" "resource/nunito-mediumitalic.ttf"
+			"name" "Nunito"
 		}
 	}
 }

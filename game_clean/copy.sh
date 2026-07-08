@@ -23,10 +23,10 @@ declare -a FILES_REP=(
   #
   tc2/loose
   #
-  tc2/resource/snpro-medium.ttf
-  tc2/resource/snpro-mediumitalic.ttf
-  tc2/resource/snpro-bold.ttf
-  tc2/resource/snpro-bolditalic.ttf
+  tc2/resource/nunito-medium.ttf
+  tc2/resource/nunito-mediumitalic.ttf
+  tc2/resource/nunito-bold.ttf
+  tc2/resource/nunito-bolditalic.ttf
   #
   tc2/gameinfo.txt
   tc2/gameinfo_server.txt
