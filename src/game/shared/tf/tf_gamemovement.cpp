@@ -56,7 +56,7 @@ ConVar  tf_parachute_maxspeed_z( "tf_parachute_maxspeed_z", "-100.0f", FCVAR_DEV
 ConVar  tf_parachute_maxspeed_onfire_z( "tf_parachute_maxspeed_onfire_z", "-100.0f", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Max Z Speed when on Fire and Parachute is deployed" );
 ConVar  tf_parachute_aircontrol( "tf_parachute_aircontrol", "2.5f", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Multiplier for how much air control players have when Parachute is deployed" );
 ConVar	tf_parachute_deploy_toggle_allowed( "tf_parachute_deploy_toggle_allowed", "0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
-ConVar  tf_parachute_cooldown( "tf_parachute_cooldown", "1.5f", FCVAR_REPLICATED, "Cooldown in seconds for deploying/undeploying the parachute" );
+ConVar  tf_parachute_cooldown( "tf_parachute_cooldown", "0.4f", FCVAR_REPLICATED, "Cooldown in seconds for deploying/undeploying the parachute" );
 ConVar  tf_parachute_steering_tightness( "tf_parachute_steering_tightness", "3.0f", FCVAR_REPLICATED, "Rate at which horizontal velocity is redirected to view angle when parachuting" );
 ConVar  tf_parachute_swoop_conversion( "tf_parachute_swoop_conversion", "0.25f", FCVAR_REPLICATED, "Percentage of downward speed converted to forward speed upon deploy" );
 
