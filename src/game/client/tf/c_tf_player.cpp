@@ -8641,6 +8641,7 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 			{
 				const bool bAutoCaller = m_nMedicCallerType == CALLER_TYPE_AUTO;
 				int iCurHealth;
+				bool bShouldPlay = true;
 				// If I'm disguised as the enemy, play to all players
 				if ( m_Shared.InCond( TF_COND_DISGUISED ) && m_Shared.GetDisguiseTeam() != GetTeamNumber() && !m_Shared.IsStealthed() )
 				{
@@ -8658,26 +8659,32 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 				{
 					// only play to teammates
 					if ( pLocalPlayer && pLocalPlayer->GetTeamNumber() != GetTeamNumber() )
-						return;
+					{
+						bShouldPlay = false;
+					}
 					iCurHealth = GetHealth();
 				}
-				float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
-				float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() );
-				// we're below the auto caller threshold!
-				if ( flHealth > 0.0f && flHealth <= flHealthThreshold )
+
+				if ( bShouldPlay )
 				{
-					if ( bAutoCaller )
+					float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
+					float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() ) / 100.0f;
+					// we're below the auto caller threshold!
+					if ( flHealth > 0.0f && flHealth <= flHealthThreshold )
 					{
-						// todo(mcoms): should we just refresh the effect in this case?
-						// if we're already auto caller, just let it continue
-						m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
+						if ( bAutoCaller )
+						{
+							// todo(mcoms): should we just refresh the effect in this case?
+							// if we're already auto caller, just let it continue
+							m_flSaveMeExpireTime = gpGlobals->curtime + 5.0f;
+						}
+						else
+						{
+							// not auto caller, but we're hurt. this will happen if a non auto caller interrupts while we're hurt.
+							CreateSaveMeEffect( CALLER_TYPE_AUTO );
+						}
+						return;
 					}
-					else
-					{
-						// not auto caller, but we're hurt. this will happen if a non auto caller interrupts while we're hurt.
-						CreateSaveMeEffect( CALLER_TYPE_AUTO );
-					}
-					return;
 				}
 			}
 		}

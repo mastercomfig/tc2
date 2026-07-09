@@ -2703,7 +2703,7 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 							iCurHealth = pPlayer->GetHealth();
 						}
 						float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
-						float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() );
+						float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() ) / 100.0f;
 
 						// If it's a healthy teammate....
 						// or dead (IsAlive can be true for a tick or so)...
@@ -2727,10 +2727,9 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 								continue;
 							}
 						}
-
-						// If it's a hurt teammate (not dead)....
-						if ( flHealth > 0.0f && flHealth <= flHealthThreshold )
+						else
 						{
+							// If it's a hurt teammate (not dead)....
 							// Make sure we're not already tracking this
 							if ( m_iAutoCallers.Find( playerIndex ) != m_iAutoCallers.InvalidIndex() )
 								continue;
