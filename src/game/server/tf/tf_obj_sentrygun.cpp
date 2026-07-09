@@ -2337,10 +2337,15 @@ void CObjectSentrygun::SetBuildingSize()
 //-----------------------------------------------------------------------------
 void CObjectSentrygun::MakeCarriedObject( CTFPlayer *pCarrier )
 {
+	bool bWasCarried = IsCarried();
+
 	BaseClass::MakeCarriedObject( pCarrier );
 
-	m_iOldAmmoShells = m_iAmmoShells;
-	m_iOldAmmoRockets = m_iAmmoRockets;
+	if ( !bWasCarried )
+	{
+		m_iOldAmmoShells = m_iAmmoShells;
+		m_iOldAmmoRockets = m_iAmmoRockets;
+	}
 
 	m_nShieldLevel.Set( SHIELD_NONE );
 	m_bIsWranglered = false;
