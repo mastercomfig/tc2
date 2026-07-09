@@ -2345,6 +2345,12 @@ int CTFPlayer::CheckStrandedSpawn(void)
 		return STRANDED_SPAWN_DETACHED;
 	}
 
+	// can't be a loser
+	if ( IsLoser() )
+	{
+		return STRANDED_SPAWN_DETACHED;
+	}
+
 	// we don't care during match summary
 	bool bMatchSummary = TFGameRules() && TFGameRules()->ShowMatchSummary();
 	if ( bMatchSummary )
