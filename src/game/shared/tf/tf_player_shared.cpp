@@ -13141,6 +13141,7 @@ bool CTFPlayer::TryToPickupBuilding()
 	Vector vecForward;
 	AngleVectors( EyeAngles(), &vecForward, NULL, NULL );
 
+	CTFWeaponBase* pWeapon = GetActiveTFWeapon();
 	int iPickUpRange = TF_BUILDING_PICKUP_RANGE;
 	int iIncreasedRangeCost = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iIncreasedRangeCost, building_teleporting_pickup );

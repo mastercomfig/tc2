@@ -2346,7 +2346,7 @@ int CTFPlayer::CheckStrandedSpawn(void)
 	}
 
 	// can't be a loser
-	if ( IsLoser() )
+	if ( m_Shared.IsLoser() )
 	{
 		return STRANDED_SPAWN_DETACHED;
 	}

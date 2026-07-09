@@ -429,6 +429,7 @@ public:
 
 	bool	CanStartPhase( void );
 
+	bool    CanPickupBuildings( void );
 	bool	CanPickupBuilding( CBaseObject *pPickupObject );
 	bool	TryToPickupBuilding( void );
 	void	StartBuildingObjectOfType( int iType, int iObjectMode=0 );
