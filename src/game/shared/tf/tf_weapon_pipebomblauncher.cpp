@@ -32,6 +32,11 @@
 
 #define TF_WEAPON_PIPEBOMB_LAUNCHER_CHARGE_SOUND	"Weapon_StickyBombLauncher.ChargeUp"
 
+ConVar tf_scotres_inner_radius( "tf_scotres_inner_radius", "0.15", FCVAR_REPLICATED | FCVAR_NOTIFY, "Inner screen-space radius for Scottish Resistance reticle cluster targeting." );
+ConVar tf_scotres_outer_radius( "tf_scotres_outer_radius", "0.30", FCVAR_REPLICATED | FCVAR_NOTIFY, "Outer screen-space radius for Scottish Resistance reticle loose/individual targeting." );
+ConVar tf_scotres_chain_step( "tf_scotres_chain_step", "0.80", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum step distance factor (relative to bomb damage radius)." );
+ConVar tf_scotres_chain_budget( "tf_scotres_chain_budget", "2.5", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum total path distance factor (relative to anchor bomb damage radius)." );
+
 //=============================================================================
 //
 // Weapon Pipebomb Launcher tables.
@@ -639,8 +644,8 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 	vecPlayerForward.NormalizeInPlace();
 
 	// Determine the dynamic dot product thresholds based on FOV
-	const float flInnerScreenRadius = 0.15f; 
-	const float flOuterScreenRadius = 0.30f; 
+	const float flInnerScreenRadius = tf_scotres_inner_radius.GetFloat(); 
+	const float flOuterScreenRadius = tf_scotres_outer_radius.GetFloat(); 
 
 	float flFOV = pPlayer->GetFOV(); 
 	float flTanHalfVert = 0.75f * tan( DEG2RAD( flFOV ) * 0.5f );
@@ -712,7 +717,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 			}
 
 			flMinPathDist[iAnchorIndex] = 0.0f;
-			float flMaxBudget = pAnchorBomb->GetDamageRadius() * 2.5f;
+			float flMaxBudget = pAnchorBomb->GetDamageRadius() * tf_scotres_chain_budget.GetFloat();
 
 			for ( int step = 0; step < iClusteringCount; ++step )
 			{
@@ -750,8 +755,8 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 
 						float flStepDist = pCurrent->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
 						
-						// Chaining check: adjacent bombs must be close enough (0.8 * damage radius of the bomb)
-						const float flMaxStep = pCurrent->GetDamageRadius() * 0.80f;
+						// Chaining check: adjacent bombs must be close enough (relative to bomb damage radius)
+						const float flMaxStep = pCurrent->GetDamageRadius() * tf_scotres_chain_step.GetFloat();
 						if ( flStepDist <= flMaxStep )
 						{
 							float flNewDist = flBestPathDist + flStepDist;
@@ -994,7 +999,7 @@ void CTFPipebombLauncher::DrawCrosshair( void )
 				);
 			}
 
-			float flRadius = bIsInner ? 0.15f : 0.30f;
+			float flRadius = bIsInner ? tf_scotres_inner_radius.GetFloat() : tf_scotres_outer_radius.GetFloat();
 			float flPixelRadius = flRadius * ( ScreenHeight() * 0.5f );
 
 			// Draw the circle
