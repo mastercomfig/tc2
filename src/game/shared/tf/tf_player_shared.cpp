@@ -13093,7 +13093,7 @@ bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFPlayer::TryToPickupBuilding()
+bool CTFPlayer::CanPickupBuildings()
 {
 	if ( m_Shared.IsCarryingObject() )
 		return false;
@@ -13124,6 +13124,17 @@ bool CTFPlayer::TryToPickupBuilding()
 
 	CTFWeaponBase * pWeapon = GetActiveTFWeapon();
 	if ( pWeapon && ( pWeapon->GetWeaponID() == TF_WEAPON_LASER_POINTER || pWeapon->GetWeaponID() == TF_WEAPON_MECHANICAL_ARM ) )
+		return false;
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::TryToPickupBuilding()
+{
+	if ( !CanPickupBuildings() )
 		return false;
 
 	// Check to see if a building we own is in front of us.

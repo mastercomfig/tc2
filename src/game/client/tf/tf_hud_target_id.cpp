@@ -933,7 +933,7 @@ void CTargetID::UpdateID( void )
 
 					if ( iObj >= OBJ_DISPENSER && iObj <= OBJ_SENTRYGUN )
 					{
-						if ( pLocalTFPlayer->CanPickupBuilding(pObj) )
+						if ( pLocalTFPlayer->CanPickupBuildings() && pLocalTFPlayer->CanPickupBuilding(pObj) )
 						{
 							pszActionCommand = "+attack2";
 						}

@@ -491,7 +491,8 @@ public:
 	bool DoClassSpecialSkill( void );
 	bool EndClassSpecialSkill( void );
 
-	bool	CanPickupBuilding( CBaseObject *pPickupObject );
+	bool CanPickupBuildings( void );
+	bool CanPickupBuilding( CBaseObject *pPickupObject );
 	bool TryToPickupBuilding( void );
 
 	float GetLastDamageReceivedTime( void ) { return m_flLastDamageTime; }
