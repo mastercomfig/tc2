@@ -1374,14 +1374,14 @@ bool CTFGameMovement::CheckJumpButton()
 		return true;
 	}
 
+	ToggleParachute();
+
 	// Can I jump?
 	if ( !m_pTFPlayer->CanJump() )
 		return false;
 
 	bool bAirDash = false;
 	bool bOnGround = ( player->GetGroundEntity() != NULL );
-
-	ToggleParachute();
 
 	// Cannot jump while ducked.
 	if ( player->GetFlags() & FL_DUCKING )
