@@ -13123,7 +13123,7 @@ bool CTFPlayer::TryToPickupBuilding()
 #endif
 
 	CTFWeaponBase * pWeapon = GetActiveTFWeapon();
-	if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_LASER_POINTER )
+	if ( pWeapon && ( pWeapon->GetWeaponID() == TF_WEAPON_LASER_POINTER || pWeapon->GetWeaponID() == TF_WEAPON_MECHANICAL_ARM ) )
 		return false;
 
 	// Check to see if a building we own is in front of us.
