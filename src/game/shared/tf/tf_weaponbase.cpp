@@ -6742,7 +6742,51 @@ void CTFWeaponBase::CheckReload( void )
 	}
 	else
 	{
-		BaseClass::CheckReload();
+		if ( m_bReloadsSingly )
+		{
+			CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
+			if ( !pOwner )
+				return;
+
+			if ((m_bInReload) && (m_flNextPrimaryAttack <= gpGlobals->curtime))
+			{
+				// TODO(mcoms): what if we have a secondary fire action?
+				if ( pOwner->m_nButtons & IN_ATTACK && m_iClip1 > 0 )
+				{
+					m_bInReload = false;
+					return;
+				}
+
+				// If out of ammo end reload
+				if (pOwner->GetAmmoCount(m_iPrimaryAmmoType) <=0)
+				{
+					FinishReload();
+					return;
+				}
+				// If clip not full reload again
+				else if (m_iClip1 < GetMaxClip1())
+				{
+					// Add them to the clip
+					m_iClip1 += 1;
+					pOwner->RemoveAmmo( 1, m_iPrimaryAmmoType );
+
+					Reload();
+					return;
+				}
+				// Clip full, stop reloading
+				else
+				{
+					FinishReload();
+					m_flNextPrimaryAttack	= gpGlobals->curtime;
+					m_flNextSecondaryAttack = gpGlobals->curtime;
+					return;
+				}
+			}
+		}
+		else
+		{
+			BaseClass::CheckReload();
+		}
 	}
 }
 
