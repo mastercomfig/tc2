@@ -130,6 +130,7 @@
 #include "vgui_controls/BuildGroup.h"
 
 #include "secure_command_line.h"
+#include "inetchannelinfo.h"
 
 // NVNT includes
 #include "hud_macros.h"
@@ -355,6 +356,7 @@ ConVar r_lightmap_bicubic_set( "r_lightmap_bicubic_set", "0", FCVAR_ARCHIVE | FC
 
 // Physics system
 bool g_bLevelInitialized;
+bool g_bWasOnRemoteServer = false;
 bool g_bTextMode = false;
 
 static ConVar *g_pcv_ThreadMode = NULL;
@@ -1768,6 +1770,9 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 		return;
 	g_bLevelInitialized = true;
 
+	INetChannelInfo *pNetChan = engine->GetNetChannelInfo();
+	g_bWasOnRemoteServer = ( pNetChan && !pNetChan->IsLoopback() );
+
 	input->LevelInit();
 
 	vieweffects->LevelInit();
@@ -1893,6 +1898,13 @@ void CHLClient::LevelShutdown( void )
 		return;
 
 	g_bLevelInitialized = false;
+
+	if ( g_pCVar && g_bWasOnRemoteServer )
+	{
+		g_pCVar->RevertFlaggedConVars( FCVAR_REPLICATED );
+	}
+	
+	g_bWasOnRemoteServer = false;
 
 	// Disable abs recomputations when everything is shutting down
 	CBaseEntity::EnableAbsRecomputations( false );
