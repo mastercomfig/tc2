@@ -36,6 +36,7 @@ ConVar tf_scotres_inner_radius( "tf_scotres_inner_radius", "0.15", FCVAR_REPLICA
 ConVar tf_scotres_outer_radius( "tf_scotres_outer_radius", "0.30", FCVAR_REPLICATED | FCVAR_NOTIFY, "Outer screen-space radius for Scottish Resistance reticle loose/individual targeting." );
 ConVar tf_scotres_chain_step( "tf_scotres_chain_step", "0.80", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum step distance factor (relative to bomb damage radius)." );
 ConVar tf_scotres_chain_budget( "tf_scotres_chain_budget", "2.5", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum total path distance factor (relative to anchor bomb damage radius)." );
+ConVar tf_scotres_aim_score( "tf_scotres_aim_score", "500000", FCVAR_REPLICATED | FCVAR_NOTIFY, "Aiming closeness score for selecting Scottish Resistance anchor bomb." );
 
 //=============================================================================
 //
@@ -679,7 +680,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 			{
 				// Prioritize bombs we are looking directly at, but still factor in distance slightly.
 				// The score is lower the better.
-				float flScore = ( 1.0f - flDot ) * 10000.0f + flDistToBomb;
+				float flScore = ( 1.0f - flDot ) * tf_scotres_aim_score.GetFloat() + flDistToBomb;
 				
 				if ( flScore < flBestDist )
 				{
