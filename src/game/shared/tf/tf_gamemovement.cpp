@@ -2438,24 +2438,58 @@ void CTFGameMovement::AirMove( void )
 	{
 		// Wingsuit-style Momentum Redirection
 		float flSpeedXY = mv->m_vecVelocity.Length2D();
-		
+		float flDot = 0.0f;
+
 		if ( flSpeedXY > 0.0f && wishspeed > 0.0f )
 		{
 			Vector vecCurrentXY = mv->m_vecVelocity;
 			vecCurrentXY.z = 0;
 			VectorNormalize( vecCurrentXY );
-			
-			// Steer tightness
-			float flTurnRate = tf_parachute_steering_tightness.GetFloat();
-			Vector vecNewDir = vecCurrentXY + ( wishdir - vecCurrentXY ) * (flTurnRate * GAMEMOVEMENT_FRAMETIME);
-			VectorNormalize( vecNewDir );
-			
-			mv->m_vecVelocity.x = vecNewDir.x * flSpeedXY;
-			mv->m_vecVelocity.y = vecNewDir.y * flSpeedXY;
+
+			flDot = DotProduct( vecCurrentXY, wishdir );
+
+			if ( flDot < 0.0f )
+			{
+				// Braking component
+				float flDecel = 800.0f * GAMEMOVEMENT_FRAMETIME * -flDot;
+				flSpeedXY -= flDecel;
+				if ( flSpeedXY < 0.0f )
+					flSpeedXY = 0.0f;
+
+				Vector vecSteerDir = wishdir - vecCurrentXY * flDot;
+				if ( vecSteerDir.LengthSqr() > 0.001f )
+				{
+					VectorNormalize( vecSteerDir );
+					float flTurnRate = tf_parachute_steering_tightness.GetFloat();
+					Vector vecNewDir = vecCurrentXY + ( vecSteerDir - vecCurrentXY ) * (flTurnRate * GAMEMOVEMENT_FRAMETIME);
+					VectorNormalize( vecNewDir );
+					
+					mv->m_vecVelocity.x = vecNewDir.x * flSpeedXY;
+					mv->m_vecVelocity.y = vecNewDir.y * flSpeedXY;
+				}
+				else
+				{
+					// Purely backwards, no steering
+					mv->m_vecVelocity.x = vecCurrentXY.x * flSpeedXY;
+					mv->m_vecVelocity.y = vecCurrentXY.y * flSpeedXY;
+				}
+			}
+			else
+			{
+				// Normal forward/sideways steering
+				float flTurnRate = tf_parachute_steering_tightness.GetFloat();
+				Vector vecNewDir = vecCurrentXY + ( wishdir - vecCurrentXY ) * (flTurnRate * GAMEMOVEMENT_FRAMETIME);
+				VectorNormalize( vecNewDir );
+				
+				mv->m_vecVelocity.x = vecNewDir.x * flSpeedXY;
+				mv->m_vecVelocity.y = vecNewDir.y * flSpeedXY;
+			}
 		}
 
 		// Allow base acceleration so they can speed up if below max speed
-		if ( flSpeedXY < mv->m_flMaxSpeed )
+		// Only accelerate in the wishdir if we are not actively air-braking, 
+		// or if we are air-braking but speed is very low.
+		if ( flSpeedXY < mv->m_flMaxSpeed && ( flDot >= 0.0f || flSpeedXY < 5.0f ) )
 		{
 			float flDiff = mv->m_flMaxSpeed - flSpeedXY;
 			float flAccel = 800.0f * GAMEMOVEMENT_FRAMETIME;
