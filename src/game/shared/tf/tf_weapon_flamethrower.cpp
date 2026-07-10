@@ -591,6 +591,13 @@ void CTFFlameThrower::ItemPostFrame()
 		}
 	}
 
+#ifndef CLIENT_DLL
+	if ( m_iWeaponState == FT_STATE_SECONDARY && m_flResetBurstEffect <= gpGlobals->curtime )
+	{
+		SetWeaponState( FT_STATE_IDLE );
+	}
+#endif
+
 	if ( pOwner->m_nButtons & IN_ATTACK && pOwner->m_nButtons & IN_ATTACK2 )
 	{
 		m_bFiredBothAttacks = true;
@@ -1175,12 +1182,6 @@ void CTFFlameThrower::SecondaryAttack()
 
 	if ( m_flNextSecondaryAttack > gpGlobals->curtime )
 	{
-#ifndef CLIENT_DLL
-		if ( m_flResetBurstEffect <= gpGlobals->curtime )
-		{
-			SetWeaponState( FT_STATE_IDLE );
-		}
-#endif
 		return;
 	}
 
