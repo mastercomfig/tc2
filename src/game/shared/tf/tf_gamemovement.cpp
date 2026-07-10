@@ -2447,6 +2447,21 @@ void CTFGameMovement::AirMove( void )
 			VectorNormalize( vecCurrentXY );
 
 			flDot = DotProduct( vecCurrentXY, wishdir );
+			
+			// sus out air strafing, and then apply forward move. this makes it easier for players who are used to classic air movement.
+			if ( flDot < -0.01f && fabs(mv->m_flForwardMove) < 0.1f && fabs(mv->m_flSideMove) > 0.1f )
+			{
+				mv->m_flForwardMove = fabs(mv->m_flSideMove);
+
+				for (int j = 0 ; j < 2 ; j++)
+					wishvel[j] = forward[j]*mv->m_flForwardMove + right[j]*mv->m_flSideMove;
+				wishvel[2] = 0;
+				
+				VectorCopy(wishvel, wishdir);
+				wishspeed = VectorNormalize(wishdir);
+
+				flDot = DotProduct( vecCurrentXY, wishdir );
+			}
 
 			if ( flDot < 0.0f )
 			{
