@@ -31,7 +31,7 @@ ConVar cl_hitmarker_file( "cl_hitmarker_file", "crosshair4", FCVAR_ARCHIVE );
 
 ConVar cl_crosshair_scale( "cl_crosshair_scale", "32.0", FCVAR_ARCHIVE );
 
-ConVar cl_crosshair_gap( "cl_crosshair_gap", "0", FCVAR_ARCHIVE );
+ConVar cl_crosshair_gap( "cl_crosshair_gap", "4", FCVAR_ARCHIVE );
 
 ConVar cl_hitmarker( "cl_hitmarker", "1", FCVAR_ARCHIVE );
 
