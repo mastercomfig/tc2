@@ -77,6 +77,7 @@ if [ $PLATFORM = "win" ]; then
   FILES_REP+=(
     start_dedicated_tc2.bat
     tc2.bat
+    tc2_intel.bat
   )
 elif [ $PLATFORM = "linux" ]; then
   declare -a EXES=(
