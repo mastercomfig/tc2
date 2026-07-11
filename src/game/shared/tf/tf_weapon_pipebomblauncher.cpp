@@ -32,10 +32,10 @@
 
 #define TF_WEAPON_PIPEBOMB_LAUNCHER_CHARGE_SOUND	"Weapon_StickyBombLauncher.ChargeUp"
 
-ConVar tf_scotres_inner_radius( "tf_scotres_inner_radius", "0.15", FCVAR_REPLICATED | FCVAR_NOTIFY, "Inner screen-space radius for Scottish Resistance reticle cluster targeting." );
-ConVar tf_scotres_outer_radius( "tf_scotres_outer_radius", "0.30", FCVAR_REPLICATED | FCVAR_NOTIFY, "Outer screen-space radius for Scottish Resistance reticle loose/individual targeting." );
-ConVar tf_scotres_chain_step( "tf_scotres_chain_step", "0.80", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum step distance factor (relative to bomb damage radius)." );
-ConVar tf_scotres_chain_budget( "tf_scotres_chain_budget", "2.5", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum total path distance factor (relative to anchor bomb damage radius)." );
+ConVar tf_scotres_inner_radius( "tf_scotres_inner_radius", "0.16", FCVAR_REPLICATED | FCVAR_NOTIFY, "Inner screen-space radius for Scottish Resistance reticle cluster targeting." );
+ConVar tf_scotres_outer_radius( "tf_scotres_outer_radius", "0.22", FCVAR_REPLICATED | FCVAR_NOTIFY, "Outer screen-space radius for Scottish Resistance reticle loose/individual targeting." );
+ConVar tf_scotres_chain_step( "tf_scotres_chain_step", "0.4", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum step distance factor (relative to bomb damage radius)." );
+ConVar tf_scotres_chain_budget( "tf_scotres_chain_budget", "1.0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Scottish Resistance cluster chaining maximum total path distance factor (relative to anchor bomb damage radius)." );
 ConVar tf_scotres_aim_score( "tf_scotres_aim_score", "500000", FCVAR_REPLICATED | FCVAR_NOTIFY, "Aiming closeness score for selecting Scottish Resistance anchor bomb." );
 
 //=============================================================================
@@ -100,6 +100,8 @@ CTFPipebombLauncher::CTFPipebombLauncher()
 	m_flDetonateFlashTime = 0.0f;
 	m_flDetonateFlashRadius = 0.0f;
 	m_bDetonateFlashColor = false;
+	m_bTargetingInner = false;
+	m_bTargetingOuter = false;
 #endif
 }
 
@@ -655,6 +657,14 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 
 	int count = m_Pipebombs.Count();
 
+#ifdef CLIENT_DLL
+	if ( iEffect == TF_PIPEBOMB_HIGHLIGHT )
+	{
+		m_bTargetingInner = false;
+		m_bTargetingOuter = false;
+	}
+#endif
+
 	bool bDetonatedInner = false;
 	bool bDetonatedOuter = false;
 
@@ -793,6 +803,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 
 		float flDistToPlayer = pPlayer->GetAbsOrigin().DistTo( pTemp->GetAbsOrigin() );
 		bool bShouldDetonate = false;
+		bool bArmed = ( ( gpGlobals->curtime - pTemp->m_flCreationTime ) > pTemp->GetLiveTime() );
 
 		// 1. Detonate around the anchor bomb (entire connected cluster)
 		if ( pAnchorBomb )
@@ -809,7 +820,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		float flDot = DotProduct( vecToTarget, vecPlayerForward );
 
 		// 2. Detonate any bomb inside the outer screen radius but outside the inner screen radius
-		if ( flDot > flOuterThreshold && flDot <= flInnerThreshold )
+		if ( bArmed && flDot > flOuterThreshold && flDot <= flInnerThreshold )
 		{
 			bShouldDetonate = true;
 		}
@@ -821,39 +832,43 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		}
 
 		// Execution
-		if ( bShouldDetonate )
+		if ( bShouldDetonate && bArmed )
 		{
 			switch ( iEffect )
 			{
 			case TF_PIPEBOMB_HIGHLIGHT:
 #ifdef CLIENT_DLL
 				pTemp->SetHighlight( true );
+				if ( pAnchorBomb && clusterBombs.Find( pTemp ) != clusterBombs.InvalidIndex() )
+				{
+					m_bTargetingInner = true;
+				}
+				if ( flDot > flOuterThreshold )
+				{
+					m_bTargetingOuter = true;
+				}
 #endif
 				break;
 			case TF_PIPEBOMB_DETONATE:
-				bool bArmed = ( ( gpGlobals->curtime - pTemp->m_flCreationTime ) > pTemp->GetLiveTime() );
-				if ( bArmed )
-				{
-					bFailedToDetonate = false;
+				bFailedToDetonate = false;
 
-					// Track which region succeeded in detonating a bomb for the visual indicator
-					if ( pAnchorBomb && clusterBombs.Find( pTemp ) != clusterBombs.InvalidIndex() )
-					{
-						bDetonatedInner = true;
-					}
-					else if ( flDot > flOuterThreshold && flDot <= flInnerThreshold )
-					{
-						bDetonatedOuter = true;
-					}
+				// Track which region succeeded in detonating a bomb for the visual indicator
+				if ( pAnchorBomb && clusterBombs.Find( pTemp ) != clusterBombs.InvalidIndex() )
+				{
+					bDetonatedInner = true;
+				}
+				if ( flDot > flOuterThreshold )
+				{
+					bDetonatedOuter = true;
+				}
 
 #ifdef GAME_DLL
-					if ( CanDestroyStickies() )
-					{
-						pTemp->DetonateStickies();
-					}
-#endif
-					pTemp->Detonate();
+				if ( CanDestroyStickies() )
+				{
+					pTemp->DetonateStickies();
 				}
+#endif
+				pTemp->Detonate();
 				break;
 			}
 		}
@@ -906,9 +921,9 @@ bool CTFPipebombLauncher::Reload( void )
 }
 
 #ifdef CLIENT_DLL
-ConVar cl_scotres_ring_draw_inner( "cl_scotres_ring_draw_inner", "0", FCVAR_ARCHIVE, "Always draw the Scottish Resistance inner reticle ring (0 = only flash on detonation, 1 = always visible when holding)" );
-ConVar cl_scotres_ring_draw_outer( "cl_scotres_ring_draw_outer", "0", FCVAR_ARCHIVE, "Always draw the Scottish Resistance outer reticle ring (0 = only flash on detonation, 1 = always visible when holding)" );
-
+ConVar cl_scotres_ring_draw_inner( "cl_scotres_ring_draw_inner", "2", FCVAR_ARCHIVE, "Draw the Scottish Resistance inner reticle ring (0 = flash on det, 1 = always, 2 = only when targeting)" );
+ConVar cl_scotres_ring_draw_outer( "cl_scotres_ring_draw_outer", "2", FCVAR_ARCHIVE, "Draw the Scottish Resistance outer reticle ring (0 = flash on det, 1 = always, 2 = only when targeting)" );
+ConVar cl_scotres_ring_thickness( "cl_scotres_ring_thickness", "2", FCVAR_ARCHIVE, "Thickness of the Scottish Resistance reticle rings in pixels" );
 ConVar cl_scotres_ring_inner_r( "cl_scotres_ring_inner_r", "0", FCVAR_ARCHIVE, "Red component of the Scottish Resistance inner ring color" );
 ConVar cl_scotres_ring_inner_g( "cl_scotres_ring_inner_g", "255", FCVAR_ARCHIVE, "Green component of the Scottish Resistance inner ring color" );
 ConVar cl_scotres_ring_inner_b( "cl_scotres_ring_inner_b", "255", FCVAR_ARCHIVE, "Blue component of the Scottish Resistance inner ring color" );
@@ -947,7 +962,9 @@ void CTFPipebombLauncher::DrawCrosshair( void )
 	for ( int ring = 0; ring < 2; ++ring )
 	{
 		bool bIsInner = ( ring == 0 );
-		bool bAlwaysDraw = bIsInner ? cl_scotres_ring_draw_inner.GetBool() : cl_scotres_ring_draw_outer.GetBool();
+		int nDrawMode = bIsInner ? cl_scotres_ring_draw_inner.GetInt() : cl_scotres_ring_draw_outer.GetInt();
+		bool bIsTargeting = bIsInner ? m_bTargetingInner : m_bTargetingOuter;
+		bool bAlwaysDraw = ( nDrawMode == 1 ) || ( nDrawMode == 2 && bIsTargeting );
 		bool bFlashingSuccess = bInFlash && ( m_flDetonateFlashRadius > 0.0f && ( m_bDetonateFlashColor == bIsInner ) );
 
 		if ( bAlwaysDraw || bFlashingFailure || bFlashingSuccess )
@@ -1005,7 +1022,11 @@ void CTFPipebombLauncher::DrawCrosshair( void )
 
 			// Draw the circle
 			vgui::surface()->DrawSetColor( clrRing );
-			vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flPixelRadius, 64 );
+			int nThickness = MAX( 1, cl_scotres_ring_thickness.GetInt() );
+			for ( int i = 0; i < nThickness; ++i )
+			{
+				vgui::surface()->DrawOutlinedCircle( xCenter, yCenter, (int)flPixelRadius + i, 64 );
+			}
 		}
 	}
 }

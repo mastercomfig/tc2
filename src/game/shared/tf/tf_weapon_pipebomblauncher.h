@@ -94,6 +94,8 @@ public:
 	float		m_flDetonateFlashTime;
 	float		m_flDetonateFlashRadius;
 	bool		m_bDetonateFlashColor;
+	bool		m_bTargetingInner;
+	bool		m_bTargetingOuter;
 #endif
 
 #ifdef GAME_DLL
