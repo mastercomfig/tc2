@@ -20,9 +20,14 @@
 #undef MessageBox
 
 #include "OfflineMode.h"
+#include "convar.h"
 
 // memdbgon must be the last include file in a .cpp file
 #include "tier0/memdbgon.h"
+
+ConVar html_resolution_limit( "html_resolution_limit", "-1", FCVAR_ARCHIVE, "Maximum height resolution for VGUI HTML textures (e.g., 1080 for 1920x1080 max). Set to 0 to disable capping, or -1 for auto (caps at 1080p if screen is 4K+)." );
+ConVar html_resolution_scale( "html_resolution_scale", "1.0", FCVAR_ARCHIVE, "Resolution scale factor for VGUI HTML textures (e.g., 0.5 for half resolution, 1.0 for native)." );
+
 
 using namespace vgui;
 
@@ -612,16 +617,32 @@ void HTML::OnMouseReleased(MouseCode code)
 //-----------------------------------------------------------------------------
 void HTML::OnCursorMoved(int x,int y)
 {
-	// Only do this when we are over the current panel
-	if ( vgui::input()->GetMouseOver() == GetVPanel() )
-	{
-		m_iMouseX = x;
-		m_iMouseY = y;
+	if ( !IsVisible() )
+		return;
 
-		if (m_SteamAPIContext.SteamHTMLSurface())
-			m_SteamAPIContext.SteamHTMLSurface()->MouseMove( m_unBrowserHandle, m_iMouseX, m_iMouseY );
+	m_iMouseX = x;
+	m_iMouseY = y;
+
+	if (m_SteamAPIContext.SteamHTMLSurface())
+	{
+		int nBrowserMouseX = m_iMouseX;
+		int nBrowserMouseY = m_iMouseY;
+
+		int w, h;
+		GetSize( w, h );
+		int nActualBrowserW = w - m_iScrollBorderX;
+		int nActualBrowserH = h - m_iScrollBorderY;
+
+		if ( nActualBrowserW > 0 && nActualBrowserH > 0 && m_iWideLastHTMLSize > 0 && m_iTalLastHTMLSize > 0 )
+		{
+			nBrowserMouseX = (int)( (float)m_iMouseX * (float)m_iWideLastHTMLSize / (float)nActualBrowserW );
+			nBrowserMouseY = (int)( (float)m_iMouseY * (float)m_iTalLastHTMLSize / (float)nActualBrowserH );
+		}
+
+		m_SteamAPIContext.SteamHTMLSurface()->MouseMove( m_unBrowserHandle, nBrowserMouseX, nBrowserMouseY );
 	}
-	else if ( !m_sDragURL.IsEmpty() )
+
+	if ( !m_sDragURL.IsEmpty() )
 	{
 		if ( !input()->GetMouseOver() )
 		{
@@ -927,15 +948,50 @@ void HTML::BrowserResize()
 	*/
 
 
-	if ( m_iWideLastHTMLSize != (  w - m_iScrollBorderX - right ) || m_iTalLastHTMLSize != ( h - m_iScrollBorderY - bottom ) )
+	int nTargetWide = w - m_iScrollBorderX - right;
+	int nTargetTall = h - m_iScrollBorderY - bottom;
+	if ( nTargetTall <= 0 )
 	{
-		m_iWideLastHTMLSize = w - m_iScrollBorderX - right;
-		m_iTalLastHTMLSize = h - m_iScrollBorderY - bottom;
-		if ( m_iTalLastHTMLSize <= 0 )
+		SetTall( 64 );
+		nTargetTall = 64 - bottom;
+	}
+
+	float flScale = html_resolution_scale.GetFloat();
+	if ( flScale < 0.1f ) flScale = 0.1f;
+	else if ( flScale > 1.0f ) flScale = 1.0f;
+
+	if ( flScale < 1.0f )
+	{
+		nTargetWide = (int)((float)nTargetWide * flScale);
+		nTargetTall = (int)((float)nTargetTall * flScale);
+	}
+
+	int nResolutionLimit = html_resolution_limit.GetInt();
+	if ( nResolutionLimit == -1 )
+	{
+		int nScreenWidth, nScreenHeight;
+		surface()->GetScreenSize( nScreenWidth, nScreenHeight );
+		if ( nScreenHeight >= 2160 )
 		{
-			SetTall( 64 );
-			m_iTalLastHTMLSize = 64 - bottom;
+			nResolutionLimit = 1080;
 		}
+		else
+		{
+			nResolutionLimit = 0;
+		}
+	}
+
+	if ( nResolutionLimit > 0 && nTargetTall > nResolutionLimit )
+	{
+		float flLimitScale = (float)nResolutionLimit / (float)nTargetTall;
+		nTargetWide = (int)((float)nTargetWide * flLimitScale);
+		nTargetTall = nResolutionLimit;
+	}
+
+	if ( m_iWideLastHTMLSize != nTargetWide || m_iTalLastHTMLSize != nTargetTall )
+	{
+		m_iWideLastHTMLSize = nTargetWide;
+		m_iTalLastHTMLSize = nTargetTall;
 
 		{
 			if (m_SteamAPIContext.SteamHTMLSurface())
@@ -943,8 +999,15 @@ void HTML::BrowserResize()
 		}
 
 		{
+			float flScaleZoom = m_flZoom;
+			int nOrgTall = h - m_iScrollBorderY - bottom;
+			if ( nOrgTall > 0 && m_iTalLastHTMLSize < nOrgTall )
+			{
+				flScaleZoom = m_flZoom * ( (float)m_iTalLastHTMLSize / (float)nOrgTall );
+			}
+
 			if (m_SteamAPIContext.SteamHTMLSurface())
-				m_SteamAPIContext.SteamHTMLSurface()->SetPageScaleFactor(m_unBrowserHandle, m_flZoom, 0, 0);
+				m_SteamAPIContext.SteamHTMLSurface()->SetPageScaleFactor(m_unBrowserHandle, flScaleZoom, 0, 0);
 		}
 
 	
@@ -1314,9 +1377,25 @@ void HTML::BrowserNeedsPaint( HTML_NeedsPaint_t *pCallback )
 		m_allocedTextureWidth = pCallback->unWide;
 		m_allocedTextureHeight = pCallback->unTall;
 	}
-	else if ( !m_bNeedsFullTextureUpload && (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 )
+	else if ( !m_bNeedsFullTextureUpload && (int)pCallback->unUpdateWide > 0 && (int)pCallback->unUpdateTall > 0 && pCallback->pBGRA != NULL )
 	{
-		surface()->DrawUpdateRegionTextureRGBA( m_iHTMLTextureID, pCallback->unUpdateX, pCallback->unUpdateY, (const unsigned char *)pCallback->pBGRA, pCallback->unUpdateWide, pCallback->unUpdateTall, IMAGE_FORMAT_BGRA8888 );
+		int nUpdateX = pCallback->unUpdateX;
+		int nUpdateY = pCallback->unUpdateY;
+		int nUpdateWide = pCallback->unUpdateWide;
+		int nUpdateTall = pCallback->unUpdateTall;
+		int nFullWide = pCallback->unWide;
+		int nFullTall = pCallback->unTall;
+
+		// Clamp / bounds check to prevent crash
+		if ( nUpdateX < 0 ) { nUpdateWide += nUpdateX; nUpdateX = 0; }
+		if ( nUpdateY < 0 ) { nUpdateTall += nUpdateY; nUpdateY = 0; }
+		if ( nUpdateX + nUpdateWide > nFullWide ) { nUpdateWide = nFullWide - nUpdateX; }
+		if ( nUpdateY + nUpdateTall > nFullTall ) { nUpdateTall = nFullTall - nUpdateY; }
+
+		if ( nUpdateWide > 0 && nUpdateTall > 0 )
+		{
+			surface()->DrawUpdateRegionTextureRGBA( m_iHTMLTextureID, nUpdateX, nUpdateY, (const unsigned char *)pCallback->pBGRA, nUpdateWide, nUpdateTall, IMAGE_FORMAT_BGRA8888 );
+		}
 	}
 	else
 	{
@@ -1839,7 +1918,23 @@ void HTML::BrowserCanGoBackandForward( HTML_CanGoBackAndForward_t *pCmd )
 void HTML::GetLinkAtPosition( int x, int y )
 {
 	if (m_SteamAPIContext.SteamHTMLSurface())
-		m_SteamAPIContext.SteamHTMLSurface()->GetLinkAtPosition( m_unBrowserHandle, x, y );
+	{
+		int nBrowserX = x;
+		int nBrowserY = y;
+
+		int w, h;
+		GetSize( w, h );
+		int nActualBrowserW = w - m_iScrollBorderX;
+		int nActualBrowserH = h - m_iScrollBorderY;
+
+		if ( nActualBrowserW > 0 && nActualBrowserH > 0 && m_iWideLastHTMLSize > 0 && m_iTalLastHTMLSize > 0 )
+		{
+			nBrowserX = (int)( (float)x * (float)m_iWideLastHTMLSize / (float)nActualBrowserW );
+			nBrowserY = (int)( (float)y * (float)m_iTalLastHTMLSize / (float)nActualBrowserH );
+		}
+
+		m_SteamAPIContext.SteamHTMLSurface()->GetLinkAtPosition( m_unBrowserHandle, nBrowserX, nBrowserY );
+	}
 }
 
 

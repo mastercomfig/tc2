@@ -95,4 +95,3 @@ void CInteractiveWebPanel::SetVisible(bool state)
 		m_pHTML->SetVisible( state );
 	}
 }
-
