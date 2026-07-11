@@ -133,7 +133,7 @@ extern ConVar cl_notifications_show_ingame;
 
 extern ConVar sc_look_sensitivity_scale;
 
-ConVar ui_fps_max("ui_fps_max", "120", FCVAR_ARCHIVE);
+ConVar ui_fps_max("ui_fps_max", "60", FCVAR_ARCHIVE);
 
 extern bool TournamentHudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 extern bool ArenaClassLayoutKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
@@ -2037,6 +2037,11 @@ void ClientModeTFNormal::Update()
 	{
 		m_bPendingRichPresenceUpdate = false;
 		UpdateSteamRichPresence();
+	}
+
+	if ( m_eConnectState != k_eConnectState_Disconnected && !engine->IsConnected() && !engine->IsDrawingLoadingImage() )
+	{
+		m_eConnectState = k_eConnectState_Disconnected;
 	}
 
 	if ( m_eLastConnectState != m_eConnectState )
