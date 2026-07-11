@@ -7918,13 +7918,23 @@ void C_TFPlayer::DropWearable( C_TFWearable *pItem, const breakablepropparams_t 
 	// Get the position from the rootbone of the wearable entity itself
 	Vector position;
 	matrix3x4_t rootBone;
-	if ( !pItem->IsDynamicModelLoading() && pItem->GetRootBone( rootBone ) )
+	if ( IsDormant() )
+	{
+		position = params.origin;
+	}
+	else if ( !pItem->IsDynamicModelLoading() && pItem->GetRootBone( rootBone ) )
 	{
 		MatrixPosition( rootBone, position );
 	}
 	else
 	{
 		position = pItem->GetAbsOrigin();
+	}
+
+	// If the computed position is unreasonably far from the server-sent origin, fall back to the server-sent origin.
+	if ( ( position - params.origin ).LengthSqr() > 256.f * 256.f )
+	{
+		position = params.origin;
 	}
 
 	// Don't spawn wearables out of bounds

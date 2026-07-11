@@ -66,6 +66,12 @@ Vector GetTracerOrigin( const CEffectData &data )
 			DevMsg( "GetTracerOrigin: Couldn't find attachment %d on model %s\n", iAttachment, 
 				modelinfo->GetModelName( pRenderable->GetModel() ) );
 		}
+
+		// If the client-calculated position is unreasonably far from the server-sent origin, fall back to the server-sent origin.
+		if ( ( vecStart - data.m_vStart ).LengthSqr() > 256.0f * 256.0f )
+		{
+			vecStart = data.m_vStart;
+		}
 	}
 
 	return vecStart;
