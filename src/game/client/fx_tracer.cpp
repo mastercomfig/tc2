@@ -26,35 +26,36 @@ Vector GetTracerOrigin( const CEffectData &data )
 	Vector vecStart = data.m_vStart;
 	QAngle vecAngles;
 
-	C_BaseEntity *pEnt = data.GetEntity();
-	if ( !pEnt || pEnt->IsDormant() )
-		return vecStart;
-
-	int iAttachment = data.m_nAttachmentIndex;
-
 	// Attachment?
 	if ( data.m_fFlags & TRACER_FLAG_USEATTACHMENT )
 	{
-		C_BaseViewModel *pViewModel = NULL;
+		int iAttachment = data.m_nAttachmentIndex;
 
-		// If the entity specified is a weapon being carried by this player, use the viewmodel instead
-		IClientRenderable *pRenderable = data.GetRenderable();
+		C_BaseEntity* pEnt = data.GetEntity();
+		if ( !pEnt || pEnt->IsDormant() )
+			return vecStart;
+
+		IClientRenderable* pRenderable = data.GetRenderable();
 		if ( !pRenderable )
 			return vecStart;
 
+		// HL2MP uses this mostly (see CBaseEntity::ComputeTracerStartPosition), so we disable it for TF since players do not use this old tracer system
+#if !defined( TF_CLIENT_DLL )
+		// If the entity specified is a weapon being carried by this player, use the viewmodel instead
 		C_BaseCombatWeapon *pWpn = dynamic_cast<C_BaseCombatWeapon *>( pEnt );
 		if ( pWpn && pWpn->ShouldDrawUsingViewModel() )
 		{
 			C_BasePlayer *player = ToBasePlayer( pWpn->GetOwner() );
 
 			// Use GetRenderedWeaponModel() instead?
-			pViewModel = player ? player->GetViewModel( 0 ) : NULL;
+			C_BaseViewModel *pViewModel = player ? player->GetViewModel( 0 ) : NULL;
 			if ( pViewModel )
 			{
 				// Get the viewmodel and use it instead
 				pRenderable = pViewModel;
 			}
 		}
+#endif
 
 		// Get the attachment origin
 		if ( !pRenderable->GetAttachment( iAttachment, vecStart, vecAngles ) )
