@@ -304,7 +304,7 @@ void CTFBuffItem::CreateBanner()
 	if ( m_hBannerEntity == NULL )
 	{
 		CTFPlayer* pPlayer = ToTFPlayer( GetPlayerOwner() );
-		if ( !pPlayer || !pPlayer->IsAlive() )
+		if ( !pPlayer || !pPlayer->IsAlive() || pPlayer->IsDormant() )
 			return;
 
 		C_TFBuffBanner* pBanner = new C_TFBuffBanner;
