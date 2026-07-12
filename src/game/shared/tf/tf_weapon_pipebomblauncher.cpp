@@ -403,7 +403,7 @@ CBaseEntity *CTFPipebombLauncher::FireProjectile( CTFPlayer *pPlayer )
 			CTFGrenadePipebombProjectile *pTemp = m_Pipebombs[0];
 			if ( pTemp )
 			{
-				pTemp->SetTimer( gpGlobals->curtime ); // explode NOW
+				pTemp->SetDetonateTimerLength( 0.0f, true ); // explode NOW
 			}
 
 			m_Pipebombs.Remove(0);

@@ -105,10 +105,8 @@ public:
 	bool					ShouldNotDetonate( void );
 	virtual void 			Destroy( bool bBlinkOut = true, bool bBreak = false ) OVERRIDE;
 
-	void					SetTimer( float time ){ m_flDetonateTime = time; }
 	float					GetDetonateTime( void ){ return m_flDetonateTime; }
-
-	void					SetDetonateTimerLength( float timer );
+	void					SetDetonateTimerLength( float timer, bool bForce = false );
 
 	void					VPhysicsUpdate( IPhysicsObject *pPhysics );
 

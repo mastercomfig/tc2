@@ -418,7 +418,7 @@ float CTFKnife::GetMeleeDamage( CBaseEntity *pTarget, int* piDamageType, int* pi
 			// Declare a backstab.
 			*piCustomDamage = TF_DMG_CUSTOM_BACKSTAB;
 		}
-		else if (pTFOwner->m_Shared.IsCritBoosted())
+		else if ( pTFOwner->m_Shared.IsCritBoosted() )
 		{
 			m_bCurrentAttackIsCrit = true;
 		}

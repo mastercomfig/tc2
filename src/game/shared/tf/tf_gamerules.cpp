@@ -6794,9 +6794,6 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 				case TF_WEAPON_CANNON:
 					flAdjustedDamage *= 0.75f;
 					break;
-				case TF_WEAPON_STICKBOMB:
-					flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
-					break;
 				}
 			}
 			else
@@ -8653,6 +8650,10 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 				// If we attacked ourselves, hurt no other players, and it is a blast,
 				// check the attribute that reduces rocket jump damage.
 				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( info.GetAttacker(), flRealDamage, rocket_jump_dmg_reduction );
+			}
+			if ( info.GetDamageCustom() == TF_DMG_CUSTOM_STICKBOMB_EXPLOSION && info.GetDamage() < 150.0f )
+			{
+				flRealDamage *= 0.6f;
 			}
 			outParams.bSelfBlastDmg = true;
 		}

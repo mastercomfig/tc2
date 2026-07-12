@@ -237,6 +237,7 @@ void CTFStickBomb::PrimaryAttack()
 
 	// Note: For beta caber, we do NOT call pPlayer->EndClassSpecialSkill() here!
 	// It will be deferred to Smack() if we actually hit an enemy.
+	// TODO(mcoms): do ShouldAttackEndClassSpecialSKill instead once we finalize the behavior
 	if ( !TFGameRules() || !TFGameRules()->IsBetaActive() )
 	{
 		pPlayer->EndClassSpecialSkill();
@@ -310,28 +311,55 @@ void CTFStickBomb::Smack( void )
 		if ( bDirectHitEnemy )
 		{
 			explosion = pTFPlayer->WorldSpaceCenter();
+			bHitEnemy = true;
 		}
 
 		float flRadius = bIsBeta ? 146.0f : 100.0f;
 		CALL_ATTRIB_HOOK_FLOAT( flRadius, mult_explosion_radius );
 
-		CBaseEntity *pEntity = NULL;
-		for ( CEntitySphereQuery sphere( explosion, flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+		if ( !bHitEnemy )
 		{
-			if ( !pEntity || !pEntity->IsAlive() || pEntity == pTFPlayer )
-				continue;
-#ifdef GAME_DLL
-			if ( pEntity->m_takedamage == DAMAGE_NO )
-				continue;
-#endif
-			if ( pEntity->GetTeamNumber() != pTFPlayer->GetTeamNumber() && pEntity->GetTeamNumber() >= TF_TEAM_RED )
+			CBaseEntity *pEntity = NULL;
+			for ( CEntitySphereQuery sphere( explosion, flRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
 			{
-				Vector vecPos;
-				pEntity->CollisionProp()->CalcNearestPoint( explosion, &vecPos );
-				if ( (explosion - vecPos).LengthSqr() <= flRadius * flRadius )
+				if ( !pEntity || !pEntity->IsAlive() || pEntity == pTFPlayer )
+					continue;
+#ifdef GAME_DLL
+				if ( pEntity->m_takedamage == DAMAGE_NO )
+					continue;
+#endif
+				if ( pEntity->GetTeamNumber() != pTFPlayer->GetTeamNumber() && pEntity->GetTeamNumber() >= FIRST_GAME_TEAM )
 				{
-					bHitEnemy = true;
-					break;
+					Vector vecPos;
+					pEntity->CollisionProp()->CalcNearestPoint( explosion, &vecPos );
+					if ( (explosion - vecPos).LengthSqr() <= flRadius * flRadius )
+					{
+						trace_t tr;
+						CTraceFilterIgnorePlayers filterPlayers( pTFPlayer, COLLISION_GROUP_PROJECTILE );
+						CTraceFilterIgnoreProjectiles filterProjectiles( pTFPlayer, COLLISION_GROUP_PROJECTILE );
+						CTraceFilterIgnoreFriendlyCombatItems filterCombatItems( pTFPlayer, COLLISION_GROUP_PROJECTILE, pTFPlayer->GetTeamNumber() );
+						CTraceFilterChain filterPlayersAndProjectiles( &filterPlayers, &filterProjectiles );
+						CTraceFilterChain filter( &filterPlayersAndProjectiles, &filterCombatItems );
+
+						// TODO(mcoms): MASK_RADIUS_DAMAGE
+						UTIL_TraceLine( explosion, pEntity->WorldSpaceCenter(), MASK_SHOT & ~( CONTENTS_HITBOX ), &filter, &tr );
+
+						if ( tr.startsolid && tr.m_pEnt )
+						{
+							if ( tr.m_pEnt->IsCombatItem() && pEntity->InSameTeam( tr.m_pEnt ) && ( pEntity != tr.m_pEnt ) )
+								continue;
+
+							filterPlayers.SetPassEntity( tr.m_pEnt );
+							CTraceFilterChain filterSelf( &filterPlayers, &filterCombatItems );
+							UTIL_TraceLine( explosion, pEntity->WorldSpaceCenter(), MASK_SHOT & ~( CONTENTS_HITBOX ), &filterSelf, &tr );
+						}
+
+						if ( tr.fraction == 1.0f || tr.m_pEnt == pEntity )
+						{
+							bHitEnemy = true;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -345,17 +373,20 @@ void CTFStickBomb::Smack( void )
 			if ( bIsBeta )
 			{
 				pTFPlayer->EndClassSpecialSkill();
+				// need to calculate crits and stuff..
+				m_bCurrentAttackIsCrit |= pTFPlayer->m_Shared.GetNextMeleeCrit() == MELEE_CRIT;
+				m_bMiniCrit = pTFPlayer->m_Shared.GetNextMeleeCrit() == MELEE_MINICRIT;
 			}
 		}
 
 #ifdef GAME_DLL
 		{
-			Vector vecForward; 
+			Vector vecForward;
 			AngleVectors( pTFPlayer->EyeAngles(), &vecForward );
 			Vector vecSwingStart = pTFPlayer->WorldSpaceCenter();
 
-			CPVSFilter filter( explosion );
-			
+			CPVSFilter pvsFilter( explosion );
+
 			// Halloween Spell
 			int iHalloweenSpell = 0;
 			int iCustomParticleIndex = INVALID_STRING_INDEX;
@@ -368,39 +399,48 @@ void CTFStickBomb::Smack( void )
 				}
 			}
 
-			TE_TFExplosion( filter, 0.0f, explosion, Vector(0,0,1), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
+			TE_TFExplosion( pvsFilter, 0.0f, explosion, Vector( 0, 0, 1 ), TF_WEAPON_GRENADELAUNCHER, pTFPlayer->entindex(), -1, SPECIAL1, iCustomParticleIndex );
 
 			// TODO(mcoms): use DMG_MELEE? (Fixed the Ullapool Caber's explosion not being counted as melee damage (for kill_refills_meter))
-			int dmgType = bIsBeta ? (DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF) : DMG_BLAST | DMG_HALF_FALLOFF;
+			int dmgType = bIsBeta ? ( DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE | DMG_HALF_FALLOFF ) : DMG_BLAST | DMG_HALF_FALLOFF;
 			const bool bIsCrit = IsCurrentAttackACrit();
-			if (bIsCrit)
+			if ( bIsCrit )
 				dmgType |= DMG_CRITICAL;
 
 			float flDamage = 75.0f;
 			CALL_ATTRIB_HOOK_FLOAT( flDamage, mult_dmg );
-			if ( !bIsCrit && m_bMiniCrit )
-			{
-				flDamage *= 1.35f;
-			}
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
 
-			CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius, bIsBeta ? pTFPlayer : NULL );
+			if ( bIsCrit )
+			{
+				info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+			}
+			else if ( m_bMiniCrit )
+			{
+				info.SetCritType( CTakeDamageInfo::CRIT_MINI );
+			}
 
-			TFGameRules()->RadiusDamage( radiusinfo );
+			if ( bHitEnemy || !bIsBeta )
+			{
+				CTFRadiusDamageInfo radiusinfo( &info, explosion, flRadius, bIsBeta ? pTFPlayer : NULL );
+
+				TFGameRules()->RadiusDamage( radiusinfo );
+			}
 
 			if ( bIsBeta )
 			{
 				// Always handle self damage manually for beta caber so we can restore physics force to the user
-				Vector vecPos;
-				pTFPlayer->CollisionProp()->CalcNearestPoint( explosion, &vecPos );
-				float flDist = (explosion - vecPos).Length();
+				const float flToWorldSpaceCenter = ( explosion - pTFPlayer->WorldSpaceCenter() ).Length();
+				const float flToOrigin = ( explosion - pTFPlayer->GetAbsOrigin() ).Length();
+
+				const float flDist = MIN( flToWorldSpaceCenter, flToOrigin );
+				const float flFalloff = 0.5f;
 				float flDamageToSelf = info.GetDamage();
-				float flFalloff = 0.5f;
 
 				if ( flDist > 0 && flRadius > 0 )
 				{
-					flDamageToSelf -= flDamageToSelf * flFalloff * (flDist / flRadius);
+					flDamageToSelf -= flDamageToSelf * flFalloff * Min( flDist / flRadius, 1.0f );
 				}
 
 				if ( flDamageToSelf > 0 )
@@ -411,10 +451,11 @@ void CTFStickBomb::Smack( void )
 					}
 					else
 					{
-						flDamageToSelf *= 0.75f;
+						flDamageToSelf *= 0.66f;
 					}
 					int selfDmgType = (dmgType & ~(DMG_CRITICAL)) & ~(DMG_PREVENT_PHYSICS_FORCE);
 					CTakeDamageInfo selfInfo( pTFPlayer, pTFPlayer, this, flDamageToSelf, selfDmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION );
+					CalculateExplosiveDamageForce( &selfInfo, explosion, pTFPlayer->WorldSpaceCenter() );
 					selfInfo.SetDamagePosition( explosion );
 					pTFPlayer->TakeDamage( selfInfo );
 				}
@@ -454,21 +495,21 @@ void CTFStickBomb::Smack( void )
 }
 
 #ifdef GAME_DLL
-void CTFStickBomb::CreateGrenade(CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit)
+void CTFStickBomb::CreateGrenade( CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit )
 {
-	Vector angImpulse = AngularImpulse(600, random->RandomInt(-1200, 1200), 0);
-	CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create(pos, QAngle(180, 0, 0), vel, angImpulse, pPlayer, GetTFWpnData(), -1, flDmgMult);
+	Vector angImpulse = AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 );
+	CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create( pos, QAngle( 180, 0, 0 ), vel, angImpulse, pPlayer, GetTFWpnData(), -1, flDmgMult );
 	if (pProjectile)
 	{
-		pProjectile->SetLauncher(this);
-		pProjectile->SetCritical(bIsCrit);
-		if (!bIsCrit && m_bMiniCrit)
+		pProjectile->SetLauncher( this );
+		pProjectile->SetCritical( bIsCrit );
+		if ( !bIsCrit && m_bMiniCrit )
 		{
 			pProjectile->IncrementDeflected(); // hack for minicrits
 		}
-		pProjectile->SetModel(BaseClass::GetWorldModel());
-		pProjectile->SetDetonateTimerLength(flTimer);
-		UTIL_SetSize(pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS);
+		pProjectile->SetModel( BaseClass::GetWorldModel() );
+		pProjectile->SetDetonateTimerLength( flTimer );
+		UTIL_SetSize( pProjectile, TF_GRENADE_PROJECTILE_MINS, TF_GRENADE_PROJECTILE_MAXS );
 	}
 }
 #endif

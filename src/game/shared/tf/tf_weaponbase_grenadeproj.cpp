@@ -494,10 +494,10 @@ void CTFWeaponBaseGrenadeProj::Detonate( void )
 //-----------------------------------------------------------------------------
 // Purpose: Sets the time at which the grenade will explode.
 //-----------------------------------------------------------------------------
-void CTFWeaponBaseGrenadeProj::SetDetonateTimerLength( float timer )
+void CTFWeaponBaseGrenadeProj::SetDetonateTimerLength( float timer, bool bForce )
 {
 	float fFuseMult = 1.0f;
-	if ( GetOwnerEntity() )
+	if ( !bForce && GetOwnerEntity() )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwnerEntity(), fFuseMult, fuse_mult );
 	}
