@@ -174,7 +174,7 @@ bool CTFKnife::DecreaseRegenerationTime( float value, bool bForce )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CTFPlayer* CTFKnife::TraceBackstab(CTFPlayer* pOwner)
+CTFPlayer* CTFKnife::TraceBackstab( CTFPlayer* pOwner )
 {
 	trace_t trace;
 	if ( DoSwingTrace(trace) )
@@ -233,7 +233,7 @@ void CTFKnife::PrimaryAttack( void )
 			if ( pTarget && pTarget->GetTeamNumber() != pPlayer->GetTeamNumber() )
 			{
 				// Deal extra damage to players when stabbing them from behind
-				if ( CanPerformBackstabAgainstTarget( pTarget ) )
+				if ( CanPerformBackstabAgainstTarget( pTarget, true ) )
 				{
 					// store the victim to compare when we do the damage
 					m_hBackstabVictim.Set( pTarget );
@@ -655,7 +655,7 @@ void CTFKnife::BackstabVMThink( void )
 
 	// Are we in backstab range and not cloaked?
 	bool bBackstab = false;
-	if ( CanAttack() && TraceBackstab(pPlayer) )
+	if ( CanAttack() && TraceBackstab( pPlayer ) )
 	{
 		bBackstab = true;
 	}

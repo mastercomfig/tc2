@@ -1088,13 +1088,13 @@ bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget, bool bInAt
 	// Get a vector from owner origin to target origin
 	Vector vecToTarget = pTarget->WorldSpaceCenter() - pOwner->WorldSpaceCenter();
 	vecToTarget.z = 0.0f;
-	vecToTarget.NormalizeInPlace();
+	VectorNormalizeFast( vecToTarget );
 
 	// Get owner forward view vector
 	Vector vecOwnerForward;
 	AngleVectors(pOwner->EyeAngles(), &vecOwnerForward, NULL, NULL);
 	vecOwnerForward.z = 0.0f;
-	vecOwnerForward.NormalizeInPlace();
+	VectorNormalizeFast( vecOwnerForward );
 
 	// Get target forward view vector, lag compensated for the owner.
 	Vector vecTargetForward;
@@ -1104,7 +1104,7 @@ bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget, bool bInAt
 	AngleVectors(pTarget->GetNetworkEyeAngles(), &vecTargetForward, NULL, NULL);
 #endif
 	vecTargetForward.z = 0.0f;
-	vecTargetForward.NormalizeInPlace();
+	VectorNormalizeFast( vecTargetForward );
 
 	// Make sure owner is behind, facing and aiming at target's back
 	float flPosVsTargetViewDot = DotProduct( vecToTarget, vecTargetForward );	// Behind?
@@ -1168,12 +1168,44 @@ bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
 	Vector vecTargetSight;
 	AngleVectors( pTarget->EyeAngles(), &vecTargetSight, NULL, NULL );
 
-	// If the attacker is too close, our 2D angles are not going to be accurate. consider a full 3D check
+	// If the attacker is too close, our 2D angles are not going to be accurate.
 	const float flMax = pTarget->WorldAlignSize().x;
 	float flSightAnglesDot;
-	if ( flDist2D < flMax * flMax )
+	if ( flDist2D < flMax * 0.7f )
 	{
-		flSightAnglesDot = DotProduct( -vecToTarget3D, vecTargetSight );
+		// Phasing?
+		if ( fabsf( vecToTarget3D.z ) < 40.0f )
+		{
+			Vector vecOwnerForward;
+			AngleVectors( pOwner->EyeAngles(), &vecOwnerForward, NULL, NULL );
+			vecOwnerForward.z = 0.0f;
+			VectorNormalizeFast( vecOwnerForward );
+
+			vecTargetSight.z = 0.0f;
+			VectorNormalizeFast( vecTargetSight );
+
+			float flFacingDot = DotProduct( vecTargetSight, vecOwnerForward );
+
+			// Use the classical owner vs. victim facing direction check in the phasing case
+#if 0
+			if ( flFacingDot > -0.3f )
+#else
+			if ( flFacingDot > -0.30237f )
+#endif
+			{
+				flSightAnglesDot = -1.0f; // Backstab
+			}
+			else
+			{
+				flSightAnglesDot = 1.0f; // Facestab
+			}
+		}
+		else
+		{
+			// Over/under. So let's use the 3D check.
+			VectorNormalizeFast( vecToTarget3D );
+			flSightAnglesDot = DotProduct( -vecToTarget3D, vecTargetSight );
+		}
 	}
 	else
 	{
