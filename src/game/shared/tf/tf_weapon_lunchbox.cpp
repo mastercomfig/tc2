@@ -388,8 +388,28 @@ void CTFLunchBox::ApplyBiteEffects( CTFPlayer *pPlayer )
 
 	if ( nLunchBoxType == LUNCHBOX_CHOCOLATE_BAR || nLunchBoxType == LUNCHBOX_FISHCAKE )
 	{
+		int nOldMaxHealth = pPlayer->GetMaxHealth();
 		// add 50 health to player for 30 seconds
 		pPlayer->AddCustomAttribute( "hidden maxhealth non buffed", DALOKOHS_MAXHEALTH_BUFF, 30.f );
+		int nNewMaxHealth = pPlayer->GetMaxHealth();
+		if ( nNewMaxHealth != nOldMaxHealth )
+		{
+			int nOldHealth = pPlayer->GetHealth();
+			int nBaseHealthOld = Min( nOldHealth, nOldMaxHealth );
+			int nOverhealOld = Max( 0, nOldHealth - nOldMaxHealth );
+
+			int nMissingHealth = nOldMaxHealth - nBaseHealthOld;
+			int nNewHealth = nNewMaxHealth - nMissingHealth + nOverhealOld;
+
+			int nHealthMaxOverheal = pPlayer->GetMaxHealthForBuffing() * pPlayer->m_Shared.GetMaxOverhealMultiplier();
+			int nHealthMaxAttribute = pPlayer->GetMaxHealthForBuffing();
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pPlayer, nHealthMaxAttribute, add_maxhealth_nonbuffed );
+			int nHealthMax = Max( nHealthMaxOverheal, nHealthMaxAttribute );
+			nNewHealth = Min( nNewHealth, nHealthMax );
+			nNewHealth = Max( nNewHealth, 1 );
+
+			pPlayer->SetHealth( nNewHealth );
+		}
 	}
 	else if ( nLunchBoxType == LUNCHBOX_ADDS_MINICRITS )
 	{
@@ -406,10 +426,11 @@ void CTFLunchBox::ApplyBiteEffects( CTFPlayer *pPlayer )
 	// Then heal the player
 	int iHeal = ( nLunchBoxType == LUNCHBOX_CHOCOLATE_BAR || nLunchBoxType == LUNCHBOX_FISHCAKE ) ? 25 : 75;
 	int iHealType = DMG_GENERIC;
-	if ( ( nLunchBoxType == LUNCHBOX_CHOCOLATE_BAR || nLunchBoxType == LUNCHBOX_FISHCAKE ) && pPlayer->GetHealth() < ( 300.f + DALOKOHS_MAXHEALTH_BUFF ) )
+	if ( nLunchBoxType == LUNCHBOX_CHOCOLATE_BAR || nLunchBoxType == LUNCHBOX_FISHCAKE )
 	{
 		iHealType = DMG_IGNORE_MAXHEALTH;
-		iHeal = Min( 25, 350 - pPlayer->GetHealth() );
+		int nMaxPossibleHealth = pPlayer->GetMaxHealth() + 50;
+		iHeal = Max( 0, Min( 25, nMaxPossibleHealth - pPlayer->GetHealth() ) );
 	}
 
 	float flHealScale = 1.0f;

@@ -462,7 +462,7 @@ void CTFDroppedWeapon::UpdateGlowEffect( void )
 		DestroyGlowEffect();
 	}
 
-	// create a new effect if we have a cart
+	// create a new effect
 	if ( m_bShouldGlowForLocalPlayer )
 	{
 		Vector color = Vector( 0.745f, 0.773f, 0.157f );

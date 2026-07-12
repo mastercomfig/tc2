@@ -159,6 +159,7 @@ CEconEntity::CEconEntity()
 	EnableDynamicModels();
 #ifdef GAME_DLL
 	m_iOldOwnerClass = 0;
+	m_hBotOwner = NULL;
 #endif
 
 #if defined(TF_DLL) || defined(TF_CLIENT_DLL)

@@ -843,6 +843,13 @@ CTFPlayerShared::CTFPlayerShared()
 	{
 		m_hItemForLoadoutSlot[i] = NULL;
 	}
+#ifdef CLIENT_DLL
+	m_iCachedClass = -1;
+	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	{
+		m_hCachedWeapons[i] = CBaseHandle();
+	}
+#endif
 	m_iAirDash = 0;
 	m_nAirDucked = 0;
 	m_flDuckTimer = 0.0f;
@@ -1526,6 +1533,8 @@ void CTFPlayerShared::OnPreDataChanged( void )
 void CTFPlayerShared::OnDataChanged( void )
 {
 	m_ConditionList.OnDataChanged( m_pOuter );
+
+	m_bLoadoutSlotCacheDirty = true;
 
 	if ( m_iOldMovementStunParity != m_iMovementStunParity )
 	{
@@ -2854,7 +2863,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		{
 			// Items exist that get us over max health, without ever being healed, in which case our m_flBestOverhealDecayMult will still be -1.
 			float flDrainMult = ( m_flBestOverhealDecayMult == -1.f ) ? 1.f : m_flBestOverhealDecayMult;
-			float flBoostMaxAmount = flOverheal - m_pOuter->GetMaxHealth();
+			float flBoostMaxAmount = Max( (float)m_pOuter->GetMaxHealth() * 0.5f, flOverheal - m_pOuter->GetMaxHealth() );
 			float flDrain = flBoostMaxAmount / (tf_boost_drain_time.GetFloat() * flDrainMult);
 			m_flHealFraction += (gpGlobals->frametime * flDrain);
 
@@ -3109,6 +3118,27 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	
 				CTakeDamageInfo info( m_hBurnAttacker, m_hBurnAttacker, m_hBurnWeapon, flBurnDamage, DMG_BURN | DMG_PREVENT_PHYSICS_FORCE, nKillType );
 				m_pOuter->TakeDamage( info );
+
+				CTFPlayer *pTFAttacker = m_hBurnAttacker.Get();
+				if ( TFGameRules() && TFGameRules()->IsBetaActive() && pTFAttacker && pTFAttacker != m_pOuter )
+				{
+					CTFWeaponBase *pActiveWeapon = pTFAttacker->GetActiveTFWeapon();
+					if ( pActiveWeapon && pActiveWeapon->GetWeaponID() == TF_WEAPON_FIREAXE )
+					{
+						int iAddBurningDamageType = 0;
+						CALL_ATTRIB_HOOK_INT_ON_OTHER( pActiveWeapon, iAddBurningDamageType, set_dmgtype_ignite );
+						if ( iAddBurningDamageType == 1 )
+						{
+							float flMaxOverhealHP = pTFAttacker->GetMaxHealth() * 1.5f;
+							float flCurrentHP = pTFAttacker->GetHealth();
+							if ( flCurrentHP < flMaxOverhealHP )
+							{
+								float flHealthToGive = Min( flBurnDamage, flMaxOverhealHP - flCurrentHP );
+								pTFAttacker->TakeHealth( flHealthToGive, DMG_IGNORE_MAXHEALTH );
+							}
+						}
+					}
+				}
 
 				// Give health to attacker if they are carrying the Vampire Powerup.
 				if ( TFGameRules() && TFGameRules()->IsPowerupMode() )  
@@ -12394,6 +12424,58 @@ CBaseEntity *CTFPlayer::GetEntityForLoadoutSlot( int iLoadoutSlot, bool bForceCh
 	if ( iLoadoutSlot < 0 || iLoadoutSlot >= CLASS_LOADOUT_POSITION_COUNT )
 		return NULL;
 
+#ifdef CLIENT_DLL
+	// Check if our class, weapons, or wearables have changed since the last cache build
+	bool bClientDirty = false;
+	
+	int iClassIndex = GetPlayerClass()->GetClassIndex();
+	if ( m_Shared.m_iCachedClass != iClassIndex )
+	{
+		bClientDirty = true;
+	}
+	
+	if ( !bClientDirty )
+	{
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			CBaseCombatWeapon *pWeapon = GetWeapon(i);
+			CBaseHandle hWeapon = pWeapon ? pWeapon->GetRefEHandle() : CBaseHandle();
+			if ( m_Shared.m_hCachedWeapons[i] != hWeapon )
+			{
+				bClientDirty = true;
+				break;
+			}
+		}
+	}
+	
+	if ( !bClientDirty )
+	{
+		int nWearables = GetNumWearables();
+		if ( m_Shared.m_hCachedWearables.Count() != nWearables )
+		{
+			bClientDirty = true;
+		}
+		else
+		{
+			for ( int i = 0; i < nWearables; i++ )
+			{
+				C_EconWearable *pWearable = GetWearable(i);
+				CBaseHandle hWearable = pWearable ? pWearable->GetRefEHandle() : CBaseHandle();
+				if ( m_Shared.m_hCachedWearables[i] != hWearable )
+				{
+					bClientDirty = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	if ( bClientDirty )
+	{
+		m_Shared.m_bLoadoutSlotCacheDirty = true;
+	}
+#endif
+
 	if ( m_Shared.m_bLoadoutSlotCacheDirty )
 	{
 		for ( int i = 0; i < CLASS_LOADOUT_POSITION_COUNT; i++ )
@@ -12460,6 +12542,22 @@ CBaseEntity *CTFPlayer::GetEntityForLoadoutSlot( int iLoadoutSlot, bool bForceCh
 		}
 
 		m_Shared.m_bLoadoutSlotCacheDirty = false;
+
+#ifdef CLIENT_DLL
+		m_Shared.m_iCachedClass = GetPlayerClass()->GetClassIndex();
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			CBaseCombatWeapon *pWeapon = GetWeapon(i);
+			m_Shared.m_hCachedWeapons[i] = pWeapon ? pWeapon->GetRefEHandle() : CBaseHandle();
+		}
+		m_Shared.m_hCachedWearables.Purge();
+		int nWearablesCount = GetNumWearables();
+		for ( int i = 0; i < nWearablesCount; i++ )
+		{
+			C_EconWearable *pWearable = GetWearable(i);
+			m_Shared.m_hCachedWearables.AddToTail( pWearable ? pWearable->GetRefEHandle() : CBaseHandle() );
+		}
+#endif
 	}
 
 	return CBaseEntity::Instance( m_Shared.m_hItemForLoadoutSlot[iLoadoutSlot] );

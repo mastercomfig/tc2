@@ -78,6 +78,7 @@
 #include "tf_gcmessages.h"
 #include "tf_obj_sentrygun.h"
 #include "tf_weapon_shovel.h"
+#include "tf_weapon_fireaxe.h"
 #include "bot/tf_bot.h"
 #include "bot/tf_bot_manager.h"
 #include "NextBotUtil.h"
@@ -4853,6 +4854,32 @@ bool CTFPlayer::ItemsMatch( TFPlayerClassData_t *pData, CEconItemView *pCurWeapo
 	if ( !pNewWeaponItem || !pNewWeaponItem->IsValid() )
 		return false;
 
+	if ( !pCurWeaponItem || !pCurWeaponItem->IsValid() )
+		return false;
+
+	if ( IsBot() && pWpnEntity && pWpnEntity->m_hBotOwner == this )
+	{
+		int iClass = GetPlayerClass()->GetClassIndex();
+		if ( iClass > TF_CLASS_UNDEFINED && iClass < TF_CLASS_COUNT_ALL )
+		{
+			if ( pCurWeaponItem->GetStaticData() && pNewWeaponItem->GetStaticData() )
+			{
+				int iCurSlot = pCurWeaponItem->GetStaticData()->GetLoadoutSlot( iClass );
+				int iNewSlot = pNewWeaponItem->GetStaticData()->GetLoadoutSlot( iClass );
+				if ( iCurSlot == iNewSlot )
+				{
+					return true;
+				}
+
+				if ( ( IsMiscSlot( iCurSlot ) && IsMiscSlot( iNewSlot ) ) ||
+					 ( IsTauntSlot( iCurSlot ) && IsTauntSlot( iNewSlot ) ) )
+				{
+					return true;
+				}
+			}
+		}
+	}
+
 	// If we already have a weapon in this slot but is not the same type, nuke it (changed classes)
 	// We don't need to do this for non-base items because they've already been verified above.
 	bool bHasNonBaseWeapon = pNewWeaponItem ? pNewWeaponItem->GetItemQuality() != AE_NORMAL : false;
@@ -5779,7 +5806,7 @@ void CTFPlayer::ValidateWearables( TFPlayerClassData_t *pData )
 			if (iLoadoutSlot >= 0 )
 			{
 				CEconItemView *pItem = TFInventoryManager()->GetItemInLoadoutForClass( GetPlayerClass()->GetClassIndex(), iLoadoutSlot, &steamIDForPlayer );
-				itemMatch |= ItemsMatch( pData, pWeapon->GetAttributeContainer()->GetItem(), pItem );
+				itemMatch |= ItemsMatch( pData, pWeapon->GetAttributeContainer()->GetItem(), pItem, pWeapon );
 			}
 		}
 		else
@@ -5804,6 +5831,18 @@ void CTFPlayer::ValidateWearables( TFPlayerClassData_t *pData )
 							itemMatch |= ItemsMatch( pData, pWearable->GetAttributeContainer()->GetItem(), pItem );
 						}
 					}
+				}
+			}
+		}
+
+		if ( IsBot() && pWearable->m_hBotOwner == this )
+		{
+			int iClass = GetPlayerClass()->GetClassIndex();
+			if ( iClass > TF_CLASS_UNDEFINED && iClass < TF_CLASS_COUNT_ALL )
+			{
+				if ( pWearable->GetAttributeContainer()->GetItem()->GetStaticData()->GetLoadoutSlot( iClass ) >= 0 )
+				{
+					itemMatch = true;
 				}
 			}
 		}
@@ -10574,7 +10613,29 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			{
 				// Am I healing someone or being healed?
 				CUtlVector<CTFPlayer*> pTempPlayerQueue;
-				AddConnectedPlayers( pTempPlayerQueue, this );
+				if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+				{
+					if ( pTFAttacker )
+					{
+						CUtlVector<CTFPlayer*> playerVector;
+						CollectPlayers( &playerVector, TEAM_ANY, COLLECT_ONLY_LIVING_PLAYERS );
+						for ( int i = 0; i < playerVector.Count(); i++ )
+						{
+							CTFPlayer *pTFPlayer = playerVector[i];
+							if ( pTFPlayer && pTFPlayer != this )
+							{
+								if ( pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && pTFPlayer->m_Shared.GetConditionProvider( TF_COND_BURNING ) == pTFAttacker )
+								{
+									pTempPlayerQueue.AddToTail( pTFPlayer );
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					AddConnectedPlayers( pTempPlayerQueue, this );
+				}
 
 				gs_pRecursivePlayerCheck = this;
 				for ( int iCount = 0 ; iCount < pTempPlayerQueue.Count() ; iCount++ )
@@ -12846,6 +12907,16 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 	if ( iSpeedBoostOnKill )
 	{
 		m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnKill );
+	}
+
+	if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FIREAXE )
+	{
+		CTFFireAxe *pFireaxe = dynamic_cast<CTFFireAxe*>( pWeapon );
+		if ( pFireaxe )
+		{
+			pFireaxe->SetKillSpeedBoostTimer( gpGlobals->curtime + 5.0f );
+			TeamFortress_SetSpeed();
+		}
 	}
 
 	if ( pVictim != this && TFGameRules()->IsInPreMatchTournamentWarmup() && GetTeamNumber() >= FIRST_GAME_TEAM )
@@ -15713,152 +15784,120 @@ int CTFPlayer::GetMaxHealthForBuffing()
 	}
 
 	// We're draining or restoring health for a special-case attribute here.
-	// This code is very fragile, and can break many things when changed.
 	{
 		int nOriginalMaxHealth = iMax;
 		float flMaxHealthDrainRate = 0.f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pWeapon, flMaxHealthDrainRate, mod_maxhealth_drain_rate );
 
-		// Drain maxhealth while the right weapon is deployed
-		if ( flMaxHealthDrainRate > 0.f )
-		{
-			int nActivationPenalty = 0;
-			
-			// Previously refilling?
-			if ( m_bMaxHealthRefilling )
-			{
-				// Deploy penalty
-				nActivationPenalty = tf_maxhealth_drain_deploy_cost.GetInt();
-				m_bMaxHealthRefilling = false;
+		const int nFloor = tf_maxhealth_drain_hp_min.GetInt();
 
-				if ( m_dMaxHealthDrainAccumulator < 0.f )
+		if ( flMaxHealthDrainRate == 0.f && m_nMaxHealthDrainBucket > 0 )
+		{
+			float flRestoreRate = 0.f;
+			CALL_ATTRIB_HOOK_FLOAT( flRestoreRate, mod_maxhealth_drain_rate );
+			if ( flRestoreRate == 0.f )
+			{
+				int nOldMaxHealth = Max( nOriginalMaxHealth - m_nMaxHealthDrainBucket, nFloor );
+				ResetMaxHealthDrain();
+				int nNewMaxHealth = nOriginalMaxHealth;
+				if ( nNewMaxHealth != nOldMaxHealth )
 				{
-					m_dMaxHealthDrainAccumulator = fabs( m_dMaxHealthDrainAccumulator );
+					int nOldHealth = GetHealth();
+					int nBaseHealthOld = Min( nOldHealth, nOldMaxHealth );
+					int nOverhealOld = Max( 0, nOldHealth - nOldMaxHealth );
+
+					int nBaseHealthNew = RoundFloatToInt( (float)nBaseHealthOld * (float)nNewMaxHealth / (float)Max( nOldMaxHealth, 1 ) );
+					int nNewHealth = nBaseHealthNew + nOverhealOld;
+
+					int nHealthMaxOverheal = nOriginalMaxHealth * m_Shared.GetMaxOverhealMultiplier();
+					int nHealthMaxAttribute = nOriginalMaxHealth;
+					CALL_ATTRIB_HOOK_INT( nHealthMaxAttribute, add_maxhealth_nonbuffed );
+					int nHealthMax = Max( nHealthMaxOverheal, nHealthMaxAttribute );
+					nNewHealth = Min( nNewHealth, nHealthMax );
+					nNewHealth = Max( nNewHealth, 1 );
+
+					SetHealth( nNewHealth );
 				}
-				if ( m_dMaxHealthDrainHealthAccumulator < 0.f )
-				{
-					m_dMaxHealthDrainHealthAccumulator = fabs( m_dMaxHealthDrainHealthAccumulator );
-				}
+				return iMax;
 			}
-			
+		}
+
+		if ( IsAlive() && ( flMaxHealthDrainRate > 0.f || m_nMaxHealthDrainBucket > 0 ) )
+		{
 			if ( m_dMaxHealthDrainLastUpdate == -1.0 )
 			{
 				m_dMaxHealthDrainLastUpdate = gpGlobals->curtime;
 			}
 
-			const int nFloor = tf_maxhealth_drain_hp_min.GetInt();
+			double dt = gpGlobals->curtime - m_dMaxHealthDrainLastUpdate;
 
-			if ( nOriginalMaxHealth - nFloor > m_nMaxHealthDrainBucket )
+			if ( dt > 0.0 )
 			{
-				int nMaxHealthDrainBucketPrev = m_nMaxHealthDrainBucket;
+				m_dMaxHealthDrainLastUpdate = gpGlobals->curtime;
 
-				// MaxHealth
-				double dDrainRate = ( ( gpGlobals->curtime - m_dMaxHealthDrainLastUpdate ) * flMaxHealthDrainRate ) + nActivationPenalty;
-				m_dMaxHealthDrainAccumulator += dDrainRate;
-				int nMaxHealthDrain = floor( m_dMaxHealthDrainAccumulator );
-				if ( nMaxHealthDrain > 0 )
+				int nActivationPenalty = 0;
+				if ( flMaxHealthDrainRate > 0.f )
 				{
-					m_dMaxHealthDrainAccumulator -= nMaxHealthDrain;
-					m_nMaxHealthDrainBucket += nMaxHealthDrain;
+					if ( m_bMaxHealthRefilling )
+					{
+						nActivationPenalty = tf_maxhealth_drain_deploy_cost.GetInt();
+						m_bMaxHealthRefilling = false;
+					}
+				}
+				else
+				{
+					m_bMaxHealthRefilling = true;
 				}
 
-				// Health
-				float flHealthPerc = (float)GetHealth() / (float)Max( ( iMax - nMaxHealthDrainBucketPrev ), nFloor );
-				m_dMaxHealthDrainHealthAccumulator += ( dDrainRate * flHealthPerc );
-				int nHealthDrain = floor( m_dMaxHealthDrainHealthAccumulator );
-				if ( nHealthDrain > 0 )
-				{
-					m_dMaxHealthDrainHealthAccumulator -= nHealthDrain;
-					int nNewHealth = Max( ( GetHealth() - nHealthDrain ), 1 );
-					SetHealth( nNewHealth );
-				}
-			}
-			
-			iMax = Max( ( iMax - m_nMaxHealthDrainBucket ), nFloor );
-			//DevMsg( "Health/MaxHealth: %i/%i\n", GetHealth(), iMax );
+				double dMaxDrain = Max( 0.0, (double)(nOriginalMaxHealth - nFloor) );
 
-			m_dMaxHealthDrainLastUpdate = gpGlobals->curtime;
- 		}
- 		// Attribute no longer on the active weapon - regen maxhealth
- 		else if ( m_nMaxHealthDrainBucket > 0 )
-		{
-			// Eat away any remaining value in the accumulators
-			if ( !m_bMaxHealthRefilling )
-			{
-				if ( m_dMaxHealthDrainAccumulator > 0.f )
+				double dNewAccumulator = m_dMaxHealthDrainAccumulator;
+				if ( !m_bMaxHealthRefilling )
 				{
-					m_dMaxHealthDrainAccumulator *= -1.f;
+					dNewAccumulator += dt * flMaxHealthDrainRate + nActivationPenalty;
 				}
-				if ( m_dMaxHealthDrainHealthAccumulator > 0.f )
+				else
 				{
-					m_dMaxHealthDrainHealthAccumulator *= -1.f;
-				}
-			}
-
-			m_bMaxHealthRefilling = true;
-
-			flMaxHealthDrainRate = 0.f;
-			CALL_ATTRIB_HOOK_FLOAT( flMaxHealthDrainRate, mod_maxhealth_drain_rate );
-		
- 			// Something yanked the attribute off the player (load-out change, whatever)
-			if ( flMaxHealthDrainRate == 0.f )
-			{
-				ResetMaxHealthDrain();
-			}
- 			else
- 			{
-				int nMaxHealthDrainBucketPrev = m_nMaxHealthDrainBucket;
-				double dRestoreRate = ( gpGlobals->curtime - m_dMaxHealthDrainLastUpdate ) * flMaxHealthDrainRate;
-				m_dMaxHealthDrainAccumulator += dRestoreRate;
-				int nMaxHealthRefill = floor( m_dMaxHealthDrainAccumulator );
-				if ( nMaxHealthRefill > 0 )
-				{
-					m_dMaxHealthDrainAccumulator -= nMaxHealthRefill;
-					m_nMaxHealthDrainBucket -= nMaxHealthRefill;
+					float flRestoreRate = 0.f;
+					CALL_ATTRIB_HOOK_FLOAT( flRestoreRate, mod_maxhealth_drain_rate );
+					dNewAccumulator -= dt * flRestoreRate;
 				}
 
-				// Use previous value to determine percentage
-				float flHealthPerc = (float)GetHealth() / Max( ( iMax - nMaxHealthDrainBucketPrev ), 1 );
-				
-				m_dMaxHealthDrainHealthAccumulator += ( dRestoreRate * flHealthPerc );
-				int nHealthRestore = floor( m_dMaxHealthDrainHealthAccumulator );
-				if ( nHealthRestore > 0 )
+				dNewAccumulator = clamp( dNewAccumulator, 0.0, dMaxDrain );
+				m_dMaxHealthDrainAccumulator = dNewAccumulator;
+
+				int nOldDrainBucket = m_nMaxHealthDrainBucket;
+				m_nMaxHealthDrainBucket = RoundFloatToInt( m_dMaxHealthDrainAccumulator );
+
+				int nOldMaxHealth = Max( nOriginalMaxHealth - nOldDrainBucket, nFloor );
+				int nNewMaxHealth = Max( nOriginalMaxHealth - m_nMaxHealthDrainBucket, nFloor );
+
+				if ( nNewMaxHealth != nOldMaxHealth )
 				{
-					m_dMaxHealthDrainHealthAccumulator -= nHealthRestore;
+					int nOldHealth = GetHealth();
+					int nBaseHealthOld = Min( nOldHealth, nOldMaxHealth );
+					int nOverhealOld = Max( 0, nOldHealth - nOldMaxHealth );
+
+					int nBaseHealthNew = RoundFloatToInt( (float)nBaseHealthOld * (float)nNewMaxHealth / (float)Max( nOldMaxHealth, 1 ) );
+					int nNewHealth = nBaseHealthNew + nOverhealOld;
+
 					int nHealthMaxOverheal = nOriginalMaxHealth * m_Shared.GetMaxOverhealMultiplier();
 					int nHealthMaxAttribute = nOriginalMaxHealth;
 					CALL_ATTRIB_HOOK_INT( nHealthMaxAttribute, add_maxhealth_nonbuffed );
 					int nHealthMax = Max( nHealthMaxOverheal, nHealthMaxAttribute );
-					int nNewHealth = Min( GetHealth() + nHealthRestore, nHealthMax );
+					nNewHealth = Min( nNewHealth, nHealthMax );
+					nNewHealth = Max( nNewHealth, 1 );
+
 					SetHealth( nNewHealth );
 				}
 
-				m_dMaxHealthDrainLastUpdate = gpGlobals->curtime;
-
-				// Done
-				iMax = Max( ( iMax - m_nMaxHealthDrainBucket ), 1 );
-				// DevMsg( "Health/MaxHealth/Original: %i/%i/%i\n", GetHealth(), iMax, nOriginalMaxHealth );
-				if ( iMax == nOriginalMaxHealth )
+				if ( m_nMaxHealthDrainBucket == 0 )
 				{
-					// Don't discard anything left over
-					if ( m_dMaxHealthDrainHealthAccumulator )
-					{
-						SetHealth( GetHealth() + 1 );
-					}
-					
 					ResetMaxHealthDrain();
 				}
- 			}
-		}
-		else if ( m_dMaxHealthDrainLastUpdate != -1.0 )
-		{
-			// This fixes a bug in public where players can trigger a sequence
-			// that initializes m_dMaxHealthDrainLastUpdate, but we really shouldn't,
-			// and when it's finally time to use the value, we end up trying to restore
-			// a massive amount of health based on the time delta with curtime.
-			// There's a better fix for this that probably requires touching more code,
-			// but we should probably ship this first, and then figure it out.
-			ResetMaxHealthDrain();
+			}
+
+			iMax = Max( ( iMax - m_nMaxHealthDrainBucket ), nFloor );
 		}
 	}
 	//
@@ -17061,6 +17100,8 @@ void CTFPlayer::CreateRagdollEntity( bool bGib, bool bBurning, bool bElectrocute
 	pRagdoll = dynamic_cast<CTFRagdoll*>( CreateEntityByName( "tf_ragdoll" ) );
 	if ( pRagdoll )
 	{
+		pRagdoll->SetAbsOrigin( GetAbsOrigin() );
+		pRagdoll->SetAbsAngles( GetAbsAngles() );
 		pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
 		pRagdoll->m_vecRagdollVelocity = GetAbsVelocity();
 		pRagdoll->m_vecForce = m_vecForce;
@@ -17258,6 +17299,8 @@ void CTFPlayer::CreateFeignDeathRagdoll( const CTakeDamageInfo& info, bool bGib,
 	pRagdoll = dynamic_cast<CTFRagdoll*>( CreateEntityByName( "tf_ragdoll" ) );
 	if ( pRagdoll )
 	{
+		pRagdoll->SetAbsOrigin( GetAbsOrigin() );
+		pRagdoll->SetAbsAngles( GetAbsAngles() );
 		pRagdoll->m_vecRagdollOrigin = GetAbsOrigin();
 		pRagdoll->m_vecRagdollVelocity = m_vecFeignDeathVelocity;
 		pRagdoll->m_vecForce = CalcDamageForceVector( info );

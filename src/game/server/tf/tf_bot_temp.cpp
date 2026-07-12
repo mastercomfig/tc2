@@ -1426,6 +1426,7 @@ void BotGenerateAndWearItem( CTFPlayer *pBot, const char *itemName )
 		// Fake global id
 		static int s_nFakeID = 1;
 		static_cast<CEconEntity*>(pItem)->GetAttributeContainer()->GetItem()->SetItemID( s_nFakeID++ );
+		static_cast<CEconEntity*>(pItem)->m_hBotOwner = pBot;
 
 		DispatchSpawn( pItem );
 		static_cast<CEconEntity*>(pItem)->GiveTo( pBot );
@@ -1457,6 +1458,8 @@ void BotGenerateAndWearItem( CTFPlayer *pBot, CEconItemView *pItem )
 		{
 			pBuilder->SetSubType( pBot->GetPlayerClass()->GetData()->m_aBuildable[0] );
 		}
+
+		pNewItem->m_hBotOwner = pBot;
 
 		// make sure we removed our current weapon				
 		if ( pWeapon )

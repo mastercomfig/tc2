@@ -759,6 +759,11 @@ public:
 public:
 	bool m_bLoadoutSlotCacheDirty;
 	CBaseHandle m_hItemForLoadoutSlot[CLASS_LOADOUT_POSITION_COUNT];
+#ifdef CLIENT_DLL
+	int m_iCachedClass;
+	CBaseHandle m_hCachedWeapons[MAX_WEAPONS];
+	CUtlVector<CBaseHandle> m_hCachedWearables;
+#endif
 
 private:
 	CNetworkVarEmbedded( localplayerscoring_t,	m_ScoreData );

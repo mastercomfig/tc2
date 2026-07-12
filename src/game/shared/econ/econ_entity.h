@@ -138,6 +138,9 @@ public:
 #endif
 
 public:
+#ifdef GAME_DLL
+	CHandle<CBaseEntity>	m_hBotOwner;
+#endif
 	// IHasAttributes
 	CAttributeManager			*GetAttributeManager( void ) { return &m_AttributeManager; }
 	CAttributeContainer			*GetAttributeContainer( void ) { return &m_AttributeManager; }

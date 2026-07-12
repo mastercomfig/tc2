@@ -28,16 +28,22 @@ public:
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
 
-	CTFFireAxe() {}
+	CTFFireAxe() { m_flKillSpeedBoostTimer = 0.0f; }
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_FIREAXE; }
+
+	virtual float		GetSpeedMod( void ) OVERRIDE;
 
 #ifdef GAME_DLL
 	virtual float GetInitialAfterburnDuration() const OVERRIDE;
+	void SetKillSpeedBoostTimer( float flTime ) { m_flKillSpeedBoostTimer = flTime; }
 #endif
+	float GetKillSpeedBoostTimer( void ) const { return m_flKillSpeedBoostTimer; }
 
 private:
 
 	CTFFireAxe( const CTFFireAxe & ) {}
+
+	CNetworkVar( float, m_flKillSpeedBoostTimer );
 };
 
 #endif // TF_WEAPON_FIREAXE_H

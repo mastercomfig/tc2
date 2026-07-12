@@ -1427,6 +1427,7 @@ void CTFBot::Spawn()
 	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallers", "0" );
 	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallersglow", "0" );
 	engine->SetFakeClientConVarValue( this->edict(), "hud_medicautocallersthreshold", "0" );
+	engine->SetFakeClientConVarValue( this->edict(), "tf_demoman_charge_steering_legacy", "0" );
 
 	m_spawnArea = NULL;
 	m_justLostPointTimer.Invalidate();
