@@ -26,6 +26,10 @@ Vector GetTracerOrigin( const CEffectData &data )
 	Vector vecStart = data.m_vStart;
 	QAngle vecAngles;
 
+	C_BaseEntity *pEnt = data.GetEntity();
+	if ( !pEnt || pEnt->IsDormant() )
+		return vecStart;
+
 	int iAttachment = data.m_nAttachmentIndex;
 
 	// Attachment?
@@ -37,14 +41,6 @@ Vector GetTracerOrigin( const CEffectData &data )
 		IClientRenderable *pRenderable = data.GetRenderable();
 		if ( !pRenderable )
 			return vecStart;
-
-		C_BaseEntity *pEnt = data.GetEntity();
-
-// This check should probably be for all multiplayer games, investigate later
-#if defined( HL2MP ) || defined( TF_CLIENT_DLL )
-		if ( pEnt && pEnt->IsDormant() )
-			return vecStart;
-#endif
 
 		C_BaseCombatWeapon *pWpn = dynamic_cast<C_BaseCombatWeapon *>( pEnt );
 		if ( pWpn && pWpn->ShouldDrawUsingViewModel() )
@@ -67,10 +63,10 @@ Vector GetTracerOrigin( const CEffectData &data )
 				modelinfo->GetModelName( pRenderable->GetModel() ) );
 		}
 
-		// If the client-calculated position is unreasonably far from the server-sent origin, fall back to the server-sent origin.
-		if ( ( vecStart - data.m_vStart ).LengthSqr() > 256.0f * 256.0f )
+		// If the client-calculated position is unreasonably far from the entity origin, fall back to the entity origin
+		if ( ( vecStart - pEnt->GetAbsOrigin() ).LengthSqr() > 1024.0f * 1024.0f )
 		{
-			vecStart = data.m_vStart;
+			vecStart = pEnt->GetAbsOrigin();
 		}
 	}
 

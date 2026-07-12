@@ -2175,9 +2175,14 @@ void CBaseEntity::ComputeTracerStartPosition( const Vector &vecShotSrc, Vector *
 #ifndef HL2MP
 	if ( g_pGameRules->IsMultiplayer() )
 	{
+		// UNDONE(mcoms): when the client can't compute the tracer start, it falls back to this provided position and looks broken!!
+#if 0
 		// NOTE: we do this because in MakeTracer, we force it to use the attachment position
 		// in multiplayer, so the results from this function should never actually get used.
-		pVecTracerStart->Init( 999, 999, 999 );
+		*pVecTracerStart->Init( 999, 999, 999 );
+#else
+		*pVecTracerStart = vecShotSrc;
+#endif
 		return;
 	}
 #endif
