@@ -1268,6 +1268,10 @@ void CTFGameMovement::ToggleParachute()
 	if ( mv->m_nOldButtons & IN_JUMP )
 		return;
 
+	// Can't while taunting / full stunned
+	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_TAUNTING ) )
+		return;
+
 	// Can not add if in kart (Kart code does it for spell) but players can manually undeploy
 	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_HALLOWEEN_KART ) )
 	{
@@ -2447,9 +2451,12 @@ void CTFGameMovement::AirMove( void )
 			VectorNormalize( vecCurrentXY );
 
 			flDot = DotProduct( vecCurrentXY, wishdir );
-			
+
+			float flViewFwdDot = DotProduct( vecCurrentXY, forward );
+			float flViewRightDot = DotProduct( vecCurrentXY, right );
+
 			// sus out air strafing, and then apply forward move. this makes it easier for players who are used to classic air movement.
-			if ( flDot < -0.01f && fabs(mv->m_flForwardMove) < 0.1f && fabs(mv->m_flSideMove) > 0.1f )
+			if ( flViewFwdDot > 0.0f && (flViewRightDot * mv->m_flSideMove) < -0.01f && fabs(mv->m_flForwardMove) < 0.1f && fabs(mv->m_flSideMove) > 0.1f )
 			{
 				mv->m_flForwardMove = fabs(mv->m_flSideMove);
 
@@ -2463,7 +2470,7 @@ void CTFGameMovement::AirMove( void )
 				flDot = DotProduct( vecCurrentXY, wishdir );
 			}
 
-			if ( flDot < 0.0f )
+			if ( flDot < 0.0f && mv->m_flForwardMove < -0.1f )
 			{
 				// Braking component
 				float flDecel = 800.0f * GAMEMOVEMENT_FRAMETIME * -flDot;
