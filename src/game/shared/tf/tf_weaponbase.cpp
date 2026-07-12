@@ -38,6 +38,7 @@
 #include "particle_parse.h"
 #include "tf_weaponbase_grenadeproj.h"
 #include "tf_weapon_compound_bow.h"
+#include "tf_weapon_fireaxe.h"
 #include "tf_projectile_arrow.h"
 #include "tf_gamestats.h"
 #include "bot/tf_bot_manager.h"
@@ -5385,6 +5386,16 @@ void CTFWeaponBase::ApplyOnHitAttributes( CBaseEntity *pVictimBaseEntity, CTFPla
 	if ( iSpeedBoostOnHit )
 	{
 		pAttacker->m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnHit );
+	}
+
+	if ( TFGameRules()->IsBetaActive() && GetWeaponID() == TF_WEAPON_FIREAXE )
+	{
+		CTFFireAxe *pFireaxe = dynamic_cast<CTFFireAxe*>( this );
+		if ( pFireaxe )
+		{
+			pFireaxe->SetKillSpeedBoostTimer( gpGlobals->curtime + 3.0f );
+			pAttacker->TeamFortress_SetSpeed();
+		}
 	}
 
 	if ( pVictim )

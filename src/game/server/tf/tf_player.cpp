@@ -9939,6 +9939,7 @@ void HandleRageGain( CTFPlayer *pPlayer, CBaseEntity *pVictim, unsigned int iReq
 
 // we want to ship this...do not remove
 ConVar tf_debug_damage( "tf_debug_damage", "0", FCVAR_CHEAT );
+ConVar tf_burn_damage_link_radius( "tf_burn_damage_link_radius", "512", FCVAR_NONE, "Radius limit for the burn damage link attribute" );
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -10615,10 +10616,12 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 				CUtlVector<CTFPlayer*> pTempPlayerQueue;
 				if ( TFGameRules() && TFGameRules()->IsBetaActive() )
 				{
-					if ( pTFAttacker )
+					if ( pTFAttacker && m_Shared.InCond( TF_COND_BURNING ) && m_Shared.GetConditionProvider( TF_COND_BURNING ) == pTFAttacker )
 					{
 						CUtlVector<CTFPlayer*> playerVector;
 						CollectPlayers( &playerVector, TEAM_ANY, COLLECT_ONLY_LIVING_PLAYERS );
+						float flMaxDist = tf_burn_damage_link_radius.GetFloat();
+						float flMaxDistSqr = flMaxDist * flMaxDist;
 						for ( int i = 0; i < playerVector.Count(); i++ )
 						{
 							CTFPlayer *pTFPlayer = playerVector[i];
@@ -10626,7 +10629,10 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 							{
 								if ( pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && pTFPlayer->m_Shared.GetConditionProvider( TF_COND_BURNING ) == pTFAttacker )
 								{
-									pTempPlayerQueue.AddToTail( pTFPlayer );
+									if ( pTFPlayer->GetAbsOrigin().DistToSqr( GetAbsOrigin() ) <= flMaxDistSqr )
+									{
+										pTempPlayerQueue.AddToTail( pTFPlayer );
+									}
 								}
 							}
 						}
@@ -12884,8 +12890,14 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 	if ( iHealOnKill != 0 )
 	{
 		int iHealthToAdd = MIN( iHealOnKill, m_Shared.GetMaxBuffedHealth() - m_iHealth );
-		TakeHealth( iHealthToAdd, DMG_GENERIC );
-		//m_iHealth += iHealthToAdd;
+		if ( TFGameRules()->IsBetaActive() )
+		{
+			m_iHealth += iHealthToAdd;
+		}
+		else
+		{
+			TakeHealth( iHealthToAdd, DMG_GENERIC );
+		}
 
 		IGameEvent *event = gameeventmanager->CreateEvent( "player_healonhit" );
 		if ( event )
@@ -12907,16 +12919,6 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 	if ( iSpeedBoostOnKill )
 	{
 		m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnKill );
-	}
-
-	if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FIREAXE )
-	{
-		CTFFireAxe *pFireaxe = dynamic_cast<CTFFireAxe*>( pWeapon );
-		if ( pFireaxe )
-		{
-			pFireaxe->SetKillSpeedBoostTimer( gpGlobals->curtime + 5.0f );
-			TeamFortress_SetSpeed();
-		}
 	}
 
 	if ( pVictim != this && TFGameRules()->IsInPreMatchTournamentWarmup() && GetTeamNumber() >= FIRST_GAME_TEAM )

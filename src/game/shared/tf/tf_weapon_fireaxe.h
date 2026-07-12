@@ -28,7 +28,7 @@ public:
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
 
-	CTFFireAxe() { m_flKillSpeedBoostTimer = 0.0f; }
+	CTFFireAxe();
 	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_FIREAXE; }
 
 	virtual float		GetSpeedMod( void ) OVERRIDE;

@@ -1820,7 +1820,9 @@ void CTFPlayerShared::OnConditionAdded( ETFCond eCond )
 		OnAddMadMilk();
 		break;
 
-	case TF_COND_SPEED_BOOST:				OnAddSpeedBoost( false );		break;
+	case TF_COND_SPEED_BOOST:
+		OnAddSpeedBoost( false );
+		break;
 
 	case TF_COND_SAPPED:
 		OnAddSapped();

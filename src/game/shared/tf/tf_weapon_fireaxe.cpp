@@ -7,6 +7,8 @@
 #include "cbase.h"
 #include "tf_weapon_fireaxe.h"
 
+#include "tf_gamerules.h"
+
 //=============================================================================
 //
 // Weapon FireAxe tables.
@@ -33,26 +35,37 @@ PRECACHE_WEAPON_REGISTER( tf_weapon_fireaxe );
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+CTFFireAxe::CTFFireAxe()
+{
+	m_flKillSpeedBoostTimer = -1.0f;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 float CTFFireAxe::GetSpeedMod( void )
 {
 	float flSpeed = 1.0f;
 
-	float flMoveSpeedAttr = 1.0f;
-	CALL_ATTRIB_HOOK_FLOAT( flMoveSpeedAttr, mult_player_movespeed );
+	if ( TFGameRules()->IsBetaActive() )
+	{
+		float flMoveSpeedAttr = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT( flMoveSpeedAttr, mult_player_movespeed );
 
-	float flTargetSpeed = flMoveSpeedAttr - 0.05f;
-	if ( m_flKillSpeedBoostTimer > gpGlobals->curtime )
-	{
-		flTargetSpeed += 0.15f;
-	}
+		float flTargetSpeed = flMoveSpeedAttr - 0.05f;
+		if ( m_flKillSpeedBoostTimer >= 0.0f && m_flKillSpeedBoostTimer < gpGlobals->curtime )
+		{
+			flTargetSpeed += 0.15f;
+		}
 
-	if ( flMoveSpeedAttr != 0.0f )
-	{
-		flSpeed = flTargetSpeed / flMoveSpeedAttr;
-	}
-	else
-	{
-		flSpeed = flTargetSpeed;
+		if ( flMoveSpeedAttr != 0.0f )
+		{
+			flSpeed = flTargetSpeed / flMoveSpeedAttr;
+		}
+		else
+		{
+			flSpeed = flTargetSpeed;
+		}
 	}
 
 	return flSpeed;
