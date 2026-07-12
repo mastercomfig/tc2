@@ -113,6 +113,7 @@ public:
 
 #if defined( CLIENT_DLL )
 	virtual ShadowType_t ShadowCastType( void );
+	virtual RenderGroup_t GetRenderGroup( void ) { return RENDER_GROUP_VIEW_MODEL_OPAQUE; }
 #endif
 };
 
