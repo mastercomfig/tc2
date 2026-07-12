@@ -52,10 +52,14 @@ float CTFFireAxe::GetSpeedMod( void )
 		float flMoveSpeedAttr = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT( flMoveSpeedAttr, mult_player_movespeed );
 
-		float flTargetSpeed = flMoveSpeedAttr - 0.05f;
-		if ( m_flKillSpeedBoostTimer >= 0.0f && m_flKillSpeedBoostTimer < gpGlobals->curtime )
+		float flTargetSpeed;
+		if ( m_flKillSpeedBoostTimer >= 0.0f && m_flKillSpeedBoostTimer >= gpGlobals->curtime )
 		{
-			flTargetSpeed += 0.15f;
+			flTargetSpeed = 0.2f;
+		}
+		else
+		{
+			flTargetSpeed = 0.1f;
 		}
 
 		if ( flMoveSpeedAttr != 0.0f )
