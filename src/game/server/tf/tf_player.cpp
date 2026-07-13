@@ -12074,8 +12074,8 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 			event->SetInt( "custom", info.GetDamageCustom() );
 			event->SetBool( "bullet", (info.GetDamageType() & (DMG_BULLET | DMG_BUCKSHOT) ) != 0 );
 			event->SetBool( "showdisguisedcrit", m_bShowDisguisedCrit );
-			event->SetBool( "crit", (info.GetDamageType() & DMG_CRITICAL) != 0 );
-			event->SetBool( "minicrit", m_bMiniCrit );
+			event->SetBool( "crit", info.GetCritType() == CTakeDamageInfo::CRIT_FULL );
+			event->SetBool( "minicrit", info.GetCritType() == CTakeDamageInfo::CRIT_MINI );
 			event->SetBool( "allseecrit", m_bAllSeeCrit );
 			Assert( (int)m_eBonusAttackEffect < 256 );
 			event->SetInt( "bonuseffect", (int)m_eBonusAttackEffect );
@@ -19628,6 +19628,11 @@ void CTFPlayer::Taunt( taunts_t iTauntIndex, int iTauntConcept )
 			m_flTauntAttackTime = gpGlobals->curtime + 2.55f;
 			m_iTauntAttack = TAUNTATK_DEMOMAN_BARBARIAN_SWING;
 		}
+		else if ( !V_strnicmp( szResponse, "scenes/player/demoman/low/taunt04", 33 ) ) // There's taunt04_v1 & taunt04_v2
+		{
+			m_flTauntAttackTime = gpGlobals->curtime + 3.83f;
+			m_iTauntAttack = TAUNTATK_DEMOMAN_STICKBOMB_SMACK;
+		}
 	}
 	else if ( IsPlayerClass( TF_CLASS_ENGINEER ) )
 	{
@@ -20495,6 +20500,45 @@ void CTFPlayer::DoTauntAttack( void )
 				vecForward = (WorldSpaceCenter() - pEnt->WorldSpaceCenter());
 				VectorNormalize( vecForward );
 				pEnt->TakeDamage( CTakeDamageInfo( this, this, GetActiveTFWeapon(), vecForward * 12000, WorldSpaceCenter(), 500.0f, DMG_CLUB, TF_DMG_CUSTOM_TAUNTATK_BARBARIAN_SWING ) );
+			}
+		}
+	}
+	else if ( iTauntAttack == TAUNTATK_DEMOMAN_STICKBOMB_SMACK )
+	{
+		Vector vecForward;
+		AngleVectors( EyeAngles(), &vecForward );
+		Vector vecEnd = EyePosition() + vecForward * 128;
+		
+		trace_t tr;
+		UTIL_TraceLine( EyePosition(), vecEnd, MASK_SOLID & ~CONTENTS_HITBOX, this, COLLISION_GROUP_PLAYER, &tr );
+
+		if ( tr.fraction < 1.0 )
+		{
+			CBaseEntity* pEnt = tr.m_pEnt;
+
+			if ( pEnt && pEnt->IsPlayer() && pEnt->GetTeamNumber() > LAST_SHARED_TEAM && pEnt->GetTeamNumber() != GetTeamNumber() )
+			{
+				Vector vOrigin = WorldSpaceCenter();
+
+				CTraceFilterSimple traceFilter( this, COLLISION_GROUP_NONE );
+				trace_t tr;
+				UTIL_TraceLine( vOrigin, pEnt->WorldSpaceCenter(), MASK_SOLID, &traceFilter, &tr );
+
+				Vector explodePos = tr.endpos;
+
+				CPVSFilter filter( explodePos );
+				TE_TFExplosion( filter, 0.0f, explodePos, Vector( 0, 0, 1 ), TF_WEAPON_GRENADELAUNCHER, entindex(), -1, SPECIAL1 );
+
+				CTakeDamageInfo info( this, this, GetActiveTFWeapon(), vec3_origin, explodePos, 200.0f, DMG_BLAST | DMG_HALF_FALLOFF | DMG_CRITICAL, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explodePos );
+				info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+				CTFRadiusDamageInfo radiusinfo( &info, explodePos, 146.0f, this );
+				TFGameRules()->RadiusDamage( radiusinfo );
+
+				CTakeDamageInfo selfInfo( this, this, this, 2500.0f, DMG_BLAST | DMG_HALF_FALLOFF, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION );
+				CalculateExplosiveDamageForce( &selfInfo, WorldSpaceCenter() - explodePos, explodePos );
+				TakeDamage( selfInfo );
+
+				// TODO(mcoms): we probably want to replicate other effects from the caber, like hit, detonation/broken, any beta changes
 			}
 		}
 	}

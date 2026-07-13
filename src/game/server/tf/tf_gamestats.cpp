@@ -430,6 +430,7 @@ void CTFGameStats::ResetRoundStats()
 	for ( int i = 0; i < ARRAYSIZE( m_aPlayerStats ); i++ )
 	{		
 		m_aPlayerStats[i].statsCurrentRound.Reset();
+		m_aPlayerStats[i].mapStatsCurrentRound.Reset();
 	}
 	m_currentRoundRed.Reset();
 	m_currentRoundBlue.Reset();
@@ -444,18 +445,18 @@ void CTFGameStats::ResetRoundStats()
 //-----------------------------------------------------------------------------
 // Purpose: Increments specified stat for specified player by specified amount
 //-----------------------------------------------------------------------------
-void CTFGameStats::IncrementStat( CTFPlayer *pPlayer, TFStatType_t statType, int iValue )
+void CTFGameStats::IncrementStat( CTFPlayer* pPlayer, TFStatType_t statType, int iValue, bool bAccumulatedOnly )
 {
 	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() || TFGameRules()->IsCompetitiveGame() ) && TFGameRules()->State_Get() != GR_STATE_RND_RUNNING )
 		return;
 
 	PlayerStats_t &stats = m_aPlayerStats[pPlayer->entindex()];
-	stats.statsCurrentLife.m_iStat[statType] += iValue;
-	stats.statsCurrentRound.m_iStat[statType] += iValue;
-	stats.mapStatsCurrentLife.m_iStat[statType] += iValue;
-	stats.mapStatsCurrentRound.m_iStat[statType] += iValue;
+	if ( !bAccumulatedOnly )
+	{
+		stats.statsCurrentLife.m_iStat[statType] += iValue;
+		stats.statsCurrentRound.m_iStat[statType] += iValue;
+	}
 	stats.statsAccumulated.m_iStat[statType] += iValue;
-	stats.mapStatsAccumulated.m_iStat[statType] += iValue;
 }
 
 //-----------------------------------------------------------------------------
@@ -466,10 +467,16 @@ void CTFGameStats::SendStatsToPlayer( CTFPlayer *pPlayer, bool bIsAlive )
 	PlayerStats_t &stats = m_aPlayerStats[pPlayer->entindex()];
 
 	// set the play time for the round
-	stats.statsCurrentLife.m_iStat[TFSTAT_PLAYTIME] = (int) gpGlobals->curtime - pPlayer->GetSpawnTime();
+	int iPlayTime = ( int )gpGlobals->curtime - pPlayer->GetSpawnTime();
+	stats.statsCurrentLife.m_iStat[TFSTAT_PLAYTIME] = iPlayTime;
+	stats.statsCurrentRound.m_iStat[TFSTAT_PLAYTIME] += iPlayTime;
+	stats.statsAccumulated.m_iStat[TFSTAT_PLAYTIME] += iPlayTime;
+	stats.mapStatsCurrentLife.m_iStat[TFMAPSTAT_PLAYTIME] = iPlayTime;
+	stats.mapStatsCurrentRound.m_iStat[TFMAPSTAT_PLAYTIME] += iPlayTime;
+	stats.mapStatsAccumulated.m_iStat[TFMAPSTAT_PLAYTIME] += iPlayTime;
+	
 	stats.statsCurrentLife.m_iStat[TFSTAT_POINTSSCORED] = TFGameRules()->CalcPlayerScore( &stats.statsCurrentLife, pPlayer );
 	stats.statsCurrentLife.m_iStat[TFSTAT_MAXSENTRYKILLS] = pPlayer->GetMaxSentryKills();
-	stats.mapStatsCurrentLife.m_iStat[TFMAPSTAT_PLAYTIME] = (int) gpGlobals->curtime - pPlayer->GetSpawnTime();
 
 	// make a bit field of all the stats we want to send (all with non-zero values)
 	int iStat;
@@ -562,6 +569,7 @@ void CTFGameStats::AccumulateAndResetPerLifeStats( CTFPlayer *pPlayer )
 	stats.statsCurrentRound.m_iStat[TFSTAT_POINTSSCORED] += iScore;
 	stats.statsAccumulated.m_iStat[TFSTAT_POINTSSCORED] += iScore;
 	stats.statsCurrentLife.Reset();	
+	stats.mapStatsCurrentLife.Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -840,6 +848,14 @@ void CTFGameStats::Event_PlayerCreatedBuilding( CTFPlayer *pPlayer, CBaseObject 
 }
 
 //-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFGameStats::Event_PlayerBuildingKill( CTFPlayer *pPlayer, CBaseObject *pBuilding )
+{
+	IncrementStat( pPlayer, TFSTAT_MAXSENTRYKILLS, 1, true );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFGameStats::Event_PlayerDestroyedBuilding( CTFPlayer *pPlayer, CBaseObject *pBuilding )
@@ -1074,7 +1090,7 @@ void CTFGameStats::Event_PlayerDamage( CBasePlayer *pBasePlayer, const CTakeDama
 		{
 			IncrementStat( pAttacker, TFSTAT_DAMAGE_RANGED, iDamageTaken );
 
-			if ( info.GetDamageType() & DMG_CRITICAL )
+			if ( info.GetCritType() == CTakeDamageInfo::CRIT_FULL )
 			{
 				if ( pAttacker->m_Shared.IsCritBoosted() )
 				{
@@ -1224,7 +1240,7 @@ void CTFGameStats::Event_PlayerDamage( CBasePlayer *pBasePlayer, const CTakeDama
 	damage.iDamage = info.GetDamage();
 
 	// record if it was a crit
-	damage.iCrit = ( ( info.GetDamageType() & DMG_CRITICAL ) != 0 );
+	damage.iCrit = info.GetCritType() == CTakeDamageInfo::CRIT_FULL;
 
 	// record if it was a kill
 	damage.iKill = ( pTarget->GetHealth() <= 0 );

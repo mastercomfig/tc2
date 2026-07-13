@@ -375,7 +375,7 @@ EventDesiredResult< CTFBot > CTFBotMainAction::OnInjured( CTFBot *me, const CTak
 				}
 			}
 		}
-		else if ( info.GetAttacker() && ( info.GetDamageType() & DMG_CRITICAL ) && ( info.GetDamageType() & DMG_BURN ) )
+		else if ( info.GetAttacker() && ( info.GetCritType() == CTakeDamageInfo::CRIT_FULL ) && ( info.GetDamageType() & DMG_BURN ) )
 		{
 			// Notice anyone nearby hitting us with crit fire (i.e. Backburner)
 			if ( me->GetRangeTo( info.GetAttacker() ) < tf_bot_notice_backstab_max_range.GetFloat() )

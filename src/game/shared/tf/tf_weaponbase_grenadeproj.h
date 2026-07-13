@@ -42,6 +42,7 @@ public:
 	virtual void			InitGrenade( const Vector &velocity, const AngularImpulse &angVelocity, CBaseCombatCharacter *pOwner, const int iDamage, const float flRadius );
 
 	virtual int				GetBaseProjectileType() const { return TF_BASE_PROJECTILE_GRENADE; }
+	void        			SetMiniCrit( bool bMiniCrit ) { m_bMiniCrit = bMiniCrit; }
 #endif
 
 	// Unique identifier.
@@ -139,6 +140,7 @@ private:
 	bool					m_bInSolid;
 
 	CNetworkVar( bool,		m_bCritical );
+	bool					m_bMiniCrit;
 
 	float					m_flDestroyableTime;
 	bool					m_bIsMerasmusGrenade;

@@ -411,15 +411,17 @@ void CTFStickBomb::Smack( void )
 			CALL_ATTRIB_HOOK_FLOAT( flDamage, mult_dmg );
 
 			CTakeDamageInfo info( pTFPlayer, pTFPlayer, this, vec3_origin, explosion, flDamage, dmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION, &explosion );
-
+			
+			CTakeDamageInfo::ECritType eCritType = CTakeDamageInfo::CRIT_NONE;
 			if ( bIsCrit )
 			{
-				info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+				eCritType = CTakeDamageInfo::CRIT_FULL;
 			}
 			else if ( m_bMiniCrit )
 			{
-				info.SetCritType( CTakeDamageInfo::CRIT_MINI );
+				eCritType = CTakeDamageInfo::CRIT_MINI;
 			}
+			info.SetCritType( eCritType );
 
 			if ( bHitEnemy || !bIsBeta )
 			{
@@ -451,12 +453,11 @@ void CTFStickBomb::Smack( void )
 					}
 					else
 					{
-						flDamageToSelf *= 0.66f;
+						flDamageToSelf *= 0.75f;
 					}
 					int selfDmgType = (dmgType & ~(DMG_CRITICAL)) & ~(DMG_PREVENT_PHYSICS_FORCE);
 					CTakeDamageInfo selfInfo( pTFPlayer, pTFPlayer, this, flDamageToSelf, selfDmgType, TF_DMG_CUSTOM_STICKBOMB_EXPLOSION );
-					CalculateExplosiveDamageForce( &selfInfo, explosion, pTFPlayer->WorldSpaceCenter() );
-					selfInfo.SetDamagePosition( explosion );
+					CalculateExplosiveDamageForce( &selfInfo, pTFPlayer->WorldSpaceCenter() - explosion, explosion );
 					pTFPlayer->TakeDamage( selfInfo );
 				}
 
@@ -465,21 +466,21 @@ void CTFStickBomb::Smack( void )
 					// at position
 					Vector vel1 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
 					float timer1 = RandomFloat(0.6f, 0.8f);
-					CreateGrenade(pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, bIsCrit);
+					CreateGrenade( pTFPlayer, vecSwingStart, vel1, timer1, 0.25f, eCritType );
 					// at swing direction
 					Vector vel2 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
 					vel2 += vecForward * 50.0f;
 					float timer2 = RandomFloat(0.6f, 0.8f);
-					CreateGrenade(pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, bIsCrit);
+					CreateGrenade( pTFPlayer, vecSwingStart, vel2, timer2, 0.25f, eCritType );
 					// at velocity
 					Vector vel3 = Vector(RandomFloat(-10, 10), RandomFloat(-10, 10), 100);
 					vel3 += pTFPlayer->GetAbsVelocity();
 					float timer3 = RandomFloat(0.6f, 0.8f);
-					CreateGrenade(pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, bIsCrit);
+					CreateGrenade( pTFPlayer, vecSwingStart, vel3, timer3, 0.25f, eCritType );
 					// random
 					Vector vel4 = Vector(RandomFloat(-200, 200), RandomFloat(-200, 200), 100);
 					float timer4 = RandomFloat(0.6f, 0.8f);
-					CreateGrenade(pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, bIsCrit);
+					CreateGrenade( pTFPlayer, vecSwingStart, vel4, timer4, 0.25f, eCritType );
 				}
 			}
 
@@ -495,17 +496,17 @@ void CTFStickBomb::Smack( void )
 }
 
 #ifdef GAME_DLL
-void CTFStickBomb::CreateGrenade( CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit )
+void CTFStickBomb::CreateGrenade( CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, CTakeDamageInfo::ECritType eCritType )
 {
 	Vector angImpulse = AngularImpulse( 600, random->RandomInt( -1200, 1200 ), 0 );
 	CTFGrenadePipebombProjectile* pProjectile = CTFGrenadePipebombProjectile::Create( pos, QAngle( 180, 0, 0 ), vel, angImpulse, pPlayer, GetTFWpnData(), -1, flDmgMult );
 	if (pProjectile)
 	{
 		pProjectile->SetLauncher( this );
-		pProjectile->SetCritical( bIsCrit );
-		if ( !bIsCrit && m_bMiniCrit )
+		pProjectile->SetCritical( eCritType == CTakeDamageInfo::CRIT_FULL );
+		if ( eCritType == CTakeDamageInfo::CRIT_MINI )
 		{
-			pProjectile->IncrementDeflected(); // hack for minicrits
+			pProjectile->SetMiniCrit( true );
 		}
 		pProjectile->SetModel( BaseClass::GetWorldModel() );
 		pProjectile->SetDetonateTimerLength( flTimer );

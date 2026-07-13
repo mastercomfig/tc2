@@ -58,7 +58,8 @@ public:
 	void Event_PlayerBlockedDamage( CTFPlayer *pPlayer, int nAmount );
 	void Event_AssistKill( CTFPlayer *pPlayer, CBaseEntity *pVictim );
 	void Event_PlayerInvulnerable( CTFPlayer *pPlayer );
-	void Event_PlayerCreatedBuilding( CTFPlayer *pPlayer, CBaseObject *pBuilding );
+	void Event_PlayerCreatedBuilding( CTFPlayer* pPlayer, CBaseObject* pBuilding );
+	void Event_PlayerBuildingKill( CTFPlayer* pPlayer, CBaseObject* pBuilding );
 	void Event_PlayerDestroyedBuilding( CTFPlayer *pPlayer, CBaseObject *pBuilding );
 	void Event_AssistDestroyBuilding( CTFPlayer *pPlayer, CBaseObject *pBuilding );
 	void Event_Headshot( CTFPlayer *pKiller, bool bBowShot=false );
@@ -129,7 +130,7 @@ public:
 	void						ResetKillHistory( CTFPlayer *pPlayer );
 	void						ResetRoundStats();
 protected:	
-	void						IncrementStat( CTFPlayer *pPlayer, TFStatType_t statType, int iValue );
+	void						IncrementStat( CTFPlayer *pPlayer, TFStatType_t statType, int iValue, bool bAccumulatedOnly = false );
 	void						SendStatsToPlayer( CTFPlayer *pPlayer, bool bIsAlive );
 	void						AccumulateAndResetPerLifeStats( CTFPlayer *pPlayer );
 	void						TrackKillStats( CBasePlayer *pAttacker, CBasePlayer *pVictim );

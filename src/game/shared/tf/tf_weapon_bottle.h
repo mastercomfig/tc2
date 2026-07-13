@@ -101,7 +101,7 @@ public:
 	virtual int			GetWorldModelIndex( void ) OVERRIDE;
 	virtual void		OnDataChanged( DataUpdateType_t type ) OVERRIDE;
 #else
-	void				CreateGrenade(CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, bool bIsCrit);
+	void CreateGrenade( CTFPlayer* pPlayer, const Vector& pos, const Vector& vel, float flTimer, float flDmgMult, CTakeDamageInfo::ECritType eCritType );
 #endif
 
 	void				SetDetonated( int iVal ) { m_iDetonated = iVal; }

@@ -6794,6 +6794,9 @@ int CTFRadiusDamageInfo::ApplyToEntity( CBaseEntity *pEntity )
 				case TF_WEAPON_CANNON:
 					flAdjustedDamage *= 0.75f;
 					break;
+				case TF_WEAPON_STICKBOMB:
+					flAdjustedDamage *= 25.0f; // caber does lethal damage to ourselves
+					break;
 				}
 			}
 			else
@@ -6945,6 +6948,18 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		info.SetCritType( CTakeDamageInfo::CRIT_FULL );
 	}
 
+	if ( pTFAttacker != pVictim )
+	{
+		if ( info.GetCritType() == CTakeDamageInfo::CRIT_FULL )
+		{
+			eBonusEffect = kBonusEffect_Crit;
+		}
+		else if ( info.GetCritType() == CTakeDamageInfo::CRIT_MINI )
+		{
+			eBonusEffect = kBonusEffect_MiniCrit;
+	}
+	}
+
 	// First figure out whether this is going to be a full forced crit for some specific reason. It's
 	// important that we do this before figuring out whether we're going to be a minicrit or not.
 
@@ -6968,6 +6983,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 						bitsDamage |= DMG_CRITICAL;
 						info.AddDamageType( DMG_CRITICAL );
 						info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+						eBonusEffect = kBonusEffect_Crit;
 
 						if ( condition_to_attribute_translation[i] == TF_COND_DISGUISED || 
 							 condition_to_attribute_translation[i] == TF_COND_DISGUISING )
@@ -6996,6 +7012,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				bitsDamage |= DMG_CRITICAL;
 				info.AddDamageType( DMG_CRITICAL );
 				info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+				eBonusEffect = kBonusEffect_Crit;
 
 				if ( pWeapon && ( pWeapon->GetWeaponID() == TF_WEAPON_BREAKABLE_SIGN ) )
 				{
@@ -7021,6 +7038,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 						bitsDamage |= DMG_CRITICAL;
 						info.AddDamageType( DMG_CRITICAL );
 						info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+						eBonusEffect = kBonusEffect_Crit;
 
 						if ( condition_to_attribute_translation[ i ] == TF_COND_DISGUISED || 
 							 condition_to_attribute_translation[ i ] == TF_COND_DISGUISING )
@@ -7052,6 +7070,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					bitsDamage |= DMG_CRITICAL;
 					info.AddDamageType( DMG_CRITICAL );
 					info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+					eBonusEffect = kBonusEffect_Crit;
 				}
 				else
 				{
@@ -7074,6 +7093,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 				bitsDamage |= DMG_CRITICAL;
 				info.AddDamageType( DMG_CRITICAL );
 				info.SetCritType( CTakeDamageInfo::CRIT_FULL );
+				eBonusEffect = kBonusEffect_Crit;
 			}
 		}
 	}
@@ -7086,7 +7106,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 
 	// Figure out if it's a minicrit or not
 	// But we never minicrit ourselves.
-	if ( pAttacker != pVictimBaseEntity )
+	if ( pTFAttacker != pVictim )
 	{
 		// attack_minicrits_and_consumes_burning
 		if ( pWeapon && pTFAttacker && pVictim && pVictim->m_Shared.InCond( TF_COND_BURNING ) )
@@ -7423,6 +7443,11 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					bitsDamage &= ~DMG_CRITICAL;
 					info.SetDamageType( info.GetDamageType() & (~DMG_CRITICAL) );
 					info.SetCritType( CTakeDamageInfo::CRIT_NONE );
+					if ( eBonusEffect == kBonusEffect_MiniCrit || eBonusEffect == kBonusEffect_Crit )
+					{
+						eBonusEffect = kBonusEffect_None;
+						pVictim->SetAttackBonusEffect( eBonusEffect );
+					}
 				}
 			}
 		}
@@ -7473,13 +7498,16 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		{
 			// We take no crits of any kind...
 			if( eBonusEffect == kBonusEffect_MiniCrit || eBonusEffect == kBonusEffect_Crit )
+			{
 				eBonusEffect = kBonusEffect_None;
+				pVictim->SetAttackBonusEffect( eBonusEffect );
+			}
+			
 			info.SetCritType( CTakeDamageInfo::CRIT_NONE );
+			
 			bAllSeeCrit = false;
 			bShowDisguisedCrit = false;
-
 			pVictim->SetSeeCrit( bAllSeeCrit, false, bShowDisguisedCrit );
-			pVictim->SetAttackBonusEffect( eBonusEffect );
 
 			bitsDamage &= ~DMG_CRITICAL;
 			info.SetDamageType( bitsDamage );
@@ -7807,7 +7835,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			info.SetCritType( CTakeDamageInfo::CRIT_MINI );
 			if ( pVictim && bDemote )
 			{
-				pVictim->SetAttackBonusEffect( kBonusEffect_MiniCrit );
+				eBonusEffect = kBonusEffect_MiniCrit;
+				pVictim->SetAttackBonusEffect( eBonusEffect );
 			}
 
 			// Any condition assist stats to send out?
@@ -8653,7 +8682,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			}
 			if ( info.GetDamageCustom() == TF_DMG_CUSTOM_STICKBOMB_EXPLOSION && info.GetDamage() < 150.0f )
 			{
-				flRealDamage *= 0.6f;
+				flRealDamage *= 0.75f;
 			}
 			outParams.bSelfBlastDmg = true;
 		}
@@ -12990,6 +13019,8 @@ void CTFGameRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &in
 					pOwner->SetMaxSentryKills( iKills );
 				}
 
+				CTF_GameStats.Event_PlayerCreatedBuilding( pOwner, pObject );
+
 				// if we just got 10 kills with one sentry, tell the owner's client, which will award achievement if it doesn't have it already
 				if ( iKills == 10 )
 				{
@@ -14707,7 +14738,13 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 		event->SetString( "weapon", killer_weapon_name );
 		event->SetString( "weapon_logclassname", killer_weapon_log_name );
 		event->SetInt( "weaponid", iWeaponID );
-		event->SetInt( "damagebits", info.GetDamageType() );
+		// TODO(mcoms): DMG_CRITICAL cleanup
+		int dmgType = info.GetDamageType();
+		if ( info.GetCritType() == CTakeDamageInfo::CRIT_FULL )
+		{
+			dmgType |= DMG_CRITICAL;
+		}
+		event->SetInt( "damagebits", dmgType );
 		event->SetInt( "customkill", info.GetDamageCustom() );
 		event->SetInt( "inflictor_entindex", pInflictor ? pInflictor->entindex() : -1 );
 		event->SetInt( "priority", 7 );	// HLTV event priority, not transmitted
@@ -15682,7 +15719,7 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 
 				if (iStatType4 > TFSTAT_UNDEFINED)
 				{
-					if (iStat4 == TFSTAT_TOTAL)
+					if ( iStatType4 == TFSTAT_TOTAL )
 					{
 						iStat4 = CalcPlayerSupportScore(&pStats->statsAccumulated, HighestRoundScore.iPlayerIndex);
 					}

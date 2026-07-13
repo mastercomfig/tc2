@@ -85,6 +85,7 @@ CTFWeaponBaseGrenadeProj::CTFWeaponBaseGrenadeProj()
 	m_flDestroyableTime = 0.0f;
 	m_bIsMerasmusGrenade = false;
 	m_iDestroyableHitCount = 0;
+	m_bMiniCrit = false;
 #endif
 }
 
@@ -400,6 +401,11 @@ void CTFWeaponBaseGrenadeProj::Explode( trace_t *pTrace, int bitsDamageType )
 	Vector vecReported = GetThrower() ? GetThrower()->GetAbsOrigin() : vec3_origin;
 	int nCustomDamage = GetDamageCustom();
 	CTakeDamageInfo info( this, GetThrower(), GetOriginalLauncher(), GetBlastForce(), GetAbsOrigin(), m_flDamage, bitsDamageType, nCustomDamage, &vecReported );
+
+	if ( m_bMiniCrit )
+	{
+		info.SetCritType( CTakeDamageInfo::CRIT_MINI );
+	}
 
 	float flRadius = GetDamageRadius();
 
