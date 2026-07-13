@@ -183,7 +183,7 @@ private:
 	float m_flMinPrimaryAttackBurstTime;
 
 	int			m_iParticleWaterLevel;
-	float		m_flAmmoUseRemainder;
+	CNetworkVar( float, m_flAmmoUseRemainder );
 	float		m_flResetBurstEffect;
 	bool		m_bFiredSecondary;
 	bool		m_bFiredBothAttacks;

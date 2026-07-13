@@ -37,6 +37,9 @@ CTFPointManager::CTFPointManager()
 {
 	m_unNextPointIndex = 0;
 	m_flLastUpdateTime = gpGlobals->curtime;
+#ifdef GAME_DLL
+	m_bInSimulate = false;
+#endif
 }
 
 void CTFPointManager::Spawn( void )
@@ -102,8 +105,18 @@ tf_point_t* CTFPointManager::AddPointInternal( int nPointIndex )
 
 
 #ifdef GAME_DLL
+void CTFPointManager::PhysicsSimulate( void )
+{
+	m_bInSimulate = true;
+	BaseClass::PhysicsSimulate();
+	m_bInSimulate = false;
+}
+
 void CTFPointManager::Touch( CBaseEntity *pOther )
 {
+	if ( !m_bInSimulate )
+		return;
+
 	if ( !ShouldCollide( pOther ) )
 		return;
 

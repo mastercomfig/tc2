@@ -48,6 +48,8 @@ struct burned_entity_t
 	float m_flLastBurnTime;
 	float m_flHeatIndex;
 	float m_flWarmup;
+	float m_flLastFlameSpawnTime;
+	float m_flLastFlameHitTime;
 };
 #endif // GAME_DLL
 

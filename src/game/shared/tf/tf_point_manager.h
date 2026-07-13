@@ -46,6 +46,7 @@ public:
 	virtual void UpdateOnRemove( void ) OVERRIDE;
 
 #ifdef GAME_DLL
+	virtual void PhysicsSimulate( void ) OVERRIDE;
 	virtual void Touch( CBaseEntity *pOther ) OVERRIDE;
 
 	virtual int UpdateTransmitState() OVERRIDE;
@@ -110,6 +111,8 @@ private:
 	CNetworkVar( uint32, m_unNextPointIndex );
 #ifdef CLIENT_DLL
 	uint32 m_unClientNextPointIndex = 0;
+#else
+	bool m_bInSimulate;
 #endif // CLIENT_DLL
 	float m_flLastUpdateTime = 0.f;
 

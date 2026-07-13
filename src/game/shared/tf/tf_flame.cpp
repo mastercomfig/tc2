@@ -21,9 +21,9 @@
 #include "in_buttons.h"
 #endif // CLIENT_DLL
 
-const float tf_flame_burn_index_drain_rate = 26.666666f; // penalty for missing a flame -- based upon tick rate and burn frequency
-const float tf_flame_burn_index_per_collide = 33.333333f; // bonus for hitting a flame -- based upon tick rate and fire interval
-const float tf_flame_burn_index_per_collide_remap_x = 60.f; // min accuracy floor
+const float tf_flame_burn_index_drain_rate = 3.03f; // penalty for missing a flame -- based upon tick rate and burn frequency
+const float tf_flame_burn_index_per_collide = 6.36f; // bonus for hitting a flame -- based upon tick rate and fire interval
+const float tf_flame_burn_index_per_collide_remap_x = 50.0f; // min accuracy floor
 const float tf_flame_burn_index_per_collide_remap_y = 100.f; // 100% accuracy
 const float tf_flame_burn_index_damage_scale_min = 0.5f; // max damage penalty for min accuracy
 const float tf_flame_warmup_ticks = 90; // number of ticks needed to warmup fully
@@ -360,26 +360,25 @@ static CFlameManagerHelper s_flameManagerHelper( "flame_manager_helper" );
 void CTFFlameManager::PostEntityThink( void )
 {
 	// remove all entities that are no longer touching the flame
-	FOR_EACH_MAP_FAST( m_mapEntitiesBurnt, i )
+	FOR_EACH_MAP_BACK( m_mapEntitiesBurnt, i )
 	{
 		CBaseEntity* pEntity = m_mapEntitiesBurnt.Key( i );
 		if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > 3.0f || !pEntity || !pEntity->IsAlive() )
 		{
 			m_mapEntitiesBurnt.RemoveAt( i );
-
-			// go thru the map again to see if we need to remove anything else
-			i = 0;
 		}
-		else if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > m_flBurnFrequency )
+		else if ( gpGlobals->curtime - m_mapEntitiesBurnt[i].m_flLastBurnTime > m_flBurnFrequency * 2.0f )
 		{
+			// if we haven't hit anything in 2 burn cycles, then reset our accuracy.
+			// we don't do it every burn cycle because that would mean that players could get 100% damage just by puffing.
+			// every 2 burn cycles means puffing can only do 50% damage according to accuracy, which is the exact same as missing.
 			m_mapEntitiesBurnt[i].m_flHeatIndex = tf_flame_burn_index_per_collide_remap_y;
 		}
 	}
 
 	FOR_EACH_MAP_FAST( m_mapEntitiesBurnt, i )
 	{
-		// Decay heat index (colliding refreshes it)
-		// TODO(driller): factor in time since last think
+		// Continuously decay heat index every single tick to create the "moving average"
 		m_mapEntitiesBurnt[i].m_flHeatIndex = Max( m_mapEntitiesBurnt[i].m_flHeatIndex - tf_flame_burn_index_drain_rate, 0.f );
 	}
 
@@ -569,7 +568,7 @@ float CTFFlameManager::GetFlameDamageScale( const tf_point_t* pPoint, CTFPlayer 
 			flWarmup = 0.5f;
 		}
 
-		flDamageScale *= RemapValClamped( flHeat, tf_flame_burn_index_per_collide_remap_x, tf_flame_burn_index_per_collide_remap_y, tf_flame_burn_index_damage_scale_min, 1.f ) * flWarmup;
+		flDamageScale *= RemapValClamped( flHeat, tf_flame_burn_index_per_collide_remap_x, tf_flame_burn_index_per_collide_remap_y, tf_flame_burn_index_damage_scale_min, 1.0f ) * flWarmup;
 	}
 #endif
 
@@ -588,8 +587,7 @@ bool CTFFlameManager::BCanBurnEntityThisFrame( CBaseEntity *pEnt ) const
 	if ( iBurnt == m_mapEntitiesBurnt.InvalidIndex() )
 		return true;
 
-	float flLastBurnTime = m_mapEntitiesBurnt[iBurnt].m_flLastBurnTime;
-	return ( gpGlobals->curtime - flLastBurnTime >= m_flBurnFrequency );
+	return gpGlobals->curtime - m_mapEntitiesBurnt[iBurnt].m_flLastBurnTime >= m_flBurnFrequency;
 }
 
 void CTFFlameManager::SetHitTarget( void )
@@ -716,12 +714,19 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	{
 		float flAmount = tf_flame_burn_index_per_collide;
 
-		// my guess for why this is here: we're looking for how they're aiming their latest flames, so weight it by lifetime to get the full heat amount.
-		// however, this doesn't actually work because this effectively adds a new falloff mechanism!
-#if 0
-		float flTimeAlive = gpGlobals->curtime - pFlame->m_flSpawnTime;
-		flAmount *= RemapValClamped(flTimeAlive, 0.0f, 0.02f, 1.0f, 0.5f);
-#endif
+		if ( pFlame->m_flSpawnTime > m_mapEntitiesBurnt[iEntIndex].m_flLastFlameSpawnTime )
+		{
+			// this is a strictly newer flame. so we get the full accuracy/heat, and track it.
+			m_mapEntitiesBurnt[iEntIndex].m_flLastFlameSpawnTime = pFlame->m_flSpawnTime;
+			m_mapEntitiesBurnt[iEntIndex].m_flLastFlameHitTime = gpGlobals->curtime;
+		}
+		else
+		{
+			// we weren't hit by a new flame.
+			// we scale down the heat added the longer it's been since a strictly new flame could have hit us.
+			const float flFireRate = DEFAULT_TICK_INTERVAL * 2.0f;
+			flAmount *= RemapValClamped( gpGlobals->curtime - m_mapEntitiesBurnt[iEntIndex].m_flLastFlameHitTime, 0.0f, flFireRate * 2.0f, 1.0f, 0.0f );
+		}
 
 		m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex = Min( m_mapEntitiesBurnt[iEntIndex].m_flHeatIndex + flAmount, tf_flame_burn_index_per_collide_remap_y );
 		m_mapEntitiesBurnt[iEntIndex].m_flWarmup = Min( m_mapEntitiesBurnt[iEntIndex].m_flWarmup + tf_flame_warmup_inc, 1.0f );
@@ -846,7 +851,7 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	else
 	{
 		// start at one collide of warmup, full accuracy (burn)
-		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y, 0.5f } );
+		m_mapEntitiesBurnt.Insert( pEnt, { gpGlobals->curtime, tf_flame_burn_index_per_collide_remap_y, 0.5f, pFlame->m_flSpawnTime, gpGlobals->curtime } );
 	}
 }
 

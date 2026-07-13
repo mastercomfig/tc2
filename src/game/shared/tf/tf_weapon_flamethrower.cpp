@@ -50,7 +50,7 @@
 	ConVar  tf_flamethrower_velocityfadestart("tf_flamethrower_velocityfadestart", ".3", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution starts to fade." );
 	ConVar  tf_flamethrower_velocityfadeend("tf_flamethrower_velocityfadeend", ".5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Time at which attacker's velocity contribution finishes fading." );
 	ConVar	tf_flamethrower_burst_zvelocity( "tf_flamethrower_burst_zvelocity", "350", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-	const float	tf_flamethrower_burn_frequency = 0.075f;
+	const float	tf_flamethrower_burn_frequency = DEFAULT_TICK_INTERVAL * 6.0f;
 	const float	tf_flamethrower_afterburn_rate = 0.4f;
 
 	static const char *s_pszFlameThrowerHitTargetThink = "FlameThrowerHitTargetThink";
@@ -67,11 +67,11 @@ const float	tf_flamethrower_airblast_cone_angle = 35.0f;
 
 #include "tf_pumpkin_bomb.h"
 
-const float	tf_flamethrower_new_flame_fire_delay = 0.02f;
+const float tf_flamethrower_new_flame_fire_delay = DEFAULT_TICK_INTERVAL * 2.0f;
 #ifdef TF2_OG
-const float	tf_flamethrower_damage_per_tick = 14.f;
+const float	tf_flamethrower_damage_per_tick = 17.f;
 #else
-const float	tf_flamethrower_damage_per_tick = 13.f;
+const float	tf_flamethrower_damage_per_tick = 16.f;
 #endif
 ConVar  tf_flamethrower_burstammo("tf_flamethrower_burstammo", "20", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "How much ammo does the air burst use per shot." );
 ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED, "Time to live of flame damage entities." );
@@ -224,6 +224,7 @@ BEGIN_PREDICTION_DATA( CTFFlameThrower )
 	DEFINE_PRED_FIELD( m_iWeaponState, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bCritFire, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_FIELD(  m_flChargeBeginTime, FIELD_FLOAT ),
+	DEFINE_PRED_FIELD( m_flAmmoUseRemainder, FIELD_FLOAT, 0 ),
 END_PREDICTION_DATA()
 #endif
 
@@ -923,11 +924,8 @@ void CTFFlameThrower::PrimaryAttack()
 #endif
 	}
 
-#ifdef GAME_DLL
 	// Figure how much ammo we're using per shot and add it to our remainder to subtract.  (We may be using less than 1.0 ammo units
 	// per frame, depending on how constants are tuned, so keep an accumulator so we can expend fractional amounts of ammo per shot.)
-	// Note we do this only on server and network it to client.  If we predict it on client, it can get slightly out of sync w/server
-	// and cause ammo pickup indicators to appear
 	float flAmmoPerSecond = TF_FLAMETHROWER_AMMO_PER_SECOND_PRIMARY_ATTACK;
 	CALL_ATTRIB_HOOK_FLOAT( flAmmoPerSecond, mult_flame_ammopersec );
 	m_flAmmoUseRemainder += flAmmoPerSecond * flFiringInterval;
@@ -941,7 +939,6 @@ void CTFFlameThrower::PrimaryAttack()
 		// round to 2 digits of precision
 		m_flAmmoUseRemainder = (float) ( (int) (m_flAmmoUseRemainder * 100) ) / 100.0f;
 	}
-#endif
 
 	m_flNextPrimaryAttack = gpGlobals->curtime + flFiringInterval;
 	m_flTimeWeaponIdle = gpGlobals->curtime + flFiringInterval;
