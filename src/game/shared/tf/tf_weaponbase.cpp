@@ -5388,15 +5388,6 @@ void CTFWeaponBase::ApplyOnHitAttributes( CBaseEntity *pVictimBaseEntity, CTFPla
 		pAttacker->m_Shared.AddCond( TF_COND_SPEED_BOOST, iSpeedBoostOnHit );
 	}
 
-	if ( TFGameRules()->IsBetaActive() && GetWeaponID() == TF_WEAPON_FIREAXE )
-	{
-		CTFFireAxe *pFireaxe = dynamic_cast<CTFFireAxe*>( this );
-		if ( pFireaxe )
-		{
-			pFireaxe->SetKillSpeedBoostTimer( gpGlobals->curtime + 3.0f );
-			pAttacker->TeamFortress_SetSpeed();
-		}
-	}
 
 	if ( pVictim )
 	{

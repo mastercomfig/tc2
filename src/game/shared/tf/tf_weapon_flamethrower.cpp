@@ -10,6 +10,7 @@
 #include "ammodef.h"
 #include "tf_gamerules.h"
 #include "tf_weapon_rocketpack.h"
+#include "tf_weapon_fireaxe.h"
 #include "debugoverlay_shared.h"
 #include "soundenvelope.h"
 
@@ -1275,6 +1276,20 @@ void ExtinguishPlayer( CEconEntity *pExtinguisher, CTFPlayer *pOwner, CTFPlayer 
 	pTarget->EmitSound( "TFPlayer.FlameOut" );
 
 	pTarget->m_Shared.RemoveCond( TF_COND_BURNING );
+
+	// Charge Powerjack battery on extinguish
+	if ( TFGameRules()->IsBetaActive() )
+	{
+		CTFWeaponBase* pWpn = pOwner->Weapon_OwnsThisID( TF_WEAPON_FIREAXE );
+		if ( pWpn )
+		{
+			CTFFireAxe* pFireaxe = dynamic_cast<CTFFireAxe*>( pWpn );
+			if ( pFireaxe && pFireaxe->IsPowerjack() )
+			{
+				pFireaxe->AddBatteryCharge( 50.0f );
+			}
+		}
+	}
 
 	// we're going to limit the number of times you can be awarded bonus points to prevent exploits
 	if ( pOwner->ShouldGetBonusPointsForExtinguishEvent( pTarget->GetUserID() ) )

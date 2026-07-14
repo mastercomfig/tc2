@@ -11284,6 +11284,20 @@ void CTFPlayer::OnDealtDamage( CBaseCombatCharacter *pVictim, const CTakeDamageI
 		
 		m_Shared.SetItemChargeMeter( eLoadoutPosition, m_Shared.GetItemChargeMeter( eLoadoutPosition ) + ( flDamage / flDamageToFullAttr ) * 100.f );
 	}
+
+	// Charge Powerjack battery on damage
+	if ( TFGameRules()->IsBetaActive() )
+	{
+		CTFWeaponBase* pWpn = Weapon_OwnsThisID( TF_WEAPON_FIREAXE );
+		if ( pWpn )
+		{
+			CTFFireAxe* pFireaxe = dynamic_cast<CTFFireAxe*>( pWpn );
+			if ( pFireaxe && pFireaxe->IsPowerjack() )
+			{
+				pFireaxe->AddBatteryCharge( flDamage * 0.5f ); // 200 damage = 100% charge
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -12893,6 +12907,13 @@ void CTFPlayer::OnKilledOther_Effects( CBaseEntity *pVictim, const CTakeDamageIn
 		if ( TFGameRules()->IsBetaActive() )
 		{
 			m_iHealth += iHealthToAdd;
+
+			if ( IsPlayerClass( TF_CLASS_PYRO ) )
+			{
+				// Give 25% max primary and secondary ammo on kill in beta mode
+				GiveAmmo( GetMaxAmmo( TF_AMMO_PRIMARY ) * 0.25f, TF_AMMO_PRIMARY, false );
+				GiveAmmo( GetMaxAmmo( TF_AMMO_SECONDARY ) * 0.25f, TF_AMMO_SECONDARY, false );
+			}
 		}
 		else
 		{
