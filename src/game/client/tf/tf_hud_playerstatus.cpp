@@ -29,6 +29,7 @@
 #include "tf_gamerules.h"
 #include "tf_logic_halloween_2014.h"
 #include "tf_logic_player_destruction.h"
+#include "tf_hud_match_status.h"
 
 #include "tf_wheel_of_doom.h"
 
@@ -1122,6 +1123,12 @@ bool CTFHudPlayerStatus::ShouldDraw( void )
 		{
 			return false;
 		}
+	}
+
+	CTFHudMatchStatus *pMatchStatus = GET_HUDELEMENT( CTFHudMatchStatus );
+	if ( pMatchStatus && pMatchStatus->AreMatchDoorsVisible() )
+	{
+		return false;
 	}
 
 	return CHudElement::ShouldDraw();

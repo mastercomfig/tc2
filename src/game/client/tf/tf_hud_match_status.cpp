@@ -396,6 +396,14 @@ void CTFHudMatchStatus::Reset()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+void CTFHudMatchStatus::LevelShutdown( void )
+{
+	m_flMatchSummaryShowTime = -1.0f;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFHudMatchStatus::SetPanelsVisible()
 {
 	m_pRoundCounter->SetVisible( ShouldUseMatchHUD() );
@@ -814,13 +822,17 @@ void CTFHudMatchStatus::HandleCountdown( int nTime )
 		if ( TFGameRules()->IsPreRoundPushEnabled() && TFGameRules()->GetRoundsPlayed() == 0 )
 		{
 			ShowRoundSign( TFGameRules()->GetRoundsPlayed() );
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("CompetitiveGame_RestoreChatWindow", false); // Restore chat window to in-game position
 		}
 	case 2:
 		// Drop the round sign with 2 seconds to go on the 1st round
 		if ( !TFGameRules()->IsPreRoundPushEnabled() && TFGameRules()->GetRoundsPlayed() == 0 )
 		{
 			ShowRoundSign( TFGameRules()->GetRoundsPlayed() );
+		}
+		break;
+	case 1:
+		if ( TFGameRules()->GetRoundsPlayed() == 0 )
+		{
 			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("CompetitiveGame_RestoreChatWindow", false); // Restore chat window to in-game position
 		}
 		break;
