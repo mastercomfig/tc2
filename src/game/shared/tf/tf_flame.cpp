@@ -21,10 +21,10 @@
 #include "in_buttons.h"
 #endif // CLIENT_DLL
 
-const float tf_flame_burn_index_drain_rate = 3.03f; // penalty for missing a flame -- based upon tick rate and burn frequency
-const float tf_flame_burn_index_per_collide = 6.36f; // bonus for hitting a flame -- based upon tick rate and fire interval
-const float tf_flame_burn_index_per_collide_remap_x = 50.0f; // min accuracy floor
-const float tf_flame_burn_index_per_collide_remap_y = 100.f; // 100% accuracy
+const float tf_flame_burn_index_drain_rate = 3.125f; // penalty for missing a flame -- based upon tick rate and burn frequency
+const float tf_flame_burn_index_per_collide = 6.25f; // bonus for hitting a flame -- based upon tick rate and fire interval
+const float tf_flame_burn_index_per_collide_remap_x = 10.0f; // min accuracy floor
+const float tf_flame_burn_index_per_collide_remap_y = 60.f; // 100% accuracy
 const float tf_flame_burn_index_damage_scale_min = 0.5f; // max damage penalty for min accuracy
 const float tf_flame_warmup_ticks = 90; // number of ticks needed to warmup fully
 const float tf_flame_warmup_inc = 1.0f / tf_flame_warmup_ticks; // increment per tick
