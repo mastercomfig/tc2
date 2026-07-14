@@ -427,8 +427,7 @@ void CTFDroppedWeapon::ClientThink()
 		return;
 
 	C_TFPlayer *pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
-	// TODO: optimize IsLineOfSightClear
-	bool bShouldGlowForLocalPlayer = pTFPlayer && pTFPlayer->IsAlive() && pTFPlayer->CanPickupDroppedWeapon( this ) && pTFPlayer->IsLineOfSightClear( this );
+	bool bShouldGlowForLocalPlayer = pTFPlayer && pTFPlayer->IsAlive() && pTFPlayer->CanPickupDroppedWeapon( this );
 	if ( bShouldGlowForLocalPlayer )
 	{
 		// ignore the item that the player's equipped
@@ -466,7 +465,7 @@ void CTFDroppedWeapon::UpdateGlowEffect( void )
 	if ( m_bShouldGlowForLocalPlayer )
 	{
 		Vector color = Vector( 0.745f, 0.773f, 0.157f );
-		m_pGlowEffect = new CGlowObject( this, color, 1.0, true, true );
+		m_pGlowEffect = new CGlowObject( this, color, 1.0, false, true );
 	}
 }
 
