@@ -12088,10 +12088,18 @@ void C_TFPlayer::GetGlowEffectColor( float *r, float *g, float *b, float *a )
 
 	bool bShowHealthGlow = false;
 	bool bMedic = pLocalPlayer && pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC );
-	if ( TFGameRules() && ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF ) && HasTheFlag() )
+	if ( TFGameRules() && HasTheFlag() )
 	{
-		// In CTF, show health for allied flag carrier
-		bShowHealthGlow = ( GetLocalPlayerTeam() >= FIRST_GAME_TEAM ) ? nTeam == GetLocalPlayerTeam() : true;
+		if ( TFGameRules()->IsBetaActive() )
+		{
+			// In beta, show health for all flag carriers (allied and enemy)
+			bShowHealthGlow = true;
+		}
+		else if ( TFGameRules()->GetGameType() == TF_GAMETYPE_CTF )
+		{
+			// In CTF, show health for allied flag carrier
+			bShowHealthGlow = ( GetLocalPlayerTeam() >= FIRST_GAME_TEAM ) ? nTeam == GetLocalPlayerTeam() : true;
+		}
 	}
 	else if ( m_pSaveMeEffect && bMedic )
 	{

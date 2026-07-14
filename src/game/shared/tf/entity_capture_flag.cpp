@@ -233,6 +233,7 @@ CCaptureFlag::CCaptureFlag()
 	m_pGlowEffect = NULL;
 	m_hOldOwner = NULL;
 	m_bOldGlowEnabled = true;
+	m_nOldTeamNumber = TEAM_UNASSIGNED;
 #else
 	m_hReturnIcon = NULL;
 	m_nReturnTime = 60;
@@ -451,7 +452,7 @@ void CCaptureFlag::OnPreDataChanged( DataUpdateType_t updateType )
 //-----------------------------------------------------------------------------
 void CCaptureFlag::OnDataChanged( DataUpdateType_t updateType )
 {
-	bool bUpdateGlow = false;
+	bool bUpdateGlow = ( updateType == DATA_UPDATE_CREATED );
 
 	if ( m_nOldTeamNumber != GetTeamNumber() )
 	{
@@ -525,7 +526,12 @@ void CCaptureFlag::UpdateGlowEffect( void )
 			m_pGlowEffect->SetEntity( this );
 
 			float r, g, b;
-			TeamplayRoundBasedRules()->GetTeamGlowColor( GetTeamNumber(), r, g, b );
+			int nGlowTeam = GetTeamNumber();
+			if ( IsStolen() && GetOwnerEntity() )
+			{
+				nGlowTeam = GetOwnerEntity()->GetTeamNumber();
+			}
+			TeamplayRoundBasedRules()->GetTeamGlowColor( nGlowTeam, r, g, b );
 			m_pGlowEffect->SetColor( Vector( r, g, b ) );
 		}
 	}
