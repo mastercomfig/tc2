@@ -37,9 +37,11 @@ BEGIN_NETWORK_TABLE( CTFSlap, DT_TFWeaponSlap )
 #ifdef CLIENT_DLL
 	RecvPropBool( RECVINFO( m_bFirstHit ) ),
 	RecvPropInt( RECVINFO( m_nNumKills ), 0, RecvProxy_UpdateSlapKills ),
+	RecvPropFloat( RECVINFO( m_flHeat ) ),
 #else
 	SendPropBool( SENDINFO( m_bFirstHit ) ),
 	SendPropInt( SENDINFO( m_nNumKills ) ),
+	SendPropFloat( SENDINFO( m_flHeat ), 0, SPROP_NOSCALE ),
 #endif
 END_NETWORK_TABLE()
 
@@ -57,7 +59,7 @@ void RecvProxy_UpdateSlapKills( const CRecvProxyData *pData, void *pStruct, void
 {
 	CTFSlap *pSlap = ( CTFSlap* )pStruct;
 	pSlap->SetNumKills( pData->m_Value.m_Int );
-//	pSlap->UpdateFireEffect();
+	pSlap->UpdateFireEffect();
 }
 #endif
 
@@ -70,11 +72,13 @@ CTFSlap::CTFSlap()
 {
 	m_bFirstHit = true;
 	m_nNumKills = 0;
+	m_flHeat = 0.0f;
+	m_flHeatDecayTimer = 0.0f;
 
 #ifdef CLIENT_DLL
-//	m_pFlameEffect = NULL;
-//	m_pFlameEffectSound = NULL;
-//	m_hEffectOwner = NULL;
+	m_pFlameEffect = NULL;
+	m_pFlameEffectSound = NULL;
+	m_hEffectOwner = NULL;
 #endif // CLIENT_DLL
 }
 
@@ -87,13 +91,13 @@ void CTFSlap::Precache()
 	PrecacheScriptSound( "Weapon_Slap.OpenHandHitWorld" );
 	PrecacheScriptSound( "Weapon_Slap.BackHandHitWorld" );
 
-//	PrecacheScriptSound( SLAP_SOUND_LEVEL_1 );
-//	PrecacheScriptSound( SLAP_SOUND_LEVEL_2 );
-//	PrecacheScriptSound( SLAP_SOUND_LEVEL_3 );
+	//PrecacheScriptSound( SLAP_SOUND_LEVEL_1 );
+	//PrecacheScriptSound( SLAP_SOUND_LEVEL_2 );
+	//PrecacheScriptSound( SLAP_SOUND_LEVEL_3 );
 
-//	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_1 );
-//	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_2 );
-//	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_3 );
+	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_1 );
+	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_2 );
+	PrecacheParticleSystem( SLAP_PARTICLE_LEVEL_3 );
 }
 
 // -----------------------------------------------------------------------------
@@ -125,6 +129,8 @@ void CTFSlap::SecondaryAttack()
 bool CTFSlap::Deploy()
 {
 	m_nNumKills = 0;
+	m_flHeat = 0.0f;
+	m_flHeatDecayTimer = 0.0f;
 
 	return BaseClass::Deploy();
 }
@@ -135,9 +141,11 @@ bool CTFSlap::Deploy()
 bool CTFSlap::Holster( CBaseCombatWeapon *pSwitchingTo )
 {
 	m_nNumKills = 0;
+	m_flHeat = 0.0f;
+	m_flHeatDecayTimer = 0.0f;
 
 #ifdef CLIENT_DLL
-//	UpdateFireEffect();
+	UpdateFireEffect();
 #endif // CLIENT_DLL
 
 	return BaseClass::Holster( pSwitchingTo );
@@ -209,12 +217,66 @@ void CTFSlap::SendPlayerAnimEvent( CTFPlayer *pPlayer )
 	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_PRIMARY );
 }
 
+void CTFSlap::ItemPostFrame( void )
+{
+	BaseClass::ItemPostFrame();
+
+#ifdef GAME_DLL
+	if ( m_flHeat > 0.0f && gpGlobals->curtime > m_flHeatDecayTimer )
+	{
+		m_flHeat = Max( 0.0f, m_flHeat.Get() - 0.25f );
+		m_flHeatDecayTimer = gpGlobals->curtime + 1.0f;
+	}
+#endif
+}
+
 #ifdef GAME_DLL
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFSlap::OnEntityHit( CBaseEntity *pEntity, CTakeDamageInfo *info )
 {
+	BaseClass::OnEntityHit( pEntity, info );
+
+	CTFPlayer *pOwner = GetTFPlayerOwner();
+	if ( !pOwner )
+		return;
+
+	CTFPlayer *pVictim = ToTFPlayer( pEntity );
+	if ( !pVictim || !pVictim->IsAlive() || pVictim->InSameTeam( pOwner ) )
+		return;
+
+	if ( IsSuperSlap() )
+	{
+		// Ignite target for 4 seconds
+		pVictim->m_Shared.Burn( pOwner, this, 4.f );
+
+		// Mark target for death for 5 seconds
+		pVictim->m_Shared.AddCond( TF_COND_MARKEDFORDEATH, 5.0f );
+
+		// Give owner speed boost for 3 seconds
+		pOwner->m_Shared.AddCond( TF_COND_SPEED_BOOST, 3.0f );
+
+		// Apply moderate custom knockback
+		Vector vecDir = pVictim->GetAbsOrigin() - pOwner->GetAbsOrigin();
+		vecDir.z = 0.0f;
+		if ( vecDir.LengthSqr() > 0.0f )
+		{
+			VectorNormalize( vecDir );
+			vecDir.z = 0.3f;
+			VectorNormalize( vecDir );
+			pVictim->ApplyGenericPushbackImpulse( vecDir * 200.0f, pOwner );
+		}
+
+		m_flHeat = 0.0f;
+	}
+	else
+	{
+		float flAdd = pVictim->m_Shared.InCond( TF_COND_BURNING ) ? 0.5f : 0.34f;
+		m_flHeat = Min( 1.0f, m_flHeat.Get() + flAdd );
+
+		m_flHeatDecayTimer = gpGlobals->curtime + 3.0f;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -252,42 +314,64 @@ char const *CTFSlap::GetShootSound( int iIndex ) const
 void CTFSlap::UpdateVisibility( void )
 {
 	BaseClass::UpdateVisibility();
-//	UpdateFireEffect();
+	UpdateFireEffect();
 }
 
-/*
+void CTFSlap::OnDataChanged( DataUpdateType_t updateType )
+{
+	BaseClass::OnDataChanged( updateType );
+	UpdateFireEffect();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFSlap::StartFlameEffects( void )
 {
-	StopFlameEffects();
-
-	if ( m_nNumKills <= 0 )
-		return;
-
 	C_TFPlayer *pOwner = GetTFPlayerOwner();
 	if ( !pOwner )
 		return;
 
 	const char *pszParticleEffect = NULL;
 	const char *pszSoundEffect = NULL;
-	switch ( m_nNumKills )
+	int iHeatLevel = 0;
+
+#if 0
+	if ( m_flHeat >= 1.0f )
 	{
-	case 1:
-		pszParticleEffect = SLAP_PARTICLE_LEVEL_1;
-		pszSoundEffect = SLAP_SOUND_LEVEL_1;
-		break;
-	case 2:
-		pszParticleEffect = SLAP_PARTICLE_LEVEL_2;
-		pszSoundEffect = SLAP_SOUND_LEVEL_2;
-		break;
-	default:
-	case 3:
 		pszParticleEffect = SLAP_PARTICLE_LEVEL_3;
 		pszSoundEffect = SLAP_SOUND_LEVEL_3;
-		break;
+		iHeatLevel = 3;
 	}
+	else if ( m_flHeat >= 0.75f )
+	{
+		pszParticleEffect = SLAP_PARTICLE_LEVEL_2;
+		pszSoundEffect = SLAP_SOUND_LEVEL_2;
+		iHeatLevel = 2;
+	}
+	else
+	{
+		pszParticleEffect = SLAP_PARTICLE_LEVEL_1;
+		pszSoundEffect = SLAP_SOUND_LEVEL_1;
+		iHeatLevel = 1;
+	}
+#else
+	if ( m_flHeat >= 1.0f )
+	{
+		pszParticleEffect = SLAP_PARTICLE_LEVEL_2;
+		pszSoundEffect = SLAP_SOUND_LEVEL_2;
+		iHeatLevel = 2;
+	}
+#endif
+
+	if ( iHeatLevel == m_iHeatLevel )
+		return;
+
+	m_iHeatLevel = iHeatLevel;
+	StopFlameEffects();
+
+	if ( m_iHeatLevel < 1 )
+		return;
 
 	m_hEffectOwner = NULL;
 	bool bIsVM = false;
@@ -311,11 +395,13 @@ void CTFSlap::StartFlameEffects( void )
 			ClientLeafSystem()->SetRenderGroup( m_pFlameEffect->RenderHandle(), RENDER_GROUP_VIEW_MODEL_TRANSLUCENT );
 		}
 
+#if 0
 		// Create the looping flame sound
 		CLocalPlayerFilter filter;
 		CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();
 		m_pFlameEffectSound = controller.SoundCreate( filter, m_hEffectOwner->entindex(), pszSoundEffect );
 		controller.Play( m_pFlameEffectSound, 1.0, 100 );
+#endif
 	}
 }
 
@@ -343,14 +429,17 @@ void CTFSlap::StopFlameEffects( void )
 //-----------------------------------------------------------------------------
 void CTFSlap::UpdateFireEffect( void )
 {
-	if ( m_nNumKills > 0 )
+	if ( m_flHeat >= 0.5f )
 	{
 		StartFlameEffects();
 	}
 	else
 	{
-		StopFlameEffects();
+		if ( m_iHeatLevel != 0 )
+		{
+			m_iHeatLevel = 0;
+			StopFlameEffects();
+		}
 	}
 }
-*/
 #endif // CLIENT_DLL

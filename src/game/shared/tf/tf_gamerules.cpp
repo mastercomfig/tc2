@@ -145,6 +145,7 @@
 #include "tf_weapon_flamethrower.h"
 #include "tf_weapon_medigun.h"
 #include "tf_weapon_shovel.h"
+#include "tf_weapon_slap.h"
 
 #include "econ_holidays.h"
 #include "rtime.h"
@@ -7130,6 +7131,19 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 		}
 
+		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_SLAP )
+		{
+			CTFSlap *pSlap = dynamic_cast< CTFSlap* >( pWeapon );
+			if ( pSlap && pSlap->IsSuperSlap() )
+			{
+				if ( info.GetCritType() == CTakeDamageInfo::CRIT_NONE )
+				{
+					info.SetCritType( CTakeDamageInfo::CRIT_MINI );
+					eBonusEffect = kBonusEffect_MiniCrit;
+				}
+			}
+		}
+
 		if ( info.GetCritType() == CTakeDamageInfo::CRIT_NONE )
 		{
 			CBaseEntity *pInflictor = info.GetInflictor();
@@ -7207,6 +7221,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_FLARE_PELLET )
 			{
+				// TODO(mcoms): sticky crit hit will prevent this from overriding damage
 				CBaseEntity *pInflictor = info.GetInflictor();
 				CTFProjectile_Flare *pFlare = dynamic_cast< CTFProjectile_Flare* >( pInflictor );
 				if ( pFlare && pFlare->IsFromTaunt() && pFlare->GetTimeAlive() < 0.05f )
