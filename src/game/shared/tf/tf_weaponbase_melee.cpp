@@ -1076,6 +1076,8 @@ void CTFWeaponBaseMelee::DoMeleeDamage( CBaseEntity* ent, trace_t& trace, float 
 	}
 }
 
+#define TF_BACKSTAB_DEBUG 0
+
 //-----------------------------------------------------------------------------
 // Purpose: Determine if we are reasonably facing our target.
 //-----------------------------------------------------------------------------
@@ -1112,12 +1114,12 @@ bool CTFWeaponBaseMelee::IsBehindAndFacingTarget( CTFPlayer *pTarget, bool bInAt
 	float flViewAnglesDot = DotProduct( vecTargetForward, vecOwnerForward );	// Facestab?
 
 	// Debug
-#if 0
+#if TF_BACKSTAB_DEBUG
 	NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 	NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pTarget->WorldSpaceCenter(), 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
 #ifdef GAME_DLL
-	DevMsg( "[server] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f SightDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
+	DevMsg( "[server] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
 #else
 	DevMsg( "[client] PosDot: %3.6f FacingDot: %3.6f AnglesDot: %3.6f\n", flPosVsTargetViewDot, flPosVsOwnerViewDot, flViewAnglesDot );
 #endif
@@ -1171,6 +1173,11 @@ bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
 	// If the attacker is too close, our 2D angles are not going to be accurate.
 	const float flMax = pTarget->WorldAlignSize().x;
 	float flSightAnglesDot;
+#if TF_BACKSTAB_DEBUG
+	int iCase;
+	float flFacingDotDebug = 0.0f;
+#endif
+
 	if ( flDist2D < flMax * 0.7f )
 	{
 		// Phasing?
@@ -1199,12 +1206,26 @@ bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
 			{
 				flSightAnglesDot = 1.0f; // Facestab
 			}
+
+#if TF_BACKSTAB_DEBUG
+			flFacingDotDebug = flFacingDot;
+			iCase = 1;
+			NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+			NDebugOverlay::HorzArrow( pOwner->WorldSpaceCenter(), pOwner->WorldSpaceCenter() + 50.0f * vecOwnerForward, 5.0f, 255, 0, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+#endif
 		}
 		else
 		{
 			// Over/under. So let's use the 3D check.
-			VectorNormalizeFast( vecToTarget3D );
-			flSightAnglesDot = DotProduct( -vecToTarget3D, vecTargetSight );
+			Vector vecToTarget3DNorm = vecToTarget3D;
+			VectorNormalizeFast( vecToTarget3DNorm );
+			flSightAnglesDot = DotProduct( -vecToTarget3DNorm, vecTargetSight );
+
+#if TF_BACKSTAB_DEBUG
+			iCase = 2;
+			NDebugOverlay::Line( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 0, 255, 0, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+			NDebugOverlay::Line( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() - 50.0f * vecToTarget3DNorm, 255, 0, 0, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+#endif
 		}
 	}
 	else
@@ -1213,6 +1234,12 @@ bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
 		vecTargetSight.z = 0.0f;
 		vecTargetSight.NormalizeInPlace();
 		flSightAnglesDot = DotProduct( -vecToTarget, vecTargetSight );
+
+#if TF_BACKSTAB_DEBUG
+		iCase = 3;
+		NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() + 50.0f * vecTargetSight, 5.0f, 0, 255, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+		NDebugOverlay::HorzArrow( pTarget->WorldSpaceCenter(), pTarget->WorldSpaceCenter() - 50.0f * vecToTarget, 5.0f, 255, 0, 0, 255, true, NDEBUG_PERSIST_TILL_NEXT_SERVER );
+#endif
 	}
 
 	// ======================================
@@ -1220,13 +1247,27 @@ bool CTFWeaponBaseMelee::VerifyBehindPosition( CTFPlayer *pTarget )
 	lagcompensation->FinishLagCompensation( pTarget );
 	lagcompensation->StartLagCompensation( pOwner, pOwner->GetCurrentCommand() );
 
-	// Looking at attacker?
-#if 0
-	return flSightAnglesDot <= 0.61f;
-#else
-	// corrected for angle error
-	return flSightAnglesDot <= 0.611389f;
+	bool bAllowBackstab = ( flSightAnglesDot <= 0.82f );
+
+#if TF_BACKSTAB_DEBUG
+	if ( iCase == 1 )
+	{
+		DevMsg( "[server] VerifyBehind - Phasing: Dist2D: %3.6f ZDiff: %3.6f FacingDot: %3.6f -> Backstab: %s\n", 
+			flDist2D, fabsf( vecToTarget3D.z ), flFacingDotDebug, bAllowBackstab ? "YES" : "NO" );
+	}
+	else if ( iCase == 2 )
+	{
+		DevMsg( "[server] VerifyBehind - Vertical: Dist2D: %3.6f ZDiff: %3.6f SightDot: %3.6f -> Backstab: %s\n", 
+			flDist2D, fabsf( vecToTarget3D.z ), flSightAnglesDot, bAllowBackstab ? "YES" : "NO" );
+	}
+	else
+	{
+		DevMsg( "[server] VerifyBehind - Normal: Dist2D: %3.6f SightDot: %3.6f -> Backstab: %s\n", 
+			flDist2D, flSightAnglesDot, bAllowBackstab ? "YES" : "NO" );
+	}
 #endif
+
+	return bAllowBackstab;
 #else
 	return true;
 #endif
