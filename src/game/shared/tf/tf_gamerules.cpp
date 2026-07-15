@@ -6202,11 +6202,11 @@ void CTFGameRules::SpawnMatchBots( void )
 		int iBotQuota;
 		if (pMatch)
 		{
-			iBotQuota = bIsCompetitive ? ( int )pMatch->GetCanonicalMatchSize() : ( int )pMatch->GetCanonicalMatchSize() * 0.6f;
+			iBotQuota = bIsCompetitive ? ( int )pMatch->GetCanonicalMatchSize() : (( int )pMatch->GetCanonicalMatchSize() * 0.75f);
 		}
 		else
 		{
-			iBotQuota = bIsCompetitive ? 12 : 24 * 0.6f;
+			iBotQuota = bIsCompetitive ? 12 : (24 * 0.75f);
 		}
 		tf_bot_quota.SetValue( iBotQuota );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
