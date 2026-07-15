@@ -5554,7 +5554,7 @@ void SpawnRunes( void )
 void CTFGameRules::RespawnPlayers( bool bForceRespawn, bool bTeam, int iTeam )
 {
 	// TODO(mcoms): not just match
-	if ( !bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && m_flMatchSummaryTeleportTime < 0 )
+	if ( !bTeam && ( IsCompetitiveMode() || IsEmulatingMatch() ) && m_flMatchSummaryTeleportTime < 0 && !m_bAllowBetweenRounds )
 	{
 		bool bShouldSkipRespawn = false;
 		// Skip the respawn at the beginning of a round in casual/comp mode since we already
@@ -9424,6 +9424,7 @@ void CTFGameRules::Think()
 					m_bStartMatchRoundImmediately = PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_BLUE ) && PlayerReadyStatus_ArePlayersOnTeamReady( TF_TEAM_RED );
 					if ( !ShouldStartMatchRoundImmediately() )
 					{
+						m_flCompModeRespawnPlayersAtMatchStart = gpGlobals->curtime;
 						SetAllowBetweenRounds( true );
 						PlayerReadyStatus_ResetState();
 						MatchSummaryEnd();
