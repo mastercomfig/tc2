@@ -134,6 +134,7 @@ extern ConVar cl_notifications_show_ingame;
 extern ConVar sc_look_sensitivity_scale;
 
 ConVar ui_fps_max("ui_fps_max", "60", FCVAR_ARCHIVE);
+ConVar game_fps_max("game_fps_max", "400", FCVAR_ARCHIVE);
 
 extern bool TournamentHudElementKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
 extern bool ArenaClassLayoutKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding );
@@ -397,7 +398,6 @@ ClientModeTFNormal::ClientModeTFNormal()
 	m_bInitializedHudAspect = false;
 
 	m_flLastSlaughterTime = -1.0f;
-	m_flCurMaxFPS = -1.0f;
 
 #if defined( _X360 )
 	m_pScoreboard = NULL;
@@ -2286,16 +2286,11 @@ bool ClientModeTFNormal::IsTauntSelectPanelVisible() const
 void ClientModeTFNormal::OnConnectStateChanged()
 {
 	static ConVarRef fps_max( "fps_max" );
-	static ConVarRef ui_fps_max( "ui_fps_max" );
 
 	switch ( m_eConnectState )
 	{
 		case k_eConnectState_Connecting:
 		{
-			if ( m_flCurMaxFPS < 0.0f )
-			{
-				m_flCurMaxFPS = fps_max.GetFloat();
-			}
 			// while loading, keep it at our lowest
 			fps_max.SetValue( 30.0f );
 			break;
@@ -2303,17 +2298,11 @@ void ClientModeTFNormal::OnConnectStateChanged()
 		case k_eConnectState_Connected:
 		{
 			// after loading, restore it.
-			Assert( m_flCurMaxFPS >= 0.0f );
-			fps_max.SetValue( m_flCurMaxFPS >= 0.0f ? m_flCurMaxFPS : 1000.0f );
-			m_flCurMaxFPS = -1.0f;
+			fps_max.SetValue( game_fps_max.GetFloat() );
 			break;
 		}
 		default:
 		{
-			if ( m_flCurMaxFPS < 0.0f )
-			{
-				m_flCurMaxFPS = fps_max.GetFloat();
-			}
 			// if not in game, set fps_max to UI mode.
 			fps_max.SetValue( ui_fps_max.GetFloat() );
 			break;

@@ -158,8 +158,6 @@ private:
 
 	float					m_flNextAllowedHighFiveHintTime;
 
-	float					m_flCurMaxFPS = -1.0f;
-
 	// When game events should trigger updates, we want to let all other systems think first (e.g. partyclient) as their
 	// state is looked at by the update loop.  Setting this triggers an update on next think.
 	bool					m_bPendingRichPresenceUpdate = false;
