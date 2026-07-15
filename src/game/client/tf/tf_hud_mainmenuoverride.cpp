@@ -892,7 +892,8 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 	bool bWasNull = m_pCharacterModelPanel == NULL;
 
 	m_pCharacterModelPanel = dynamic_cast<CTFPlayerModelPanel*>(FindChildByName("TFCharacterModel"));
-	if ( !IsFreeTrialAccount() && m_pCharacterModelPanel )
+	int iSelectedClass = tf_mainmenu_class_highlight.GetInt();
+	if ( !IsFreeTrialAccount() && m_pCharacterModelPanel && iSelectedClass >= 0 )
 	{
 		if (m_pCharacterImagePanel)
 		{
@@ -901,7 +902,6 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 		}
 
 		m_pCharacterModelPanel->ClearCarriedItems();
-		int iSelectedClass = tf_mainmenu_class_highlight.GetInt();
 		int iClass;
 		if ( iSelectedClass > 0 && iSelectedClass <= TF_LAST_NORMAL_CLASS - 1 )
 		{
