@@ -265,7 +265,7 @@ void CTFSlap::OnEntityHit( CBaseEntity *pEntity, CTakeDamageInfo *info )
 			VectorNormalize( vecDir );
 			vecDir.z = 0.3f;
 			VectorNormalize( vecDir );
-			pVictim->ApplyGenericPushbackImpulse( vecDir * 200.0f, pOwner );
+			pVictim->ApplyGenericPushbackImpulse( vecDir * 100.0f, pOwner );
 		}
 
 		m_flHeat = 0.0f;
