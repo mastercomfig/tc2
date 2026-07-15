@@ -462,8 +462,8 @@ void CTFBaseProjectile::ProjectileTouch( CBaseEntity *pOther )
 
 	CTakeDamageInfo info;
 	info.SetAttacker( GetOwnerEntity() );		// the player who operated the thing that emitted nails
-	info.SetInflictor( pInflictor );	// the weapon that emitted this projectile
-	info.SetWeapon( pInflictor );
+	info.SetInflictor( this );
+	info.SetWeapon( pInflictor ); // the weapon that emitted this projectile
 	info.SetDamage( GetDamage() );
 	info.SetDamageForce( GetDamageForce() );
 	info.SetDamagePosition( GetAbsOrigin() );

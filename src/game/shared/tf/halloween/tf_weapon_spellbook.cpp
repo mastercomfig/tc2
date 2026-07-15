@@ -1687,7 +1687,7 @@ public:
 				CTakeDamageInfo info;
 				info.SetAttacker( pThrower );
 				info.SetInflictor( this ); 
-				info.SetWeapon( GetLauncher() );
+				info.SetWeapon( GetOriginalLauncher() );
 				info.SetDamage( 10.f );
 				info.SetDamageCustom( GetCustomDamageType() );
 				info.SetDamagePosition( vecOrigin );

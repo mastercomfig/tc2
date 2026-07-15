@@ -63,7 +63,7 @@ public:
 	virtual void Destroy( bool bBlinkOut = true, bool bBreakRocket = false ) {}
 	virtual void SetLauncher( CBaseEntity *pLauncher );
 	CBaseEntity *GetOriginalLauncher() const { return m_hOriginalLauncher; }
-	CBaseEntity		*GetLauncher( void ) { return m_hLauncher; }
+	CBaseEntity	*GetLauncher( void ) { return m_hLauncher; }
 
 	float GetProjectileSpawnTime( void ) { return m_flProjectileSpawnTime; }
 

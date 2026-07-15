@@ -149,10 +149,10 @@ void C_TFProjectile_Rocket::CreateTrails( void )
 //-----------------------------------------------------------------------------
 const char *C_TFProjectile_Rocket::GetTrailParticleName( void )
 {
-	if ( GetLauncher() )
+	if ( GetOriginalLauncher() )
 	{
 		int iNoSelfBlastDamage = 0;
-		CALL_ATTRIB_HOOK_INT_ON_OTHER( GetLauncher(), iNoSelfBlastDamage, no_self_blast_dmg );
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( GetOriginalLauncher(), iNoSelfBlastDamage, no_self_blast_dmg );
 		if ( iNoSelfBlastDamage )
 		{
 			return "rockettrail_RocketJumper";

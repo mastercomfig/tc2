@@ -84,7 +84,7 @@ public:
 		SetAbsVelocity( m_vecInitialVelocity );
 
 		float flDamage = tf_fireball_damage.GetFloat();
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetLauncher(), flDamage, mult_dmg );
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOriginalLauncher(), flDamage, mult_dmg );
 		SetDamage( flDamage );
 
 		m_vecSpawnOrigin = GetAbsOrigin();
@@ -297,7 +297,7 @@ public:
 		CTakeDamageInfo info;
 		info.SetAttacker( pOwner );
 		info.SetInflictor( this ); 
-		info.SetWeapon( GetLauncher() );
+		info.SetWeapon( GetOriginalLauncher() );
 		info.SetDamagePosition( GetAbsOrigin() );
 		info.SetDamageType( DMG_IGNITE | DMG_USEDISTANCEMOD | DMG_NOCLOSEDISTANCEMOD );
 
@@ -374,7 +374,7 @@ public:
 			}
 
 			// Ignite them AFTER we figure out the damage.  We do extra damage to burning players.
-			pTFPlayer->m_Shared.Burn( ToTFPlayer( pOwner ), (CTFWeaponBase*)GetLauncher(), flBurnDuration );
+			pTFPlayer->m_Shared.Burn( ToTFPlayer( pOwner ), (CTFWeaponBase*)GetOriginalLauncher(), flBurnDuration );
 		}
 		else
 		{

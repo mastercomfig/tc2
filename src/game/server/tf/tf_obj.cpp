@@ -1610,7 +1610,7 @@ void CBaseObject::FinishedBuilding( void )
 
 		CTakeDamageInfo info;
 		info.SetInflictor( pDamager );
-		info.SetAttacker( pDamager );
+		info.SetAttacker( pSapper ? pSapper->GetOwnerEntity() : pDamager );
 		info.SetDamageForce( vec3_origin );
 		info.SetDamagePosition( GetAbsOrigin() );
 		info.SetDamage( 0 );

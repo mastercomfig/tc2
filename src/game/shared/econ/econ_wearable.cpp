@@ -507,7 +507,7 @@ public:
 				CTFWeaponBaseGrenadeProj *pProjectile = dynamic_cast< CTFWeaponBaseGrenadeProj* >( pEntity );
 				if ( pProjectile )
 				{
-					CEconEntity *pItem = dynamic_cast< CEconEntity* >( pProjectile->GetLauncher() );
+					CEconEntity *pItem = dynamic_cast< CEconEntity* >( pProjectile->GetOriginalLauncher() );
 					if ( pItem )
 					{
 						pScriptItem = pItem->GetAttributeContainer()->GetItem();
