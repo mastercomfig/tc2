@@ -2613,6 +2613,11 @@ BEGIN_PREDICTION_DATA( CBaseCombatWeapon )
 	DEFINE_PRED_FIELD( m_nViewModelIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 
 	// Not networked
+#if defined ( TF_CLIENT_DLL ) || defined ( TF_DLL )
+	DEFINE_FIELD( m_flCritTokenBucket, FIELD_FLOAT ),
+	DEFINE_FIELD( m_nCritChecks, FIELD_INTEGER ),
+	DEFINE_FIELD( m_nCritSeedRequests, FIELD_INTEGER ),
+#endif // TF
 
 	DEFINE_FIELD( m_bInReload, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bFireOnEmpty, FIELD_BOOLEAN ),

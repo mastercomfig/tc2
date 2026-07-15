@@ -240,6 +240,8 @@ BEGIN_PREDICTION_DATA( CTFWeaponBase )
 	DEFINE_PRED_FIELD( m_bReloadedThroughAnimEvent, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bDisguiseWeapon, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD_TOL( m_flLastCritCheckTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
+	DEFINE_FIELD( m_flLastRapidFireCritCheckTime, FIELD_FLOAT ),
+	DEFINE_FIELD( m_flCritTime, FIELD_FLOAT ),
 	DEFINE_PRED_FIELD_TOL( m_flReloadPriorNextFire, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
 	DEFINE_PRED_FIELD_TOL( m_flLastFireTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
 	DEFINE_PRED_FIELD_TOL( m_flLastAccurateFireTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),	
@@ -1887,14 +1889,7 @@ bool CTFWeaponBase::CalcIsAttackCriticalHelper()
 #endif // _DEBUG
 	
 	// Track each check
-#ifdef GAME_DLL
 	m_nCritChecks++;
-#else
-	if ( prediction->IsFirstTimePredicted() )
-	{
-		m_nCritChecks++;
-	}
-#endif // GAME_DLL
 
 	// Seed says crit.  Run it by the manager.
 	if ( bCrit )
