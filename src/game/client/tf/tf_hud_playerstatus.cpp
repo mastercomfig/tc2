@@ -1112,19 +1112,7 @@ bool CTFHudPlayerStatus::ShouldDraw( void )
 	if ( CTFMinigameLogic::GetMinigameLogic() && CTFMinigameLogic::GetMinigameLogic()->GetActiveMinigame() )
 		return false;
 
-	if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
-		return false;
-
 	// fix model sorting issues
-	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
-	{
-		float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
-		if ( flRestartTime > 0.f && flRestartTime <= TOURNAMENT_NOCANCEL_TIME )
-		{
-			return false;
-		}
-	}
-
 	CTFHudMatchStatus *pMatchStatus = GET_HUDELEMENT( CTFHudMatchStatus );
 	if ( pMatchStatus && pMatchStatus->AreMatchDoorsVisible() )
 	{

@@ -1204,6 +1204,28 @@ void CTFHudMatchStatus::UpdateTeamInfo()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFHudMatchStatus::AreMatchDoorsVisible() const
+{
+	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
+	{
+		if ( TFGameRules()->ShowMatchSummary() )
+		{
+			return true;
+		}
+		float flRestartTime = TFGameRules()->GetRoundRestartTime() - gpGlobals->curtime;
+		if ( flRestartTime > 0.f && flRestartTime <= TOURNAMENT_NOCANCEL_TIME )
+		{
+			return true;
+		}
+	}
+
+	return m_flMatchSummaryShowTime >= 0.0f;
+
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 CTFHudItemDraft::CTFHudItemDraft(const char* pElementName)
 	: CHudElement(pElementName)
 	, BaseClass(NULL, "HudItemDraft")

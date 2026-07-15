@@ -92,10 +92,7 @@ public:
 
 	virtual void LevelShutdown( void ) OVERRIDE;
 
-	bool AreMatchDoorsVisible() const
-	{
-		return ( m_flMatchSummaryShowTime >= 0.0f ) || ( m_pMatchStartModelPanel && m_pMatchStartModelPanel->IsVisible() );
-	}
+	bool AreMatchDoorsVisible() const;
 
 	void SetPanelsVisible();
 
