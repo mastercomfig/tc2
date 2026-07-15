@@ -1292,31 +1292,46 @@ void CTFGameMovement::ToggleParachute()
 		{
 			// Can undeploy at any time, but doing so resets the cooldown timer
 			m_pTFPlayer->m_Shared.RemoveCond( TF_COND_PARACHUTE_ACTIVE );
-			m_pTFPlayer->m_Shared.SetParachuteNextDeployTime( gpGlobals->curtime + tf_parachute_cooldown.GetFloat() );
+			if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+			{
+				m_pTFPlayer->m_Shared.SetParachuteNextDeployTime( gpGlobals->curtime + tf_parachute_cooldown.GetFloat() );
+			}
 		}
 		else
 		{
 			bool bOnGround = ( m_pTFPlayer->GetFlags() & FL_ONGROUND );
 			int iParachuteDisabled = 0;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pTFPlayer, iParachuteDisabled, parachute_disabled );
-			if ( !bOnGround && !iParachuteDisabled && gpGlobals->curtime >= m_pTFPlayer->m_Shared.GetParachuteNextDeployTime() )
+			bool bCanDeploy;
+			if ( TFGameRules() && TFGameRules()->IsBetaActive() )
+			{
+				bCanDeploy = !bOnGround && !iParachuteDisabled && gpGlobals->curtime >= m_pTFPlayer->m_Shared.GetParachuteNextDeployTime();
+			}
+			else
+			{
+				bCanDeploy = !bOnGround && !iParachuteDisabled && ( tf_parachute_deploy_toggle_allowed.GetBool() || !m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_DEPLOYED ) );
+			}
+			if ( bCanDeploy )
 			{
 				m_pTFPlayer->m_Shared.AddCond( TF_COND_PARACHUTE_ACTIVE );
 				m_pTFPlayer->m_Shared.AddCond( TF_COND_PARACHUTE_DEPLOYED );
-				m_pTFPlayer->m_Shared.SetParachuteNextDeployTime( gpGlobals->curtime + tf_parachute_cooldown.GetFloat() );
-
-				// Swoop Mechanic: convert downward fall speed into forward speed
-				if ( mv->m_vecVelocity[2] < 0 )
+				if ( TFGameRules() && TFGameRules()->IsBetaActive() )
 				{
-					float flSwoopFactor = tf_parachute_swoop_conversion.GetFloat();
-					if ( flSwoopFactor > 0.0f )
+					m_pTFPlayer->m_Shared.SetParachuteNextDeployTime( gpGlobals->curtime + tf_parachute_cooldown.GetFloat() );
+
+					// Swoop Mechanic: convert downward fall speed into forward speed
+					if ( mv->m_vecVelocity[2] < 0 )
 					{
-						float flFallSpeed = -mv->m_vecVelocity[2];
-						Vector forward;
-						AngleVectors( mv->m_vecViewAngles, &forward );
-						forward[2] = 0;
-						VectorNormalize( forward );
-						mv->m_vecVelocity += forward * (flFallSpeed * flSwoopFactor);
+						float flSwoopFactor = tf_parachute_swoop_conversion.GetFloat();
+						if ( flSwoopFactor > 0.0f )
+						{
+							float flFallSpeed = -mv->m_vecVelocity[2];
+							Vector forward;
+							AngleVectors( mv->m_vecViewAngles, &forward );
+							forward[2] = 0;
+							VectorNormalize( forward );
+							mv->m_vecVelocity += forward * (flFallSpeed * flSwoopFactor);
+						}
 					}
 				}
 			}
@@ -2438,7 +2453,7 @@ void CTFGameMovement::AirMove( void )
 	}
 #endif
 */
-	if ( m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_ACTIVE ) )
+	if ( TFGameRules() && TFGameRules()->IsBetaActive() && m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_ACTIVE ) )
 	{
 		// Wingsuit-style Momentum Redirection
 		float flSpeedXY = mv->m_vecVelocity.Length2D();
@@ -3026,42 +3041,61 @@ void CTFGameMovement::FullWalkMove()
 	{
 		if ( m_pTFPlayer->m_Shared.InCond( TF_COND_PARACHUTE_ACTIVE ) )
 		{
-			float flMaxZ = m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat();
-			
-			// Simulate air drag: ease into the max Z speed over ~0.5s instead of instant snapping
-			if ( mv->m_vecVelocity[2] < flMaxZ )
+			if ( TFGameRules() && TFGameRules()->IsBetaActive() )
 			{
-				float flDiff = flMaxZ - mv->m_vecVelocity[2];
-				// Add an upward acceleration that overcomes gravity and slows the player down smoothly
-				// Using 1.5f for a gentler swoop/dip before stabilizing
-				float flUpwardAccel = GetActualGravity( player ) + (flDiff * 1.5f);
-				mv->m_vecVelocity[2] += flUpwardAccel * GAMEMOVEMENT_FRAMETIME;
-				if ( mv->m_vecVelocity[2] > flMaxZ )
-					mv->m_vecVelocity[2] = flMaxZ;
-			}
-
-			// Sailing / Dynamic Lift mechanic: convert horizontal speed into upward lift
-			float flSpeedXY = mv->m_vecVelocity.Length2D();
-			float flDrag = tf_parachute_maxspeed_xy.GetFloat();
-
-			if ( flSpeedXY > flDrag )
-			{
-				float flExcess = flSpeedXY - flDrag;
+				float flMaxZ = m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat();
 				
-				// Lift force proportional to excess horizontal speed
-				float flLift = flExcess * 0.5f; 
-				mv->m_vecVelocity[2] += flLift * GAMEMOVEMENT_FRAMETIME; 
+				// Simulate air drag: ease into the max Z speed over ~0.5s instead of instant snapping
+				if ( mv->m_vecVelocity[2] < flMaxZ )
+				{
+					float flDiff = flMaxZ - mv->m_vecVelocity[2];
+					// Add an upward acceleration that overcomes gravity and slows the player down smoothly
+					// Using 1.5f for a gentler swoop/dip before stabilizing
+					float flUpwardAccel = GetActualGravity( player ) + (flDiff * 1.5f);
+					mv->m_vecVelocity[2] += flUpwardAccel * GAMEMOVEMENT_FRAMETIME;
+					if ( mv->m_vecVelocity[2] > flMaxZ )
+						mv->m_vecVelocity[2] = flMaxZ;
+				}
 
-				// Reduced XY drag to preserve momentum for gliding
-				float flDragFactor = 0.5f; 
-				float flDecel = flExcess * flDragFactor * GAMEMOVEMENT_FRAMETIME;
-				flDecel = Min( flDecel, flExcess );
+				// Sailing / Dynamic Lift mechanic: convert horizontal speed into upward lift
+				float flSpeedXY = mv->m_vecVelocity.Length2D();
+				float flDrag = tf_parachute_maxspeed_xy.GetFloat();
 
-				// Reduce XY velocity by flDecel
-				float flNewSpeedXY = flSpeedXY - flDecel;
-				float flScale = flNewSpeedXY / flSpeedXY;
-				mv->m_vecVelocity[0] *= flScale;
-				mv->m_vecVelocity[1] *= flScale;
+				if ( flSpeedXY > flDrag )
+				{
+					float flExcess = flSpeedXY - flDrag;
+					
+					// Lift force proportional to excess horizontal speed
+					float flLift = flExcess * 0.5f; 
+					mv->m_vecVelocity[2] += flLift * GAMEMOVEMENT_FRAMETIME; 
+
+					// Reduced XY drag to preserve momentum for gliding
+					float flDragFactor = 0.5f; 
+					float flDecel = flExcess * flDragFactor * GAMEMOVEMENT_FRAMETIME;
+					flDecel = Min( flDecel, flExcess );
+
+					// Reduce XY velocity by flDecel
+					float flNewSpeedXY = flSpeedXY - flDecel;
+					float flScale = flNewSpeedXY / flSpeedXY;
+					mv->m_vecVelocity[0] *= flScale;
+					mv->m_vecVelocity[1] *= flScale;
+				}
+			}
+			else
+			{
+				if ( mv->m_vecVelocity[2] < 0 )
+				{
+					mv->m_vecVelocity[2] = Max( mv->m_vecVelocity[2], m_pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) && !m_pTFPlayer->IsPlayerClass( TF_CLASS_PYRO ) ? tf_parachute_maxspeed_onfire_z.GetFloat() : tf_parachute_maxspeed_z.GetFloat() );
+					float flDrag = tf_parachute_maxspeed_xy.GetFloat();
+					// Instead of clamping, we'll dampen
+					float flSpeedX = abs( mv->m_vecVelocity[0] );
+					float flSpeedY = abs( mv->m_vecVelocity[1] );
+					float flReductionX = flSpeedX > flDrag ? ( flSpeedX - flDrag ) / 3.0f - 10.0f : 0;
+					float flReductionY = flSpeedY > flDrag ? ( flSpeedY - flDrag ) / 3.0f - 10.0f : 0;
+
+					mv->m_vecVelocity[0] = Clamp( mv->m_vecVelocity[0], -flDrag - flReductionX, flDrag + flReductionX );
+					mv->m_vecVelocity[1] = Clamp( mv->m_vecVelocity[1], -flDrag - flReductionY, flDrag + flReductionY );
+				}
 			}
 		}
 
