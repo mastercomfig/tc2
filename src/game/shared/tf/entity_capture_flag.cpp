@@ -526,12 +526,7 @@ void CCaptureFlag::UpdateGlowEffect( void )
 			m_pGlowEffect->SetEntity( this );
 
 			float r, g, b;
-			int nGlowTeam = GetTeamNumber();
-			if ( IsStolen() && GetOwnerEntity() )
-			{
-				nGlowTeam = GetOwnerEntity()->GetTeamNumber();
-			}
-			TeamplayRoundBasedRules()->GetTeamGlowColor( nGlowTeam, r, g, b );
+			TeamplayRoundBasedRules()->GetTeamGlowColor( GetTeamNumber(), r, g, b );
 			m_pGlowEffect->SetColor( Vector( r, g, b ) );
 		}
 	}
