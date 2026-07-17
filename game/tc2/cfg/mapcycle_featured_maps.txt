@@ -1,4 +1,6 @@
-pl_snowycoast
-cp_vanguard
-ctf_landfall
-koth_highpass
+koth_dryfield
+pl_redwood
+cp_mojave
+cp_premuda
+koth_camp_saxton
+koth_shorelight
