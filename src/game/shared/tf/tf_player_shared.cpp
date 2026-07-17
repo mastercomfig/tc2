@@ -4286,6 +4286,12 @@ void CTFPlayerShared::FireClientTauntParticleEffects()
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnAddTaunting( void )
 {
+	// TODO(mcoms): do we need to also store the weapon visibility state and restore it on taunt end?
+	if ( m_pOuter->GetActiveWeapon() )
+	{
+		m_pOuter->GetActiveWeapon()->SetWeaponVisible( true );
+	}
+
 	CTFWeaponBase *pWpn = m_pOuter->GetActiveTFWeapon();
 	if ( pWpn )
 	{
