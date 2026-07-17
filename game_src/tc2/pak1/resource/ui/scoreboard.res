@@ -504,7 +504,7 @@
 		"tabPosition"	"0"
 		"autoresize"	"3"
 		"linespacing"	"18"
-		"linegap"		"5"
+		"linegap"		"3"
 		"fgcolor"		"blue"
 		//"show_columns"	"1"
 		
@@ -528,7 +528,7 @@
 		"tabPosition"	"0"
 		"autoresize"	"3"
 		"linespacing"	"18"
-		"linegap"		"5"
+		"linegap"		"3"
 		"fgcolor"		"red"
 		//"show_columns"	"1"
 
