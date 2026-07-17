@@ -1208,7 +1208,7 @@ bool CTFHudMatchStatus::AreMatchDoorsVisible() const
 {
 	if ( TFGameRules() && ( TFGameRules()->IsCompetitiveMode() || TFGameRules()->IsEmulatingMatch() ) )
 	{
-		if ( TFGameRules()->ShowMatchSummary() )
+		if ( TFGameRules()->ShowMatchSummary() || TFGameRules()->IsPlayingMultiSeriesIntermission() )
 		{
 			return true;
 		}
@@ -1220,7 +1220,6 @@ bool CTFHudMatchStatus::AreMatchDoorsVisible() const
 	}
 
 	return m_flMatchSummaryShowTime >= 0.0f;
-
 }
 
 //-----------------------------------------------------------------------------
