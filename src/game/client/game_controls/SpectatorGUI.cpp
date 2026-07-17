@@ -530,7 +530,12 @@ void CSpectatorGUI::OnThink()
 		}
 
 #ifdef TF_CLIENT_DLL
-		if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
+		C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
+		if ( pLocalPlayer && pLocalPlayer->GetObserverMode() == OBS_MODE_NONE && pLocalPlayer->GetTeamNumber() != TEAM_SPECTATOR )
+		{
+			ShowPanel( false );
+		}
+		else if ( TFGameRules() && TFGameRules()->ShowMatchSummary() )
 		{
 			ShowPanel( false );
 		}
