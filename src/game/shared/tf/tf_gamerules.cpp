@@ -6200,13 +6200,18 @@ void CTFGameRules::SpawnMatchBots( void )
 		tf_bot_difficulty.SetValue(bIsCompetitive ? 3 : 1);
 		static ConVarRef tf_bot_quota( "tf_bot_quota" );
 		int iBotQuota;
-		if (pMatch)
+		if ( pMatch )
 		{
 			iBotQuota = bIsCompetitive ? ( int )pMatch->GetCanonicalMatchSize() : (( int )pMatch->GetCanonicalMatchSize() * 0.75f);
 		}
 		else
 		{
+			// TODO(mcoms): this hasn't playtested well with the low player counts plus it exposes lots of bugs in our logic
+#if 0
 			iBotQuota = bIsCompetitive ? 12 : (24 * 0.75f);
+#else
+			iBotQuota = bIsCompetitive ? 12 : 24;
+#endif
 		}
 		tf_bot_quota.SetValue( iBotQuota );
 		static ConVarRef tf_bot_quota_mode( "tf_bot_quota_mode" );
