@@ -15509,7 +15509,28 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 
 		if ( mvpEvent )
 		{
-			mvpEvent->SetInt("winning_team", m_iWinningTeam);
+			int nOverallWinningTeam = TEAM_UNASSIGNED;
+			ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
+			if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() )
+			{
+				int nRedSeriesPoints = GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_RED ) );
+				int nBlueSeriesPoints = GetSeriesPoints( TFGameRules()->GetGCTeamForGameTeam( TF_TEAM_BLUE ) );
+				if ( nRedSeriesPoints > nBlueSeriesPoints )
+				{
+					nOverallWinningTeam = TF_TEAM_RED;
+				}
+				else if ( nBlueSeriesPoints > nRedSeriesPoints )
+				{
+					nOverallWinningTeam = TF_TEAM_BLUE;
+				}
+			}
+
+			if ( nOverallWinningTeam == TEAM_UNASSIGNED )
+			{
+				nOverallWinningTeam = m_iWinningTeam;
+			}
+
+			mvpEvent->SetInt("winning_team", nOverallWinningTeam);
 
 			// build a vector of players & round scores
 			CUtlVector<PlayerRoundScore_t> vecPlayerScore;
@@ -15520,7 +15541,7 @@ void CTFGameRules::SendWinPanelInfo( bool bGameOver )
 					continue;
 				// filter out spectators and, if not stalemate, all players not on winning team
 				int iPlayerTeam = pTFPlayer->GetTeamNumber();
-				if ( ( iPlayerTeam < FIRST_GAME_TEAM ) || ( m_iWinningTeam != TEAM_UNASSIGNED && ( m_iWinningTeam != iPlayerTeam ) ) )
+				if ( ( iPlayerTeam < FIRST_GAME_TEAM ) || ( nOverallWinningTeam != TEAM_UNASSIGNED && ( nOverallWinningTeam != iPlayerTeam ) ) )
 					continue;
 
 				int iRoundScore = 0, iTotalScore = 0;
