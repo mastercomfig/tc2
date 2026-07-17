@@ -10464,6 +10464,13 @@ void C_TFPlayer::ForceTempForceDraw( bool bThirdPerson )
 
 void C_TFPlayer::FlushAllPlayerVisibilityState()
 {
+	// TODO(mcoms): is this the best way to do this?
+	static CUtlVector<C_TFPlayer*> s_FlushingPlayers;
+	if ( s_FlushingPlayers.Find( this ) != s_FlushingPlayers.InvalidIndex() )
+		return;
+
+	s_FlushingPlayers.AddToTail( this );
+
 	// We've switch from first to third, or vice versa.
 	UpdateVisibility();
 
@@ -10488,6 +10495,13 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 		}
 	}
 
+	// Update our viewmodel whenever we switch view modes
+	C_TFPlayer *pTFObserverTarget = ToTFPlayer( GetObserverTarget() );
+	if ( pTFObserverTarget && pTFObserverTarget != this )
+	{
+		pTFObserverTarget->FlushAllPlayerVisibilityState();
+	}
+
 	// Update our weapon's visibility when we switch
 	C_TFWeaponBase *pWeapon = GetActiveTFWeapon();
 	if ( pWeapon )
@@ -10500,6 +10514,8 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 	// Update visibility of any worn items.
 	UpdateWearables();
 	SetBodygroupsDirty();
+
+	s_FlushingPlayers.FindAndRemove( this );
 }
 
 //-----------------------------------------------------------------------------
