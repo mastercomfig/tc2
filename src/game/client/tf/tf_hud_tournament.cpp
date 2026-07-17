@@ -1487,8 +1487,7 @@ void CHudStopWatch::OnTick( void )
 		m_bShouldBeVisible = true;
 	}
 
-	// TODO(mcoms) if we are in win state, we shouldn't update? because gamerules could swap team scores during it
-	if ( m_pTimePanel && ObjectiveResource() && TFGameRules()->State_Get() != GR_STATE_TEAM_WIN )
+	if ( m_pTimePanel && ObjectiveResource() )
 	{
 		bool bMultiSeries = false;
 		if ( TFGameRules() )
@@ -1522,6 +1521,10 @@ void CHudStopWatch::OnTick( void )
 		}
 
 		if ( !pAttacker || !pDefender )
+			return;
+
+		// Guard against transient invalid states during team switches
+		if ( TFGameRules()->State_Get() != GR_STATE_RND_RUNNING && pDefender->Get_Score() < pAttacker->Get_Score() )
 			return;
 
 		if ( TFGameRules()->GetStopWatchState() == STOPWATCH_CAPTURE_TIME_NOT_SET )
