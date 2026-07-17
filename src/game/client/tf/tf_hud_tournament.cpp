@@ -1365,6 +1365,8 @@ void CHudTournamentSetup::ApplySchemeSettings( IScheme *pScheme )
 }
 
 
+ConVar cl_hud_casual_stopwatch_disable( "cl_hud_casual_stopwatch_disable", "0", FCVAR_ARCHIVE, "Disable displaying the stopwatch timer in Casual matchmaking." );
+
 DECLARE_HUDELEMENT( CHudStopWatch );
 
 //-----------------------------------------------------------------------------
@@ -1464,6 +1466,16 @@ void CHudStopWatch::OnTick( void )
 	bool bInFreezeCam = ( pPlayer && pPlayer->GetObserverMode() == OBS_MODE_FREEZECAM );
 
 	bool bProperMatch = TFGameRules()->IsInTournamentMode() || TFGameRules()->IsCompetitiveMode();
+	
+	ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
+	bool bIsCasual = GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->GetMatchType() == MATCH_TYPE_CASUAL;
+
+	if ( bIsCasual && cl_hud_casual_stopwatch_disable.GetBool() )
+	{
+		m_bShouldBeVisible = false;
+		return;
+	}
+
 	// TODO(mcoms): does hiding it suffice for stopwatch states STOPWATCH_DEFENDED and STOPWATCH_FULFILLED?
 	if ( !bProperMatch || TFGameRules()->IsInPreMatch() || !TFGameRules()->IsInStopWatch() || bInFreezeCam || TFGameRules()->State_Get() == GR_STATE_GAME_OVER || TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS || TFGameRules()->GetStopWatchState() == STOPWATCH_DEFENDED || TFGameRules()->GetStopWatchState() == STOPWATCH_FULFILLED )
 	{
