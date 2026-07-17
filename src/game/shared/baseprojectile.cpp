@@ -57,6 +57,7 @@ CBaseProjectile::CBaseProjectile()
 #ifdef GAME_DLL
 	m_iDestroyableHitCount = 0;
 	m_bCanCollideWithTeammates = false;
+	SetBlocksLOS( false );
 #endif
 	m_hOriginalLauncher = NULL;
 	m_flProjectileSpawnTime = 0.0f;
@@ -128,6 +129,7 @@ void CBaseProjectile::Spawn()
 
 #ifdef GAME_DLL
 	ResetCollideWithTeammates();
+	SetBlocksLOS( false );
 #endif // GAME_DLL
 }
 
