@@ -1160,6 +1160,7 @@ void CTFClientScoreBoardDialog::UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &p
 					pPanel->MakeReadyForUse();
 					pPanel->SetVisible( true );
 					pPanel->SetZPos( 9999 );
+					pPanel->SetMouseInputEnabled( false );
 					pBadgePanels.AddToTail( pPanel );
 				}
 				else
@@ -1226,6 +1227,7 @@ void CTFClientScoreBoardDialog::UpdateBadgePanels( CUtlVector<CTFBadgePanel*> &p
 							pPanel->MakeReadyForUse();
 							pPanel->SetVisible( true );
 							pPanel->SetZPos( 9999 );
+							pPanel->SetMouseInputEnabled( false );
 							pBadgePanels.AddToTail( pPanel );
 						}
 						else
@@ -1876,9 +1878,9 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 				if ( pIssueKeyValues )
 				{
 					playerIndex = pIssueKeyValues->GetInt( "playerIndex", 0 );
-					pSelectedPlayer = ToTFPlayer( UTIL_PlayerByIndex( playerIndex ) );
-					if ( !pSelectedPlayer || !playerIndex )
+					if ( !playerIndex )
 						return;
+					pSelectedPlayer = ToTFPlayer( UTIL_PlayerByIndex( playerIndex ) );
 				}
 			}
 		}
@@ -1939,65 +1941,65 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 		{
 			m_pDeathsLabel->SetFgColor( g_TF_PR->GetDeaths( playerIndex ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "assists", pSelectedPlayer->m_Shared.GetKillAssists( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "assists", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetKillAssists( playerIndex ) : 0 );
 		if ( m_pAssistLabel )
 		{
-			m_pAssistLabel->SetFgColor( pSelectedPlayer->m_Shared.GetKillAssists( playerIndex ) ? cGreen : cWhite );
+			m_pAssistLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetKillAssists( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "destruction", pSelectedPlayer->m_Shared.GetBuildingsDestroyed( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "destruction", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetBuildingsDestroyed( playerIndex ) : 0 );
 		if ( m_pDestructionLabel )
 		{
-			m_pDestructionLabel->SetFgColor( pSelectedPlayer->m_Shared.GetBuildingsDestroyed( playerIndex ) ? cGreen : cWhite );
+			m_pDestructionLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetBuildingsDestroyed( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "captures", pSelectedPlayer->m_Shared.GetCaptures( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "captures", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetCaptures( playerIndex ) : 0 );
 		if ( m_pCapturesLabel )
 		{
-			m_pCapturesLabel->SetFgColor( pSelectedPlayer->m_Shared.GetCaptures( playerIndex ) ? cGreen : cWhite );
+			m_pCapturesLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetCaptures( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "defenses", pSelectedPlayer->m_Shared.GetDefenses( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "defenses", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetDefenses( playerIndex ) : 0 );
 		if ( m_pDefensesLabel )
 		{
-			m_pDefensesLabel->SetFgColor( pSelectedPlayer->m_Shared.GetDefenses( playerIndex ) ? cGreen : cWhite );
+			m_pDefensesLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetDefenses( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "dominations", pSelectedPlayer->m_Shared.GetDominations( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "dominations", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetDominations( playerIndex ) : 0 );
 		if ( m_pDominationsLabel )
 		{
-			m_pDominationsLabel->SetFgColor( pSelectedPlayer->m_Shared.GetDominations( playerIndex ) ? cGreen : cWhite );
+			m_pDominationsLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetDominations( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "revenge", pSelectedPlayer->m_Shared.GetRevenge( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "revenge", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetRevenge( playerIndex ) : 0 );
 		if ( m_pRevengeLabel )
 		{
-			m_pRevengeLabel->SetFgColor( pSelectedPlayer->m_Shared.GetRevenge( playerIndex ) ? cGreen : cWhite );
+			m_pRevengeLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetRevenge( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "healing", pSelectedPlayer->m_Shared.GetHealPoints( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "healing", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetHealPoints( playerIndex ) : 0 );
 		if ( m_pHealingLabel )
 		{
-			m_pHealingLabel->SetFgColor( pSelectedPlayer->m_Shared.GetHealPoints( playerIndex ) ? cGreen : cWhite );
+			m_pHealingLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetHealPoints( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "invulns", pSelectedPlayer->m_Shared.GetInvulns( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "invulns", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetInvulns( playerIndex ) : 0 );
 		if ( m_pInvulnsLabel )
 		{
-			m_pInvulnsLabel->SetFgColor( pSelectedPlayer->m_Shared.GetInvulns( playerIndex ) ? cGreen : cWhite );
+			m_pInvulnsLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetInvulns( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "teleports", pSelectedPlayer->m_Shared.GetTeleports( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "teleports", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetTeleports( playerIndex ) : 0 );
 		if ( m_pTeleportsLabel )
 		{
-			m_pTeleportsLabel->SetFgColor( pSelectedPlayer->m_Shared.GetTeleports( playerIndex ) ? cGreen : cWhite );
+			m_pTeleportsLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetTeleports( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "headshots", pSelectedPlayer->m_Shared.GetHeadshots( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "headshots", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetHeadshots( playerIndex ) : 0 );
 		if ( m_pHeadshotsLabel )
 		{
-			m_pHeadshotsLabel->SetFgColor( pSelectedPlayer->m_Shared.GetHeadshots( playerIndex ) ? cGreen : cWhite );
+			m_pHeadshotsLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetHeadshots( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "backstabs", pSelectedPlayer->m_Shared.GetBackstabs( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "backstabs", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetBackstabs( playerIndex ) : 0 );
 		if ( m_pBackstabsLabel )
 		{
-			m_pBackstabsLabel->SetFgColor( pSelectedPlayer->m_Shared.GetBackstabs( playerIndex ) ? cGreen : cWhite );
+			m_pBackstabsLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetBackstabs( playerIndex ) ) ? cGreen : cWhite );
 		}
-		m_pLocalPlayerStatsPanel->SetDialogVariable( "bonus", pSelectedPlayer->m_Shared.GetBonusPoints( playerIndex ) );
+		m_pLocalPlayerStatsPanel->SetDialogVariable( "bonus", pSelectedPlayer ? pSelectedPlayer->m_Shared.GetBonusPoints( playerIndex ) : 0 );
 		if ( m_pBonusLabel )
 		{
-			m_pBonusLabel->SetFgColor( pSelectedPlayer->m_Shared.GetBonusPoints( playerIndex ) ? cGreen : cWhite );
+			m_pBonusLabel->SetFgColor( ( pSelectedPlayer && pSelectedPlayer->m_Shared.GetBonusPoints( playerIndex ) ) ? cGreen : cWhite );
 		}
 
 		int nSupport = TFGameRules() ? TFGameRules()->CalcPlayerSupportScore( NULL, playerIndex ) : 0;
@@ -2025,9 +2027,10 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 		m_hSelectedPlayer = pSelectedPlayer;
 		m_bUsePlayerModel = ShouldUsePlayerModel();
 
-		int iClass = pSelectedPlayer->m_Shared.GetDesiredPlayerClassIndex();
-		int iTeam = pSelectedPlayer->GetTeamNumber();
-		if ( ( pLocalPlayer->InSameTeam( pSelectedPlayer ) || pLocalPlayer->GetTeamNumber() < FIRST_GAME_TEAM ) && 
+		int iClass = pSelectedPlayer ? pSelectedPlayer->m_Shared.GetDesiredPlayerClassIndex() : g_TF_PR->GetPlayerClass( playerIndex );
+		int iTeam = pSelectedPlayer ? pSelectedPlayer->GetTeamNumber() : g_PR->GetTeam( playerIndex );
+		bool bInSameTeam = pSelectedPlayer ? pLocalPlayer->InSameTeam( pSelectedPlayer ) : ( pLocalPlayer->GetTeamNumber() == g_PR->GetTeam( playerIndex ) );
+		if ( ( bInSameTeam || pLocalPlayer->GetTeamNumber() < FIRST_GAME_TEAM ) && 
 			 iTeam >= FIRST_GAME_TEAM && iClass >= TF_FIRST_NORMAL_CLASS && iClass <= TF_LAST_NORMAL_CLASS )
 		{
 			if ( ShouldUsePlayerModel() )
@@ -2042,7 +2045,7 @@ void CTFClientScoreBoardDialog::UpdatePlayerDetails()
 					m_pClassImage->SetVisible( false );
 				}
 
-				m_nPlayerModelPanelIndex = pSelectedPlayer->entindex();
+				m_nPlayerModelPanelIndex = pSelectedPlayer ? pSelectedPlayer->entindex() : -1;
 				UpdatePlayerModel();
 			}
 			else
