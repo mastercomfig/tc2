@@ -6,6 +6,8 @@ pl_hoodoo_final
 koth_sawmill
 koth_nucleus
 koth_viaduct
+koth_megalo
+koth_cascade
 cp_gorge
 pl_upward
 pl_thundermountain
@@ -29,7 +31,6 @@ koth_brazil
 pl_pier
 pd_snowville_event
 koth_cascade
-pl_breadspace
 pl_coal_event
 ctf_doublecross_snowy
 cp_altitude
@@ -67,3 +68,8 @@ koth_winter_ridge
 cppl_gavle
 2koth_abbey
 ctf_sidewinder
+koth_dryfield
+pl_redwood
+cp_mojave
+cp_premuda
+koth_camp_saxton
