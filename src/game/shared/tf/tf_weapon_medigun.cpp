@@ -2702,7 +2702,7 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 						{
 							iCurHealth = pPlayer->GetHealth();
 						}
-						float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( GetMaxHealth() );
+						float flHealth = static_cast<float>( iCurHealth ) / static_cast<float>( pPlayer->GetMaxHealth() );
 						float flHealthThreshold = static_cast<float>( hud_medicautocallersthreshold.GetInt() ) / 100.0f;
 
 						// If it's a healthy teammate....
