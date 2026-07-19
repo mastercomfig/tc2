@@ -74,6 +74,7 @@ public:
 	virtual bool InitServerSettingsForMatch( const CTFGSLobby* pLobby ) const;
 	virtual void InitGameRulesSettings() const = 0;
 	virtual void InitGameRulesSettingsPostEntity() const = 0;
+	virtual void InitGameRulesSettingsMatchPoint() const {};
 	virtual void PostMatchClearServerSettings() const = 0;
 	virtual bool ShouldRequestLateJoin() const = 0;
 	virtual bool BMatchIsSafeToLeaveForPlayer( const CMatchInfo* pMatchInfo, const CMatchInfo::PlayerMatchData_t *pMatchPlayer ) const = 0;

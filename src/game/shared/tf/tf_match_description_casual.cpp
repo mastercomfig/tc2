@@ -151,6 +151,47 @@ public:
 		}
 	}
 
+	virtual void InitGameRulesSettingsMatchPoint() const OVERRIDE
+	{
+		if ( TFGameRules()->IsCommunityGameMode() )
+		{
+			return;
+		}
+
+		if ( TFGameRules()->MatchmakingShouldUseStopwatchMode() )
+		{
+			return;
+		}
+
+		char szCurrentMap[ MAX_MAP_NAME ];
+		Q_strncpy( szCurrentMap, STRING( gpGlobals->mapname ), sizeof( szCurrentMap ) );
+		if ( !Q_stricmp( szCurrentMap, "arena_lumberyard_event" ) )
+		{
+			return;
+		}
+
+		CTeamControlPointMaster *pMaster = ( g_hControlPointMasters.Count() ) ? g_hControlPointMasters[0] : NULL;
+		bool bMultiStagePLR = ( tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() && 
+								pMaster->GetNumRounds() > 1 && TFGameRules()->HasMultipleTrains() );
+
+		if ( bMultiStagePLR )
+		{
+			return;
+		}
+
+		bool bCTF = tf_gamemode_ctf.GetBool();
+
+		// Exec our match settings
+		const char *pszExecFile = ( bMultiStagePLR || bCTF ) ? "server_casual_max_rounds_win_conditions_matchpoint.cfg" : "server_casual_rounds_win_conditions_matchpoint.cfg";
+
+		if ( TFGameRules()->IsPowerupMode() )
+		{
+			pszExecFile = "server_casual_max_rounds_win_conditions_mannpower_matchpoint.cfg";
+		}
+
+		engine->ServerCommand( CFmtStr( "exec %s\n", pszExecFile ) );
+	}
+
 	bool ShouldRequestLateJoin() const OVERRIDE
 	{
 		auto pTFGameRules = TFGameRules();

@@ -251,6 +251,7 @@ ConVar mp_winlimit( "mp_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Max sc
 	);
 
 ConVar mp_timelimit_added_winlimit( "mp_timelimit_added_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Added to current highest team score to set a new winlimit when time runs out.", true, 0, false, 0 );
+ConVar mp_timelimit_added_winlimit_time( "mp_timelimit_added_winlimit_time", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "What time left to check against for mp_timelimit_added_winlimit.", true, 0, false, 0 );
 
 
 ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "0 - Enable respawn times, 1 - Instant respawn but keep freeze time, 2 - Instant respawn without freeze time, 3 - Instant respawn with cancelable freeze time" );
@@ -1297,14 +1298,18 @@ bool CTeamplayRoundBasedRules::CheckTimeLimit( bool bAllowEnd /*= true*/ )
 
 #ifdef TF_DLL
 			// if we're just checking for time limit, then it's not a win condition on its own for multi-series.
-			if ( !bAllowEnd && GetTimeLeft() <= 0 )
+#if 0
+			if ( GetTimeLeft() <= 0 )
+#else
+			if ( GetTimeLeft() <= 0 || bSwitchDueToTime )
+#endif
 			{
 				if ( TFGameRules() )
 				{
 					ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
 					if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 					{
-						return false;
+						return bAllowEnd;
 					}
 				}
 			}
@@ -1320,32 +1325,6 @@ bool CTeamplayRoundBasedRules::CheckTimeLimit( bool bAllowEnd /*= true*/ )
 
 		if ( GetTimeLeft() <= 0 || m_bChangelevelAfterStalemate || bSwitchDueToTime )
 		{
-			if ( mp_timelimit_added_winlimit.GetInt() > 0 )
-			{
-				int nHighestScore = 0;
-				for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
-				{
-					CTeam *pTeam = GetGlobalTeam( i );
-					if ( pTeam && pTeam->GetScore() > nHighestScore )
-					{
-						nHighestScore = pTeam->GetScore();
-					}
-				}
-
-				int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
-				mp_winlimit.SetValue( nHighestScore + nAddedWinLimit );
-
-				mp_timelimit.SetValue( 0 ); // Disable the time limit so it doesn't trigger again
-
-				char strMessage[128];
-				Q_snprintf( strMessage, sizeof( strMessage ), "Time limit reached! First team to %d wins the match!", mp_winlimit.GetInt() );
-
-				UTIL_ClientPrintAll( HUD_PRINTCENTER, strMessage );
-				UTIL_ClientPrintAll( HUD_PRINTTALK, strMessage );
-
-				return false;
-			}
-
 			if ( bAllowEnd )
 			{
 				IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_game_over" );
@@ -2043,8 +2022,18 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	}
 #endif
 
+	bool bIsTimeUp = GetTimeLeft() <= 0;
+	if ( !bIsTimeUp )
+	{
+		int iAddedWinlimitTimeLeft = mp_timelimit_added_winlimit_time.GetInt() * 60;
+		if ( mp_timelimit_added_winlimit.GetInt() > 0 && iAddedWinlimitTimeLeft > 0 )
+		{
+			bIsTimeUp = ( GetTimeLeft() <= iAddedWinlimitTimeLeft );
+		}
+	}
+
 	// See if we're coming up to the server timelimit, in which case force a stalemate immediately.
-	if ( mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && GetTimeLeft() <= 0 )
+	if ( mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && bIsTimeUp )
 	{
 		if ( mp_timelimit_added_winlimit.GetInt() > 0 )
 		{
@@ -2058,16 +2047,20 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 				}
 			}
 
-			int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
-			mp_winlimit.SetValue( nHighestScore + nAddedWinLimit );
-
 			mp_timelimit.SetValue( 0 ); // Disable the time limit so it doesn't trigger again
 
-			char strMessage[128];
-			Q_snprintf( strMessage, sizeof( strMessage ), "Time limit reached! First team to %d wins the match!", mp_winlimit.GetInt() );
+			int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
+			int iNewWinLimit = nHighestScore + nAddedWinLimit;
+			if ( iNewWinLimit < mp_winlimit.GetInt() )
+			{
+				mp_winlimit.SetValue( nHighestScore + nAddedWinLimit );
 
-			UTIL_ClientPrintAll( HUD_PRINTCENTER, strMessage );
-			UTIL_ClientPrintAll( HUD_PRINTTALK, strMessage );
+				char strMessage[128];
+				Q_snprintf( strMessage, sizeof( strMessage ), "Time limit reached! First team to %d wins the match!", mp_winlimit.GetInt() );
+
+				UTIL_ClientPrintAll( HUD_PRINTCENTER, strMessage );
+				UTIL_ClientPrintAll( HUD_PRINTTALK, strMessage );
+			}
 		}
 		else
 		{
@@ -2269,7 +2262,8 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 		if ( TFGameRules() )
 		{
 			ETFMatchGroup eMatchGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
-			if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
+			const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( eMatchGroup );
+			if ( pMatchDesc && pMatchDesc->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 			{
 				// In a multi-series match we override the traditional WinLimit/MaxRounds behavior.
 				// A round win will trigger this state. If the series is complete (Win/MaxRounds limit hit),
@@ -2302,6 +2296,12 @@ void CTeamplayRoundBasedRules::State_Think_TEAM_WIN( void )
 					if ( !bTimeLimitReached || bIsTied )
 					{
 						SetForceMapReset( true ); // Ensure the map resets for the next series
+
+						if ( bTimeLimitReached && bIsTied )
+						{
+							// tiebreaker match point rules
+							pMatchDesc->InitGameRulesSettingsMatchPoint();
+						}
 						
 						// Setup intermission
 						TFGameRules()->SetMultiSeriesIntermission( true );
