@@ -61,7 +61,7 @@ void C_CurrencyPack::UpdateGlowEffect( void )
 	if ( m_bShouldGlowForLocalPlayer )
 	{
 		Vector color = m_bDistributed ? Vector( 150, 0, 0 ) : Vector( 0, 150, 0 );
-		m_pGlowEffect = new CGlowObject( this, color, 1.0, true );
+		m_pGlowEffect = new CGlowObject( this, color, 1.0, true, true );
 	}
 }
 

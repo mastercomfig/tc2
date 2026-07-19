@@ -427,7 +427,10 @@ void CTFDroppedWeapon::ClientThink()
 		return;
 
 	C_TFPlayer *pTFPlayer = C_TFPlayer::GetLocalTFPlayer();
-	bool bShouldGlowForLocalPlayer = pTFPlayer && pTFPlayer->IsAlive() && pTFPlayer->CanPickupDroppedWeapon( this );
+	bool bShouldGlowForLocalPlayer = pTFPlayer && pTFPlayer->IsAlive() && pTFPlayer->CanPickupDroppedWeapon( this, false );
+
+	// UNDONE: we let players pick up a weapon they already have. it's useful for getting back clip, uber, etc. so let it highlight too.
+#if 0
 	if ( bShouldGlowForLocalPlayer )
 	{
 		// ignore the item that the player's equipped
@@ -444,6 +447,7 @@ void CTFDroppedWeapon::ClientThink()
 			}
 		}
 	}
+#endif
 
 	if ( m_bShouldGlowForLocalPlayer != bShouldGlowForLocalPlayer )
 	{

@@ -1563,7 +1563,7 @@ public:
 	void CreateDisguiseWeaponList( CTFPlayer *pDisguiseTarget );
 	void ClearDisguiseWeaponList();
 
-	bool CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon );
+	bool CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon, bool bCheckCurrentState = true );
 	CTFDroppedWeapon* GetDroppedWeaponInRange();
 
 	bool HasCampaignMedal( int iMedal );

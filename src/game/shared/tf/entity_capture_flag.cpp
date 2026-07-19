@@ -512,7 +512,7 @@ void CCaptureFlag::UpdateGlowEffect( void )
 {
 	if ( !m_pGlowEffect )
 	{
-		m_pGlowEffect = new CGlowObject( this, Vector( 0.76f, 0.76f, 0.76f ), 1.0, true );
+		m_pGlowEffect = new CGlowObject( this, Vector( 0.76f, 0.76f, 0.76f ), 1.0, true, true );
 	}
 
 	if ( m_pGlowEffect )

@@ -15549,25 +15549,28 @@ CTFWeaponBuilder *CTFPlayerSharedUtils::GetBuilderForObjectType( CTFPlayer *pTFP
 //-----------------------------------------------------------------------------
 // Purpose: Can player pick up this weapon?
 //-----------------------------------------------------------------------------
-bool CTFPlayer::CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon )
+bool CTFPlayer::CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon, bool bCheckCurrentState )
 {
 	if ( !pWeapon->GetItem()->IsValid() )
 		return false;
 
-	int iClass = GetPlayerClass()->GetClassIndex();
-	if ( iClass == TF_CLASS_SPY && ( m_Shared.InCond( TF_COND_DISGUISED ) || m_Shared.GetPercentInvisible() > 0 ) )
-		return false;
-
- 	if ( IsTaunting() )
- 		return false;
-
 	if ( !IsAlive() )
 		return false;
+
+	if ( bCheckCurrentState )
+	{
+		int iClass = GetPlayerClass()->GetClassIndex();
+		if ( iClass == TF_CLASS_SPY && ( m_Shared.InCond( TF_COND_DISGUISED ) || m_Shared.GetPercentInvisible() > 0 ) )
+			return false;
+
+		if ( IsTaunting() )
+			return false;
+	}
 
 	// There's a rare case that the player doesn't have an active weapon. This shouldn't happen. 
 	// If you hit this assert, figure out and fix WHY the player doesn't have a weapon.
 	Assert( GetActiveTFWeapon() );
-	if ( !GetActiveTFWeapon() || !GetActiveTFWeapon()->CanPickupOtherWeapon() )
+	if ( !GetActiveTFWeapon() || ( bCheckCurrentState && !GetActiveTFWeapon()->CanPickupOtherWeapon() ) )
 		return false;
 
 	int iItemSlot = pWeapon->GetItem()->GetStaticData()->GetLoadoutSlot( iClass );

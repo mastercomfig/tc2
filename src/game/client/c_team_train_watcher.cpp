@@ -87,7 +87,7 @@ void C_TeamTrainWatcher::UpdateGlowEffect( void )
 	{
 		float r, g, b;
 		TeamplayRoundBasedRules()->GetTeamGlowColor( GetTeamNumber(), r, g, b );
-		m_pGlowEffect = new CGlowObject( m_hGlowEnt, Vector( r, g, b ), 1.0, true );
+		m_pGlowEffect = new CGlowObject( m_hGlowEnt, Vector( r, g, b ), 1.0, true, true );
 	}
 }
 

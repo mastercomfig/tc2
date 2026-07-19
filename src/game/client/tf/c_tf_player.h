@@ -952,7 +952,7 @@ public:
 	void SetSecondaryLastWeapon( CBaseCombatWeapon *pSecondaryLastWeapon ) { m_hSecondaryLastWeapon = pSecondaryLastWeapon; }
 	CBaseCombatWeapon* GetSecondaryLastWeapon() const { return m_hSecondaryLastWeapon; }
 
-	bool CanPickupDroppedWeapon( const C_TFDroppedWeapon *pWeapon );
+	bool CanPickupDroppedWeapon( const C_TFDroppedWeapon *pWeapon, bool bCheckCurrentState = true );
 	C_TFDroppedWeapon* GetDroppedWeaponInRange();
 
 	bool HasCampaignMedal( int iMedal );
