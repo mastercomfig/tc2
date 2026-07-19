@@ -15557,9 +15557,9 @@ bool CTFPlayer::CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon, bool bC
 	if ( !IsAlive() )
 		return false;
 
+	int iClass = GetPlayerClass()->GetClassIndex();
 	if ( bCheckCurrentState )
 	{
-		int iClass = GetPlayerClass()->GetClassIndex();
 		if ( iClass == TF_CLASS_SPY && ( m_Shared.InCond( TF_COND_DISGUISED ) || m_Shared.GetPercentInvisible() > 0 ) )
 			return false;
 
