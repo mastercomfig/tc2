@@ -724,7 +724,7 @@ bool CBaseObject::EstimateValidBuildPos( void )
 	if ( TFGameRules()->IsBetaActive() )
 	{
 		// BLU can build in setup time
-		bCanBuildInRespawnRoom = ( GetTeamNumber() == TF_TEAM_BLUE && TFGameRules()->InSetup() ) || g_pServerBenchmark->IsBenchmarkRunning();
+		bCanBuildInRespawnRoom = ( ( ( CTFTeam* )GetTeam() )->GetRole() == TEAM_ROLE_ATTACKERS && TFGameRules()->IsAttackDefenseMode() && TFGameRules()->InSetup() ) || g_pServerBenchmark->IsBenchmarkRunning();
 	}
 	else
 	{
