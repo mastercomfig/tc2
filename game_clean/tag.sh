@@ -65,6 +65,5 @@ else
         --title "${VERSION}" \
         --notes "${NOTES}" \
         --prerelease \
-        --verify-tag \
-        --fail-on-no-commits
+        --verify-tag
 fi
