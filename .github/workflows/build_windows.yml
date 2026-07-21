@@ -27,7 +27,7 @@ jobs:
       # mtimes.
       - name: Setup msbuild cache
         id: setup-msbuild-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           # we ignore all git / project stuff that isn't a build input
           # we also ignore build outputs. technically these should be cached
@@ -96,14 +96,14 @@ jobs:
         shell: bash
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: game
           path: |
             game_dist
 
       - name: Archive debug info
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: game-debug-info
           path: |
@@ -120,12 +120,13 @@ jobs:
         id: setup-butler
         if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
-          New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
-          curl.exe -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile cibin/butler/windows/butler.zip || true
-          Expand-Archive -Path cibin/butler/windows/butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
-          $Env:Path += ";$Env:USERPROFILE\.bin;"
-          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
+          mkdir -p ~/.local/bin
+          curl -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -o cibin/butler/windows/butler.zip || true
+          7z x -y cibin/butler/windows/butler.zip -o"$HOME/.local/bin/"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
           butler -V
+        shell: bash
 
       - name: Push to Itch (prerelease)
         id: itch-prerelease

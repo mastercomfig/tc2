@@ -18,7 +18,7 @@ jobs:
 
       - name: Setup ccache
         id: setup-ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/.ccache
           key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
@@ -38,14 +38,14 @@ jobs:
           ./game_clean/copy.sh
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: game
           path: |
             game_dist
 
       - name: Archive debug info
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: game-debug-info
           path: |
@@ -69,7 +69,9 @@ jobs:
           curl -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default" -o cibin/butler/linux/butler.zip || true
           7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
           chmod +x ~/.local/bin/butler
-          $HOME/.local/bin/butler -V
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          butler -V
 
       - name: Push to Itch (prerelease)
         id: itch-prerelease

@@ -38,7 +38,9 @@ jobs:
           curl -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default" -o cibin/butler/linux/butler.zip || true
           7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
           chmod +x ~/.local/bin/butler
-          $HOME/.local/bin/butler -V
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          butler -V
 
       - name: Download release assets
         run: |
@@ -50,7 +52,7 @@ jobs:
         run: |
           mkdir -p game_dist_win
           7z x -y game-win.zip -ogame_dist_win/
-          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="win" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_win
+          BUILD_PLATFORM="win" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_win
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
 
@@ -58,6 +60,6 @@ jobs:
         run: |
           mkdir -p game_dist_linux
           7z x -y game-linux.zip -ogame_dist_linux/
-          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="linux" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
+          BUILD_PLATFORM="linux" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
