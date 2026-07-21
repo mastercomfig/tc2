@@ -70,13 +70,3 @@ jobs:
           PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="linux" BRANCH_STR="${{ steps.channel.outputs.channel_suffix }}" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-
-  # Future SteamCMD publishing integration
-  # publish_steam:
-  #   name: Publish to Steam
-  #   if: ${{ github.repository_owner == 'mastercomfig' }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v6
-  #     # Add SteamCMD upload steps here
