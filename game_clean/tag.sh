@@ -36,26 +36,35 @@ fi
 
 git fetch --tags origin
 
-if git rev-parse ${VERSION} -- > /dev/null 2>&1; then
-    #echo "::warning Tag ${VERSION} already exists. Not creating a release."
-    IS_PRERELEASE=$(gh release view ${VERSION} "${REPO_FLAG[@]}" --json "isPrerelease" --template "{{.isPrerelease}}")
-    if [ "${IS_PRERELEASE}" == "true" ]; then
-        gh release upload "${REPO_FLAG[@]}" --clobber ${VERSION} "../game-${PLATFORM}.zip" || true
+TARGET_COMMIT="${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo "${GITHUB_REF_NAME:-tc2-mod}")}"
+
+if IS_PRERELEASE=$(gh release view "${VERSION}" "${REPO_FLAG[@]}" --json "isPrerelease" --template "{{.isPrerelease}}" 2>/dev/null); then
+    echo "Release ${VERSION} already exists on GitHub. Uploading asset..."
+    if [ "${IS_PRERELEASE}" = "true" ]; then
+        gh release upload "${REPO_FLAG[@]}" --clobber "${VERSION}" "../game-${PLATFORM}.zip" || true
     else
-        gh release upload "${REPO_FLAG[@]}" ${VERSION} "../game-${PLATFORM}.zip" || true
+        gh release upload "${REPO_FLAG[@]}" "${VERSION}" "../game-${PLATFORM}.zip" || true
     fi
 else
-    printf "Release ${VERSION}\n\n[Download](https://teamcomtress.com/)\n[Patch Notes](https://teamcomtress.com/feed/#patches)" > "notes.txt"
-    git tag ${VERSION}
+    echo "Release ${VERSION} does not exist on GitHub yet. Creating release at commit ${TARGET_COMMIT}..."
+    if ! git rev-parse "${VERSION}" -- > /dev/null 2>&1; then
+        git tag "${VERSION}" "${TARGET_COMMIT}"
+    fi
     git pull
-    git push origin ${VERSION}
-    gh release create ${VERSION} \
+    git push origin "${VERSION}"
+
+    NOTES="Release ${VERSION}
+
+[Download](https://teamcomtress.com/)
+[Patch Notes](https://teamcomtress.com/feed/#patches)"
+
+    gh release create "${VERSION}" \
         "../game-${PLATFORM}.zip" \
         "${REPO_FLAG[@]}" \
+        --target "${TARGET_COMMIT}" \
         --title "${VERSION}" \
-        -F "notes.txt" \
+        --notes "${NOTES}" \
         --prerelease \
         --verify-tag \
         --fail-on-no-commits
-    rm notes.txt
 fi
