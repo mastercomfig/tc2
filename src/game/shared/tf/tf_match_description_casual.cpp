@@ -114,7 +114,7 @@ public:
 		CTeamControlPointMaster *pMaster = ( g_hControlPointMasters.Count() ) ? g_hControlPointMasters[0] : NULL;
 		bool bMultiStagePLR = ( tf_gamemode_payload.GetBool() && pMaster && pMaster->PlayingMiniRounds() && 
 								pMaster->GetNumRounds() > 1 && TFGameRules()->HasMultipleTrains() );
-		bool bCTF = tf_gamemode_ctf.GetBool();
+		bool bCTF = tf_gamemode_ctf.GetBool() || TFGameRules()->IsPasstimeMode();
 		bool bUseStopWatch = TFGameRules()->MatchmakingShouldUseStopwatchMode();
 
 		// Exec our match settings
