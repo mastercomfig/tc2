@@ -51,12 +51,18 @@ jobs:
           path: |
             game_dist_debug
 
-      - name: Push Release
-        id: create-rel
+      - name: Package Release
+        id: package-rel
         if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           rm -rf game_dist_debug
           (cd game_dist && 7z a -r ../game-linux.zip '*')
+        shell: bash
+
+      - name: Push Release
+        id: create-rel
+        if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
+        run: |
           ./game_clean/tag.sh
           rm game-linux.zip
         shell: bash
