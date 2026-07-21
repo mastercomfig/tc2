@@ -4919,14 +4919,26 @@ bool CTFGameRules::HandleStalemateConditions( void )
 			}
 			else if ( iMinLead == 1 )
 			{
-				// if the leading team is only 1 ahead, we should check if a team is catching up with a taken flag
+				// if the leading team is only 1 ahead, we should check if a team is catching up with a taken flag or ball
 				bTeamCanCatchUp = false;
-				for ( int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i )
+				if ( bPasstime )
 				{
-					CCaptureFlag* pFlag = static_cast<CCaptureFlag*>( ICaptureFlagAutoList::AutoList()[i] );
-					if ( pFlag->IsDropped() || pFlag->IsStolen() )
+#ifdef GAME_DLL
+					if ( g_pPasstimeLogic && !g_pPasstimeLogic->ShouldEndOvertime() )
 					{
 						bTeamCanCatchUp = true;
+					}
+#endif
+				}
+				else
+				{
+					for ( int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i )
+					{
+						CCaptureFlag* pFlag = static_cast<CCaptureFlag*>( ICaptureFlagAutoList::AutoList()[i] );
+						if ( pFlag->IsDropped() || pFlag->IsStolen() )
+						{
+							bTeamCanCatchUp = true;
+						}
 					}
 				}
 			}
@@ -5009,7 +5021,7 @@ bool CTFGameRules::HandleStalemateConditions( void )
 		CTFTeam* pMaxTeam = NULL;
 		int iMaxScore = 0;
 		int nMinLead = INT_MAX;
-		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+		for ( int iTeam = LAST_SHARED_TEAM + 1; iTeam < GetNumberOfTeams(); iTeam++ )
 		{
 			CTFTeam *pTeam = GetGlobalTFTeam( iTeam );
 			if ( !pTeam )
