@@ -67,26 +67,6 @@ jobs:
       - name: Add msbuild
         uses: microsoft/setup-msbuild@v1.0.2
 
-      # - name: Setup Butler
-      #   id: setup-butler
-      #   run: |
-      #     New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
-      #     Invoke-WebRequest -Uri "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile butler.zip
-      #     Expand-Archive -Path butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
-      #     Remove-Item butler.zip
-      #     $Env:Path += ";$Env:USERPROFILE\.bin;"
-      #     [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
-      #     butler -V
-
-      - name: Setup Butler
-        id: setup-butler
-        run: |
-          New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
-          Expand-Archive -Path cibin/butler/windows/butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
-          $Env:Path += ";$Env:USERPROFILE\.bin;"
-          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
-          butler -V
-
       - name: Prepare project solution
         shell: cmd
         working-directory: "${{ github.workspace }}/src"
@@ -115,16 +95,6 @@ jobs:
           ./game_clean/copy.sh
         shell: bash
 
-      - name: Push to Itch
-        id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
-        run: |
-          PATH="${PATH}:${HOME}/.bin"
-          ./game_clean/push.sh
-        shell: bash
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -139,20 +109,12 @@ jobs:
           path: |
             game_dist_debug
 
-      - name: Push Permalink Rel
-        id: perma-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
+      - name: Push Release
+        id: create-rel
+        if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           Remove-Item -Recurse -Force .\game_dist_debug
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
-          gh release upload --clobber rel game-win.zip
-        env:
-          GH_TOKEN: ${{secrets.REPO_TOKEN}}
-
-      - name: Push Release
-        id: create-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
-        run: |
           ./game_clean/tag.sh
           rm game-win.zip
         shell: bash

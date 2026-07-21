@@ -27,27 +27,6 @@ jobs:
             ${{ runner.os }}-ccache-${{ github.base_ref }}-
             ${{ runner.os }}-ccache-tc2-mod-
 
-      # - name: Setup Butler
-      #   id: setup-butler
-      #   run: |
-      #     sudo apt-get install 7zip
-      #     mkdir -p ~/.local/bin
-      #     curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
-      #     7z x -y butler.zip -o$HOME/.local/bin/
-      #     rm butler.zip
-      #     chmod +x ~/.local/bin/butler
-      #     butler -V
-
-      - name: Setup Butler
-        id: setup-butler
-        run: |
-          sudo apt-get update
-          sudo apt-get install 7zip
-          mkdir -p ~/.local/bin
-          7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
-          chmod +x ~/.local/bin/butler
-          butler -V
-
       - name: Build dist
         id: build-dist
         env:
@@ -57,13 +36,6 @@ jobs:
           mkdir -p $CCACHE_DIR
           ./src/buildallprojects
           ./game_clean/copy.sh
-
-      - name: Push to Itch
-        id: itch
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
-        run: ./game_clean/push.sh
-        env:
-          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
@@ -79,21 +51,12 @@ jobs:
           path: |
             game_dist_debug
 
-      - name: Push Permalink Rel
-        id: perma-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
+      - name: Push Release
+        id: create-rel
+        if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
         run: |
           rm -rf game_dist_debug
           (cd game_dist && 7z a -r ../game-linux.zip '*')
-          gh release upload --clobber rel game-linux.zip
-          (cd ~ && du -aBM 2>/dev/null | sort -nr | head -n 50 | more)
-        env:
-          GH_TOKEN: ${{secrets.REPO_TOKEN}}
-
-      - name: Push Release
-        id: create-rel
-        if: ${{ github.repository_owner == 'mastercomfig' && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
-        run: |
           ./game_clean/tag.sh
           rm game-linux.zip
         shell: bash

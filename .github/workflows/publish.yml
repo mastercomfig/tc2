@@ -1,0 +1,82 @@
+name: Publish - Releases
+
+on:
+  release:
+    types: [published, prereleased, released]
+
+jobs:
+  publish_permalink:
+    name: Publish Permalink Release
+    if: ${{ github.repository_owner == 'mastercomfig' && !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" --repo mastercomfig/tc2 --pattern "game-*.zip"
+        env:
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+      - name: Upload permalink release assets
+        run: |
+          gh release upload rel game-win.zip game-linux.zip --repo mastercomfig/tc2 --clobber
+        env:
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+  publish_itch:
+    name: Publish to Itch
+    if: ${{ github.repository_owner == 'mastercomfig' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Butler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y 7zip curl
+          mkdir -p ~/.local/bin
+          curl -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default" -o cibin/butler/linux/butler.zip || true
+          7z x -y cibin/butler/linux/butler.zip -o$HOME/.local/bin/
+          chmod +x ~/.local/bin/butler
+          $HOME/.local/bin/butler -V
+
+      - name: Download release assets
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" --repo mastercomfig/tc2 --pattern "game-*.zip"
+        env:
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+      - name: Determine Itch Channel
+        id: channel
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "channel_suffix=prerelease" >> $GITHUB_OUTPUT
+          else
+            echo "channel_suffix=stable" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push Windows build to Itch
+        run: |
+          mkdir -p game_dist_win
+          7z x -y game-win.zip -ogame_dist_win/
+          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="win" BRANCH_STR="${{ steps.channel.outputs.channel_suffix }}" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_win
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+      - name: Push Linux build to Itch
+        run: |
+          mkdir -p game_dist_linux
+          7z x -y game-linux.zip -ogame_dist_linux/
+          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="linux" BRANCH_STR="${{ steps.channel.outputs.channel_suffix }}" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+  # Future SteamCMD publishing integration
+  # publish_steam:
+  #   name: Publish to Steam
+  #   if: ${{ github.repository_owner == 'mastercomfig' }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v6
+  #     # Add SteamCMD upload steps here

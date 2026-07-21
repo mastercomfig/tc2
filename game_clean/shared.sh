@@ -15,17 +15,19 @@ else
   exit 1
 fi
 
-if [[ "$OSTYPE" == "linux"* ]]; then
+BUILD_PLATFORM="${BUILD_PLATFORM:-${OSTYPE}}"
+
+if [[ "$BUILD_PLATFORM" == "linux"* ]]; then
   PLATFORM="linux"
   PLAT_DIR="linux64"
   DLL_EXT=".so"
   EXE_EXT=""
-elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* || "$OSTYPE" == "mingw"* ]]; then
+elif [[ "$BUILD_PLATFORM" == "win"* || "$BUILD_PLATFORM" == "msys"* || "$BUILD_PLATFORM" == "cygwin"* || "$BUILD_PLATFORM" == "mingw"* ]]; then
   PLATFORM="win"
   PLAT_DIR="x64"
   DLL_EXT=".dll"
   EXE_EXT=".exe"
 else
-  echo "OS ${OSTYPE} is not supported! Exiting."
+  echo "OS/Platform ${BUILD_PLATFORM} is not supported! Exiting."
   exit 1
 fi
