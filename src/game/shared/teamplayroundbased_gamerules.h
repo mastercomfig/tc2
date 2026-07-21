@@ -456,6 +456,8 @@ protected:
 	virtual bool CanChangelevelBecauseOfTimeLimit( void ) { return true; }
 	virtual bool CanGoToStalemate( void ) { return true; }
 
+	virtual bool HandleStalemateConditions( void ) { return false; }
+
 	// State machine handling
 	void State_Enter( gamerules_roundstate_t newState );	// Initialize the new state.
 	void State_Leave();										// Cleanup the previous state.

@@ -592,6 +592,8 @@ protected:
 	virtual bool CanChangelevelBecauseOfTimeLimit( void );
 	virtual bool CanGoToStalemate( void );
 
+	virtual bool HandleStalemateConditions( void ) OVERRIDE;
+
 	virtual void RestoreActiveTimer( void );
 
 	void BroadcastDrawLine( CTFPlayer *pTFPlayer, KeyValues *pKeyValues );

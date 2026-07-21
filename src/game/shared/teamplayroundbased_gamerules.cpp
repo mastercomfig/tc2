@@ -251,7 +251,6 @@ ConVar mp_winlimit( "mp_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Max sc
 	);
 
 ConVar mp_timelimit_added_winlimit( "mp_timelimit_added_winlimit", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Added to current highest team score to set a new winlimit when time runs out.", true, 0, false, 0 );
-ConVar mp_timelimit_added_winlimit_time( "mp_timelimit_added_winlimit_time", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "What time left to check against for mp_timelimit_added_winlimit.", true, 0, false, 0 );
 
 
 ConVar mp_disable_respawn_times( "mp_disable_respawn_times", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "0 - Enable respawn times, 1 - Instant respawn but keep freeze time, 2 - Instant respawn without freeze time, 3 - Instant respawn with cancelable freeze time" );
@@ -290,8 +289,9 @@ ConVar mp_autoteambalance( "mp_autoteambalance", "2", FCVAR_NOTIFY, "Automatical
 #else
 #define DEFAULT_STALEMATE "0"
 #endif
-ConVar mp_stalemate_enable( "mp_stalemate_enable", DEFAULT_STALEMATE, FCVAR_NOTIFY, "Enable/Disable stalemate mode." );
-ConVar mp_match_end_at_timelimit( "mp_match_end_at_timelimit", "0", FCVAR_NOTIFY, "Allow the match to end when mp_timelimit hits instead of waiting for the end of the current round." );
+ConVar mp_stalemate_enable( "mp_stalemate_enable", DEFAULT_STALEMATE, FCVAR_NOTIFY, "Enable/Disable stalemate mode. 0: Disabled 1: Legacy stalemate mode enabled 2: New stalemate mode enabled" );
+ConVar mp_match_end_at_timelimit( "mp_match_end_at_timelimit", "0", FCVAR_NOTIFY, "Allow the match to end when mp_timelimit hits instead of waiting for the end of the current round. -1: Force off for all maps, including Valve maps. 0: Valve maps only. 1: Force on for all maps. -2: Force off for all maps, but retain the visual timer." );
+ConVar mp_stalemate_early( "mp_stalemate_early", "0", FCVAR_NOTIFY, "If stalemates should happen when there are 5 minutes left on the map, to consolidate behavior with changelevel transition times at round end." );
 
 ConVar mp_holiday_nogifts( "mp_holiday_nogifts", "0", FCVAR_NOTIFY, "Set to 1 to prevent holiday gifts from spawning when players are killed." );
 
@@ -2025,17 +2025,23 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	bool bIsTimeUp = GetTimeLeft() <= 0;
 	if ( !bIsTimeUp )
 	{
-		int iAddedWinlimitTimeLeft = mp_timelimit_added_winlimit_time.GetInt() * 60;
-		if ( mp_timelimit_added_winlimit.GetInt() > 0 && iAddedWinlimitTimeLeft > 0 )
+		if ( mp_stalemate_early.GetBool() )
 		{
-			bIsTimeUp = ( GetTimeLeft() <= iAddedWinlimitTimeLeft );
+			bIsTimeUp = ( GetTimeLeft() <= 300 );
 		}
 	}
 
 	// See if we're coming up to the server timelimit, in which case force a stalemate immediately.
 	if ( m_bCanHandleStalemate && mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && bIsTimeUp )
 	{
-		if ( mp_timelimit_added_winlimit.GetInt() > 0 )
+		if ( mp_stalemate_enable.GetInt() == 2 )
+		{
+			// The new stalemate system philosophy:
+			// if we can resolve an outcome/lead immediately, do so and make the team win.
+			// if we can't, then bring about conditions that will allow us to arrive at an outcome as soon as possible.
+			m_bCanHandleStalemate = !HandleStalemateConditions();
+		}
+		else if ( mp_timelimit_added_winlimit.GetInt() > 0 )
 		{
 			int nHighestScore = 0;
 			for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
@@ -3311,6 +3317,33 @@ void CTeamplayRoundBasedRules::CreateTimeLimitTimer( void )
 	bool bAllowStalemate = ( m_bAllowStalemateAtTimelimit || iUserSetting == 1 ) && iUserSetting != -1;
 	if ( !bAllowStalemate )
 		return;
+
+#ifdef TF_DLL
+	// still don't count down if it's not relevant
+	if ( mp_stalemate_enable.GetInt() == 2 )
+	{
+		if ( TFGameRules()->IsCommunityGameMode() )
+			return;
+		if ( TFGameRules()->IsAttackDefenseMode() )
+		{
+			CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+
+			if ( !m_bForceMapReset && pMaster && pMaster->PlayingMiniRounds() && pMaster->ShouldPlayAllControlPointRounds() )
+			{
+				// don't skip mini-rounds
+				return;
+			}
+		}
+		if ( TFGameRules()->GetGameType() == TF_GAMETYPE_ESCORT && HasMultipleTrains() )
+		{
+			CTeamControlPointMaster* pMaster = ( g_hControlPointMasters.Count() ) ? g_hControlPointMasters[0] : NULL;
+			if ( pMaster && pMaster->PlayingMiniRounds() && pMaster->GetNumRounds() > 1 )
+			{
+				return;
+			}
+		}
+	}
+#endif
 
 #ifndef CSTRIKE_DLL
 	if ( !m_hTimeLimitTimer )

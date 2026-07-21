@@ -4850,6 +4850,189 @@ bool CTFGameRules::CanGoToStalemate( void )
 	return BaseClass::CanGoToStalemate();
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+bool CTFGameRules::HandleStalemateConditions( void )
+{
+	if ( IsCommunityGameMode() )
+	{
+		return false;
+	}
+
+	if ( IsAttackDefenseMode() )
+	{
+		CTeamControlPointMaster* pMaster = g_hControlPointMasters.Count() ? g_hControlPointMasters[0] : NULL;
+
+		if ( !m_bForceMapReset && pMaster && pMaster->PlayingMiniRounds() && pMaster->ShouldPlayAllControlPointRounds() )
+		{
+			// don't skip mini-rounds
+			return false;
+		}
+
+		// this will tell the stopwatch timer to force end.
+		return true;
+	}
+
+	const bool bPasstime = IsPasstimeMode(); 
+	if ( bPasstime || m_nGameType == TF_GAMETYPE_CTF || IsPowerupMode() )
+	{
+		// first check the teams
+		int iScoreLimit = bPasstime ? tf_passtime_scores_per_round.GetInt() : tf_flag_caps_per_round.GetInt();
+		if ( iScoreLimit > 0 )
+		{
+			int      iMaxCaps = -1;
+			int		 iMinLead = INT_MAX;
+			int		 iMaxTeam = TEAM_UNASSIGNED;
+
+			// check to see if any team has won a "round"
+			CTFTeamManager* pTeamMgr = TFTeamMgr();
+			int nTeamCount = pTeamMgr->GetTeamCount();
+			for ( int iTeam = FIRST_GAME_TEAM; iTeam < nTeamCount; ++iTeam )
+			{
+				int iCaps = pTeamMgr->GetFlagCaptures( iTeam );
+				if ( iCaps > iMaxCaps )
+				{
+					iMaxCaps = iCaps;
+					iMaxTeam = iTeam;
+				}
+				else
+				{
+					int iLead = iMaxCaps - iCaps;
+					if ( iLead < iMinLead )
+					{
+						iMinLead = iLead;
+					}
+				}
+			}
+
+			if ( iMaxCaps == -1 || iMaxTeam == TEAM_UNASSIGNED )
+			{
+				return false;
+			}
+
+			bool bTeamCanCatchUp;
+			if ( iMinLead == 0 )
+			{
+				// if the teams are even
+				bTeamCanCatchUp = true;
+			}
+			else if ( iMinLead == 1 )
+			{
+				// if the leading team is only 1 ahead, we should check if a team is catching up with a taken flag
+				bTeamCanCatchUp = false;
+				for ( int i = 0; i < ICaptureFlagAutoList::AutoList().Count(); ++i )
+				{
+					CCaptureFlag* pFlag = static_cast<CCaptureFlag*>( ICaptureFlagAutoList::AutoList()[i] );
+					if ( pFlag->IsDropped() || pFlag->IsStolen() )
+					{
+						bTeamCanCatchUp = true;
+					}
+				}
+			}
+			else
+			{
+				bTeamCanCatchUp = false;
+			}
+
+			if ( !bTeamCanCatchUp )
+			{
+				SetWinningTeam( iMaxTeam, WINREASON_TIMELIMIT, true, false );
+			}
+			else
+			{
+				// if we can catch up, then set the limit to +1 the max
+				int iCapLimit = iMaxCaps + 1;
+				if ( iCapLimit < tf_flag_caps_per_round.GetInt() )
+				{
+					tf_flag_caps_per_round.SetValue( iCapLimit );
+				}
+			}
+		}
+		return true;
+	}
+
+	bool bBasedOnScore = true;
+	
+	// koth
+	if ( IsInKothMode() )
+	{
+#if 0
+		// clamp the koth timers down to 1 second
+		CTeamRoundTimer* pBluTimer = GetBlueKothRoundTimer();
+		if ( pBluTimer )
+		{
+			pBluTimer->SetTimeRemaining( 1 );
+		}
+
+		CTeamRoundTimer* pRedTimer = GetRedKothRoundTimer();
+		if ( pRedTimer )
+		{
+			pRedTimer->SetTimeRemaining( 1 );
+		}
+#endif
+	}
+
+	// payload race
+	if ( m_nGameType == TF_GAMETYPE_ESCORT && HasMultipleTrains() )
+	{
+		// multi-stage payload race don't have a stalemate case. they only play for 1 round each time anyway.
+		CTeamControlPointMaster* pMaster = ( g_hControlPointMasters.Count() ) ? g_hControlPointMasters[0] : NULL;
+		if ( pMaster && pMaster->PlayingMiniRounds() && pMaster->GetNumRounds() > 1 )
+		{
+			return false;
+		}
+	}
+
+	if ( m_nGameType == TF_GAMETYPE_PD )
+	{
+	}
+
+	if ( m_nGameType == TF_GAMETYPE_CP )
+	{
+	}
+
+	if ( bBasedOnScore )
+	{
+		CTFTeam* pMaxTeam = NULL;
+		int iMaxScore = 0;
+		int nMinLead = INT_MAX;
+		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
+		{
+			CTeam* pTeam = GetGlobalTeam( i );
+			if ( pTeam && pTeam->GetScore() > iMaxScore )
+			{
+				iMaxScore = pTeam->GetScore();
+			}
+			else
+			{
+				int nLead = iMaxScore - pTeam->GetScore();
+				if ( nLead < nMinLead )
+				{
+					nMinLead = nLead;
+				}
+			}
+		}
+
+		// if the teams are even, then just whoever wins the next one
+		if ( nMinLead == 0 )
+		{
+			int iNewWinLimit = iMaxScore + 1;
+			if ( iNewWinLimit < mp_winlimit.GetInt() )
+			{
+				mp_winlimit.SetValue( iNewWinLimit );
+			}
+		}
+		else
+		{
+			SetWinningTeam( pMaxTeam->GetTeamNumber(), WINREASON_TIMELIMIT, true, false );
+		}
+		return true;
+	}
+
+	return false;
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -5965,7 +6148,9 @@ void CTFGameRules::StopWatchModeThink( void )
 		ETFMatchGroup eMatchGroup = GetCurrentMatchGroupWithEmulation();
 		if ( GetMatchGroupDescription( eMatchGroup ) && GetMatchGroupDescription( eMatchGroup )->BUsesMultiSeries() && !TFGameRules()->IsCommunityGameMode() )
 		{
-			bCanForceEnd = false; // Multi-series stopwatch uses the timer just for points comparison; it doesn't forcefully end the round.
+			// Multi-series stopwatch uses the timer just for points comparison; it doesn't forcefully end the round.
+			// however, if we're in stalemate time, we can force the round to end.
+			bCanForceEnd = !m_bCanHandleStalemate;
 		}
 
 		int iAttackerScore = pAttacker->GetScore();
