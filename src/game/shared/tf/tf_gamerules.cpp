@@ -4938,18 +4938,30 @@ bool CTFGameRules::HandleStalemateConditions( void )
 			if ( !bTeamCanCatchUp )
 			{
 				SetWinningTeam( iMaxTeam, WINREASON_TIMELIMIT, true, false );
+				return true;
 			}
 			else
 			{
 				// if we can catch up, then set the limit to +1 the max
 				int iCapLimit = iMaxCaps + 1;
-				if ( iCapLimit < tf_flag_caps_per_round.GetInt() )
+				if ( bPasstime )
 				{
-					tf_flag_caps_per_round.SetValue( iCapLimit );
+					if ( iCapLimit < tf_passtime_scores_per_round.GetInt() )
+					{
+						tf_passtime_scores_per_round.SetValue( iCapLimit );
+					}
 				}
+				else
+				{
+					if ( iCapLimit < tf_flag_caps_per_round.GetInt() )
+					{
+						tf_flag_caps_per_round.SetValue( iCapLimit );
+					}
+				}
+				return false;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	bool bBasedOnScore = true;
@@ -4999,10 +5011,13 @@ bool CTFGameRules::HandleStalemateConditions( void )
 		int nMinLead = INT_MAX;
 		for ( int i = LAST_SHARED_TEAM + 1; i < GetNumberOfTeams(); i++ )
 		{
-			CTeam* pTeam = GetGlobalTeam( i );
-			if ( pTeam && pTeam->GetScore() > iMaxScore )
+			CTFTeam *pTeam = GetGlobalTFTeam( iTeam );
+			if ( !pTeam )
+				continue;
+			if ( pTeam->GetScore() > iMaxScore )
 			{
 				iMaxScore = pTeam->GetScore();
+				pMaxTeam = pTeam;
 			}
 			else
 			{
@@ -5014,6 +5029,11 @@ bool CTFGameRules::HandleStalemateConditions( void )
 			}
 		}
 
+		if ( !pMaxTeam )
+		{
+			return false;
+		}
+
 		// if the teams are even, then just whoever wins the next one
 		if ( nMinLead == 0 )
 		{
@@ -5022,12 +5042,13 @@ bool CTFGameRules::HandleStalemateConditions( void )
 			{
 				mp_winlimit.SetValue( iNewWinLimit );
 			}
+			return false;
 		}
 		else
 		{
 			SetWinningTeam( pMaxTeam->GetTeamNumber(), WINREASON_TIMELIMIT, true, false );
+			return true;
 		}
-		return true;
 	}
 
 	return false;
