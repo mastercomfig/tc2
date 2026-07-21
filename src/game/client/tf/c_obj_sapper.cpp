@@ -48,6 +48,14 @@ bool C_ObjectSapper::ValidateEntityAttachedToPlayer( bool &bShouldRetry )
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char* C_ObjectSapper::GetStatusName( bool bSimplified ) const
+{
+	return "#TF_object_sapper";
+}
+
 float C_ObjectSapper::GetReversesBuildingConstructionSpeed( void )
 {
 	float flReverseSpeed = 0.0f;

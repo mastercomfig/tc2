@@ -79,7 +79,7 @@ public:
 
 	void DebugDamageParticles();
 
-	virtual const char* GetStatusName() const;
+	virtual const char* GetStatusName( bool bSimplified = false ) const OVERRIDE;
 
 	virtual void	OnPreDataChanged( DataUpdateType_t updateType );
 	virtual void	OnDataChanged( DataUpdateType_t updateType );

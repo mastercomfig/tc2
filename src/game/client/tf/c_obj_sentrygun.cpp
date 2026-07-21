@@ -765,7 +765,7 @@ void C_ObjectSentrygun::BuildTransformations( CStudioHdr *hdr, Vector *pos, Quat
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-const char* C_ObjectSentrygun::GetStatusName() const
+const char* C_ObjectSentrygun::GetStatusName( bool bSimplified ) const
 {
 	if ( IsDisposableBuilding() )
 	{

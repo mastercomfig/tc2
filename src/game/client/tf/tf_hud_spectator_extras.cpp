@@ -186,12 +186,14 @@ void CTFHudSpectatorExtras::OnTick()
 			m_vecEntitiesToDraw[nVecIndex].m_nEntIndex = i;
 
 			// don't draw their name if we're currently spectating them, but we still want them to glow
+			m_vecEntitiesToDraw[nVecIndex].m_bDrawNameplate = true;
 			m_vecEntitiesToDraw[nVecIndex].m_bDrawName = true;
 			if ( !pLocalPlayer->IsAlive() )
 			{
 				CSpectatorTargetID *pSpecTargetID = (CSpectatorTargetID *)GET_HUDELEMENT( CSpectatorTargetID );
 				if ( ( pLocalPlayer->GetObserverTarget() == pPlayer ) || ( pSpecTargetID && pSpecTargetID->GetTargetIndex() == i ) )
 				{
+					m_vecEntitiesToDraw[nVecIndex].m_bDrawNameplate = false;
 					m_vecEntitiesToDraw[nVecIndex].m_bDrawName = false;
 
 					// if we're in chase mode, just remove them entirely
@@ -276,9 +278,11 @@ void CTFHudSpectatorExtras::OnTick()
 				m_vecEntitiesToDraw[nVecIndex].m_nEntIndex = pObject->entindex();
 
 				// don't draw the name if we're currently spectating this building, but we still want it to glow
+				m_vecEntitiesToDraw[nVecIndex].m_bDrawNameplate = true;
 				m_vecEntitiesToDraw[nVecIndex].m_bDrawName = true;
 				if ( pLocalPlayer->GetObserverTarget() == pObject )
 				{
+					m_vecEntitiesToDraw[nVecIndex].m_bDrawNameplate = false;
 					m_vecEntitiesToDraw[nVecIndex].m_bDrawName = false;
 				}
 
@@ -356,7 +360,7 @@ void CTFHudSpectatorExtras::Paint()
 
 	FOR_EACH_VEC( m_vecEntitiesToDraw, i )
 	{
-		if ( !m_vecEntitiesToDraw[i].m_bDrawName )
+		if ( !m_vecEntitiesToDraw[i].m_bDrawNameplate )
 			continue;
 
 		int nEntIndex = m_vecEntitiesToDraw[i].m_nEntIndex;
@@ -374,11 +378,14 @@ void CTFHudSpectatorExtras::Paint()
 		Vector vecWorld( vecPos.x, vecPos.y, vecPos.z );
 		if ( GetVectorInHudSpace( vecWorld, iX, iY ) )
 		{
- 			// draw the name
- 			vgui::surface()->DrawSetTextFont( m_hNameFont );
-			vgui::surface()->DrawSetTextPos( iX - ( m_vecEntitiesToDraw[i].m_nNameWidth / 2 ), iY - nNameOffset );
-			vgui::surface()->DrawSetTextColor( m_vecEntitiesToDraw[i].m_clrGlowColor );
-			vgui::surface()->DrawPrintText( m_vecEntitiesToDraw[i].m_wszName, wcslen( m_vecEntitiesToDraw[i].m_wszName ), vgui::FONT_DRAW_NONADDITIVE );
+			if ( m_vecEntitiesToDraw[i].m_bDrawName )
+			{
+				// draw the name
+				vgui::surface()->DrawSetTextFont( m_hNameFont );
+				vgui::surface()->DrawSetTextPos( iX - ( m_vecEntitiesToDraw[i].m_nNameWidth / 2 ), iY - nNameOffset );
+				vgui::surface()->DrawSetTextColor( m_vecEntitiesToDraw[i].m_clrGlowColor );
+				vgui::surface()->DrawPrintText( m_vecEntitiesToDraw[i].m_wszName, wcslen( m_vecEntitiesToDraw[i].m_wszName ), vgui::FONT_DRAW_NONADDITIVE );
+			}
 
 			int xHealthPos = iX - 35;
 			int yHealthPos = iY - 10;
@@ -393,7 +400,7 @@ void CTFHudSpectatorExtras::Paint()
 			vgui::surface()->DrawFilledRect( xHealthPos, yHealthPos, xHealthPos + ( nHealthWidth * flHealth ), yHealthPos + nHealthHeight );
 
 			// draw the overheal bar
-			const float flOverheal = m_vecEntitiesToDraw[i].m_flHealth - flHealth;
+			const float flOverheal = Min( m_vecEntitiesToDraw[i].m_flHealth - flHealth, 1.0f );
 			if ( flOverheal > 0.0f )
 			{
 				vgui::surface()->DrawSetColor( Color( 191, 231, 182, pEnt->GetTeamNumber() == TF_TEAM_RED ? 80 : 160 ) );

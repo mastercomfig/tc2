@@ -364,7 +364,7 @@ void C_BaseObject::FireEvent( const Vector& origin, const QAngle& angles, int ev
 }
 
 
-const char* C_BaseObject::GetStatusName() const
+const char* C_BaseObject::GetStatusName( bool bSimplified ) const
 {
 	return GetObjectInfo( GetType() )->m_AltModes[GetObjectMode()].pszStatusName;
 }
@@ -907,7 +907,7 @@ void C_BaseObject::GetTargetIDString( OUT_Z_BYTECAP( iMaxLenInBytes ) wchar_t *s
 	{
 		wchar_t wszBuilderName[ MAX_PLAYER_NAME_LENGTH ];
 
-		const char *pszStatusName = GetStatusName();
+		const char *pszStatusName = GetStatusName( bSpectator );
 		const wchar_t *wszObjectName = g_pVGuiLocalize->Find( pszStatusName );
 
 		bool bHasMode = false;

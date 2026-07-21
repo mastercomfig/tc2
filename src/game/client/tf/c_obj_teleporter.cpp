@@ -328,7 +328,25 @@ void C_ObjectTeleporter::ClientThink( void )
 	{
 		SetPoseParameter( m_iDirectionArrowPoseParam, m_flYawToExit);
 	}
+}
 
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+const char* C_ObjectTeleporter::GetStatusName( bool bSimplified ) const
+{
+	if ( !bSimplified )
+	{
+		return BaseClass::GetStatusName( bSimplified );
+	}
+	if ( GetObjectMode() == MODE_TELEPORTER_EXIT )
+	{
+		return "TF_Object_Tele_Exit";
+	}
+	else
+	{
+		return "TF_Object_Tele";
+	}
 }
 
 //-----------------------------------------------------------------------------

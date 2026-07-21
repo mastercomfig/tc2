@@ -268,15 +268,7 @@ void CTFAnnotationsPanel::AddAnnotation( IGameEvent * event )
 					C_BaseObject* pBuilding = dynamic_cast<C_BaseObject*>(pFollowEntity);
 					if (pBuilding && pBuilding->GetType() < OBJ_LAST)
 					{
-						// Must match resource/tf_objects.txt!!!
-						const char* szLocalizedObjectNames[OBJ_LAST] =
-						{
-							"#TF_Object_Dispenser",
-							"#TF_Object_Tele",
-							"#TF_Object_Sentry",
-							"#TF_object_Sapper"
-						};
-						wzFollowEntityName = g_pVGuiLocalize->Find(szLocalizedObjectNames[pBuilding->GetType()]);
+						wzFollowEntityName = g_pVGuiLocalize->Find( pBuilding->GetStatusName() );
 					}
 					if ( pFollowEntity->GetTeamNumber() == pLocalPlayer->GetTeamNumber() )
 					{
@@ -614,15 +606,7 @@ void CTFAnnotationsPanelCallout::PerformLayout( void )
 			C_BaseObject *pBuilding = dynamic_cast< C_BaseObject* >( m_FollowEntity.Get() );
 			if ( pBuilding && pBuilding->GetType() < OBJ_LAST )
 			{
-				// Must match resource/tf_objects.txt!!!
-				const char *szLocalizedObjectNames[OBJ_LAST] =
-				{
-					"#TF_Object_Dispenser",
-					"#TF_Object_Tele",
-					"#TF_Object_Sentry",
-					"#TF_object_Sapper"
-				};
-				wzFollowEntityName = g_pVGuiLocalize->Find( szLocalizedObjectNames[pBuilding->GetType()] );
+				wzFollowEntityName = g_pVGuiLocalize->Find( pBuilding->GetStatusName() );
 			}
 		}
 		const float kInchesToMeters = 0.0254f;

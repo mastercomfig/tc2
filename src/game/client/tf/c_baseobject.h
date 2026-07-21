@@ -115,7 +115,7 @@ public:
 
 	virtual void	FinishedBuilding( void ) { return; }
 
-	virtual const char* GetStatusName() const;
+	virtual const char* GetStatusName( bool bSimplified = false ) const;
 
 	// Object Previews
 	void			HighlightBuildPoints( int flags );

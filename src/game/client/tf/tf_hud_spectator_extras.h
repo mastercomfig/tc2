@@ -39,6 +39,7 @@ private:
 		int m_nNameWidth;
 		float m_flHealth;
 		Color m_clrGlowColor;
+		bool m_bDrawNameplate;
 		bool m_bDrawName;
 		int m_nOffset;
 	} spec_extra_t;

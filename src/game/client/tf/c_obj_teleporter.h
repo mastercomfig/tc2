@@ -25,6 +25,7 @@ public:
 	virtual void OnPreDataChanged( DataUpdateType_t updateType );
 	virtual void OnDataChanged( DataUpdateType_t updateType );
 
+	virtual const char* GetStatusName( bool bSimplified = false ) const OVERRIDE;
 	virtual void GetTargetIDDataString( OUT_Z_BYTECAP(iMaxLenInBytes) wchar_t *sDataString, int iMaxLenInBytes );
 
 	virtual void ClientThink( void );

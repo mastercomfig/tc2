@@ -47,7 +47,7 @@ const char *szLocalizedObjectNames[OBJ_LAST] =
 	"#TF_Object_Dispenser",
 	"#TF_Object_Tele",
 	"#TF_Object_Sentry",
-	"#TF_object_Sapper"
+	"#TF_object_sapper"
 };
 
 ConVar cl_hud_killstreak_display_time( "cl_hud_killstreak_display_time", "3", FCVAR_ARCHIVE, "How long a killstreak notice stays on the screen (in seconds).  Range is from 0 to 100."  );
