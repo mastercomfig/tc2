@@ -64,6 +64,8 @@ public:
 
 	static void AddCondToTeam( ETFCond eCond, int iTeam, float flTime );
 
+	bool ShouldEndOvertime() const;
+
 private:
 	void PostSpawn();
 	void InputSetSection( inputdata_t &input );
@@ -95,7 +97,6 @@ private:
 	float CalcProgressFrac() const;
 	bool AddBallPower( int iPower );
 	void ClearBallPower();
-	bool ShouldEndOvertime() const;
 	void ReplicatePackMemberBits();
 
 	CUtlVector< std::pair<CTFPlayer*, float> > m_ballLastPassTimes;

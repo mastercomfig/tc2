@@ -4855,6 +4855,7 @@ bool CTFGameRules::CanGoToStalemate( void )
 //-----------------------------------------------------------------------------
 bool CTFGameRules::HandleStalemateConditions( void )
 {
+#ifdef GAME_DLL
 	if ( IsCommunityGameMode() )
 	{
 		return false;
@@ -4923,12 +4924,10 @@ bool CTFGameRules::HandleStalemateConditions( void )
 				bTeamCanCatchUp = false;
 				if ( bPasstime )
 				{
-#ifdef GAME_DLL
 					if ( g_pPasstimeLogic && !g_pPasstimeLogic->ShouldEndOvertime() )
 					{
 						bTeamCanCatchUp = true;
 					}
-#endif
 				}
 				else
 				{
@@ -5064,6 +5063,9 @@ bool CTFGameRules::HandleStalemateConditions( void )
 	}
 
 	return false;
+#else
+	return false;
+#endif
 }
 
 
