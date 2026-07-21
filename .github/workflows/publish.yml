@@ -2,7 +2,7 @@ name: Publish
 
 on:
   release:
-    types: [published, prereleased, released]
+    types: [released]
 
 jobs:
   publish_permalink:
@@ -24,7 +24,7 @@ jobs:
 
   publish_itch:
     name: Publish to Itch
-    if: ${{ github.repository_owner == 'mastercomfig' }}
+    if: ${{ github.repository_owner == 'mastercomfig' && !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -46,20 +46,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.REPO_TOKEN }}
 
-      - name: Determine Itch Channel
-        id: channel
-        run: |
-          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
-            echo "channel_suffix=prerelease" >> $GITHUB_OUTPUT
-          else
-            echo "channel_suffix=stable" >> $GITHUB_OUTPUT
-          fi
-
       - name: Push Windows build to Itch
         run: |
           mkdir -p game_dist_win
           7z x -y game-win.zip -ogame_dist_win/
-          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="win" BRANCH_STR="${{ steps.channel.outputs.channel_suffix }}" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_win
+          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="win" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_win
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
 
@@ -67,6 +58,6 @@ jobs:
         run: |
           mkdir -p game_dist_linux
           7z x -y game-linux.zip -ogame_dist_linux/
-          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="linux" BRANCH_STR="${{ steps.channel.outputs.channel_suffix }}" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
+          PATH="${PATH}:${HOME}/.local/bin" BUILD_PLATFORM="linux" BRANCH_STR="stable" RELEASE_VERSION="${{ github.event.release.tag_name }}" ./game_clean/push.sh game_dist_linux
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}

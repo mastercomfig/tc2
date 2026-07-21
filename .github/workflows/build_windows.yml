@@ -116,6 +116,26 @@ jobs:
           Remove-Item -Recurse -Force .\game_dist_debug
           Compress-Archive -Path .\game_dist\* -DestinationPath game-win.zip
 
+      - name: Setup Butler
+        id: setup-butler
+        if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
+        run: |
+          New-Item -Path "$Env:USERPROFILE\.bin" -ItemType Directory
+          curl.exe -sSL --fail --retry 2 --max-time 10 "https://broth.itch.zone/butler/windows-amd64/LATEST/archive/default" -OutFile cibin/butler/windows/butler.zip || true
+          Expand-Archive -Path cibin/butler/windows/butler.zip -DestinationPath "$Env:USERPROFILE\.bin" -Force
+          $Env:Path += ";$Env:USERPROFILE\.bin;"
+          [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path, "User")
+          butler -V
+
+      - name: Push to Itch (prerelease)
+        id: itch-prerelease
+        if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
+        run: |
+          BRANCH_STR=prerelease ./game_clean/push.sh game_dist
+        shell: bash
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
       - name: Push Release
         id: create-rel
         if: ${{ (github.repository_owner == 'mastercomfig' || github.repository_owner == 'mastercoms') && github.event_name == 'push' && (github.ref == 'refs/heads/tc2-mod' || startsWith(github.ref, 'refs/heads/release/')) }}
