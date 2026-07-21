@@ -333,25 +333,6 @@ void C_ObjectTeleporter::ClientThink( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-const char* C_ObjectTeleporter::GetStatusName( bool bSimplified ) const
-{
-	if ( !bSimplified )
-	{
-		return BaseClass::GetStatusName( bSimplified );
-	}
-	if ( GetObjectMode() == MODE_TELEPORTER_EXIT )
-	{
-		return "TF_Object_Tele_Exit";
-	}
-	else
-	{
-		return "TF_Object_Tele";
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void C_ObjectTeleporter::GetTargetIDDataString( OUT_Z_BYTECAP(iMaxLenInBytes) wchar_t *sDataString, int iMaxLenInBytes )
 {
 	Assert( iMaxLenInBytes >= sizeof(sDataString[0]) );

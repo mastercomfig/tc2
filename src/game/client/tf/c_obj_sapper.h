@@ -28,7 +28,7 @@ public:
 	virtual void OnDataChanged( DataUpdateType_t type );
 	virtual bool ValidateEntityAttachedToPlayer( bool &bShouldRetry );
 
-	virtual const char* GetStatusName( bool bSimplified = false ) const OVERRIDE;
+	virtual const char* GetStatusName() const OVERRIDE;
 
 	virtual bool	IsHostileUpgrade( void ) { return true; }
 

@@ -51,7 +51,7 @@ bool C_ObjectSapper::ValidateEntityAttachedToPlayer( bool &bShouldRetry )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-const char* C_ObjectSapper::GetStatusName( bool bSimplified ) const
+const char* C_ObjectSapper::GetStatusName() const
 {
 	return "#TF_object_sapper";
 }

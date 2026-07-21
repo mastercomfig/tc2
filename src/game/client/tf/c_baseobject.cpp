@@ -364,7 +364,7 @@ void C_BaseObject::FireEvent( const Vector& origin, const QAngle& angles, int ev
 }
 
 
-const char* C_BaseObject::GetStatusName( bool bSimplified ) const
+const char* C_BaseObject::GetStatusName() const
 {
 	return GetObjectInfo( GetType() )->m_AltModes[GetObjectMode()].pszStatusName;
 }
@@ -907,7 +907,7 @@ void C_BaseObject::GetTargetIDString( OUT_Z_BYTECAP( iMaxLenInBytes ) wchar_t *s
 	{
 		wchar_t wszBuilderName[ MAX_PLAYER_NAME_LENGTH ];
 
-		const char *pszStatusName = GetStatusName( bSpectator );
+		const char *pszStatusName = GetStatusName();
 		const wchar_t *wszObjectName = g_pVGuiLocalize->Find( pszStatusName );
 
 		bool bHasMode = false;
@@ -919,7 +919,20 @@ void C_BaseObject::GetTargetIDString( OUT_Z_BYTECAP( iMaxLenInBytes ) wchar_t *s
 		}
 
 		const wchar_t *wszModeName = L"";
-		const CObjectInfo* pObjectInfo = GetObjectInfo( GetType() );
+		const CObjectInfo* pObjectInfo = NULL;
+		bool bShouldUseMode = true;
+		if ( bSpectator )
+		{
+			// just say "Teleporter" for entrance, instead of using the very long "Teleporter Entrance"
+			if ( GetType() == OBJ_TELEPORTER && GetObjectMode() == MODE_TELEPORTER_ENTRANCE )
+			{
+				bShouldUseMode = false;
+			}
+		}
+		if ( bShouldUseMode )
+		{
+			pObjectInfo = GetObjectInfo( GetType() );
+		}
 		if ( pObjectInfo && (pObjectInfo->m_iNumAltModes > 0) )
 		{
 			const char *pszModeName = pObjectInfo->m_AltModes[GetObjectMode()].pszModeName;
