@@ -2,6 +2,7 @@
 #
 # Run script within the directory
 BIN_DIR=$(dirname "$(readlink -fn "$0")")
+ORIGINAL_DIR=$(pwd)
 cd "${BIN_DIR}" || exit 2
 
 set -e
@@ -9,7 +10,7 @@ set -e
 source ./shared.sh
 
 if [ -n "$1" ]; then
-  CLEAN_DIR="$1"
+  CLEAN_DIR="${ORIGINAL_DIR}/$1"
 fi
 
 if [ -n "${RELEASE_VERSION}" ]; then
