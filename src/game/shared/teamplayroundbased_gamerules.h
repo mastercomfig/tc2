@@ -568,6 +568,7 @@ protected:
 
 	bool						m_bAllowStalemateAtTimelimit;
 	bool						m_bChangelevelAfterStalemate;
+	bool                        m_bCanHandleStalemate;
 
 	float						m_flRoundStartTime;		// time the current round started
 	float						m_flNewThrottledAlertTime;		// time that we can play another throttled alert

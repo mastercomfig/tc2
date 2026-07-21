@@ -2033,7 +2033,7 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 	}
 
 	// See if we're coming up to the server timelimit, in which case force a stalemate immediately.
-	if ( mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && bIsTimeUp )
+	if ( m_bCanHandleStalemate && mp_timelimit.GetInt() > 0 && IsInPreMatch() == false && bIsTimeUp )
 	{
 		if ( mp_timelimit_added_winlimit.GetInt() > 0 )
 		{
@@ -2047,7 +2047,7 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 				}
 			}
 
-			mp_timelimit.SetValue( 0 ); // Disable the time limit so it doesn't trigger again
+			m_bCanHandleStalemate = false;
 
 			int nAddedWinLimit = mp_timelimit_added_winlimit.GetInt();
 			int iNewWinLimit = nHighestScore + nAddedWinLimit;
@@ -2065,7 +2065,7 @@ void CTeamplayRoundBasedRules::State_Think_RND_RUNNING( void )
 		else
 		{
 			const int iUserSetting = mp_match_end_at_timelimit.GetInt();
-			if ( ( m_bAllowStalemateAtTimelimit || iUserSetting == 1 ) && iUserSetting != -1 )
+			if ( ( m_bAllowStalemateAtTimelimit || iUserSetting == 1 ) && iUserSetting > -1 )
 			{
 				int iDrawScoreCheck = -1;
 				int iWinningTeam = 0;
@@ -3841,6 +3841,8 @@ void CTeamplayRoundBasedRules::ResetScores( void )
 void CTeamplayRoundBasedRules::ResetMapTime( void )
 {
 	m_flMapResetTime = gpGlobals->curtime;
+
+	m_bCanHandleStalemate = true;
 
 	// send an event with the time remaining until map change
 	IGameEvent *event = gameeventmanager->CreateEvent( "teamplay_map_time_remaining" );
