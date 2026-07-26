@@ -47,6 +47,15 @@ if IS_PRERELEASE=$(gh release view "${VERSION}" "${REPO_FLAG[@]}" --json "isPrer
     fi
 else
     echo "Release ${VERSION} does not exist on GitHub yet. Creating release at commit ${TARGET_COMMIT}..."
+    if [ "${GITHUB_REPOSITORY:-}" = "mastercoms/tc2-private" ] || [ "${PRIVATE_RELEASE:-false}" = "true" ]; then
+        if [ -z "$(git config user.name 2>/dev/null || true)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+        fi
+        git commit --allow-empty -m "Release ${VERSION}"
+        TARGET_COMMIT=$(git rev-parse HEAD)
+        git push "https://x-access-token:${GH_TOKEN:-${GITHUB_TOKEN}}@github.com/${RELEASE_REPO:-mastercomfig/tc2}.git" HEAD:refs/heads/private-release
+    fi
     if ! git rev-parse "${VERSION}" -- > /dev/null 2>&1; then
         git tag "${VERSION}" "${TARGET_COMMIT}"
     fi
@@ -65,5 +74,6 @@ else
         --title "${VERSION}" \
         --notes "${NOTES}" \
         --prerelease \
-        --verify-tag
+        --verify-tag \
+        --fail-on-no-commits
 fi
