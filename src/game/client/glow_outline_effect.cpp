@@ -147,7 +147,7 @@ void CGlowObjectManager::DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContex
 	}
 
 	pRenderContext->OverrideDepthFunc(false, SHADER_DEPTHFUNC_NEAREROREQUAL);
-#else	// 2-pass as a proof of concept so I can take a nice screenshot.	
+#else	// 2-pass as a proof of concept so I can take a nice screenshot.
 	pRenderContext->OverrideDepthEnable(true, false);
 
 	ShaderStencilState_t stencilState;
@@ -309,7 +309,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 
 	pMatGlowColor = materials->FindMaterial( "dev/glow_color", TEXTURE_GROUP_OTHER, true );
 	modelrender->ForcedMaterialOverride( pMatGlowColor );
-	
+
 	// Don't write alpha
 	pRenderContext->OverrideAlphaWriteEnable( true, false );
 
@@ -348,7 +348,7 @@ void CGlowObjectManager::RenderGlowModels( const CViewSetup *pSetup, int nSplitS
 	modelrender->ForcedMaterialOverride( NULL );
 	render->SetColorModulation( vOrigColor.Base() );
 	render->SetBlend( flOrigBlend );
-	
+
 	ShaderStencilState_t stencilStateDisable;
 	stencilStateDisable.m_bEnable = false;
 	stencilStateDisable.SetStencilState( pRenderContext );
@@ -389,7 +389,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 	stencilStateDisable.m_bEnable = false;
 
 	//=============================================
-	// Render the glow colors to _rt_FullFrameFB 
+	// Render the glow colors to _rt_FullFrameFB
 	//=============================================
 	{
 		PIXEvent pixEvent( pRenderContext, "RenderGlowModels" );
@@ -413,7 +413,7 @@ void CGlowObjectManager::ApplyEntityGlowEffects( const CViewSetup *pSetup, int n
 		// stencil bits set in the range we care about.                                                          //
 		//=======================================================================================================//
 		IMaterial *pMatHaloAddToScreen = materials->FindMaterial( "dev/halo_add_to_screen", TEXTURE_GROUP_OTHER, true );
-		
+
 		// We use a created _rt_GlowColor as our texture, not whatever the material is set to
 		IMaterialVar* pBaseTexVar = pMatHaloAddToScreen->FindVar( "$basetexture", NULL );
 		if ( pBaseTexVar && s_pRtGlowColor )
