@@ -28,7 +28,7 @@ public:
 	virtual void OnDataChanged( DataUpdateType_t type );
 	virtual bool ValidateEntityAttachedToPlayer( bool &bShouldRetry );
 
-	virtual const char* GetStatusName() const OVERRIDE;
+	virtual const char* GetStatusName() const OVERRIDE { return "#TF_object_sapper"; }
 
 	virtual bool	IsHostileUpgrade( void ) { return true; }
 
