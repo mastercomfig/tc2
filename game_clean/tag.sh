@@ -52,9 +52,20 @@ else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
         fi
+        PREV_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+        REMOTE_URL="https://x-access-token:${GH_TOKEN:-${GITHUB_TOKEN}}@github.com/${RELEASE_REPO:-mastercomfig/tc2}.git"
+        git fetch "${REMOTE_URL}" private-release:refs/remotes/origin/private-release || true
+        if git rev-parse refs/remotes/origin/private-release >/dev/null 2>&1; then
+            git checkout -B private-release refs/remotes/origin/private-release
+        else
+            git checkout --orphan private-release
+        fi
         git commit --allow-empty -m "Release ${VERSION}"
         TARGET_COMMIT=$(git rev-parse HEAD)
-        git push "https://x-access-token:${GH_TOKEN:-${GITHUB_TOKEN}}@github.com/${RELEASE_REPO:-mastercomfig/tc2}.git" HEAD:refs/heads/private-release
+        git push "${REMOTE_URL}" private-release
+        if [ -n "${PREV_BRANCH}" ] && [ "${PREV_BRANCH}" != "HEAD" ]; then
+            git checkout "${PREV_BRANCH}" || true
+        fi
     fi
     if ! git rev-parse "${VERSION}" -- > /dev/null 2>&1; then
         git tag "${VERSION}" "${TARGET_COMMIT}"
