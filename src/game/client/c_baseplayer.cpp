@@ -2601,10 +2601,10 @@ float C_BasePlayer::GetFOV( void )
 				float flStartFov = Max( 0.001f, (float)m_iFOVStart );
 				float flEndFov = Max( 0.001f, fFOV );
 				float flSplineFract = SimpleSplineRemapValClamped( deltaTime, 0.0f, 1.0f, 0.0f, 1.0f );
-				float flStartTan = tanf( DEGTORAD( flStartFov ) * 0.5f );
-				float flEndTan = tanf( DEGTORAD( flEndFov ) * 0.5f );
+				float flStartTan = tanf( DEG2RAD( flStartFov ) * 0.5f );
+				float flEndTan = tanf( DEG2RAD( flEndFov ) * 0.5f );
 				float flLerpedTan = flStartTan + flSplineFract * ( flEndTan - flStartTan );
-				fFOV = RADTODEG( atanf( flLerpedTan ) ) * 2.0f;
+				fFOV = RAD2DEG( atanf( flLerpedTan ) ) * 2.0f;
 			}
 		}
 	}
