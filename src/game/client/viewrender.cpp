@@ -2248,7 +2248,7 @@ void CViewRender::RenderView( const CViewSetup &viewRender, int nClearFlags, int
 			// This allows us to be ok if there are nested overlay views
 			CViewSetup currentView = m_CurrentView;
 			CViewSetup tempView = m_OverlayViewSetup;
-			tempView.fov = ScaleFOVByWidthRatio( tempView.fov, tempView.m_flAspectRatio / ( 4.0f / 3.0f ) );
+			tempView.fov = ScaleFOVByWidthRatio( tempView.fov, tempView.m_flAspectRatio * 0.75f );
 			tempView.m_bDoBloomAndToneMapping = false;	// FIXME: Hack to get Mark up and running
 			m_bDrawOverlay = false;
 			RenderView( tempView, m_OverlayClearFlags, m_OverlayDrawFlags );
@@ -3007,7 +3007,7 @@ void CViewRender::ViewDrawScene_Intro( const CViewSetup &viewRender, int nClearF
 		playerView.angles = introData.m_vecCameraViewAngles;
 		if ( introData.m_playerViewFOV )
 		{
-			playerView.fov = ScaleFOVByWidthRatio( introData.m_playerViewFOV, engine->GetScreenAspectRatio() / ( 4.0f / 3.0f ) );
+			playerView.fov = ScaleFOVByWidthRatio( introData.m_playerViewFOV, engine->GetScreenAspectRatio() * 0.75f );
 		}
 
 		g_pClientShadowMgr->PreRender();

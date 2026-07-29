@@ -55,6 +55,8 @@ bool IsCurrentViewAccessAllowed();
 // (planes point inwards).
 bool R_CullSphere( const VPlane *pPlanes, int nPlanes, const Vector *pCenter, float radius );
 float ScaleFOVByWidthRatio( float fovDegrees, float ratio );
+float GetClientAspectRatio();
+float GetClientAspectRatioLimited();
 
 extern ConVar mat_wireframe;
 

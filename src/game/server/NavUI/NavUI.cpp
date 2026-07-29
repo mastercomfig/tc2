@@ -770,6 +770,7 @@ void CNavUIBasePanel::PlaySound( const char *sound )
 // Taken from cl_dll/view.cpp
 float ScaleFOVByWidthRatio( float fovDegrees, float ratio )
 {
+	// TODO(mcoms)
 	float halfAngleRadians = fovDegrees * ( 0.5f * M_PI / 180.0f );
 	float t = tan( halfAngleRadians );
 	t *= ratio;

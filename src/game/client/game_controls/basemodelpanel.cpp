@@ -569,8 +569,9 @@ void CModelPanel::Paint()
 	}
 
 	Vector vecExtraModelOffset( 0, 0, 0 );
-	float flWidthRatio = ((float)w / (float)h ) / ( 4.0f / 3.0f );
+	float flWidthRatio = ((float)w / (float)h ) * 0.75f;
 
+#if 0
 	// is this a player model?
 	if ( Q_strstr( GetModelName(), "models/player/" ) )
 	{
@@ -585,6 +586,7 @@ void CModelPanel::Paint()
 			vecExtraModelOffset.Init( 15, 0, 0 );
 		}
 	}
+#endif
 
 	m_hModel->SetAbsOrigin( m_pModelInfo->m_vecOriginOffset + vecExtraModelOffset );
 	m_hModel->SetAbsAngles( QAngle( m_pModelInfo->m_vecAbsAngles.x, m_pModelInfo->m_vecAbsAngles.y, m_pModelInfo->m_vecAbsAngles.z ) );

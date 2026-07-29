@@ -106,9 +106,9 @@ extern ConVar cl_forwardspeed;
 static ConVar v_centermove( "v_centermove", "0.15");
 static ConVar v_centerspeed( "v_centerspeed","500" );
 
-#ifdef TF_CLIENT_DLL
 // 54 degrees approximates a 35mm camera - we determined that this makes the viewmodels
 // and motions look the most natural.
+#ifdef TF_CLIENT_DLL
 // unfortunately, players aren't appreciating this, so we enabled min viewmodels and
 // raised the FOV up from 54 to 61, to better frame and position the weapons
 ConVar v_viewmodel_fov( "viewmodel_fov", "61", FCVAR_ARCHIVE, "Sets the field-of-view for the viewmodel.", true, 0.1, true, 179.9, true, 54, true, 70, NULL );
@@ -852,7 +852,7 @@ void CViewRender::WriteSaveGameScreenshotOfSize( const char *pFilename, int widt
 	viewSetup.y = 0;
 	viewSetup.width = width;
 	viewSetup.height = height;
-	viewSetup.fov = ScaleFOVByWidthRatio( viewSetup.fov, ( (float)width / (float)height ) / ( 4.0f / 3.0f ) );
+	viewSetup.fov = ScaleFOVByWidthRatio( viewSetup.fov, ( (float)width / (float)height ) * 0.75f );
 	viewSetup.m_bRenderToSubrectOfLargerScreen = true;
 
 	// draw out the scene
@@ -1010,11 +1010,40 @@ void CViewRender::WriteSaveGameScreenshot( const char *pFilename )
 
 float ScaleFOVByWidthRatio( float fovDegrees, float ratio )
 {
-	float halfAngleRadians = fovDegrees * ( 0.5f * M_PI / 180.0f );
-	float t = tan( halfAngleRadians );
-	t *= ratio;
-	float retDegrees = ( 180.0f / M_PI ) * atan( t );
-	return retDegrees * 2.0f;
+	float halfAngleRadians;
+#if 1
+	const float halfXFov = DEG2RAD( Max( 0.001f, fovDegrees ) * 0.5f );
+	const float halfYFov = atanf( tanf( halfXFov ) * ratio );
+	halfAngleRadians = halfYFov;
+#else
+	halfAngleRadians = DEG2RAD( Max( 0.001f, fovDegrees ) * 0.5f );
+#endif
+	return RAD2DEG( halfAngleRadians ) * 2.0f;
+}
+
+float GetClientAspectRatio()
+{
+	float aspectRatio = engine->GetScreenAspectRatio() * 0.75f;
+	return Max( aspectRatio, 0.75f ); // Clamp to baseline 1:1 to prevent collapse in portrait viewports
+}
+
+float GetClientAspectRatioLimited()
+{
+	float aspectRatio = GetClientAspectRatio();
+	float limitedAspectRatio = aspectRatio;
+
+	static ConVarRef sv_restrict_aspect_ratio_fov( "sv_restrict_aspect_ratio_fov" );
+	if ( gpGlobals->maxClients > 1 && sv_restrict_aspect_ratio_fov.IsValid() )
+	{
+		int iRestrictMode = sv_restrict_aspect_ratio_fov.GetInt();
+		if ( iRestrictMode == 2 || ( iRestrictMode == 1 && engine->IsWindowedMode() ) )
+		{
+			static ConVarRef sv_restrict_aspect_ratio_fov_factor( "sv_restrict_aspect_ratio_fov_factor" );
+			float flRestrictFactor = sv_restrict_aspect_ratio_fov_factor.IsValid() ? sv_restrict_aspect_ratio_fov_factor.GetFloat() : 2.4f;
+			limitedAspectRatio = Min( aspectRatio, flRestrictFactor * 0.75f );
+		}
+	}
+	return Max( limitedAspectRatio, 0.75f ); // Clamp to baseline 1:1
 }
 
 //-----------------------------------------------------------------------------
@@ -1091,15 +1120,8 @@ void CViewRender::Render( vrect_t *rect )
 	{
 		CViewSetup &viewEye = GetView( eEye );
 
-
-	    static ConVarRef sv_restrict_aspect_ratio_fov( "sv_restrict_aspect_ratio_fov" );
-	    float aspectRatio = engine->GetScreenAspectRatio() * 0.75f;	 // / (4/3)
-	    float limitedAspectRatio = aspectRatio;
-	    if ( ( sv_restrict_aspect_ratio_fov.GetInt() > 0 && engine->IsWindowedMode() && gpGlobals->maxClients > 1 ) ||
-		    sv_restrict_aspect_ratio_fov.GetInt() == 2 )
-	    {
-		    limitedAspectRatio = MIN( aspectRatio, 1.85f * 0.75f ); // cap out the FOV advantage at a 1.85:1 ratio (about the widest any legit user should be)
-	    }
+		float aspectRatio = GetClientAspectRatio();
+		float limitedAspectRatio = GetClientAspectRatioLimited();
 
 		viewEye.fov = ScaleFOVByWidthRatio( viewEye.fov, limitedAspectRatio );
 		viewEye.fovViewmodel = ScaleFOVByWidthRatio( viewEye.fovViewmodel, aspectRatio );

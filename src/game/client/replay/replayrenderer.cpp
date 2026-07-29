@@ -924,7 +924,7 @@ void CReplayRenderer::GetViewSetup( CViewSetup &viewsetup )
 
 	// HACK: Override the view - this will keep the view from popping if the user toggles the render preview checkbox.
 	ReplayCamera()->CalcView( viewsetup.origin, viewsetup.angles, viewsetup.fov );
-	viewsetup .fovViewmodel = ScaleFOVByWidthRatio( v_viewmodel_fov.GetFloat(), viewsetup.m_flAspectRatio / ( 4.0f / 3.0f ) );
+	viewsetup .fovViewmodel = ScaleFOVByWidthRatio( v_viewmodel_fov.GetFloat(), viewsetup.m_flAspectRatio * 0.75f );
 }
 
 void CReplayRenderer::RenderLayoffFrame( DmeTime_t time, int nCurSample, int nNumTotalSamples )

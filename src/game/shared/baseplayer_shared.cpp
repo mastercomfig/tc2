@@ -1808,9 +1808,12 @@ float CBasePlayer::GetFOVDistanceAdjustFactor()
 		return 1.0f;
 	}
 
-	// If FOV is lower, then we're "zoomed" in and this will give a factor < 1 so apparent LOD distances can be
-	//  shorted accordingly
-	return localFOV / defaultFOV;
+	// Scale FOV in tangent space to match physical magnification
+	float flLocalTan = tanf( DEG2RAD( Max( 0.001f, localFOV ) * 0.5f ) );
+	float flDefaultTan = tanf( DEG2RAD( Max( 0.001f, defaultFOV ) * 0.5f ) );
+	if ( flDefaultTan < 0.001f )
+		return 1.0f;
+	return flLocalTan / flDefaultTan;
 }
 
 //-----------------------------------------------------------------------------

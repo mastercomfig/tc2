@@ -130,7 +130,7 @@ void CReplayScreenshotTaker::TakeScreenshot( WriteReplayScreenshotParams_t &para
 	viewSetup.y = 0;
 	viewSetup.width = width;
 	viewSetup.height = height;
-	viewSetup.fov = ScaleFOVByWidthRatio( m_View.fov, ( (float)width / (float)height ) / ( 4.0f / 3.0f ) );
+	viewSetup.fov = ScaleFOVByWidthRatio( m_View.fov, ( (float)width / (float)height ) * 0.75f );
 	viewSetup.m_bRenderToSubrectOfLargerScreen = true;
 
 	// Setup view origin/angles

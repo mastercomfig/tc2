@@ -206,6 +206,7 @@ ConVar sv_massreport( "sv_massreport", "0" );
 ConVar sv_force_transmit_ents( "sv_force_transmit_ents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Will transmit all entities to client, regardless of PVS conditions (will still skip based on transmit flags, however)." );
 
 ConVar sv_autosave( "sv_autosave", "1", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
+ConVar sv_restrict_aspect_ratio_fov_factor( "sv_restrict_aspect_ratio_fov_factor", "2.4", FCVAR_REPLICATED | FCVAR_NOTIFY, "Aspect ratio limit factor above which FOV scaling is restricted (default 2.4 to support 21:9)." );
 ConVar *sv_maxreplay = NULL;
 static ConVar  *g_pcv_commentary = NULL;
 static ConVar *g_pcv_ThreadMode = NULL;

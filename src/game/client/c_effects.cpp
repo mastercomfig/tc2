@@ -1920,7 +1920,17 @@ void CSnowFallManager::CreateSnowFall( void )
 	float flZoomScale = 1.0f;
 	if ( bZoomed )
 	{
-		flZoomScale = pPlayer->GetDefaultFOV() / pPlayer->GetFOV();
+		// fov scaling in tan space
+		float flLocalTan = tanf( DEG2RAD( Max( 0.001f, (float)pPlayer->GetFOV() ) * 0.5f ) );
+		float flDefaultTan = tanf( DEG2RAD( Max( 0.001f, (float)pPlayer->GetDefaultFOV() ) * 0.5f ) );
+		if ( flLocalTan < 0.001f )
+		{
+			flZoomScale = 1.0f;
+		}
+		else
+		{
+			flZoomScale = flDefaultTan / flLocalTan;
+		}
 		flZoomScale *= 0.5f;
 	}
 

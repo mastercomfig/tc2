@@ -8686,7 +8686,14 @@ int CBasePlayer::GetFOV( void )
 	}
 	else
 	{
-		fFOV = SimpleSplineRemapValClamped( deltaTime, 0.0f, 1.0f, m_iFOVStart, fFOV );
+		// Lerp FOV in tangent space
+		float flStartFov = Max( 0.001f, (float)m_iFOVStart );
+		float flEndFov = Max( 0.001f, (float)fFOV );
+		float flSplineFract = SimpleSplineRemapValClamped( deltaTime, 0.0f, 1.0f, 0.0f, 1.0f );
+		float flStartTan = tanf( DEG2RAD( flStartFov * 0.5f ) );
+		float flEndTan = tanf( DEG2RAD( flEndFov * 0.5f ) );
+		float flLerpedTan = flStartTan + flSplineFract * ( flEndTan - flStartTan );
+		fFOV = (int) ( RAD2DEG( atanf( flLerpedTan ) ) * 2.0f );
 	}
 
 	return fFOV;
@@ -8734,9 +8741,12 @@ float CBasePlayer::GetFOVDistanceAdjustFactorForNetworking()
 	if ( localFOV == defaultFOV || defaultFOV < 0.001f )
 		return 1.0f;
 
-	// If FOV is lower, then we're "zoomed" in and this will give a factor < 1 so apparent LOD distances can be
-	//  shorted accordingly
-	return localFOV / defaultFOV;
+	// Scale FOV in tangent space to match physical magnification
+	float flLocalTan = tanf( DEG2RAD( Max( 0.001f, localFOV ) * 0.5f ) );
+	float flDefaultTan = tanf( DEG2RAD( Max( 0.001f, defaultFOV ) * 0.5f ) );
+	if ( flDefaultTan < 0.001f )
+		return 1.0f;
+	return flLocalTan / flDefaultTan;
 }
 
 
