@@ -70,8 +70,13 @@ else
     if ! git rev-parse "${VERSION}" -- > /dev/null 2>&1; then
         git tag "${VERSION}" "${TARGET_COMMIT}"
     fi
-    git pull
-    git push origin "${VERSION}"
+    if [ -n "${RELEASE_REPO}" ]; then
+        REMOTE_URL="https://x-access-token:${GH_TOKEN:-${GITHUB_TOKEN}}@github.com/${RELEASE_REPO}.git"
+        git push "${REMOTE_URL}" "${VERSION}"
+    else
+        git pull
+        git push origin "${VERSION}"
+    fi
 
     NOTES="Release ${VERSION}
 
