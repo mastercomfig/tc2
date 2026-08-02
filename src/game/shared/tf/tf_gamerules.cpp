@@ -7176,7 +7176,15 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 	CTFPlayer *pVictim = ToTFPlayer( pVictimBaseEntity );
 	CBaseEntity *pAttacker = info.GetAttacker();
 	CTFPlayer *pTFAttacker = ToTFPlayer( pAttacker );
-	CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>( info.GetWeapon() );
+	CTFWeaponBase* pWeapon = dynamic_cast<CTFWeaponBase*>( info.GetWeapon() );
+	// TODO(mcoms): reconcile this with damage info
+	CTFWeaponBase* pOriginalWeapon = pWeapon;
+	CBaseEntity* pInflictor = info.GetInflictor();
+	CBaseProjectile* pProjectile = pInflictor->IsBaseProjectile() ? dynamic_cast<CBaseProjectile*>( pInflictor ) : NULL;
+	if ( pProjectile )
+	{
+		pOriginalWeapon = dynamic_cast<CTFWeaponBase*>( pProjectile->GetOriginalLauncher() );
+	}
 
 	int iAttackIgnoresResists = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iAttackIgnoresResists, mod_pierce_resists_absorbs );
@@ -7407,8 +7415,8 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		if ( info.GetCritType() == CTakeDamageInfo::CRIT_NONE )
 		{
 			CBaseEntity *pInflictor = info.GetInflictor();
-			CTFGrenadePipebombProjectile *pBaseGrenade = dynamic_cast< CTFGrenadePipebombProjectile* >( pInflictor );
-			CTFBaseRocket *pBaseRocket = dynamic_cast< CTFBaseRocket* >( pInflictor );
+			CTFGrenadePipebombProjectile *pBaseGrenade = pProjectile ? dynamic_cast< CTFGrenadePipebombProjectile* >( pProjectile ) : NULL;
+			CTFBaseRocket *pBaseRocket = pProjectile && !pBaseGrenade ? dynamic_cast<CTFBaseRocket*>( pProjectile ) : NULL;
 
 			if ( pVictim && ( pVictim->m_Shared.InCond( TF_COND_URINE ) ||
 			                  pVictim->m_Shared.InCond( TF_COND_MARKEDFORDEATH ) ||
@@ -7445,7 +7453,7 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			}
 			else if ( ( pInflictor && pInflictor->IsPlayer() == false ) && ( ( pBaseRocket && pBaseRocket->GetDeflected() ) || ( pBaseGrenade && pBaseGrenade->GetDeflected() && ( pBaseGrenade->ShouldMiniCritOnReflect() ) ) ) )
 			{
-				if (tf_deflect_minicrits.GetBool())
+				if ( tf_deflect_minicrits.GetBool() )
 				{
 					// Reflected rockets, grenades (non-remote detonate), arrows always mini-crit
 					info.SetCritType(CTakeDamageInfo::CRIT_MINI);

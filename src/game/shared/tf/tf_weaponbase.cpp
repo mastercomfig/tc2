@@ -6296,6 +6296,7 @@ bool CTFWeaponBase::DeflectEntity( CBaseEntity *pTarget, CTFPlayer *pOwner, Vect
 
 	// Send the entity back where it came.
 	// If we want per-entity physical deflection behavior this could move into ::Deflected
+	CTFWeaponBaseGrenadeProj* pBaseGrenade = pTarget->IsBaseProjectile() ? dynamic_cast<CTFWeaponBaseGrenadeProj*>( pTarget ) : NULL;
 	IPhysicsObject *pPhysicsObject = pTarget->VPhysicsGetObject();
 	AngularImpulse angularimp;
 	if ( pPhysicsObject )
@@ -6306,7 +6307,8 @@ bool CTFWeaponBase::DeflectEntity( CBaseEntity *pTarget, CTFPlayer *pOwner, Vect
 	vecVel = flVel * vecDir;
 	if ( pPhysicsObject )
 	{
-		if ( pPhysicsObject->IsMotionEnabled() == false )
+		// if the sticky is stuck OR we are pushing the stuck sticky around, then do the pushaway behavior.
+		if ( pPhysicsObject->IsMotionEnabled() == false || ( pBaseGrenade && pBaseGrenade->GetDeflectOwner() == pOwner ) )
 		{
 			vecDir = pTarget->WorldSpaceCenter() - pOwner->WorldSpaceCenter();
 			VectorNormalize( vecDir );
