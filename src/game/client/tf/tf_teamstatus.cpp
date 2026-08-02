@@ -190,10 +190,12 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 			}
 		}
 
+		bool bTeamChanged = false;
 		if ( m_iTeam != GetTeam() )
 		{
 			m_iTeam = GetTeam();
 			bChanged = true;
+			bTeamChanged = true;
 		}
 
 		if ( m_pClassImageBG )
@@ -222,13 +224,17 @@ bool CTFTeamStatusPlayerPanel::Update( void )
 		// update live state
 		if ( m_pClassImage )
 		{
-			if ( m_bPrevAlive != bAlive )
+			if ( m_bPrevAlive != bAlive || bTeamChanged )
 			{
 				bChanged = true;
 				m_bPrevAlive = bAlive;
 				if ( !bAlive )
 				{
 					m_pClassImage->SetDrawColor( ( m_iTeam == TF_TEAM_RED ) ? m_ColorPortraitBlendDeadRed : m_ColorPortraitBlendDeadBlue );
+				}
+				else
+				{
+					m_pClassImage->SetDrawColor( Color( 255, 255, 255, 255 ) );
 				}
 
 				m_pDeathFlag->SetImage( ( m_iTeam == TF_TEAM_RED ) ? "../HUD/comp_player_status" : "../HUD/comp_player_status_blue" );
