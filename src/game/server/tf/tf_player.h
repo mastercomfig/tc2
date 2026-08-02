@@ -1164,6 +1164,7 @@ protected:
 	void				TFPlayerThink();
 	void				UpdateTimers( void );
 	void				PostSpawnThink( void );
+	void				PostInventoryApplicationThink( void );
 	void				StrandedSpawnThink( void );
 	int					CheckStrandedSpawn(void);
 

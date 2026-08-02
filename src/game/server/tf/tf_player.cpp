@@ -2292,6 +2292,13 @@ void CTFPlayer::PostSpawnThink( void )
 		}
 	}
 
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CTFPlayer::PostInventoryApplicationThink( void )
+{
 	// this used to be in PostInventoryApplication, but that would happen too early for the client to catch up.
 	// so, now it's here.
 	if ( GetTeamNumber() >= FIRST_GAME_TEAM )
@@ -5899,6 +5906,8 @@ void CTFPlayer::PostInventoryApplication( void )
 	m_iPlayerSkinOverride = iPlayerSkinOverride;
 
 	m_Inventory.ClearClassLoadoutChangeTracking();
+
+	SetContextThink( &CTFPlayer::PostInventoryApplicationThink, gpGlobals->curtime + 0.1f, "PostInventoryApplicationThink" );
 }
 
 //-----------------------------------------------------------------------------
