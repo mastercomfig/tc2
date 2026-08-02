@@ -41,6 +41,7 @@ public:
 		m_pszMatchStartSound			= "MatchMaking.RoundStartCasual";
 		m_bAutoReady					= true;
 		m_bUseAutoBalance				= true;
+		m_bAllowTeamChange				= true;
 		m_bRequireCompleteMatch			= false;
 		m_bAllowSpecModeChange			= true;
 		m_bAutomaticallyRequeueAfterMatchEnds	= true;

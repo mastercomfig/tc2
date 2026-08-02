@@ -42,6 +42,17 @@ IMatchGroupDescription::IMatchGroupDescription( ETFMatchGroup eMatchGroup )
 	, m_pProgressionDesc( NULL )
 {}
 
+bool IMatchGroupDescription::BAllowTeamChange() const
+{
+#if defined( CLIENT_DLL ) || defined( GAME_DLL )
+	if ( TFGameRules() && ( TFGameRules()->IsInPreMatch() || TFGameRules()->State_Get() < GR_STATE_PREROUND || TFGameRules()->State_Get() == GR_STATE_BETWEEN_RNDS || TFGameRules()->GetRoundRestartTime() > 0.0f ) )
+	{
+		return m_bAllowTeamChangeDuringPreGame;
+	}
+#endif
+	return m_bAllowTeamChange;
+}
+
 
 #ifdef CLIENT_DLL
 bool IMatchGroupDescription::BPlayerIsInPlacement( CSteamID steamID ) const

@@ -115,7 +115,7 @@ public:
 	inline bool BAllowDrawingAtMatchHistory() const				{ return m_bAllowDrawingAtMatchSummary; }
 	inline bool BUseMatchSummaryStage() const					{ return m_bUseMatchSummaryStage; }
 	inline const char* GetMatchEndKickWarning() const			{ return m_pszMatchEndKickWarning; }
-	inline bool BAllowTeamChange() const						{ return m_bAllowTeamChange; }
+	bool BAllowTeamChange() const;
 	inline bool BAllowSpectatorModeChange() const				{ return m_bAllowSpecModeChange; }
 	inline bool BUsesRandomCrits() const						{ return m_bRandomWeaponCrits; }
 	inline bool BForceClientSettings() const					{ return m_bForceClientSettings; }
@@ -173,6 +173,7 @@ protected:
 	bool                    m_bUseReducedBonusTime                = false;
 	bool                    m_bUseAutoBalance                     = false;
 	bool                    m_bAllowTeamChange                    = false;
+	bool                    m_bAllowTeamChangeDuringPreGame       = false;
 	bool                    m_bRandomWeaponCrits                  = true;
 	bool                    m_bFixedWeaponSpread                  = false;
 	// If we should not allow match to complete without a complete set of players.
