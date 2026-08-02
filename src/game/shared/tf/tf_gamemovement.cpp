@@ -325,6 +325,7 @@ unsigned int CTFGameMovement::PlayerSolidMask( bool brushOnly )
 
 ConVar tf_movement_substep_time("tf_movement_substep_time", "0.01", FCVAR_REPLICATED, "Movement will be substepped at increments of this value until reaching the total tick time.", true, 0.001f, true, 0.1f);
 ConVar tf_movement_substep_max("tf_movement_substep_max", "8", FCVAR_REPLICATED, "Movement will be substepped at a maximum of this many iterations before using the remainder of the tick time.", true, 1, true, 25);
+ConVar tf_movement_aircontrol_ref_ms("tf_movement_aircontrol_ref_ms", "15.0", FCVAR_REPLICATED, "Reference frame interval in milliseconds for scaling air control / air speed cap across tickrates (15ms = 66.6666 Hz). Set to 0 to disable.", true, 0.0f, true, 100.0f);
 
 float ComputeSubTime( float flTime, int Iterations )
 {
@@ -2328,6 +2329,12 @@ float CTFGameMovement::GetAirSpeedCap( void )
 	else
 	{
 		float flCap = BaseClass::GetAirSpeedCap();
+
+		float flRefMs = tf_movement_aircontrol_ref_ms.GetFloat();
+		if ( flRefMs > 0.0f && GAMEMOVEMENT_NONSUB_FRAMETIME > 0.0f )
+		{
+			flCap *= ( GAMEMOVEMENT_NONSUB_FRAMETIME / ( flRefMs * 0.001f ) );
+		}
 
 /*
 #ifdef STAGING_ONLY
