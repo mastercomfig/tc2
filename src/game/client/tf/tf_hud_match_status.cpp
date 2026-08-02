@@ -428,8 +428,7 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 			AddSubKeyNamed( pConditions, "if_match_min" );
 		}
 
-		// TODO(mcoms): why does GTFGCClientSystem()->GetLiveMatchGroup() sometimes fail?
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules() ? TFGameRules()->GetCurrentMatchGroup() : GTFGCClientSystem()->GetLiveMatchGroup() );
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules() ? TFGameRules()->GetCurrentMatchGroupWithEmulation() : GTFGCClientSystem()->GetLiveMatchGroup() );
 		bool bHasLargeTeam = false;
 		if ( pMatchDesc )
 		{
@@ -440,10 +439,10 @@ void CTFHudMatchStatus::ApplySchemeSettings(IScheme *pScheme)
 		}
 		else
 		{
-			bHasLargeTeam = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam(TF_TEAM_RED)->GetNumPlayers() > 6 || GetGlobalTeam(TF_TEAM_BLUE) && GetGlobalTeam(TF_TEAM_BLUE)->GetNumPlayers() > 6 );
-			if ( TFGameRules() && TFGameRules()->IsEmulatingMatch() == 1 )
+			bHasLargeTeam = TFGameRules() && ( GetGlobalTeam(TF_TEAM_RED) && GetGlobalTeam( TF_TEAM_RED )->GetNumPlayers() > 6 || GetGlobalTeam( TF_TEAM_BLUE ) && GetGlobalTeam( TF_TEAM_BLUE )->GetNumPlayers() > 6 );
+			if ( !bHasLargeTeam )
 			{
-				bHasLargeTeam = true;
+				bHasLargeTeam = TFGameRules()->GetTeamSize( TF_TEAM_RED ) > 6 || TFGameRules()->GetTeamSize( TF_TEAM_BLUE ) > 6;
 			}
 		}
 
@@ -546,7 +545,7 @@ void CTFHudMatchStatus::OnThink()
 		bReload = true;
 	}
 
-	ETFMatchGroup eCurrentGroup = TFGameRules()->GetCurrentMatchGroup();
+	ETFMatchGroup eCurrentGroup = TFGameRules()->GetCurrentMatchGroupWithEmulation();
 	if ( eCurrentGroup != m_eMatchGroupSettings )
 	{
 		m_eMatchGroupSettings = eCurrentGroup;
