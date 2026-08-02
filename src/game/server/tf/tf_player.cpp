@@ -7035,7 +7035,7 @@ void CTFPlayer::HandleCommand_JoinTeam( const char *pTeamName )
 
 	if ( GetTeamNumber() == TF_TEAM_RED || GetTeamNumber() == TF_TEAM_BLUE )
 	{
-		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+		const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 		if ( pMatchDesc && !pMatchDesc->BAllowTeamChange() )
 		{
 			ClientPrint( this, HUD_PRINTCENTER, "#TF_Ladder_NoTeamChange" );
@@ -8996,7 +8996,7 @@ bool CTFPlayer::ClientCommand( const CCommand &args )
 	{
 		if ( ShouldRunRateLimitedCommand( args ) )
 		{
-			const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 			if ( !pMatchDesc || pMatchDesc->BAllowTeamChange() )
 			{
 				bool bPreventCustomGameModeChange = ( IsCustomGameMode() && ( GetTeamNumber() >= FIRST_GAME_TEAM ) );

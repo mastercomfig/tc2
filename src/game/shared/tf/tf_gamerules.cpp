@@ -9667,9 +9667,9 @@ void CTFGameRules::Think()
 			if ( bCanQuickReset )
 			{
 				bool bWillLeaveMap = false;
-				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+				const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 				static ConVarRef tf_match_emulation_restartmatch( "tf_match_emulation_restartmatch" );
-				if ( pMatchDesc || TFGameRules()->IsEmulatingMatch() && !tf_match_emulation_restartmatch.GetBool() )
+				if ( pMatchDesc && !tf_match_emulation_restartmatch.GetBool() )
 				{
 					bWillLeaveMap = true;
 				}
@@ -9828,7 +9828,7 @@ void CTFGameRules::Think()
 			}
 		}
 
-		if (IsCompetitiveMode() || IsEmulatingMatch())
+		if ( IsCompetitiveMode() || IsEmulatingMatch() )
 		{
 			const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(GetCurrentMatchGroup());
 			if (pMatch)
@@ -11510,21 +11510,16 @@ bool CTFGameRules::AllowSpectatorModeChange()
 	bool bAllowSpecModeChange = TFGameRules()->IsInTournamentMode() ? TFGameRules()->IsMannVsMachineMode() : true;
 
 	// new behavior for Valve casual, competitive, and mvm matches
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription(TFGameRules()->GetCurrentMatchGroup());
-	if (pMatchDesc)
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
+	if ( pMatchDesc )
 	{
 		bAllowSpecModeChange = pMatchDesc->BAllowSpectatorModeChange();
-	}
-
-	if (TFGameRules()->IsEmulatingMatch() == 1)
-	{
-		bAllowSpecModeChange = true;
 	}
 
 	// TODO(mcoms)
 #if 0
 	// competitive games now allow spec mode changes due to visibility checks
-	if (TFGameRules()->IsCompetitiveGame())
+	if ( TFGameRules()->IsCompetitiveGame() )
 	{
 		bAllowSpecModeChange = true;
 	}
@@ -20323,12 +20318,7 @@ bool CTFGameRules::ShouldConfirmOnDisconnect()
 //-----------------------------------------------------------------------------
 bool CTFGameRules::ShouldShowPreRoundDoors() const
 {
-	if ( IsEmulatingMatch() )
-	{
-		return true;
-	}
-
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
 	if ( pMatchDesc )
 	{
 		return pMatchDesc->BUsesPreRoundDoors();
@@ -20500,7 +20490,7 @@ int CTFGameRules::GetTeamSize( int iTeam )
 bool CTFGameRules::ShouldBalanceTeams( void )
 {
 	// never autobalance the teams for managed matches using the old system
-	if ( GetMatchGroupDescription( GetCurrentMatchGroup() ) )
+	if ( GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() ) )
 		return false;
 
 	bool bDisableBalancing = false;
@@ -24327,13 +24317,8 @@ void CTFGameRules::MatchSummaryTeleport()
 {
 	bool bUseMatchSummaryStage = false;
 
-	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroup() );
+	const IMatchGroupDescription* pMatchDesc = GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() );
 	if ( pMatchDesc && pMatchDesc->BUseMatchSummaryStage() )
-	{
-		bUseMatchSummaryStage = true;
-	}
-
-	if ( IsEmulatingMatch() == 2 )
 	{
 		bUseMatchSummaryStage = true;
 	}
@@ -25157,7 +25142,7 @@ const char * CTFGameRules::GetNextMvMPopfile ( )
 void CTFGameRules::BalanceTeams( bool bRequireSwitcheesToBeDead )
 {
 	// are we playing a managed match via matchmaking?
-	if ( GetMatchGroupDescription( GetCurrentMatchGroup() ) )
+	if ( GetMatchGroupDescription( GetCurrentMatchGroupWithEmulation() ) )
 		return;
 		
 	if ( mp_autoteambalance.GetInt() == 2 )

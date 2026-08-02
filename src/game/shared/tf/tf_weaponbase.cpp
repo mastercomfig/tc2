@@ -6100,11 +6100,8 @@ bool CTFWeaponBase::AreRandomCritsEnabled( void )
 		if ( TFGameRules()->IsPowerupMode() )
 			return false;
 
-		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroup() );
+		const IMatchGroupDescription *pMatchDesc = GetMatchGroupDescription( TFGameRules()->GetCurrentMatchGroupWithEmulation() );
 		if ( pMatchDesc && !pMatchDesc->BUsesRandomCrits() )
-			return false;
-
-		if ( TFGameRules()->IsEmulatingMatch() == 2 )
 			return false;
 
 		if ( TFGameRules()->IsCompetitiveGame() )
