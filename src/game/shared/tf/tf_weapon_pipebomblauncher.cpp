@@ -820,7 +820,8 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 		float flDot = DotProduct( vecToTarget, vecPlayerForward );
 
 		// 2. Detonate any bomb inside the outer screen radius but outside the inner screen radius
-		if ( bArmed && flDot > flOuterThreshold && flDot <= flInnerThreshold )
+		// (Disabled when an inner target is detected to avoid interfering with detection precision)
+		if ( !pAnchorBomb && bArmed && flDot > flOuterThreshold && flDot <= flInnerThreshold )
 		{
 			bShouldDetonate = true;
 		}
@@ -843,7 +844,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 				{
 					m_bTargetingInner = true;
 				}
-				if ( flDot > flOuterThreshold )
+				else if ( !pAnchorBomb && flDot > flOuterThreshold )
 				{
 					m_bTargetingOuter = true;
 				}
@@ -857,7 +858,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 				{
 					bDetonatedInner = true;
 				}
-				if ( flDot > flOuterThreshold )
+				else if ( !pAnchorBomb && flDot > flOuterThreshold )
 				{
 					bDetonatedOuter = true;
 				}
