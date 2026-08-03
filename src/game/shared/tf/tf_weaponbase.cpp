@@ -6150,11 +6150,17 @@ bool CTFWeaponBase::DeflectProjectiles()
 	AngleVectors( pOwner->EyeAngles(), &vecForward, &vecRight, &vecUp );
 	Vector vecCenter = vecEye + vecForward * GetDeflectionRadius();
 
+	// The old reflect box was a cube with half-extents of GetDeflectionRadius().
+	// The maximum distance to a corner from the center was GetDeflectionRadius() * sqrt(3).
+	// We use this as our broadphase box, then reduce it via a sphere check.
+	float flMaxCornerRadius = GetDeflectionRadius() * 1.73205081f; // sqrt(3)
+	Vector vecExtents( flMaxCornerRadius, flMaxCornerRadius, flMaxCornerRadius );
+
 	// Get a list of entities in the box defined by vecSize at VecCenter.
 	// We will then try to deflect everything in the box.
 	const int maxCollectedEntities = 64;
 	CBaseEntity	*pObjects[ maxCollectedEntities ];
-	int count = UTIL_EntitiesInSphere( pObjects, maxCollectedEntities, vecCenter, GetDeflectionRadius(), FL_CLIENT | FL_GRENADE );
+	int count = UTIL_EntitiesInBox( pObjects, maxCollectedEntities, vecCenter - vecExtents, vecCenter + vecExtents, FL_CLIENT | FL_GRENADE );
 
 	//NDebugOverlay::Sphere( vecCenter, GetDeflectionRadius(), 0, 255, 0, 40, 3 );
 
@@ -6170,6 +6176,18 @@ bool CTFWeaponBase::DeflectProjectiles()
 			continue;
 
 		if ( pObjects[i]->IsPlayer() && pObjects[i]->GetTeamNumber() == TEAM_SPECTATOR )
+			continue;
+
+		// It shouldn't be able to reflect anything behind the Pyro (180 dot product)
+		Vector vecTargetCenter = pObjects[i]->WorldSpaceCenter();
+		Vector vecToTarget = vecTargetCenter - vecEye;
+		vecToTarget.NormalizeInPlace();
+		if ( DotProduct( vecForward, vecToTarget ) < 0.0f )
+			continue;
+
+		// Reduce radius further by a sphere radius check against the entity's bounds
+		float flDistToCenter = pObjects[i]->CollisionProp()->CalcDistanceFromPoint( vecCenter );
+		if ( flDistToCenter > flMaxCornerRadius )
 			continue;
 
 		if ( pOwner->FVisible( pObjects[i], MASK_SOLID ) == false )
