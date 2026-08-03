@@ -488,11 +488,11 @@ void CTFHudTimeStatus::SetExtraTimePanels()
 		}
 	}
 
+	bool bInSD = TFGameRules()->InStalemate() && !TFGameRules()->IsInArenaMode();
+
 	// Set the Sudden Death panels to be visible
 	if ( m_pSuddenDeathBG && m_pSuddenDeathLabel )
 	{
-		bool bInSD = TFGameRules()->InStalemate() && !TFGameRules()->IsInArenaMode();
-
 		if ( bInSD != m_pSuddenDeathLabel->IsVisible() )
 		{
 			if ( bInSD )
@@ -598,6 +598,7 @@ void CTFHudTimeStatus::SetExtraTimePanels()
 			!bInSetup &&
 			!bInWaitingForPlayers &&
 			!bInOver &&
+			!bInSD &&
 			nServerTimeLimit;
 
 		// We don't use the extra server time label since we take over the main timer.
@@ -820,12 +821,14 @@ void CTFHudTimeStatus::OnThink()
 			if ( m_pServerTimeLabel && m_pServerTimeLabelBG )
 			{
 				int nServerTimeLimit = mp_timelimit.GetInt() * 60;
+				bool bInSD = TFGameRules()->InStalemate() && !TFGameRules()->IsInArenaMode();
 
 				bool bDisplayServerTimerEnabled = tf_hud_show_servertimelimit.GetInt() && 
 												  TFGameRules() && 
 												  !TFGameRules()->InSetup() &&
 												  !TFGameRules()->IsInWaitingForPlayers() &&
 												  !TFGameRules()->InOvertime() &&
+												  !bInSD &&
 												  pTimer->IsRoundMaxTimerSet() &&
 												  nServerTimeLimit;
 				
