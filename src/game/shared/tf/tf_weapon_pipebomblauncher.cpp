@@ -690,7 +690,7 @@ bool CTFPipebombLauncher::ModifyPipebombsInView( int iEffect )
 			{
 				// Prioritize bombs we are looking directly at, but still factor in distance slightly.
 				// The score is lower the better.
-				float flScore = ( 1.0f - flDot ) * tf_scotres_aim_score.GetFloat() + flDistToBomb;
+				float flScore = ( 1.0f - flDot ) / ( 1.0f - flInnerThreshold ) * tf_scotres_aim_score.GetFloat() + flDistToBomb;
 				
 				if ( flScore < flBestDist )
 				{
