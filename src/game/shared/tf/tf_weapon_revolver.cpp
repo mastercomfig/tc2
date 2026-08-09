@@ -308,7 +308,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 		}
 		else
 		{
-			const float flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
+			flAccuracyCooldown = bCanHeadShot ? flHeadShotCooldown : 1.25f;
 		}
 
 		float curtime = pTFPlayer->GetFinalPredictedTime() + ( gpGlobals->interpolation_amount * TICK_INTERVAL );
@@ -334,14 +334,14 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 			if ( flAccuracyCooldown == flHeadShotCooldown )
 			{
 				// headshot cooldown is the same as our accuracy cooldown.
-				flScale = RemapValClamped(flTimeSinceCheck, flHeadShotCooldown, 0.5f, 0.75f, flMaxSize);
+				flScale = RemapValClamped( flTimeSinceCheck, flTimeBetweenShots, flHeadShotCooldown, flMaxSize, 0.75f );
 			}
 			else
 			{
 				if ( flTimeSinceCheck < flAccuracyCooldown )
 				{
 					// show the accuracy time
-					flScale = RemapValClamped(flTimeSinceCheck, 0.5f, flAccuracyCooldown, flMaxSize, 1.0f);
+					flScale = RemapValClamped(flTimeSinceCheck, flTimeBetweenShots, flAccuracyCooldown, flMaxSize, 1.0f);
 				}
 				else
 				{
@@ -352,7 +352,7 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 		}
 		else
 		{
-			flScale = RemapValClamped( flTimeSinceCheck, 0.5f, flAccuracyCooldown, 2.5f, 1.0f );
+			flScale = RemapValClamped( flTimeSinceCheck, flTimeBetweenShots, flAccuracyCooldown, flMaxSize, 1.0f );
 		}
 		
 	}
