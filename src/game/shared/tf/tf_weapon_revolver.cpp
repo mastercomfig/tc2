@@ -341,16 +341,16 @@ void CTFRevolver::GetWeaponCrosshairScale( float &flScale )
 				if ( flTimeSinceCheck < flAccuracyCooldown )
 				{
 					// show the accuracy time
-					flScale = RemapValClamped(flTimeSinceCheck, flTimeBetweenShots, flAccuracyCooldown, flMaxSize, 1.0f);
+					flScale = RemapValClamped( flTimeSinceCheck, flTimeBetweenShots, flAccuracyCooldown, flMaxSize, 1.0f );
 				}
 				else
 				{
 					// headshot time.
-					flScale = RemapValClamped(flTimeSinceCheck, flAccuracyCooldown, flHeadShotCooldown, 1.0f, 0.75f);
+					flScale = RemapValClamped( flTimeSinceCheck, flAccuracyCooldown, flHeadShotCooldown, 1.0f, 0.75f );
 				}
 			}
 		}
-		else
+		else if ( tf_revolver_dynamic_crosshair.GetInt() == 1 )
 		{
 			flScale = RemapValClamped( flTimeSinceCheck, flTimeBetweenShots, flAccuracyCooldown, flMaxSize, 1.0f );
 		}
