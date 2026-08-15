@@ -2065,7 +2065,7 @@ bool C_BasePlayer::IsPersonalPerspective( bool bRequireSpectator, bool bRequireF
 	bool bInView = pLocalPlayer->GetObserverMode() == OBS_MODE_IN_EYE;
 	if ( !bRequireFirstPerson && !bInView )
 	{
-		bInView = pLocalPlayer->GetObserverMode() == OBS_MODE_CHASE;
+		bInView = pLocalPlayer->GetObserverMode() == OBS_MODE_CHASE || pLocalPlayer->GetObserverMode() == OBS_MODE_FIXED;
 	}
 	
 	if ( bInView && pLocalPlayer->GetObserverTarget() == ToBasePlayer( this ) )
