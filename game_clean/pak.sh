@@ -46,6 +46,10 @@ git pull
 
 PAK_VERSION_FILE="version.txt"
 
+if [ ! -f $PAK_VERSION_FILE ]; then
+  echo "0.0.0" > $PAK_VERSION_FILE
+fi
+
 CUR_PAK_VERSION=$(cat $PAK_VERSION_FILE | tr -d '\n')
 if [ $CUR_PAK_VERSION == $PAK_VERSION ]; then
   echo "Nothing to upload, PAK_VERSION up to date. If you don't expect this result, bump PAK_VERSION."
