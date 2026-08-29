@@ -108,9 +108,9 @@ for F in "${EXES[@]}"; do
   elif [ $PLATFORM = "linux" ]; then
     # Linux binaries aren't stripped by the build scripts, so separate the
     # debug info and strip them here.
-    cp -f ${CLEAN_DIR}/${EXE} ${CLEAN_DEBUG_DIR}/${EXE}.dbg
-    objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${EXE}.dbg ${CLEAN_DIR}/${EXE}
+    objcopy --only-keep-debug ${CLEAN_DIR}/${EXE} ${CLEAN_DEBUG_DIR}/${EXE}.dbg
     strip ${CLEAN_DIR}/${EXE}
+    objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${EXE}.dbg ${CLEAN_DIR}/${EXE}
   fi
 done
 
@@ -124,9 +124,9 @@ for F in "${DLLS[@]}"; do
   elif [ $PLATFORM = "linux" ]; then
     # Linux binaries aren't stripped by the build scripts, so separate the
     # debug info and strip them here.
-    cp -f ${CLEAN_DIR}/${DLL} ${CLEAN_DEBUG_DIR}/${DLL}.dbg
-    objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${DLL}.dbg ${CLEAN_DIR}/${DLL}
+    objcopy --only-keep-debug ${CLEAN_DIR}/${DLL} ${CLEAN_DEBUG_DIR}/${DLL}.dbg
     strip ${CLEAN_DIR}/${DLL}
+    objcopy --add-gnu-debuglink=${CLEAN_DEBUG_DIR}/${DLL}.dbg ${CLEAN_DIR}/${DLL}
     # dedicated server DLL
     if [ -z ${DLL##*server.so} ]; then
       cp -f ${DEV_DIR}/${F}${DLL_EXT} ${DEV_DIR}/${F}_srv${DLL_EXT}
