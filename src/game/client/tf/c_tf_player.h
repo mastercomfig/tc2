@@ -481,6 +481,8 @@ public:
 	EHANDLE	m_hRagdoll;
 	Vector m_vecRagdollVelocity;
 
+	CountdownTimer m_blinkTimer;
+
 	// Objects
 	int CanBuild( int iObjectType, int iObjectMode=0 );
 	CUtlVector< CHandle<C_BaseObject> > m_aObjects;

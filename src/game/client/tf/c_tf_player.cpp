@@ -3973,6 +3973,8 @@ C_TFPlayer::C_TFPlayer() :
 
 	AddVar( &m_angEyeAngles, &m_iv_angEyeAngles, LATCH_SIMULATION_VAR );
 
+	m_blinkTimer.Invalidate();
+
 	memset( m_pKartParticles, NULL, sizeof( m_pKartParticles ) );
 	memset( m_pKartSounds, NULL, sizeof( m_pKartSounds ) );
 
@@ -6367,6 +6369,8 @@ void C_TFPlayer::UpdateLookAt( void )
 
 	Vector vecLookAtTarget;
 
+	float flClosestDistSq = FLT_MAX;
+
 	if ( tf_clientsideeye_lookats.GetBool() && IsAlive() )
 	{
 		for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
@@ -6394,12 +6398,18 @@ void C_TFPlayer::UpdateLookAt( void )
 			if ( flDistSq <= 1.0f )
 				continue;
 
-			vDir /= FastSqrt(flDistSq);
+			if ( flDistSq > flClosestDistSq )
+				continue;
+
+			flClosestDistSq = flDistSq;
+
+			vDir /= FastSqrt( flDistSq );
 
 			if ( DotProduct( vForward, vDir ) < 0.0f )
 				continue;
 
 			vecLookAtTarget = pEnt->EyePosition();
+			vecLookAtTarget.z -= 7.0f;
 			bFoundViewTarget = true;
 			break;
 		}
@@ -6408,20 +6418,18 @@ void C_TFPlayer::UpdateLookAt( void )
 	if ( bFoundViewTarget == false )
 	{
 		// no target, look forward
-		vecLookAtTarget = GetAbsOrigin() + vForward * 512;
+		vecLookAtTarget = EyePosition() + vForward * 300;
 	}
 
 	// orient eyes
 	m_viewtarget = vecLookAtTarget;
 
-	/*
 	// blinking
 	if (m_blinkTimer.IsElapsed())
 	{
 		m_blinktoggle = !m_blinktoggle;
 		m_blinkTimer.Start( RandomFloat( 1.5f, 4.0f ) );
 	}
-	*/
 
 	/*
 	// Figure out where we want to look in world space.
