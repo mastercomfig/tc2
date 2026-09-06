@@ -1633,6 +1633,8 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 	if ( ShouldGib( info ) == false )
 	{
 		bool bRagdollCreated = false;
+		// We don't use any of this code, particularly DMG_DISSOLVE which has a collision in TF and can cause our weapons to disappear.
+#ifndef TF_DLL
 		if ( (info.GetDamageType() & DMG_DISSOLVE) && CanBecomeRagdoll() )
 		{
 			int nDissolveType = ENTITY_DISSOLVE_NORMAL;
@@ -1657,6 +1659,7 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 				pDroppedWeapon->Dissolve( NULL, gpGlobals->curtime, false, ENTITY_DISSOLVE_NORMAL );
 			}
 		}
+#endif
 #endif
 
 		if ( !bRagdollCreated && ( info.GetDamageType() & DMG_REMOVENORAGDOLL ) == 0 )
@@ -3142,9 +3145,7 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 		return;
 
 	int damageType = 0;
-	float damage = 0;
-
-	damage = CalculatePhysicsImpactDamage( index, pEvent, GetPhysicsImpactDamageTable(), m_impactEnergyScale, false, damageType );
+	float damage = CalculatePhysicsImpactDamage( index, pEvent, GetPhysicsImpactDamageTable(), m_impactEnergyScale, false, damageType );
 	
 	if ( damage <= 0 )
 		return;
@@ -3184,7 +3185,21 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 
 	Vector damagePos;
 	pEvent->pInternalData->GetContactPoint( damagePos );
+#ifdef TF_DLL
+	bool bHasDissolve = false;
+	if ( ( damageType & DMG_DISSOLVE ) != 0 )
+	{
+		bHasDissolve = true;
+		damageType &= ~DMG_DISSOLVE;
+	}
+#endif
 	CTakeDamageInfo dmgInfo( pOther, pOther, damageForce, damagePos, damage, damageType );
+#ifdef TF_DLL
+	if ( bHasDissolve )
+	{
+		dmgInfo.SetDamageCustom( TF_DMG_CUSTOM_PLASMA );
+	}
+#endif
 
 	// FIXME: is there a better way for physics objects to keep track of what root entity responsible for them moving?
 	CBasePlayer *pPlayer = pOther->HasPhysicsAttacker( 1.0 );

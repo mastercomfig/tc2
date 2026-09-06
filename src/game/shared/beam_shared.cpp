@@ -780,7 +780,13 @@ void CBeam::BeamDamage( trace_t *ptr )
 			VectorNormalize( dir );
 			int nDamageType = DMG_ENERGYBEAM;
 
-#ifndef HL1_DLL
+#if defined( TF_DLL )
+			// DMG_DISSOLVE is not used in TF
+			if ( m_nDissolveType > 0 )
+			{
+				nDamageType = DMG_SHOCK;
+			}
+#elif !defined( HL1_DLL )
 			if (m_nDissolveType == 0)
 			{
 				nDamageType = DMG_DISSOLVE;
@@ -792,6 +798,10 @@ void CBeam::BeamDamage( trace_t *ptr )
 #endif
 
 			CTakeDamageInfo info( this, this, m_flDamage * (gpGlobals->curtime - m_flFireTime), nDamageType );
+#if defined( TF_DLL )
+			// use custom damage type instead of DMG_DISSOLVE
+			info.SetDamageCustom( TF_DMG_CUSTOM_PLASMA );
+#endif
 			CalculateMeleeDamageForce( &info, dir, ptr->endpos );
 			pHit->DispatchTraceAttack( info, dir, ptr );
 			ApplyMultiDamage();
