@@ -83,7 +83,7 @@ extern bool g_bRenderingScreenshot;
 extern ConVar sensitivity;
 #endif
 
-ConVar zoom_sensitivity_ratio( "zoom_sensitivity_ratio", "1.0", FCVAR_ARCHIVE, "Additional mouse sensitivity scale factor applied when FOV is zoomed in." );
+ConVar zoom_sensitivity_ratio( "zoom_sensitivity_ratio", "1.0", FCVAR_ARCHIVE, "Additional mouse sensitivity scale factor applied when FOV is zoomed in.", true, 0.01f, true, 3.0f );
 ConVar zoom_sensitivity_scaling( "zoom_sensitivity_scaling", "1", FCVAR_ARCHIVE, "FOV zoom scaling algorithm to use: 1 - accurate scaling 0 - legacy scaling" );
 
 CViewRender g_DefaultViewRender;
