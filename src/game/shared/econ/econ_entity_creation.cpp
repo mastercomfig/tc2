@@ -108,7 +108,6 @@ CBaseEntity *CItemGeneration::SpawnItem( int iChosenItem, const Vector &vecAbsOr
 		if ( !pszOverrideClassName )
 			return NULL;
 
-		pszOverrideClassName = TranslateWeaponEntForClass(pszOverrideClassName, classNum);
 		pItem = CreateEntityByName( pszOverrideClassName );
 	}
 
