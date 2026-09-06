@@ -195,7 +195,7 @@ void CCurrencyPack::ComeToRest( void )
 	// See if we've come to rest in a trigger_hurt
 	if ( IsTakingTriggerHurtDamageAtPoint( GetAbsOrigin() ) )
 	{
-		TFGameRules()->DistributeCurrencyAmount(m_nAmount);
+		TFGameRules()->DistributeCurrencyAmount( m_nAmount );
 		m_bTouched = true;
 		UTIL_Remove(this);
 		return;

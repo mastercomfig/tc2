@@ -1377,6 +1377,7 @@ CTankSpawner::CTankSpawner( IPopulator *populator ) : IPopulationSpawner( popula
 	m_startingPathTrackNodeName = NULL;
 	m_onKilledOutput = NULL;
 	m_onBombDroppedOutput = NULL;
+	m_iszClassIcon = NULL_STRING;
 }
 
 
@@ -1395,6 +1396,10 @@ bool CTankSpawner::Parse( KeyValues *values )
 		if ( !Q_stricmp( name, "Health" ) )
 		{
 			m_health = data->GetInt();
+		}
+		else if (!Q_stricmp(name, "ClassIcon"))
+		{
+			m_iszClassIcon = AllocPooledString(data->GetString());
 		}
 		else if ( !Q_stricmp( name, "Speed" ) )
 		{
@@ -1452,6 +1457,7 @@ bool CTankSpawner::Spawn( const Vector &here, EntityHandleVector_t *result )
 
 		tank->DefineOnKilledOutput( m_onKilledOutput );
 		tank->DefineOnBombDroppedOutput( m_onBombDroppedOutput );
+		tank->SetClassIconName( GetClassIcon() );
 
 		if ( result )
 		{
@@ -1468,6 +1474,15 @@ bool CTankSpawner::Spawn( const Vector &here, EntityHandleVector_t *result )
 	return false;
 }
 
+string_t CTankSpawner::GetClassIcon(int nSpawnNum)
+{
+	if (m_iszClassIcon != NULL_STRING)
+	{
+		return m_iszClassIcon;
+	}
+
+	return MAKE_STRING( "tank" );
+}
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------

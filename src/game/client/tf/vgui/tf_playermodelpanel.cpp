@@ -208,7 +208,7 @@ void CTFPlayerModelPanel::SetVisible( bool state )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayerModelPanel::SetToPlayerClass( int iClass, bool bForceRefresh /*= false*/, const char *pszPlayerModelOverride /*= NULL*/ )
+void CTFPlayerModelPanel::SetToPlayerClass( int iClass, bool bForceRefresh /*= false*/, const char *pszPlayerModelOverride /*= NULL*/, bool bOverrideUsesClassAnimations /*= false*/ )
 {
 	if ( !m_strPlayerModelOverride.IsEqual_CaseInsensitive( pszPlayerModelOverride ) )
 	{
@@ -232,6 +232,10 @@ void CTFPlayerModelPanel::SetToPlayerClass( int iClass, bool bForceRefresh /*= f
 		if ( !m_strPlayerModelOverride.IsEmpty() )
 		{
 			SetMDL( m_strPlayerModelOverride.Get() );
+			if ( bOverrideUsesClassAnimations )
+			{
+				HoldFirstValidItem( true );
+			}
 		}
 		else
 		{
@@ -269,7 +273,7 @@ void CTFPlayerModelPanel::SetToPlayerClass( int iClass, bool bForceRefresh /*= f
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayerModelPanel::HoldFirstValidItem( void )
+void CTFPlayerModelPanel::HoldFirstValidItem( bool bPreserveModelOverride /*= false*/ )
 {
 	RemoveAdditionalModels();
 
@@ -297,7 +301,7 @@ void CTFPlayerModelPanel::HoldFirstValidItem( void )
 
 	if ( iDesiredSlot != -1 )
 	{
-		UpdateHeldItem( iDesiredSlot );
+		UpdateHeldItem( iDesiredSlot, bPreserveModelOverride );
 		return;
 	}
 
@@ -311,19 +315,19 @@ void CTFPlayerModelPanel::HoldFirstValidItem( void )
 
 	if ( pItem && pItem->IsValid() )
 	{
-		SwitchHeldItemTo( pItem );
+		SwitchHeldItemTo( pItem, bPreserveModelOverride );
 	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFPlayerModelPanel::HoldItemInSlot( int iSlot )
+bool CTFPlayerModelPanel::HoldItemInSlot( int iSlot, bool bPreserveModelOverride /*= false*/ )
 {
 	if ( m_iCurrentClassIndex == TF_CLASS_UNDEFINED )
 		return false;
 
-	return UpdateHeldItem( iSlot );
+	return UpdateHeldItem( iSlot, bPreserveModelOverride );
 }
 
 //-----------------------------------------------------------------------------
@@ -365,7 +369,7 @@ bool CTFPlayerModelPanel::HoldItem( int iItemNumber )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CTFPlayerModelPanel::UpdateHeldItem( int iDesiredSlot )
+bool CTFPlayerModelPanel::UpdateHeldItem( int iDesiredSlot, bool bPreserveModelOverride /*= false*/ )
 {
 	m_pHeldItem = NULL;
 
@@ -377,7 +381,7 @@ bool CTFPlayerModelPanel::UpdateHeldItem( int iDesiredSlot )
 		// Also ignore requests to equip non-wearables that are never actively equipped
 		if ( bIsTauntItem || ( !pItem->GetStaticData()->IsAWearable() && pItem->GetAnimationSlot() != -2 ) )
 		{
-			SwitchHeldItemTo( pItem );
+			SwitchHeldItemTo( pItem, bPreserveModelOverride );
 			return true;
 		}
 	}
@@ -385,12 +389,12 @@ bool CTFPlayerModelPanel::UpdateHeldItem( int iDesiredSlot )
 	// If we were trying to switch to a new item, and it's not valid, stick to our current
 	if ( iDesiredSlot != m_iCurrentSlotIndex )
 	{
-		UpdateHeldItem( m_iCurrentSlotIndex );
+		UpdateHeldItem( m_iCurrentSlotIndex, bPreserveModelOverride );
 		return false;
 	}
 
 	// We were trying to stay on the current weapon, and it's not valid. Find anything.
-	HoldFirstValidItem();
+	HoldFirstValidItem( bPreserveModelOverride );
 	return false;
 }
 
@@ -573,7 +577,7 @@ void CTFPlayerModelPanel::FireSoundEvent(const char* pszEventOptions)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayerModelPanel::SwitchHeldItemTo( CEconItemView *pItem )
+void CTFPlayerModelPanel::SwitchHeldItemTo( CEconItemView *pItem, bool bPreserveModelOverride /*= false*/ )
 {
 	m_nBody = 0;
 
@@ -591,7 +595,7 @@ void CTFPlayerModelPanel::SwitchHeldItemTo( CEconItemView *pItem )
 		}
 		else
 		{
-			SetToPlayerClass( m_iCurrentClassIndex );
+			SetToPlayerClass( m_iCurrentClassIndex, false, bPreserveModelOverride ? m_strPlayerModelOverride.Get() : NULL, bPreserveModelOverride );
 		}
 	}
 

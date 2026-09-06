@@ -5126,6 +5126,12 @@ void CTFBot::AddItem( const char* pszItemName )
 	CBaseEntity *pItem = ItemGeneration()->GenerateRandomItem( &criteria, WorldSpaceCenter(), vec3_angle, NULL, GetPlayerClass()->GetClassIndex() );
 	if ( pItem )
 	{
+		CTFWeaponBuilder *pBuilder = dynamic_cast<CTFWeaponBuilder *>( pItem );
+		if ( pBuilder )
+		{
+			pBuilder->SetSubType( GetPlayerClass()->GetData()->m_aBuildable[0] );
+		}
+
 		CEconItemView *pScriptItem = static_cast< CBaseCombatWeapon * >( pItem )->GetAttributeContainer()->GetItem();
 
 		// If we already have an item in that slot, remove it
